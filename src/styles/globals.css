@@ -3,6 +3,53 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand */
+  --color-primary: #155DFC;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #EFF6FF;
+  --color-primary-focus: #2563eb;
+  --color-accent: #4F39F6;
+
+  /* Neutrals */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-900: #111827;
+
+  /* Semantic */
+  --color-error: #ef4444;
+  --color-logo-icon-bg: #0d6efd;
+  --color-right-pane: #3b49df;
+  --color-navbar-bg: #E2E2E3;
+  --color-navbar-border: #D1D1D2;
+  --color-workspace-bg: #F4F5F7;
+
+  /* Landing page - Slate */
+  --color-slate-50: #f8fafc;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Landing page - Green */
+  --color-green-50: #f0fdf4;
+  --color-green-600: #65a30d;
+  --color-green-700: #4d7c0f;
+
+  /* Neutral text */
+  --color-text-body: #333333;
+  --color-text-muted: #666666;
+  --color-border-light: #eeeeee;
 }
 
 @theme inline {
@@ -44,7 +91,7 @@ body {
 
 .rightPane {
   flex: 1;
-  background-color: #3b49df;
+  background-color: var(--color-right-pane);
   color: white;
   display: flex;
   flex-direction: column;
@@ -166,7 +213,7 @@ body {
   width: 32px;
   height: 32px;
   margin-right: 12px;
-  background-color: #0d6efd;
+  background-color: var(--color-logo-icon-bg);
   border-radius: 8px;
 }
 
@@ -174,12 +221,12 @@ body {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #111827;
+  color: var(--color-gray-900);
 }
 
 .subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin-bottom: 32px;
 }
 
@@ -193,7 +240,7 @@ body {
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #070707;
+  color: var(--color-text-body);
 }
 
 .inputWrapper {
@@ -206,7 +253,7 @@ body {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-gray-400);
   width: 16px;
   height: 16px;
 }
@@ -214,7 +261,7 @@ body {
 .input {
   width: 100%;
   padding: 10px 36px 10px 36px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
@@ -223,7 +270,7 @@ body {
 }
 
 .input:focus {
-  border-color: #2563eb;
+  border-color: var(--color-primary-focus);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
@@ -240,11 +287,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #4b5563;
+  color: var(--color-gray-600);
 }
 
 .forgotPassword {
-  color: #2563eb;
+  color: var(--color-primary-focus);
   text-decoration: none;
   font-weight: 500;
 }
@@ -252,7 +299,7 @@ body {
 .submitBtn {
   width: 100%;
   padding: 12px;
-  background-color: #2563eb;
+  background-color: var(--color-primary-focus);
   color: white;
   border: none;
   border-radius: 8px;
@@ -263,11 +310,11 @@ body {
 }
 
 .submitBtn:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-primary-hover);
 }
 
 .submitBtn:disabled {
-  background-color: #9ca3af;
+  background-color: var(--color-gray-400);
   cursor: not-allowed;
 }
 
@@ -277,7 +324,7 @@ body {
   text-align: center;
   width: 100%;
   margin: 24px 0;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   font-size: 12px;
 }
 
@@ -285,7 +332,7 @@ body {
 .divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .divider:not(:empty)::before {
@@ -300,8 +347,8 @@ body {
   width: 100%;
   padding: 12px;
   background-color: white;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid var(--color-gray-300);
+  color: var(--color-gray-700);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
@@ -314,7 +361,7 @@ body {
 }
 
 .googleBtn:hover {
-  background-color: #f9fafb;
+  background-color: var(--color-gray-50);
 }
 
 .signupPrompt {
@@ -322,11 +369,11 @@ body {
   text-align: center;
   width: 100%;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .signupLink {
-  color: #2563eb;
+  color: var(--color-primary-focus);
   font-weight: 600;
   text-decoration: none;
   margin-left: 4px;
@@ -342,15 +389,15 @@ body {
   height: 100%;
   width: 100%;
   font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
 }
 
 .wipSpinner {
   width: 48px;
   height: 48px;
   border: 4px solid rgba(37, 99, 235, 0.2);
-  border-top-color: #2563eb;
+  border-top-color: var(--color-primary-focus);
   border-radius: 50%;
   animation: wipSpin 1s linear infinite;
   margin-bottom: 24px;

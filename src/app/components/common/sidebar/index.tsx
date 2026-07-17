@@ -17,6 +17,8 @@ import {
   Search,
   LogOut,
 } from "lucide-react";
+import { TrackrLogoSmSvg } from "@/src/assets/svgs";
+import { colors } from "@/src/styles/colors";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -42,33 +44,26 @@ export const Sidebar = () => {
     <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
-        <div className="w-8 h-8 bg-[#155DFC] rounded-lg flex items-center justify-center shrink-0">
-          <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-            <path
-              d="M2 17L12 22L22 17"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 12L12 17L22 12"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: colors.primary }}
+        >
+          <TrackrLogoSmSvg />
         </div>
-        <span className="font-bold text-[15px] text-gray-900">Trackr</span>
+        <span className="font-bold text-[15px] text-gray-900">WorkPilot</span>
       </div>
 
       {/* Workspace selector */}
       <div className="px-3 py-3">
-        <div className="flex items-center justify-between px-2.5 py-2 rounded-lg bg-[#F4F5F7] cursor-pointer hover:bg-gray-200 transition-colors">
+        <div
+          className="flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors"
+          style={{ backgroundColor: colors.workspaceBg }}
+        >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-[#4F39F6] flex items-center justify-center text-[10px] font-bold text-white">
+            <div
+              className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white"
+              style={{ backgroundColor: colors.accent }}
+            >
               W
             </div>
             <span className="text-[13px] font-medium text-gray-700">
@@ -104,15 +99,15 @@ export const Sidebar = () => {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
-                active
-                  ? "bg-[#EFF6FF] text-[#155DFC]"
-                  : "text-[#99A1AF] hover:bg-gray-100 hover:text-gray-700"
-              }`}
+              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors"
+              style={{
+                backgroundColor: active ? colors.primaryLight : undefined,
+                color: active ? colors.primary : colors.gray700,
+              }}
             >
               <Icon
                 size={15}
-                className={active ? "text-[#155DFC]" : "text-[#99A1AF]"}
+                style={{ color: active ? colors.primary : colors.gray700 }}
               />
               {label}
             </Link>
@@ -122,7 +117,10 @@ export const Sidebar = () => {
 
       {/* New Project */}
       <div className="px-3 py-2">
-        <button className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-[13px] font-medium text-[#99A1AF] hover:bg-gray-100 hover:text-gray-700 transition-colors border border-dashed border-gray-200">
+        <button
+          className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-[13px] font-medium hover:bg-gray-100 hover:text-gray-700 transition-colors border border-dashed border-gray-200"
+          style={{ color: colors.gray400 }}
+        >
           <Plus size={14} />
           New Project
         </button>
@@ -133,7 +131,10 @@ export const Sidebar = () => {
 
       {/* User */}
       <div className="flex items-center gap-2.5 px-4 py-3.5">
-        <div className="w-7 h-7 rounded-full bg-[#4F39F6] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+          style={{ backgroundColor: colors.accent }}
+        >
           U
         </div>
         <div className="flex-1 min-w-0">

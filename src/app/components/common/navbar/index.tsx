@@ -2,13 +2,17 @@
 
 import { usePathname } from "next/navigation";
 import { Bell, Search, Settings, ChevronRight } from "lucide-react";
+import { colors } from "@/src/styles/colors";
 
 export const Navbar = () => {
   const pathname = usePathname();
   const segment = pathname.split("/").filter(Boolean).pop() ?? "home";
   const title = segment.charAt(0).toUpperCase() + segment.slice(1);
   return (
-    <header className="flex items-center justify-between h-[56px] px-5 bg-[#E2E2E3] border-b border-[#D1D1D2] shrink-0">
+    <header
+      className="flex items-center justify-between h-[56px] px-5 border-b shrink-0"
+      style={{ backgroundColor: colors.navbarBg, borderColor: colors.navbarBorder }}
+    >
       {/* Breadcrumb + Search */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 text-[13px] w-48 shrink-0">
@@ -27,12 +31,13 @@ export const Navbar = () => {
       </div>
       {/* Right side */}
       <div className="flex items-center gap-2">
-        {/* Search */}
-
         {/* Notifications */}
         <button className="relative p-1.5 rounded-lg hover:bg-white/50 transition-colors text-gray-500">
           <Bell size={17} />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+          <span
+            className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: colors.error }}
+          />
         </button>
 
         {/* Settings */}
@@ -45,7 +50,10 @@ export const Navbar = () => {
 
         {/* Avatar */}
         <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-7 h-7 rounded-full bg-[#4F39F6] flex items-center justify-center text-[11px] font-bold text-white">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+            style={{ backgroundColor: colors.accent }}
+          >
             U
           </div>
           <span className="text-[13px] font-medium text-gray-700">

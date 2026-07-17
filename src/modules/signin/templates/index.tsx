@@ -1,48 +1,44 @@
-import { useTranslations } from 'next-intl';
-import { SignIn } from '../components/signin';
+import { SignIn } from "../components/signin";
+import { BarChartIconSvg } from "@/src/assets/svgs";
 
 export const SignInTemplate = () => {
-    const t=useTranslations();
-    return (
-        <div className="templateContainer">
-            <div className="leftPane">
-                <SignIn />
+  return (
+    <div className="templateContainer">
+      <div className="leftPane">
+        <SignIn />
+      </div>
+
+      <div className="rightPane">
+        <div className="gridBackground"></div>
+
+        <div className="contentWrapper">
+          <div className="iconWrapper">
+            <BarChartIconSvg />
+          </div>
+
+          <h2 className="templateTitle">Ship projects faster, together</h2>
+
+          <p className="description">
+            Trackr brings your team&apos;s work together — sprint planning,
+            kanban boards, and real-time analytics in one place.
+          </p>
+
+          <div className="statsContainer">
+            <div className="statCard">
+              <div className="statValue">240+</div>
+              <div className="statLabel">Projects</div>
             </div>
-            
-            <div className="rightPane">
-                <div className="gridBackground"></div>
-                
-                <div className="contentWrapper">
-                    <div className="iconWrapper">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 20V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M18 20V4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M6 20V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                    </div>
-                    
-                    <h2 className="templateTitle">{t('shipProjects')}</h2>
-                    
-                    <p className="description">
-                        {t('trackerContent')}
-                    </p>
-                    
-                    <div className="statsContainer">
-                        <div className="statCard">
-                            <div className="statValue">240+</div>
-                            <div className="statLabel">{t('projects')}</div>
-                        </div>
-                        <div className="statCard">
-                            <div className="statValue">18k</div>
-                            <div className="statLabel">{t('teams')}</div>
-                        </div>
-                        <div className="statCard">
-                            <div className="statValue">1.2M</div>
-                            <div className="statLabel">{t('tasksDone')}</div>
-                        </div>
-                    </div>
-                </div>
+            <div className="statCard">
+              <div className="statValue">18k</div>
+              <div className="statLabel">Teams</div>
             </div>
+            <div className="statCard">
+              <div className="statValue">1.2M</div>
+              <div className="statLabel">Tasks done</div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
