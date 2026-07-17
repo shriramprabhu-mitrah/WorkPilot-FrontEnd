@@ -213,7 +213,7 @@ body {
 
 .input {
   width: 100%;
-  padding: 10px 10px 10px 36px;
+  padding: 10px 36px 10px 36px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 14px;
@@ -339,7 +339,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   font-family: 'Inter', sans-serif;
   background-color: #f9fafb;

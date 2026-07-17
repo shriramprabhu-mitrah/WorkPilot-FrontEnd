@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { TermsConditions } from '../../../../app/components/common/terms-coditions';
 import { PrivacyPolicy } from '../../../../app/components/common/privacy';
+import { Eye, EyeOff } from 'lucide-react';
 
 export const SignUp = () => {
     const t = useTranslations();
@@ -16,6 +17,8 @@ export const SignUp = () => {
     const [password, setPassword] = useState('');
     const [confirmPwd, setConfirmPwd] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPwd, setShowConfirmPwd] = useState(false);
     const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
 
     const passwordsMatch = password === confirmPwd;
@@ -87,7 +90,7 @@ export const SignUp = () => {
                     <div className="inputWrapper">
                         <svg className="inputIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         <input
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             id="password"
                             className="input"
                             placeholder="8+ characters"
@@ -95,6 +98,9 @@ export const SignUp = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
                     </div>
                 </div>
 
@@ -103,7 +109,7 @@ export const SignUp = () => {
                     <div className="inputWrapper">
                         <svg className="inputIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         <input
-                            type="password"
+                            type={showConfirmPwd ? 'text' : 'password'}
                             id="confirmPwd"
                             className="input"
                             placeholder="Re-enter your password"
@@ -111,6 +117,9 @@ export const SignUp = () => {
                             onChange={(e) => setConfirmPwd(e.target.value)}
                             required
                         />
+                        <button type="button" onClick={() => setShowConfirmPwd(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            {showConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
                     </div>
                     {password && confirmPwd && !passwordsMatch && (
                         <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>Passwords do not match</div>
