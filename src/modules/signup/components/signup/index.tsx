@@ -129,9 +129,9 @@ export const SignUp = () => {
                     />
                     <label htmlFor="terms" style={{ cursor: 'pointer' }}>
                         By continuing you agree to our{' '}
-                        <button type="button" onClick={() => setSidebarContent('terms')} style={{ color: '#2563eb', textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Terms</button>{' '}
+                        <button type="button" onClick={() => setSidebarContent('terms')} style={{ color: '#62961a', textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Terms</button>{' '}
                         and{' '}
-                        <button type="button" onClick={() => setSidebarContent('privacy')} style={{ color: '#2563eb', textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Privacy Policy</button>
+                        <button type="button" onClick={() => setSidebarContent('privacy')} style={{ color: '#62961a', textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}>Privacy Policy</button>
                     </label>
                 </div>
 

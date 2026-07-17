@@ -44,7 +44,7 @@ body {
 
 .rightPane {
   flex: 1;
-  background-color: #3b49df;
+  background-color: #62961a;
   color: white;
   display: flex;
   flex-direction: column;
@@ -166,7 +166,7 @@ body {
   width: 32px;
   height: 32px;
   margin-right: 12px;
-  background-color: #0d6efd;
+  background-color: #62961a;
   border-radius: 8px;
 }
 
@@ -223,7 +223,7 @@ body {
 }
 
 .input:focus {
-  border-color: #2563eb;
+  border-color: #62961a;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
@@ -244,7 +244,7 @@ body {
 }
 
 .forgotPassword {
-  color: #2563eb;
+  color: #62961a;
   text-decoration: none;
   font-weight: 500;
 }
@@ -252,7 +252,7 @@ body {
 .submitBtn {
   width: 100%;
   padding: 12px;
-  background-color: #2563eb;
+  background-color: #62961a;
   color: white;
   border: none;
   border-radius: 8px;
@@ -263,7 +263,7 @@ body {
 }
 
 .submitBtn:hover {
-  background-color: #1d4ed8;
+  background-color: #62961a;
 }
 
 .submitBtn:disabled {
@@ -326,7 +326,7 @@ body {
 }
 
 .signupLink {
-  color: #2563eb;
+  color: #62961a;
   font-weight: 600;
   text-decoration: none;
   margin-left: 4px;
