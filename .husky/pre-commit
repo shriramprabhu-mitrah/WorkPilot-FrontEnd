@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+sh .husky/validate-branch-name.sh || exit 1
+
+npm run lint || exit 1

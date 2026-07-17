@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+commit_msg=$(cat "$1")
+
+pattern="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert): .+"
+
+if echo "$commit_msg" | grep -Eq "$pattern"; then
+  echo "✅ Commit message is valid"
+  exit 0
+else
+  echo "❌ Invalid commit message"
+  echo ""
+  echo "Use one of these formats:"
+  echo "  feat: add doctor portal"
+  echo "  fix: resolve login issue"
+  echo "  chore: update dependencies"
+  echo "  docs: update README"
+  exit 1
+fi

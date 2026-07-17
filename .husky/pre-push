@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+echo "🚀 Running pre-push checks..."
+
+# Validate branch name
+sh .husky/validate-branch-name.sh || exit 1
+
+# Run lint
+npm run lint || exit 1
+
+# Run tests
+npm test || exit 1
+
+# Build application
+npm run build || exit 1
+
+echo "✅ All pre-push checks passed."
