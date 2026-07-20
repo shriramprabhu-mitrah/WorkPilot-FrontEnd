@@ -4,6 +4,8 @@ import  { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import '../../../styles/landing-page.css';
+import { CheckIconSvg, ProjectMgmtIconSvg, AgileBoardIconSvg, SprintIconSvg, CollaborationIconSvg, ReportsIconSvg, NotificationsIconSvg } from '@/src/assets/svgs';
+import { colors } from '@/src/styles/colors';
 
 // Intersection Observer Hook for scroll animations
 const useScrollReveal = () => {
@@ -42,7 +44,7 @@ export const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="lp-hero">
-        <h1 className="lp-hero-title animate-on-scroll">Manage Projects.<br/>Empower Teams.<br/><span style={{color: '#65a30d'}}>Deliver Beyond Expectations.</span></h1>
+        <h1 className="lp-hero-title animate-on-scroll">Manage Projects.<br/>Empower Teams.<br/><span style={{color: colors.green600}}>Deliver Beyond Expectations.</span></h1>
         <p className="lp-hero-subtitle animate-on-scroll" style={{ transitionDelay: '0.1s' }}>
           MitrahSoft is an all-in-one project management platform that helps teams plan projects, organize backlogs, manage sprints, track tasks, and collaborate efficiently—all from a single workspace.
         </p>
@@ -59,7 +61,7 @@ export const LandingPage = () => {
       {/* Trusted By */}
       <section className="lp-trusted animate-on-scroll">
         <h3 className="lp-trusted-title">Trusted by Modern Teams</h3>
-        <p style={{ color: '#475569', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
+        <p style={{ color: colors.slate600, maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
           Helping startups, growing businesses, and enterprise teams streamline project execution and deliver successful outcomes.
         </p>
       </section>
@@ -73,18 +75,16 @@ export const LandingPage = () => {
         
         <div className="lp-grid-3">
           {[
-            { title: 'Project Management', desc: 'Create and organize projects with customizable workflows.', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-            { title: 'Agile Boards', desc: 'Manage tasks effortlessly using Kanban and Scrum boards.', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-            { title: 'Sprint Planning', desc: 'Plan, prioritize, and execute sprints with confidence.', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-            { title: 'Team Collaboration', desc: 'Assign work, comment on tasks, and stay connected.', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-            { title: 'Reports & Analytics', desc: 'Gain insights with burndown charts, velocity reports, and workload analytics.', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-            { title: 'Smart Notifications', desc: 'Never miss updates with instant notifications and reminders.', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' }
+            { title: 'Project Management', desc: 'Create and organize projects with customizable workflows.', icon: <ProjectMgmtIconSvg /> },
+            { title: 'Agile Boards', desc: 'Manage tasks effortlessly using Kanban and Scrum boards.', icon: <AgileBoardIconSvg /> },
+            { title: 'Sprint Planning', desc: 'Plan, prioritize, and execute sprints with confidence.', icon: <SprintIconSvg /> },
+            { title: 'Team Collaboration', desc: 'Assign work, comment on tasks, and stay connected.', icon: <CollaborationIconSvg /> },
+            { title: 'Reports & Analytics', desc: 'Gain insights with burndown charts, velocity reports, and workload analytics.', icon: <ReportsIconSvg /> },
+            { title: 'Smart Notifications', desc: 'Never miss updates with instant notifications and reminders.', icon: <NotificationsIconSvg /> },
           ].map((feature, idx) => (
             <div key={idx} className="lp-feature-card animate-on-scroll" style={{ transitionDelay: `${idx * 0.1}s` }}>
               <div className="lp-feature-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
-                </svg>
+                {feature.icon}
               </div>
               <h3 className="lp-feature-title">{feature.title}</h3>
               <p className="lp-feature-desc">{feature.desc}</p>
@@ -129,12 +129,12 @@ export const LandingPage = () => {
               ))}
             </div>
           </div>
-          <div className="animate-on-scroll" style={{ background: '#f8fafc', padding: '40px', borderRadius: '20px', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#1e293b' }}>Why Teams Love MitrahSoft</h3>
+          <div className="animate-on-scroll" style={{ background: colors.slate50, padding: '40px', borderRadius: '20px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: colors.slate800 }}>Why Teams Love MitrahSoft</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
               {['Simple and intuitive interface', 'Agile project management', 'Real-time collaboration', 'Faster project delivery', 'Secure cloud platform', 'Responsive on desktop and mobile', 'Scalable for growing teams'].map((item, idx) => (
-                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#475569', fontSize: '16px' }}>
-                  <svg style={{ color: '#65a30d', flexShrink: 0 }} width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', color: colors.slate600, fontSize: '16px' }}>
+                  <span style={{ color: colors.green600, flexShrink: 0 }}><CheckIconSvg /></span>
                   {item}
                 </li>
               ))}
@@ -176,7 +176,7 @@ export const LandingPage = () => {
             <ul className="lp-pricing-features">
               {['Up to 3 Projects', 'Basic Boards', 'Team Collaboration'].map((f, i) => (
                 <li key={i} className="lp-pricing-feature">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> {f}
+                  <CheckIconSvg /> {f}
                 </li>
               ))}
             </ul>
@@ -190,7 +190,7 @@ export const LandingPage = () => {
             <ul className="lp-pricing-features">
               {['Unlimited Projects', 'Sprint Planning', 'Reports', 'Team Management', 'Priority Support'].map((f, i) => (
                 <li key={i} className="lp-pricing-feature">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> {f}
+                  <CheckIconSvg /> {f}
                 </li>
               ))}
             </ul>
@@ -203,7 +203,7 @@ export const LandingPage = () => {
             <ul className="lp-pricing-features">
               {['Custom Integrations', 'SSO', 'Advanced Security', 'Dedicated Support', 'Analytics'].map((f, i) => (
                 <li key={i} className="lp-pricing-feature">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> {f}
+                  <CheckIconSvg /> {f}
                 </li>
               ))}
             </ul>
