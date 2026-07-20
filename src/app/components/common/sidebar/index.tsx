@@ -6,28 +6,31 @@ import { removeTokens } from "@/src/lib/utils/cookies";
 import {
   LayoutDashboard,
   FolderKanban,
-  CircleDot,
-  Users,
+  ClipboardList,
   Settings,
-  Bell,
   Calendar,
   BarChart2,
   ChevronDown,
   Plus,
   Search,
   LogOut,
+  Flag,
+  SquareKanban,
+  User
 } from "lucide-react";
 import { TrackrLogoSmSvg } from "@/src/assets/svgs";
 import { colors } from "@/src/styles/colors";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Issues", href: "/issues", icon: CircleDot },
   { label: "Projects", href: "/projects", icon: FolderKanban },
+  { label: "Boards", href: "/boards", icon:FolderKanban},
+  { label: "Backlog", href: "/analytics", icon: BarChart2 },
+  { label: "Sprint", href: "/sprint", icon: SquareKanban },
+  { label: "Tasks", href: "/tasks", icon:ClipboardList  },
+  { label: "Reports", href: "/reports", icon: Flag},
+  { label: "Teams", href: "/teams", icon: User },
   { label: "Calendar", href: "/calendar", icon: Calendar },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Members", href: "/members", icon: Users },
-  { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
