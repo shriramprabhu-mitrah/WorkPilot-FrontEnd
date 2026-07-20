@@ -11,3 +11,9 @@ export interface SignInResponse {
   expires_in: number;
   refresh_expires_in: number;
 }
+
+export interface ResetPasswordPaylaod {
+  email: string;
+  otp: string;
+  new_password: string;
+}

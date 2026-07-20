@@ -1,16 +1,14 @@
 export const TrackrLogoSvg = () => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%", padding: "4px" }}>
-    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-    <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%", padding: "2px" }}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M2.5 11C2.5 6 7 2.5 12 2.5C17 2.5 21.5 6 21.5 11H2.5ZM12 9C11.1716 9 10.5 8.32843 10.5 7.5C10.5 6.67157 11.1716 6 12 6C12.8284 6 13.5 6.67157 13.5 7.5C13.5 8.32843 12.8284 9 12 9Z" fill="white" />
+    <path d="M1.5 14C1.5 14 6 19.5 12 19.5C18 19.5 22.5 14 22.5 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
   </svg>
 );
 
 export const TrackrLogoSmSvg = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
-    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
-    <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M2.5 11C2.5 6 7 2.5 12 2.5C17 2.5 21.5 6 21.5 11H2.5ZM12 9C11.1716 9 10.5 8.32843 10.5 7.5C10.5 6.67157 11.1716 6 12 6C12.8284 6 13.5 6.67157 13.5 7.5C13.5 8.32843 12.8284 9 12 9Z" fill="currentColor" />
+    <path d="M1.5 14C1.5 14 6 19.5 12 19.5C18 19.5 22.5 14 22.5 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
   </svg>
 );
 
