@@ -30,7 +30,7 @@ axiosInstance.interceptors.response.use(
     const requestUrl = originalRequest?.url || '';
 
     // Ignore 401/403 errors for auth routes to prevent loops
-    if (requestUrl.includes('/auth/signin') || requestUrl.includes('/auth/signup') || requestUrl.includes('/auth/refresh')) {
+    if (requestUrl.includes('/auth/signin') || requestUrl.includes('/auth/signup') || requestUrl.includes('/auth/refresh') || requestUrl.includes('/auth/password-reset/request') || requestUrl.includes('/auth/password-reset/confirm')) {
       return Promise.reject(error);
     }
 

@@ -4,8 +4,6 @@ export const metadata = {
   title: 'signup',
 };
 
-function Page(){
-    return <SignUpTemplate/>
+export default function Page() {
+    return <SignUpTemplate />;
 }
-
-export default Page;
