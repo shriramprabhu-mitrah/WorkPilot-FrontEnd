@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import { BacklogTemplate } from "@/src/modules/backlog/templates";
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <BacklogTemplate />;
 }

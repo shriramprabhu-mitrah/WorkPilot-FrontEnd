@@ -16,7 +16,8 @@ import {
   LogOut,
   Flag,
   SquareKanban,
-  User
+  User,
+  KanbanSquareDashedIcon,
 } from "lucide-react";
 import { TrackrLogoSmSvg } from "@/src/assets/svgs";
 import { colors } from "@/src/styles/colors";
@@ -24,11 +25,11 @@ import { colors } from "@/src/styles/colors";
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Boards", href: "/boards", icon:FolderKanban},
-  { label: "Backlog", href: "/analytics", icon: BarChart2 },
+  { label: "Boards", href: "/boards", icon: KanbanSquareDashedIcon },
+  { label: "Backlog", href: "/backlog", icon: BarChart2 },
   { label: "Sprint", href: "/sprint", icon: SquareKanban },
-  { label: "Tasks", href: "/tasks", icon:ClipboardList  },
-  { label: "Reports", href: "/reports", icon: Flag},
+  { label: "Tasks", href: "/tasks", icon: ClipboardList },
+  { label: "Reports", href: "/reports", icon: Flag },
   { label: "Teams", href: "/teams", icon: User },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Settings", href: "/settings", icon: Settings },

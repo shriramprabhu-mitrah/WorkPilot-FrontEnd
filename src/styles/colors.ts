@@ -52,4 +52,42 @@ export const colors = {
   textBody: "#333333",
   textMuted: "#666666",
   borderLight: "#eeeeee",
+
+  // Board — priority
+  priorityCriticalText: "#ef4444",
+  priorityCriticalBg: "#fef2f2",
+  priorityHighText: "#f97316",
+  priorityHighBg: "#fff7ed",
+  priorityMediumText: "#f59e0b",
+  priorityMediumBg: "#fffbeb",
+  priorityLowText: "#22c55e",
+  priorityLowBg: "#f0fdf4",
+
+  // Board — column dots
+  colBacklog: "#9ca3af",
+  colBacklogBg: "#f3f4f6",
+  colTodo: "#3b82f6",
+  colTodoBg: "#eff6ff",
+  colInProgress: "#6366f1",
+  colInProgressBg: "#eef2ff",
+  colInReview: "#a855f7",
+  colInReviewBg: "#faf5ff",
+  colTesting: "#f97316",
+  colDone: "#22c55e",
+  colDoneBg: "#f0fdf4",
+  colActive: "#16a34a",
+
+  // Board — assignee avatars
+  avatarBlue: "#3b82f6",
+  avatarPink: "#ec4899",
+  avatarGreen: "#10b981",
+  avatarAmber: "#f59e0b",
+  avatarIndigo: "#6366f1",
+
+  // Board — drop highlight
+  dropBg: "#eff6ff",
+  dropgreenBg: "#dcfce7",
+  dropRing: "#bfdbfe",
+  dragPlaceholderBorder: "#93c5fd",
+  dragPlaceholderBg: "rgba(239,246,255,0.6)",
 } as const;
