@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import { KanbanBoardTemplate } from "@/src/modules/boards/templates";
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <KanbanBoardTemplate />;
 }

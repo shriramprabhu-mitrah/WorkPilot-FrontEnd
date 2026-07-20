@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import { TeamTemplate } from "@/src/modules/teams/templates";
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <TeamTemplate />;
 }
