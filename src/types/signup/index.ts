@@ -1,8 +1,11 @@
 export interface SignupPayload {
-  name:string
+  full_name:string;
+  username:string;
   email: string;
   password: string;
-  confirmPwd: string;
+  avatar_url?:string;
+  timezone?:string
+  confirmPwd?: string;
 }
 
 export interface User {

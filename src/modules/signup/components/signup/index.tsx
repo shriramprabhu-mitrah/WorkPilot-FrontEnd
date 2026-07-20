@@ -18,7 +18,8 @@ import { colors } from "@/src/styles/colors";
 
 export const SignUp = () => {
   const { handleSignUp, isLoading, error } = useSignup();
-  const [name, setName] = useState("");
+  const [full_name, setName] = useState("");
+  const [username, setuserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -31,7 +32,8 @@ export const SignUp = () => {
 
   const passwordsMatch = password === confirmPwd;
   const isFormValid =
-    name.trim() !== "" &&
+    full_name.trim() !== "" &&
+    username.trim() !=="" &&
     email.trim() !== "" &&
     password !== "" &&
     confirmPwd !== "" &&
@@ -44,7 +46,8 @@ export const SignUp = () => {
     e.preventDefault();
     if (!isFormValid) return;
     try {
-      await handleSignUp({ name, email, password, confirmPwd });
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      await handleSignUp({ full_name, username, email, password, timezone });
       router.push("/home");
     } catch {}
   };
@@ -73,8 +76,26 @@ export const SignUp = () => {
               id="name"
               className="input"
               placeholder="Jane Smith"
-              value={name}
+              value={full_name}
               onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="formGroup">
+          <label className="label" htmlFor="username">
+            User Name
+          </label>
+          <div className="inputWrapper">
+            <UserIconSvg />
+            <input
+              type="text"
+              id="username"
+              className="input"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setuserName(e.target.value)}
               required
             />
           </div>
