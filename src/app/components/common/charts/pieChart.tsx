@@ -6,6 +6,8 @@ import type {
   TopLevelFormatterParams,
 } from 'echarts/types/dist/shared';
 
+import { colors } from '@/src/styles/colors';
+
 interface PieChartProps {
   legends?: EChartsOption['legend'];
   name?: string;
@@ -26,11 +28,11 @@ interface PieChartProps {
 }
 const defaultTooltip: EChartsOption['tooltip'] = {
   trigger: 'item',
-  backgroundColor: '#fff',
-  borderColor: '#E5E7EB',
+  backgroundColor: colors.white,
+  borderColor: colors.gray200,
   borderWidth: 1,
   textStyle: {
-    color: '#111827',
+    color: colors.gray900,
     fontSize: 12,
   },
   formatter: (params: TopLevelFormatterParams) => {
