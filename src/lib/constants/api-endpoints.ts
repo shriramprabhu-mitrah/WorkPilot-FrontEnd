@@ -140,6 +140,8 @@ export const ApiEndpoints = {
         logOut: createEndpoint("/auth/logout"),
         refresh: createEndpoint("/auth/refresh"),
         forgotPassword: createEndpoint("/auth/change-password"),
+        passwordReset: createEndpoint("/auth/password-reset/request"),
+        passwordConfirm:createEndpoint("/auth/password-reset/confirm"),
         userUpdate: createEndpoint("auth/update")
     }
 } 

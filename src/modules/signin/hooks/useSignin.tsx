@@ -22,12 +22,22 @@ export const useSignin = () => {
 
     const handleForgotPassword = async (email: string) => {
         setIsLoading(true);
-        setError(null);
         try {
-            const response = await signupService.forgotPassword(email);
+            const response = await signupService.resetPassword(email);
             return response;
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Failed to send reset link");
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetPasswordConfirm = async (payload: { email: string; otp: string; new_password: string }) => {
+        setIsLoading(true);
+        try {
+            const response = await signupService.resetPasswordConfirm(payload);
+            return response;
+        } catch (err: unknown) {
             throw err;
         } finally {
             setIsLoading(false);
@@ -37,6 +47,7 @@ export const useSignin = () => {
     return {
         handleSignIn,
         handleForgotPassword,
+        handleResetPasswordConfirm,
         isLoading,
         error
     };
