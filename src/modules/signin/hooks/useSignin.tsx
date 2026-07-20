@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { signinService } from '@/src/services/signin';
 import { SignInPayload } from '@/src/types/signin';
+import { signupService } from '@/src/services/signup';
 
 export const useSignin = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -10,7 +10,7 @@ export const useSignin = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await signinService.signIn(payload);
+            const response = await signupService.signIn(payload);
             return response;
         } catch (err: unknown) {
             setError( err instanceof Error ? err.message : "Failed to sign in");
@@ -20,8 +20,23 @@ export const useSignin = () => {
         }
     };
 
+    const handleForgotPassword = async (email: string) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await signupService.forgotPassword(email);
+            return response;
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Failed to send reset link");
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return {
         handleSignIn,
+        handleForgotPassword,
         isLoading,
         error
     };

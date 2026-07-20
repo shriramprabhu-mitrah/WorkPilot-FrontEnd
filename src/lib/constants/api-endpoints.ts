@@ -135,8 +135,12 @@ const createQueryEndpoint = (path: string) => {
 
 export const ApiEndpoints = {
     Sign: {
-        signIn: createEndpoint("/auth/signup"),
-        signUp: createEndpoint("/auth/signup")
+        signIn: createEndpoint("/auth/signin"),
+        signUp: createEndpoint("/auth/signup"),
+        logOut: createEndpoint("/auth/logout"),
+        refresh: createEndpoint("/auth/refresh"),
+        forgotPassword: createEndpoint("/auth/change-password"),
+        userUpdate: createEndpoint("auth/update")
     }
 } 
 
