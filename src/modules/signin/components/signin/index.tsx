@@ -60,10 +60,10 @@ export const SignIn = () => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
-      const response = await handleResetPasswordConfirm({ 
-        email: forgotEmail, 
-        otp: resetOtp, 
-        new_password: resetNewPassword 
+      const response = await handleResetPasswordConfirm({
+        email: forgotEmail,
+        otp: resetOtp,
+        new_password: resetNewPassword
       });
       setForgotSuccessMessage(response?.message || "Password reset successfully.");
       setTimeout(() => {
@@ -122,8 +122,10 @@ export const SignIn = () => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-10 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input w-full"
+              style={{ paddingLeft: '40px', paddingRight: '40px' }}
               required
+              minLength={8}
             />
 
             <button
@@ -178,13 +180,14 @@ export const SignIn = () => {
         </button>
       </form>
 
-      <div className="divider">or continue with</div>
+      {/* For now comment this code 
+       <div className="divider">or continue with</div>
 
       <button type="button" className="googleBtn">
         <GoogleIconSvg />
         Continue with Google
-      </button>
-
+      </button> */}
+  
       <div className="signupPrompt">
         Don&apos;t have an account?
         <Link href="/signup" className="signupLink">

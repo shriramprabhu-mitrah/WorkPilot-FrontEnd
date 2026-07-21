@@ -29,6 +29,7 @@ export const SignUp = () => {
   const [sidebarContent, setSidebarContent] = useState<
     "terms" | "privacy" | null
   >(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const passwordsMatch = password === confirmPwd;
   const isFormValid =
@@ -48,21 +49,50 @@ export const SignUp = () => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       await handleSignUp({ full_name, username, email, password, timezone });
-      router.push("/home");
+      setIsSuccess(true);
     } catch {}
   };
 
   return (
     <div className="signinContainer">
-      <div className="logo">
-        <div className="logoIcon">
-          <TrackrLogoSvg />
+      {isSuccess ? (
+        <div className="flex w-full flex-col items-center text-center">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
+          </div>
+          <h1 className="signinTitle mb-4">Account created!</h1>
+          <p className="mb-8 text-sm leading-[1.6] text-gray-500">
+            As a <strong className="text-gray-900 dark:text-gray-100">User</strong>, you need an invitation to join an organization.<br/>
+            Ask your Organization Admin to invite you via email.
+          </p>
+          
+          <div className="mb-10 w-full rounded-xl border border-amber-200 bg-amber-50 p-6 text-left dark:border-amber-900 dark:bg-amber-900/20">
+            <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-500">What happens next?</h3>
+            <ul className="m-0 flex flex-col gap-2 pl-5 text-[13px] text-amber-600 dark:text-amber-400">
+              <li>Your Organization Admin sends you an invite link</li>
+              <li>Click the link to join their workspace</li>
+              <li>Start collaborating immediately</li>
+            </ul>
+          </div>
+          
+          <button 
+            type="button" 
+            onClick={() => router.push("/signin")}
+            className="cursor-pointer border-none bg-transparent text-[15px] font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
+          >
+            Back to sign in
+          </button>
         </div>
-        WorkPilot
-      </div>
+      ) : (
+        <>
+          <div className="logo">
+            <div className="logoIcon">
+              <TrackrLogoSvg />
+            </div>
+            WorkPilot
+          </div>
 
-      <h1 className="signinTitle">Create your account</h1>
-      <h2 className="subtitle">Get started free — no credit card required.</h2>
+          <h1 className="signinTitle">Create your account</h1>
+          <h2 className="subtitle">Get started free — no credit card required.</h2>
 
       <form onSubmit={onSubmit} style={{ width: "100%" }}>
         <div className="formGroup">
@@ -133,6 +163,7 @@ export const SignUp = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
             />
             <button
               type="button"
@@ -158,6 +189,7 @@ export const SignUp = () => {
               value={confirmPwd}
               onChange={(e) => setConfirmPwd(e.target.value)}
               required
+              minLength={8}
             />
             <button
               type="button"
@@ -282,6 +314,8 @@ export const SignUp = () => {
             )}
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );
