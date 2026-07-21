@@ -1,3 +1,4 @@
+import { colors } from "@/src/styles/colors";
 export const Projects = [
   {
     initials: "ATL",
@@ -10,10 +11,10 @@ export const Projects = [
     tasks: "1/6",
     date: "Aug 15",
     members: [
-      { name: "S", color: "blue" },
-      { name: "M", color: "green" },
-      { name: "P", color: "purple" },
-      { name: "J", color: "orange" },
+      { name: "S", color: colors.avatarBlue },
+      { name: "M", color: colors.avatarGreen },
+      { name: "P", color: colors.avatarIndigo },
+      { name: "J", color: colors.avatarPink },
     ],
   },
   {
@@ -27,12 +28,12 @@ export const Projects = [
     tasks: "0/4",
     date: "Sep 30",
     members: [
-      { name: "S", color: "pink" },
-      { name: "P", color: "indigo" },
-      { name: "A", color: "yellow" },
+      { name: "S", color: colors.avatarBlue },
+      { name: "P", color: colors.avatarPink },
+      { name: "A", color: colors.avatarGreen },
     ],
   },
-   {
+  {
     initials: "DAT",
     name: "Data Pipeline",
     code: "DAT-*",
@@ -43,8 +44,8 @@ export const Projects = [
     tasks: "1/3",
     date: "Jul 20",
     members: [
-      {name: "M", color:"blue"},
-      {name: "J", color:"orange"}
+      { name: "M", color: colors.avatarBlue },
+      { name: "J", color: colors.avatarIndigo }
     ],
   },
   {
@@ -58,8 +59,8 @@ export const Projects = [
     tasks: "1/3",
     date: "Nov 1",
     members: [
-      {name:"P", color:"pink"} ,
-      {name: "A", color:"green"}
+      { name: "P", color: colors.avatarPink },
+      { name: "A", color: colors.avatarIndigo }
     ],
   },
   {
@@ -73,10 +74,10 @@ export const Projects = [
     tasks: "1/3",
     date: "Dec 15",
     members: [
-       {name:"S", color:"indigo"},
-       {name:"M",  color:"blue"},
-       {name:"P", color:"pink"},
-       {name:"A", color:"green"}
-      ]
+      { name: "S", color: colors.avatarIndigo },
+      { name: "M", color: colors.avatarBlue },
+      { name: "P", color: colors.avatarGreen },
+      { name: "A", color: colors.avatarPink }
+    ]
   }
 ];
