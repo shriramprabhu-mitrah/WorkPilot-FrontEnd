@@ -156,7 +156,11 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
           radius,
           center,
           roseType: rosetype,
-          itemStyle: itemstyle,
+          itemStyle: {
+            ...itemstyle,
+            borderColor: colors.white,
+            borderWidth: 2,
+          },
           labelLine: labelline,
           label: {
             ...label,
@@ -166,7 +170,7 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
               return `${singleParams.name}: ${singleParams.value}`;
             },
           },
-          padAngle,
+          padAngle: padAngle ?? 2,
           minAngle,
           minShowLabelAngle,
           data: normalizedData,
