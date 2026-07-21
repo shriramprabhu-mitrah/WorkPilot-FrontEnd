@@ -23,21 +23,19 @@ type TaskHeaderProps = {
         }>
     >;
 };
-
 export const TaskHeader = ({
     selectedFilters,
     setSelectedFilters,
     searchTerm,
     setSearchTerm
 }: TaskHeaderProps) => {
-   
     const handleFilterChange = (key: string, value: string) => {
         setSelectedFilters((prev) => ({
             ...prev,
             [key]: value,
         }));
     };
- 
+
     return (
         <div className="mb-6 flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -71,7 +69,7 @@ export const TaskHeader = ({
                         className="h-9 w-52 rounded-lg border border-gray-200 pl-10 pr-3 text-sm"
                     />
                 </div>
-              <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-3">
                     {filters.map((filter) => (
                         <FilterDropdown
                             key={filter.key}

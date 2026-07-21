@@ -1,15 +1,12 @@
 "use client";
-// import { getStatusStyle } from "@/src/app/components/common/sidebar/getStatusCss"
 import { tasksData } from "../data/tasks"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableCheckbox } from "./TableCheckbox";
-// import { getAssigneeColor } from "@/src/app/components/common/sidebar/getAssigneeColor";
 import { ActionMenu } from "./ActionMenu";
-import { PriorityBadge } from "@/src/app/components/common/task";
-import { getAssigneeColor } from "../utils/getAssigneeColor";
-import { getStatusStyle } from "../utils/getStatusCss";
+import { AssigneeAvatar, PriorityBadge, StatusBadge } from "@/src/app/components/common/task";
 import { Task } from "@/src/types/task";
+import { logger } from "@/src/lib/utils/logger";
 
 type TaskTableProps = {
     selectedFilters: {
@@ -20,19 +17,14 @@ type TaskTableProps = {
     };
     searchTerm: string;
 };
-
 export const TaskTable = ({
     selectedFilters,
     searchTerm,
 }: TaskTableProps) => {
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [selectedFilters, searchTerm]);
-
     const rowsPerPage = 10;
-   
+
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
             setSelectedRows(tasksData.map((task) => task.id));
@@ -116,66 +108,30 @@ export const TaskTable = ({
                                 />
                             </td>
                             <td className="p-3 font-semibold text-blue-600">
-                                <span className = "font-mono text-xs text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded"> {task.id}</span>
+                                <span className="font-mono text-xs text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded"> {task.id}</span>
                             </td>
                             <td className="p-3">{task.title}</td>
-                            {/* <td className="p-3">
-                                <span
-                                    className={`rounded-md px-2 py-1 text-xs font-medium
-                                                 ${task.priority === "High"
-                                            ? "bg-orange-100 text-orange-700"
-                                            : task.priority === "Critical"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                        }`}
-                                >
-                                    {task.priority}
-                                </span>
-                            </td> */}
                             <td className="w-16 sm:w-20 shrink-0">
                                 <PriorityBadge priority={task.priority} />
                             </td>
                             <td className="p-3">
-                                <span
-                                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(
-                                        task.status
-                                    )}`}
-                                >
-                                    <span
-                                        className={`h-2 w-2 rounded-full ${task.status === "Done"
-                                                ? "bg-green-500"
-                                                : task.status === "In Progress"
-                                                    ? "bg-blue-500"
-                                                    : task.status === "In Review"
-                                                        ? "bg-purple-500"
-                                                        : task.status === "Testing"
-                                                            ? "bg-purple-500"
-                                                            : "bg-gray-500"
-                                            }`}
-                                    ></span>
-                                    {task.status}
-                                </span>
+                                <StatusBadge status={task.status} />
                             </td>
-
                             <td className="p-3">
                                 <div className="flex items-center gap-2">
-                                    <div
-                                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white ${getAssigneeColor(
-                                            task.assignee.name
-                                        )}`}
-                                    >
-                                        {task.assignee.initials}
-                                    </div>
+                                    <AssigneeAvatar
+                                        initials={task.assignee.initials}
+                                        color={task.assignee.color}
+                                        size="md"
+                                    />
                                     <span>{task.assignee.name}</span>
                                 </div>
                             </td>
-
                             <td className="p-3">
                                 <span className="w-7 h-7 inline-flex items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
                                     {task.points}
                                 </span>
                             </td>
-
                             <td className="p-3">{task.dueDate}</td>
                             <td className="p-3">{task.sprint}</td>
                             <td className="p-3">
@@ -192,10 +148,9 @@ export const TaskTable = ({
                             </td>
                             <td className="p-3 text-center">
                                 <ActionMenu
-                                    onView={() => console.log("View", task.id)}
-                                    onUpdate={() => console.log("Update", task.id)}
-                                    onDelete={() => console.log("Delete", task.id)}
-                                />
+                                    onView={() => logger.log("View", task.id)}
+                                    onUpdate={() => logger.log("Update", task.id)}
+                                    onDelete={() => logger.log("Delete", task.id)}/>
                             </td>
                         </tr>
                     ))}
@@ -208,7 +163,6 @@ export const TaskTable = ({
                 </p>
 
                 <div className="flex items-center gap-2">
-
                     <button
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage((p) => p - 1)}
@@ -216,20 +170,18 @@ export const TaskTable = ({
                     >
                         <ChevronLeft size={18} />
                     </button>
-
                     {Array.from({ length: totalPages }).map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentPage(index + 1)}
                             className={`flex h-8 w-8 items-center justify-center rounded-md text-sm ${currentPage === index + 1
-                                    ? "bg-blue-600 text-white"
-                                    : "text-gray-600 hover:bg-gray-100"
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-600 hover:bg-gray-100"
                                 }`}
                         >
                             {index + 1}
                         </button>
                     ))}
-
                     <button
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage((p) => p + 1)}

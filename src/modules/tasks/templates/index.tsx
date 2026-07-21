@@ -1,5 +1,4 @@
 "use client";
-// import { getStatusStyle } from "@/src/app/components/common/sidebar/getStatusCss";
 import { tasksData } from "../data/tasks";
 import { TaskTable } from "../components/TaskTable";
 import { useState } from "react";
@@ -23,7 +22,7 @@ export const TaskTemplate = () => {
                 />
                 <TaskTable selectedFilters={selectedFilters}
                     searchTerm={searchTerm}
-                 />
+                />
             </>
         </div>
     )

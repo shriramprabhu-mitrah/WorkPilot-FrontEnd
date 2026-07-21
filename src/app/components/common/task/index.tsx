@@ -29,7 +29,8 @@ export type TaskStatus =
   | "To Do"
   | "In Progress"
   | "In Review"
-  | "Done";
+  | "Done"
+  | "Testing";
 
 const statusConfig: Record<TaskStatus, { color: string; bg: string }> = {
   Backlog: { color: colors.colBacklog, bg: colors.colBacklogBg },
@@ -37,6 +38,7 @@ const statusConfig: Record<TaskStatus, { color: string; bg: string }> = {
   "In Progress": { color: colors.colInProgress, bg: colors.colInProgressBg },
   "In Review": { color: colors.colInReview, bg: colors.colInReviewBg },
   Done: { color: colors.colDone, bg: colors.colDoneBg },
+  Testing: { color: colors.priorityMediumText, bg: colors.priorityMediumBg },
 };
 
 export const StatusBadge = ({ status }: { status: TaskStatus }) => {
