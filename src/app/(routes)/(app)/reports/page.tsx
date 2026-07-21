@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import { SummaryTemplate } from "@/src/modules/reports/templates";
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <SummaryTemplate />;
 }

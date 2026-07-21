@@ -83,7 +83,7 @@ export const colors = {
   avatarGreen: "#10b981",
   avatarAmber: "#f59e0b",
   avatarIndigo: "#6366f1",
-
+  colLightBlue: "#c7d2fe",
   // Board — drop highlight
   dropBg: "#eff6ff",
   dropgreenBg: "#dcfce7",

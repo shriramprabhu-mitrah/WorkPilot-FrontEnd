@@ -15,12 +15,17 @@ import {
   defaultDropAnimationSideEffects,
 } from "@dnd-kit/core";
 import type { DropAnimation } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { ASSIGNEE_AVATARS, BOARD_COLUMNS } from "../data";
-import { KanbanColumn as KanbanColumnType, KanbanTask } from "@/src/types/board";
+import {
+  KanbanColumn as KanbanColumnType,
+  KanbanTask,
+} from "@/src/types/board";
 import { KanbanColumn } from "../components/KanbanColumn";
-import { KanbanCard } from "../components/KanbanCard";
-import { FilterPanel, FilterState } from "@/src/app/components/common/filter-panel";
+import { KanbanCardPreview } from "@/src/modules/boards/components/KanbanCardPreview";
+import {
+  FilterPanel,
+  FilterState,
+} from "@/src/app/components/common/filter-panel";
 import { colors } from "@/src/styles/colors";
 import { useOutsideClick } from "@/src/hooks/useOutsideClick";
 
@@ -28,6 +33,10 @@ export const KanbanBoardTemplate = () => {
   const [columns, setColumns] = useState<KanbanColumnType[]>(BOARD_COLUMNS);
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    columnId: string;
+    index: number;
+  } | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     priorities: [],
@@ -41,13 +50,17 @@ export const KanbanBoardTemplate = () => {
   // Derive unique assignees & labels from all tasks
   const allAssignees = useMemo(() => {
     const set = new Set<string>();
-    columns.forEach((col) => col.tasks.forEach((t) => set.add(t.assigneeInitials)));
+    columns.forEach((col) =>
+      col.tasks.forEach((t) => set.add(t.assigneeInitials)),
+    );
     return Array.from(set).sort();
   }, [columns]);
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
-    columns.forEach((col) => col.tasks.forEach((t) => t.labels.forEach((l) => set.add(l))));
+    columns.forEach((col) =>
+      col.tasks.forEach((t) => t.labels.forEach((l) => set.add(l))),
+    );
     return Array.from(set).sort();
   }, [columns]);
 
@@ -63,11 +76,14 @@ export const KanbanBoardTemplate = () => {
       ...col,
       tasks: col.tasks.filter((t) => {
         const matchPriority =
-          filters.priorities.length === 0 || filters.priorities.includes(t.priority);
+          filters.priorities.length === 0 ||
+          filters.priorities.includes(t.priority);
         const matchAssignee =
-          filters.assignees.length === 0 || filters.assignees.includes(t.assigneeInitials);
+          filters.assignees.length === 0 ||
+          filters.assignees.includes(t.assigneeInitials);
         const matchLabel =
-          filters.labels.length === 0 || t.labels.some((l) => filters.labels.includes(l));
+          filters.labels.length === 0 ||
+          t.labels.some((l) => filters.labels.includes(l));
         return matchPriority && matchAssignee && matchLabel;
       }),
     }));
@@ -95,7 +111,11 @@ export const KanbanBoardTemplate = () => {
   };
 
   const onDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over) return;
+    if (!over) {
+      setOverColumnId(null);
+      setDropTarget(null);
+      return;
+    }
 
     const activeId = active.id as string;
     const overId = over.id as string;
@@ -104,37 +124,42 @@ export const KanbanBoardTemplate = () => {
     const overCol =
       columns.find((c) => c.id === overId) ?? findColumnByTaskId(overId);
 
-    if (!activeCol || !overCol || activeCol.id === overCol.id) {
-      setOverColumnId(overCol?.id ?? null);
+    if (!activeCol || !overCol) {
+      setOverColumnId(null);
+      setDropTarget(null);
       return;
     }
 
+    const isOverColumnItself = overId === overCol.id;
+    let index: number;
+
+    if (isOverColumnItself) {
+      index = overCol.tasks.length;
+    } else {
+      const overIndex = overCol.tasks.findIndex((t) => t.id === overId);
+      const activeRect = active.rect.current.translated;
+      const overRect = over.rect;
+
+      const isBelowOverItem =
+        !!activeRect &&
+        !!overRect &&
+        activeRect.top > overRect.top + overRect.height;
+
+      const modifier = isBelowOverItem ? 1 : 0;
+      index = overIndex >= 0 ? overIndex + modifier : overCol.tasks.length;
+    }
+
     setOverColumnId(overCol.id);
-
-    setColumns((prev) => {
-      const next = prev.map((c) => ({ ...c, tasks: [...c.tasks] }));
-      const src = next.find((c) => c.id === activeCol.id)!;
-      const dst = next.find((c) => c.id === overCol.id)!;
-
-      const taskIdx = src.tasks.findIndex((t) => t.id === activeId);
-      const [moved] = src.tasks.splice(taskIdx, 1);
-      moved.columnId = dst.id;
-
-      const overTaskIdx = dst.tasks.findIndex((t) => t.id === overId);
-      if (overTaskIdx >= 0) {
-        dst.tasks.splice(overTaskIdx, 0, moved);
-      } else {
-        dst.tasks.push(moved);
-      }
-
-      return next;
-    });
+    setDropTarget({ columnId: overCol.id, index });
   };
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveTask(null);
     setOverColumnId(null);
-    if (!over) return;
+    if (!over) {
+      setDropTarget(null);
+      return;
+    }
 
     const activeId = active.id as string;
     const overId = over.id as string;
@@ -143,19 +168,41 @@ export const KanbanBoardTemplate = () => {
     const overCol =
       columns.find((c) => c.id === overId) ?? findColumnByTaskId(overId);
 
-    if (!activeCol || !overCol || activeCol.id !== overCol.id) return;
+    if (!activeCol || !overCol) return;
 
-    const oldIdx = activeCol.tasks.findIndex((t) => t.id === activeId);
-    const newIdx = overCol.tasks.findIndex((t) => t.id === overId);
-    if (oldIdx === newIdx) return;
+    const taskIndex = activeCol.tasks.findIndex((t) => t.id === activeId);
+    if (taskIndex === -1) return;
 
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === activeCol.id
-          ? { ...col, tasks: arrayMove(col.tasks, oldIdx, newIdx) }
-          : col,
-      ),
-    );
+    const task = activeCol.tasks[taskIndex];
+    const targetIndex =
+      dropTarget?.columnId === overCol.id
+        ? dropTarget.index
+        : overCol.tasks.length;
+
+    setColumns((prev) => {
+      const next = prev.map((col) => ({ ...col, tasks: [...col.tasks] }));
+      const sourceCol = next.find((col) => col.id === activeCol.id);
+      const targetCol = next.find((col) => col.id === overCol.id);
+
+      if (!sourceCol || !targetCol) return prev;
+
+      sourceCol.tasks.splice(taskIndex, 1);
+      const movedTask = { ...task, columnId: targetCol.id };
+      const insertIndex =
+        activeCol.id === overCol.id && targetIndex > taskIndex
+          ? targetIndex - 1
+          : targetIndex;
+
+      if (insertIndex >= 0) {
+        targetCol.tasks.splice(insertIndex, 0, movedTask);
+      } else {
+        targetCol.tasks.push(movedTask);
+      }
+
+      return next;
+    });
+
+    setDropTarget(null);
   };
 
   return (
@@ -163,7 +210,10 @@ export const KanbanBoardTemplate = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6 flex-shrink-0">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
+          <h1
+            className="text-xl sm:text-2xl font-bold"
+            style={{ color: colors.gray900 }}
+          >
             Sprint 12 Board
           </h1>
           <p className="text-sm mt-0.5" style={{ color: colors.gray500 }}>
@@ -178,7 +228,9 @@ export const KanbanBoardTemplate = () => {
               className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium transition-colors shadow-sm"
               style={{
                 borderColor: hasActiveFilter ? colors.primary : colors.gray200,
-                backgroundColor: hasActiveFilter ? colors.primaryLight : colors.white,
+                backgroundColor: hasActiveFilter
+                  ? colors.primaryLight
+                  : colors.white,
                 color: hasActiveFilter ? colors.primary : colors.gray700,
               }}
             >
@@ -189,7 +241,9 @@ export const KanbanBoardTemplate = () => {
                   className="w-4 h-4 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
                   style={{ backgroundColor: colors.primary }}
                 >
-                  {filters.priorities.length + filters.assignees.length + filters.labels.length}
+                  {filters.priorities.length +
+                    filters.assignees.length +
+                    filters.labels.length}
                 </span>
               )}
             </button>
@@ -207,7 +261,11 @@ export const KanbanBoardTemplate = () => {
 
           <button
             className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium transition-colors shadow-sm"
-            style={{ borderColor: colors.gray200, backgroundColor: colors.white, color: colors.gray700 }}
+            style={{
+              borderColor: colors.gray200,
+              backgroundColor: colors.white,
+              color: colors.gray700,
+            }}
           >
             <UserCircle2 size={15} />
             <span className="hidden xs:inline">Assignee</span>
@@ -230,15 +288,27 @@ export const KanbanBoardTemplate = () => {
       {/* Active filter summary */}
       {hasActiveFilter && (
         <div className="flex items-center gap-2 flex-wrap mb-4 flex-shrink-0">
-          <span className="text-xs" style={{ color: colors.gray500 }}>Active filters:</span>
+          <span className="text-xs" style={{ color: colors.gray500 }}>
+            Active filters:
+          </span>
           {filters.priorities.map((p) => (
             <span
               key={p}
               className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: colors.primaryLight, color: colors.primary }}
+              style={{
+                backgroundColor: colors.primaryLight,
+                color: colors.primary,
+              }}
             >
               {p}
-              <button onClick={() => setFilters((f) => ({ ...f, priorities: f.priorities.filter((x) => x !== p) }))}>
+              <button
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    priorities: f.priorities.filter((x) => x !== p),
+                  }))
+                }
+              >
                 ×
               </button>
             </span>
@@ -247,10 +317,20 @@ export const KanbanBoardTemplate = () => {
             <span
               key={a}
               className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: colors.primaryLight, color: colors.primary }}
+              style={{
+                backgroundColor: colors.primaryLight,
+                color: colors.primary,
+              }}
             >
               {a}
-              <button onClick={() => setFilters((f) => ({ ...f, assignees: f.assignees.filter((x) => x !== a) }))}>
+              <button
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    assignees: f.assignees.filter((x) => x !== a),
+                  }))
+                }
+              >
                 ×
               </button>
             </span>
@@ -259,10 +339,20 @@ export const KanbanBoardTemplate = () => {
             <span
               key={l}
               className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: colors.primaryLight, color: colors.primary }}
+              style={{
+                backgroundColor: colors.primaryLight,
+                color: colors.primary,
+              }}
             >
               {l}
-              <button onClick={() => setFilters((f) => ({ ...f, labels: f.labels.filter((x) => x !== l) }))}>
+              <button
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    labels: f.labels.filter((x) => x !== l),
+                  }))
+                }
+              >
                 ×
               </button>
             </span>
@@ -270,7 +360,9 @@ export const KanbanBoardTemplate = () => {
           <button
             className="text-xs font-medium"
             style={{ color: colors.error }}
-            onClick={() => setFilters({ priorities: [], assignees: [], labels: [] })}
+            onClick={() =>
+              setFilters({ priorities: [], assignees: [], labels: [] })
+            }
           >
             Clear all
           </button>
@@ -297,8 +389,8 @@ export const KanbanBoardTemplate = () => {
 
         <DragOverlay dropAnimation={dropAnimation}>
           {activeTask && (
-            <div className="rotate-[1.5deg] scale-[1.03] shadow-2xl opacity-95 rounded-xl">
-              <KanbanCard task={activeTask} />
+            <div className="rotate-[1.5deg] scale-[1.03]">
+              <KanbanCardPreview task={activeTask} />
             </div>
           )}
         </DragOverlay>
