@@ -16,18 +16,13 @@ import {
 } from "@dnd-kit/core";
 import type { DropAnimation } from "@dnd-kit/core";
 import { ASSIGNEE_AVATARS, BOARD_COLUMNS } from "../data";
-import {
-  KanbanColumn as KanbanColumnType,
-  KanbanTask,
-} from "@/src/types/board";
+import { KanbanColumn as KanbanColumnType, KanbanTask } from "@/src/types/board";
 import { KanbanColumn } from "../components/KanbanColumn";
 import { KanbanCardPreview } from "@/src/modules/boards/components/KanbanCardPreview";
-import {
-  FilterPanel,
-  FilterState,
-} from "@/src/app/components/common/filter-panel";
+import { FilterPanel, FilterState } from "@/src/app/components/common/filter-panel";
 import { colors } from "@/src/styles/colors";
 import { useOutsideClick } from "@/src/hooks/useOutsideClick";
+import { WpButton } from "@/src/app/components/common/button";
 
 export const KanbanBoardTemplate = () => {
   const [columns, setColumns] = useState<KanbanColumnType[]>(BOARD_COLUMNS);
@@ -223,30 +218,19 @@ export const KanbanBoardTemplate = () => {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Filter button */}
           <div ref={filterRef} className="relative">
-            <button
+            <WpButton
+              variant={hasActiveFilter ? "primary" : "secondary"}
+              size="sm"
               onClick={() => setShowFilter((v) => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium transition-colors shadow-sm"
-              style={{
-                borderColor: hasActiveFilter ? colors.primary : colors.gray200,
-                backgroundColor: hasActiveFilter
-                  ? colors.primaryLight
-                  : colors.white,
-                color: hasActiveFilter ? colors.primary : colors.gray700,
-              }}
+              leftIcon={<Filter size={15} />}
             >
-              <Filter size={15} />
               <span>Filter</span>
               {hasActiveFilter && (
-                <span
-                  className="w-4 h-4 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
-                  style={{ backgroundColor: colors.primary }}
-                >
-                  {filters.priorities.length +
-                    filters.assignees.length +
-                    filters.labels.length}
+                <span className="w-4 h-4 rounded-full bg-white text-blue-600 text-[10px] font-bold flex items-center justify-center">
+                  {filters.priorities.length + filters.assignees.length + filters.labels.length}
                 </span>
               )}
-            </button>
+            </WpButton>
 
             {showFilter && (
               <FilterPanel
@@ -259,17 +243,9 @@ export const KanbanBoardTemplate = () => {
             )}
           </div>
 
-          <button
-            className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium transition-colors shadow-sm"
-            style={{
-              borderColor: colors.gray200,
-              backgroundColor: colors.white,
-              color: colors.gray700,
-            }}
-          >
-            <UserCircle2 size={15} />
+          <WpButton variant="secondary" size="sm" leftIcon={<UserCircle2 size={15} />}>
             <span className="hidden xs:inline">Assignee</span>
-          </button>
+          </WpButton>
 
           <div className="flex -space-x-2">
             {ASSIGNEE_AVATARS.map((a) => (
@@ -292,80 +268,26 @@ export const KanbanBoardTemplate = () => {
             Active filters:
           </span>
           {filters.priorities.map((p) => (
-            <span
-              key={p}
-              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{
-                backgroundColor: colors.primaryLight,
-                color: colors.primary,
-              }}
-            >
+            <span key={p} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: colors.primaryLight, color: colors.primary }}>
               {p}
-              <button
-                onClick={() =>
-                  setFilters((f) => ({
-                    ...f,
-                    priorities: f.priorities.filter((x) => x !== p),
-                  }))
-                }
-              >
-                ×
-              </button>
+              <WpButton variant="ghost" size="sm" className="!p-0 !text-xs leading-none" onClick={() => setFilters((f) => ({ ...f, priorities: f.priorities.filter((x) => x !== p) }))}>×</WpButton>
             </span>
           ))}
           {filters.assignees.map((a) => (
-            <span
-              key={a}
-              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{
-                backgroundColor: colors.primaryLight,
-                color: colors.primary,
-              }}
-            >
+            <span key={a} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: colors.primaryLight, color: colors.primary }}>
               {a}
-              <button
-                onClick={() =>
-                  setFilters((f) => ({
-                    ...f,
-                    assignees: f.assignees.filter((x) => x !== a),
-                  }))
-                }
-              >
-                ×
-              </button>
+              <WpButton variant="ghost" size="sm" className="!p-0 !text-xs leading-none" onClick={() => setFilters((f) => ({ ...f, assignees: f.assignees.filter((x) => x !== a) }))}>×</WpButton>
             </span>
           ))}
           {filters.labels.map((l) => (
-            <span
-              key={l}
-              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{
-                backgroundColor: colors.primaryLight,
-                color: colors.primary,
-              }}
-            >
+            <span key={l} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: colors.primaryLight, color: colors.primary }}>
               {l}
-              <button
-                onClick={() =>
-                  setFilters((f) => ({
-                    ...f,
-                    labels: f.labels.filter((x) => x !== l),
-                  }))
-                }
-              >
-                ×
-              </button>
+              <WpButton variant="ghost" size="sm" className="!p-0 !text-xs leading-none" onClick={() => setFilters((f) => ({ ...f, labels: f.labels.filter((x) => x !== l) }))}>×</WpButton>
             </span>
           ))}
-          <button
-            className="text-xs font-medium"
-            style={{ color: colors.error }}
-            onClick={() =>
-              setFilters({ priorities: [], assignees: [], labels: [] })
-            }
-          >
+          <WpButton variant="ghost" size="sm" className="!text-xs" style={{ color: colors.error }} onClick={() => setFilters({ priorities: [], assignees: [], labels: [] })}>
             Clear all
-          </button>
+          </WpButton>
         </div>
       )}
 

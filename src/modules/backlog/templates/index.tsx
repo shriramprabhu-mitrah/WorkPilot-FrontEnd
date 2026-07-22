@@ -6,6 +6,8 @@ import { SPRINTS, BACKLOG_TASKS } from "../data";
 import { SprintSection } from "../components/SprintSection";
 import { BacklogRow } from "../components/BacklogRow";
 import { colors } from "@/src/styles/colors";
+import { WpButton } from "@/src/app/components/common/button";
+import { WpInput } from "@/src/app/components/common/input";
 
 export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
@@ -46,50 +48,26 @@ export const BacklogTemplate = () => {
 
         <div className="flex items-center gap-2 flex-wrap">
           {/* Search */}
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm flex-1 sm:flex-initial min-w-0"
-            style={{
-              borderColor: colors.gray200,
-              backgroundColor: colors.white,
-            }}
-          >
-            <Search
-              size={14}
-              style={{ color: colors.gray400 }}
-              className="shrink-0"
-            />
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="outline-none bg-transparent text-sm w-full sm:w-40 min-w-0"
-              style={{ color: colors.gray700 }}
-            />
-          </div>
+          <WpInput
+            type="text"
+            placeholder="Search tasks..."
+            icon={<Search size={14} />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            wrapperClassName="w-full sm:w-40"
+            className="!py-1.5"
+          />
 
           {/* Filter */}
-          <button
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium shadow-sm transition-colors shrink-0"
-            style={{
-              borderColor: colors.gray200,
-              backgroundColor: colors.white,
-              color: colors.gray700,
-            }}
-          >
-            <Filter size={14} />
+          <WpButton variant="secondary" size="sm" leftIcon={<Filter size={14} />}>
             <span className="hidden sm:inline">Filter</span>
-          </button>
+          </WpButton>
 
           {/* Create Sprint */}
-          <button
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors shrink-0"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <Plus size={14} />
+          <WpButton size="sm" leftIcon={<Plus size={14} />}>
             <span className="hidden sm:inline">Create Sprint</span>
             <span className="sm:hidden">Sprint</span>
-          </button>
+          </WpButton>
         </div>
       </div>
 
@@ -125,19 +103,15 @@ export const BacklogTemplate = () => {
               {filteredBacklog.length} issues
             </span>
             <div className="ml-auto">
-              <button
+              <WpButton
+                variant="secondary"
+                size="sm"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap"
-                style={{
-                  borderColor: colors.gray200,
-                  color: colors.gray700,
-                  backgroundColor: colors.white,
-                }}
+                leftIcon={<Plus size={12} />}
               >
-                <Plus size={12} />
                 <span className="hidden sm:inline">Add to Sprint</span>
                 <span className="sm:hidden">Add</span>
-              </button>
+              </WpButton>
             </div>
           </div>
 
@@ -153,10 +127,9 @@ export const BacklogTemplate = () => {
                 ))
               )}
               <div className="px-3 sm:px-4 py-2">
-                <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-600 transition-colors">
-                  <Plus size={13} />
+                <WpButton variant="ghost" size="sm" leftIcon={<Plus size={13} />} className="text-gray-400 hover:text-blue-600">
                   Add task
-                </button>
+                </WpButton>
               </div>
             </div>
           )}

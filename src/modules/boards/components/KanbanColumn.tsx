@@ -6,6 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { KanbanColumn as KanbanColumnType } from "@/src/types/board";
 import { KanbanCard } from "./KanbanCard";
 import { colors } from "@/src/styles/colors";
+import { WpButton } from "@/src/app/components/common/button";
 
 interface Props {
   column: KanbanColumnType;
@@ -34,9 +35,9 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
             {column.tasks.length}
           </span>
         </div>
-        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+        <WpButton variant="ghost" size="sm" className="!p-1">
           <Plus size={16} />
-        </button>
+        </WpButton>
       </div>
 
       {/* Drop zone */}

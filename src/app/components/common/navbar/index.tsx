@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import { Bell, Search, Settings, ChevronRight } from "lucide-react";
 import { colors } from "@/src/styles/colors";
+import { WpButton } from "@/src/app/components/common/button";
+import { WpInput } from "@/src/app/components/common/input";
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -20,30 +22,24 @@ export const Navbar = () => {
           <ChevronRight size={13} className="text-gray-400" />
           <span className="text-gray-800 font-semibold">{title}</span>
         </div>
-        <div className="flex items-center bg-white/70 border border-gray-300 rounded-lg px-3 py-1.5 w-80">
-          <Search size={13} className="text-gray-400 shrink-0" />
-          <input
+        <WpInput
             type="text"
             placeholder="Search tasks, projects..."
-            className="bg-transparent text-[12px] text-gray-600 placeholder-gray-400 outline-none w-full"
+            icon={<Search size={13} />}
+            wrapperClassName="w-80"
+            className="bg-white/70 text-[12px] !h-8"
           />
-        </div>
       </div>
       {/* Right side */}
       <div className="flex items-center gap-2">
         {/* Notifications */}
-        <button className="relative p-1.5 rounded-lg hover:bg-white/50 transition-colors text-gray-500">
+        <WpButton variant="ghost" size="sm" className="relative !p-1.5 text-gray-500">
           <Bell size={17} />
-          <span
-            className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: colors.error }}
-          />
-        </button>
-
-        {/* Settings */}
-        <button className="p-1.5 rounded-lg hover:bg-white/50 transition-colors text-gray-500">
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.error }} />
+        </WpButton>
+        <WpButton variant="ghost" size="sm" className="!p-1.5 text-gray-500">
           <Settings size={17} />
-        </button>
+        </WpButton>
 
         {/* Divider */}
         <div className="w-px h-5 bg-gray-300" />

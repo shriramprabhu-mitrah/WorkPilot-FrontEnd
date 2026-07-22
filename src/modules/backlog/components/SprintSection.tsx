@@ -1,17 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Play,
-  CheckCircle2,
-  Clock,
-  Plus,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Play, CheckCircle2, Clock, Plus } from "lucide-react";
 import { Sprint } from "../data";
 import { BacklogRow } from "./BacklogRow";
 import { colors } from "@/src/styles/colors";
+import { WpButton } from "@/src/app/components/common/button";
 
 const statusBadge: Record<
   Sprint["status"],
@@ -80,25 +74,19 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
           </span>
           <span className="hidden md:inline">{totalPoints} pts</span>
           {sprint.status !== "completed" && (
-            <button
+            <WpButton
+              variant="secondary"
+              size="sm"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap"
-              style={{
-                borderColor: colors.gray200,
-                color: colors.gray700,
-                backgroundColor: colors.white,
-              }}
+              leftIcon={<Plus size={12} />}
             >
-              <Plus size={12} />
               <span className="hidden sm:inline">
-                {sprint.status === "active"
-                  ? "Complete Sprint"
-                  : "Start Sprint"}
+                {sprint.status === "active" ? "Complete Sprint" : "Start Sprint"}
               </span>
               <span className="sm:hidden">
                 {sprint.status === "active" ? "Complete" : "Start"}
               </span>
-            </button>
+            </WpButton>
           )}
         </div>
       </div>
@@ -125,10 +113,9 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
             sprint.tasks.map((task) => <BacklogRow key={task.id} task={task} />)
           )}
           <div className="px-3 sm:px-4 py-2">
-            <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-600 transition-colors">
-              <Plus size={13} />
+          <WpButton variant="ghost" size="sm" leftIcon={<Plus size={13} />} className="text-gray-400 hover:text-blue-600">
               Add task
-            </button>
+            </WpButton>
           </div>
         </div>
       )}

@@ -1,9 +1,11 @@
 "use client";
-import { Search, Download, Columns3, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Search, Download, Columns3, SlidersHorizontal } from "lucide-react";
 import { FilterDropdown } from "./FilterDropdown";
 import { useState } from "react";
 import { filters } from "../data/fliter";
 import { tasksData } from "../data/tasks";
+import { WpButton } from "@/src/app/components/common/button";
+import { WpInput } from "@/src/app/components/common/input";
 type TaskHeaderProps = {
     searchTerm: string;
     selectedFilters: {
@@ -43,32 +45,21 @@ export const TaskHeader = ({
                     Task List
                 </h1>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm hover:bg-gray-50">
-                        <Download size={16} />
-                        Export
-                    </button>
-
-                    <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm hover:bg-gray-50">
-                        <Columns3 size={16} />
-                        Columns
-                    </button>
+                    <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>Export</WpButton>
+                    <WpButton variant="secondary" size="sm" leftIcon={<Columns3 size={16} />}>Columns</WpButton>
                 </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
-                <div className="relative">
-                    <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Search tasks..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="h-9 w-52 rounded-lg border border-gray-200 pl-10 pr-3 text-sm"
-                    />
-                </div>
+                <WpInput
+                    type="text"
+                    placeholder="Search tasks..."
+                    icon={<Search size={16} />}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    wrapperClassName="w-52"
+                    className="!py-1.5"
+                />
                 <div className="flex flex-wrap gap-3">
                     {filters.map((filter) => (
                         <FilterDropdown
@@ -79,10 +70,7 @@ export const TaskHeader = ({
                         />
                     ))}
                 </div>
-                <button className="flex h-9 items-center gap-2 rounded-md border border-gray-200 bg-white px-3 text-xs">
-                    <SlidersHorizontal size={16} />
-                    More Filters
-                </button>
+                <WpButton variant="secondary" size="sm" leftIcon={<SlidersHorizontal size={16} />}>More Filters</WpButton>
             </div>
         </div>
     );
