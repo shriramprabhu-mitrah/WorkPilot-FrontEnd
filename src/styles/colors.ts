@@ -21,7 +21,8 @@ export const colors = {
   gray700: "#374151",
   gray800: "#1f2937",
   gray900: "#111827",
-
+  orange500: "#f97316",
+  green500: "#22c55e",
   // Semantic
   error: "#ef4444",
   navbarBg: "#E2E2E3",

@@ -2,15 +2,16 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import storage from "./storage";
 import { persistReducer, persistStore } from "redux-persist";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import userReducer from "./slices/users";
 
 const rootReducer = combineReducers({
-
+  user: userReducer,
 })
 
 const persitConfig={
     key:'root',
     storage,
-    whitelist:[]
+    whitelist:['user']
 }
 
 const persistedReducer=persistReducer(persitConfig,rootReducer)

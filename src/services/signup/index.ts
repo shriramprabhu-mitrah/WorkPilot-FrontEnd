@@ -15,6 +15,11 @@ class SignupService {
         return apiService.post<SignInResponse>(url, payload);
     }
 
+    async logOut(): Promise<ApiResponse<{ message: string }>> {
+        const url = ApiEndpoints.Sign.logOut.url;
+        return apiService.post<{ message: string }>(url, {});
+    }
+
     async forgotPassword(email: string): Promise<ApiResponse<{ message: string }>> {
         const url = ApiEndpoints.Sign.forgotPassword.url;
         return apiService.post<{ message: string }>(url, { email });
