@@ -1,6 +1,6 @@
 import React from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "warning";
 type Size = "sm" | "md" | "lg";
 
 interface WpButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -22,6 +22,8 @@ const variantClasses: Record<Variant, string> = {
     "bg-transparent text-[var(--color-primary-focus)] hover:bg-[var(--color-primary-light)] disabled:opacity-50",
   danger:
     "bg-[var(--color-error)] text-white hover:bg-red-600 disabled:opacity-50",
+  warning:
+      "bg-yellow-500 text-black hover:bg-yellow-600",
 };
 
 const sizeClasses: Record<Size, string> = {

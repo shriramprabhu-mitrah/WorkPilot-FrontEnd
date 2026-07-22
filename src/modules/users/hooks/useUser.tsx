@@ -4,6 +4,8 @@ import { UserProfile, UserUpdatePayload } from '@/src/types/user';
 import { userService } from '@/src/services/user';
 import { useAppDispatch } from '@/src/store';
 import { setUser as setUserRedux } from '@/src/store/slices/users';
+import { signupService } from '@/src/services/signup';
+import { ChangePassword } from '@/src/types/signin';
 
 export const useUser = () => {
     const dispatch = useAppDispatch();
@@ -41,12 +43,23 @@ export const useUser = () => {
         },
     });
 
+    const {
+        mutateAsync: changePassword,
+        isPending: isChangingPassword
+    } = useMutation({
+        mutationFn: async (payload: ChangePassword) => {
+            return await signupService.changePassword(payload);
+        }
+    });
+
     return {
         user: user as UserProfile | null | undefined,
         isLoading,
         isUpdating,
+        isChangingPassword,
         error: error ? error.message : null,
         fetchUser,
-        updateUser
+        updateUser,
+        changePassword
     };
 };

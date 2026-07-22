@@ -1,15 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Bell, Search, Settings, ChevronRight } from "lucide-react";
 import { colors } from "@/src/styles/colors";
 import { WpButton } from "@/src/app/components/common/button";
 import { WpInput } from "@/src/app/components/common/input";
+import { useAppSelector } from "@/src/store";
+import { getInitials } from "../format";
 
 export const Navbar = () => {
   const pathname = usePathname();
   const segment = pathname.split("/").filter(Boolean).pop() ?? "home";
   const title = segment.charAt(0).toUpperCase() + segment.slice(1);
+  const user = useAppSelector((state) => state.user);
   return (
     <header
       className="flex items-center justify-between h-[56px] px-5 border-b shrink-0"
@@ -45,18 +49,18 @@ export const Navbar = () => {
         <div className="w-px h-5 bg-gray-300" />
 
         {/* Avatar */}
-        <div className="flex items-center gap-2 cursor-pointer">
+        <Link href="/profile" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
             style={{ backgroundColor: colors.accent }}
           >
-            U
+            {getInitials(user.name)}
           </div>
           <span className="text-[13px] font-medium text-gray-700">
-            User Name
+            {user.name || "User Name"}
           </span>
           <ChevronRight size={13} className="text-gray-400 rotate-90" />
-        </div>
+        </Link>
       </div>
     </header>
   );

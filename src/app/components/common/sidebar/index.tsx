@@ -20,12 +20,12 @@ import {
   SquareKanban,
   User,
   KanbanSquareDashedIcon,
-  icons,
 } from 'lucide-react';
-import { TrackrLogoSmSvg } from '@/src/assets/svgs';
+import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
+import { getInitials } from "../format";
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -53,12 +53,6 @@ export const Sidebar = () => {
     router.push('/signin');
   };
 
-  const getInitials = (name: string | null) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return parts[0].substring(0, 2).toUpperCase();
-  };
 
   return (
     <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0">
@@ -68,7 +62,7 @@ export const Sidebar = () => {
           className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{ backgroundColor: colors.primary }}
         >
-          <TrackrLogoSmSvg />
+        <TrackrLogoSvg/>
         </div>
         <span className="font-bold text-[15px] text-gray-900">WorkPilot</span>
       </div>
@@ -146,18 +140,20 @@ export const Sidebar = () => {
 
       {/* User */}
       <div className="flex items-center gap-2.5 px-4 py-3.5">
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-          style={{ backgroundColor: colors.accent }}
-        >
-          {getInitials(user.name)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-gray-800 truncate">
-            {user.name || 'User Name'}
-          </p>
-          <p className="text-[11px] text-gray-400 truncate">{user.email || 'user@email.com'}</p>
-        </div>
+        <Link href="/profile" className="flex items-center gap-2.5 flex-1 min-w-0 group cursor-pointer">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 group-hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: colors.accent }}
+          >
+            {getInitials(user.name)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">
+              {user.name || "User Name"}
+            </p>
+            <p className="text-[11px] text-gray-400 truncate">{user.email || "user@email.com"}</p>
+          </div>
+        </Link>
         <WpButton
           variant="ghost"
           size="sm"
