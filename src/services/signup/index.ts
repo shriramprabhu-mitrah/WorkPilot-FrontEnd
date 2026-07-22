@@ -2,7 +2,7 @@ import { ApiEndpoints } from "@/src/lib/constants/api-endpoints";
 import { apiService } from "../axios";
 import { ApiResponse } from "@/src/types/core";
 import { SignupPayload, SignupResponse } from "@/src/types/signup";
-import { ResetPasswordPaylaod, SignInPayload, SignInResponse } from "@/src/types/signin";
+import { ChangePassword, ResetPasswordPaylaod, SignInPayload, SignInResponse } from "@/src/types/signin";
 
 class SignupService {
     async signUp(payload: SignupPayload): Promise<ApiResponse<SignupResponse>> {
@@ -20,9 +20,9 @@ class SignupService {
         return apiService.post<{ message: string }>(url, {});
     }
 
-    async forgotPassword(email: string): Promise<ApiResponse<{ message: string }>> {
+    async changePassword(payload: ChangePassword): Promise<ApiResponse<{ message: string }>> {
         const url = ApiEndpoints.Sign.forgotPassword.url;
-        return apiService.post<{ message: string }>(url, { email });
+        return apiService.post<{ message: string }>(url, payload);
     }
 
     async resetPassword(email: string):Promise<ApiResponse<{message:string}>>{

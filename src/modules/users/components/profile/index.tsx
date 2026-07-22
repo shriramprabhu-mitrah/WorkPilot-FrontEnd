@@ -6,16 +6,26 @@ import StatCard from '@/src/app/components/common/statcard/statcard';
 import { Briefcase, CheckCircle2, Ban, Mail } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
 import { formatMonthYear } from '@/src/app/components/common/format';
+import { UserUpdatePayload } from '@/src/types/user';
+import { WpInput } from '@/src/app/components/common/input';
+import { WpButton } from '@/src/app/components/common/button';
 
 export default function Profile() {
-  const { user, isLoading, error, updateUser, isUpdating } = useUser();
+  const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } = useUser();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isChangingPwd, setIsChangingPwd] = useState(false);
+  const [formData, setFormData] = useState<UserUpdatePayload>({
     full_name: '',
     department: '',
     location: '',
     timezone: ''
   });
+  const [pwdData, setPwdData] = useState({
+    old_password: '',
+    new_password: ''
+  });
+  const [pwdError, setPwdError] = useState<string | null>(null);
+  const [pwdSuccess, setPwdSuccess] = useState(false);
 
   const handleEditToggle = () => {
     if (!isEditing && user) {
@@ -43,6 +53,23 @@ export default function Profile() {
     }
   };
 
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdError(null);
+    setPwdSuccess(false);
+    try {
+      await changePassword(pwdData);
+      setPwdSuccess(true);
+      setPwdData({ old_password: '', new_password: '' });
+      setTimeout(() => {
+        setIsChangingPwd(false);
+        setPwdSuccess(false);
+      }, 2000);
+    } catch (err: unknown) {
+      setPwdError(err instanceof Error ? err.message : 'Failed to change password');
+    }
+  };
+
   const getInitials = (name: string) => {
     if (!name) return 'U';
     const parts = name.split(' ');
@@ -57,15 +84,15 @@ export default function Profile() {
   if (error) {
     return <div className="text-red-500 p-8">{error}</div>;
   }
-  
+
   const displayName = user?.name || user?.full_name || '-';
   const STATS = [
     { label: "Total Assigned", value: 0, color: colors.primary },
     { label: "In Progress", value: 0, color: colors.orange500 },
     { label: "Completed", value: 0, color: colors.green500 },
   ];
-  const createdAt=formatMonthYear(user?.created_at || '-')
-  
+  const createdAt = formatMonthYear(user?.created_at || '-')
+
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6 max-w-7xl mx-auto w-full">
       {/* Left Column */}
@@ -78,9 +105,9 @@ export default function Profile() {
             </div>
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
-          
+
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">{displayName}</h2>
-          
+
           <div className="mt-2 mb-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-medium">
             <Briefcase size={14} />
             {user?.role || '-'}
@@ -102,12 +129,18 @@ export default function Profile() {
             </div>
           </div>
 
-          <button 
-            onClick={handleEditToggle}
-            className="w-full py-2 px-4 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
+          <WpButton
+            variant='primary'
+            onClick={handleEditToggle}>
             {isEditing ? 'Cancel editing' : 'Edit profile'}
-          </button>
+          </WpButton>
+
+
+          <WpButton
+            variant='danger'
+            onClick={() => setIsChangingPwd(!isChangingPwd)}>
+            {isChangingPwd ? 'Cancel' : 'Change password'}
+          </WpButton>
         </div>
       </div>
 
@@ -187,50 +220,45 @@ export default function Profile() {
         {isEditing && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Edit Profile</h3>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    name="full_name"
+                  <WpInput
+                    type='text'
+                    name='full_name'
                     value={formData.full_name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
+                    <WpInput
+                      type='email'
                       disabled
-                      value={user?.email || '-'}
-                      className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                    />
+                      value={user?.email} />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Department</label>
-                  <input
-                    type="text"
-                    name="department"
+                  <WpInput
+                    type='text'
+                    name='department'
                     value={formData.department}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
-                  />
+                    onChange={handleChange} />
+
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-                  <input
-                    type="text"
-                    name="location"
+                  <WpInput
+                    type='text'
+                    name='location'
                     value={formData.location}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
-                  />
+                    onChange={handleChange} />
+
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Timezone</label>
@@ -249,20 +277,78 @@ export default function Profile() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <button
-                  type="button"
+                <WpButton
+                  type='button'
+                  variant='danger'
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
+                </WpButton>
+
+                <WpButton
+                  type='submit'
+                  disabled={isUpdating}>
                   {isUpdating ? 'Saving...' : 'Save Changes'}
-                </button>
+                </WpButton>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Change Password Form */}
+        {isChangingPwd && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Change Password</h3>
+
+            {pwdError && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
+                {pwdError}
+              </div>
+            )}
+
+            {pwdSuccess && (
+              <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg text-sm border border-green-100">
+                Password changed successfully!
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Old Password</label>
+                  <WpInput
+                    type='password'
+                    value={pwdData.old_password}
+                    onChange={(e) => setPwdData({ ...pwdData, old_password: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
+                  <WpInput
+                    type='password'
+                    value={pwdData.new_password}
+                    onChange={(e) => setPwdData({ ...pwdData, new_password: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <WpButton
+                  type='button'
+                  onClick={() => setIsChangingPwd(false)}
+                  variant='warning'
+                >
+                  Cancel
+                </WpButton>
+                <WpButton
+                  type="submit"
+                  disabled={isChangingPassword}
+                  variant='danger'
+                >
+                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                </WpButton>
               </div>
             </form>
           </div>

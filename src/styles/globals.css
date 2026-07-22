@@ -59,11 +59,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+} */
+html {
+  color-scheme: light;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 body {
@@ -107,13 +115,11 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-radial-gradient(
-    circle at center,
-    transparent 0,
-    transparent 120px,
-    rgba(255, 255, 255, 0.05) 121px,
-    rgba(255, 255, 255, 0.05) 122px
-  );
+  background: repeating-radial-gradient(circle at center,
+      transparent 0,
+      transparent 120px,
+      rgba(255, 255, 255, 0.05) 121px,
+      rgba(255, 255, 255, 0.05) 122px);
   z-index: 1;
 }
 
@@ -422,11 +428,25 @@ body {
 }
 
 @keyframes wipDots {
-  0% { content: ''; }
-  25% { content: '.'; }
-  50% { content: '..'; }
-  75% { content: '...'; }
-  100% { content: ''; }
+  0% {
+    content: '';
+  }
+
+  25% {
+    content: '.';
+  }
+
+  50% {
+    content: '..';
+  }
+
+  75% {
+    content: '...';
+  }
+
+  100% {
+    content: '';
+  }
 }
 
 /* --- Signup Feature Cards CSS --- */
@@ -527,6 +547,11 @@ body {
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
