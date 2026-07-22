@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Crown,
   Building2,
@@ -12,27 +12,26 @@ import {
   Info,
   History,
   Lock,
-} from "lucide-react";
-import { auditLogs, rolesData } from "../data/rolesJson";
+} from 'lucide-react';
+import { auditLogs, rolesData } from '../data/rolesJson';
 
 const roleIcons = {
-  "Super Admin": Crown,
-  "Organization Admin": Building2,
-  "Project Manager": BriefcaseBusiness,
+  'Super Admin': Crown,
+  'Organization Admin': Building2,
+  'Project Manager': BriefcaseBusiness,
   Developer: Code2,
   Viewer: Eye,
 };
 
 export default function RolePermission() {
   const [selectedRole, setSelectedRole] = useState(rolesData[0]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredRoles = rolesData.filter((role) =>
-    role.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    role.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const RoleIcon =
-    roleIcons[selectedRole.name as keyof typeof roleIcons] || Eye;
+  const RoleIcon = roleIcons[selectedRole.name as keyof typeof roleIcons] || Eye;
 
   return (
     <div className="w-250 space-y-5">
@@ -46,9 +45,7 @@ export default function RolePermission() {
               key={role.id}
               onClick={() => setSelectedRole(role)}
               className={`rounded-xl border p-4 text-center transition ${
-                isSelected
-                  ? `${role.borderColor} ${role.activeBg}`
-                  : "border-gray-200 bg-white"
+                isSelected ? `${role.borderColor} ${role.activeBg}` : 'border-gray-200 bg-white'
               }`}
             >
               <div
@@ -59,9 +56,7 @@ export default function RolePermission() {
                 <Icon className={`h-4 w-4 ${role.iconColor}`} />
               </div>
 
-              <div className={`text-2xl font-bold ${role.iconColor}`}>
-                {role.number}
-              </div>
+              <div className={`text-2xl font-bold ${role.iconColor}`}>{role.number}</div>
 
               <div className="mt-1 text-xs text-gray-600">{role.name}</div>
             </button>
@@ -92,7 +87,7 @@ export default function RolePermission() {
                   className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition ${
                     isSelected
                       ? `${role.borderColor} ${role.activeBg} ${role.iconColor}`
-                      : "border-transparent text-gray-700 hover:bg-gray-50"
+                      : 'border-transparent text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <Icon className={`h-4 w-4 ${role.iconColor}`} />
@@ -116,9 +111,7 @@ export default function RolePermission() {
                 </div>
 
                 <div>
-                  <h2 className="text-sm font-bold text-gray-900">
-                    {selectedRole.name}
-                  </h2>
+                  <h2 className="text-sm font-bold text-gray-900">{selectedRole.name}</h2>
 
                   <span
                     className={`mt-1 inline-block rounded-full px-2.5 py-1 text-xs ${selectedRole.activeBg} ${selectedRole.iconColor}`}
@@ -132,9 +125,7 @@ export default function RolePermission() {
                 Edit role
               </button>
             </div>
-            <p className="mt-2 ml-2 text-xs text-gray-500">
-              {selectedRole.description}
-            </p>
+            <p className="mt-2 ml-2 text-xs text-gray-500">{selectedRole.description}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -145,20 +136,12 @@ export default function RolePermission() {
               </h3>
 
               <div className="space-y-2.5">
-                {selectedRole.capabilities.map(
-                  (item: string, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-2 text-sm text-gray-600"
-                    >
-                      <CheckCircle2
-                        size={15}
-                        className="mt-0.5 shrink-0 text-green-500"
-                      />
-                      <span>{item}</span>
-                    </div>
-                  ),
-                )}
+                {selectedRole.capabilities.map((item: string, index: number) => (
+                  <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-green-500" />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -169,17 +152,12 @@ export default function RolePermission() {
               </h3>
 
               <div className="space-y-2.5">
-                {selectedRole.restrictions.map(
-                  (item: string, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-2 text-sm text-gray-600"
-                    >
-                      <Ban size={15} className="mt-0.5 shrink-0 text-red-500" />
-                      <span>{item}</span>
-                    </div>
-                  ),
-                )}
+                {selectedRole.restrictions.map((item: string, index: number) => (
+                  <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                    <Ban size={15} className="mt-0.5 shrink-0 text-red-500" />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -188,13 +166,9 @@ export default function RolePermission() {
             <div className="flex items-start gap-3">
               <Info size={17} className="mt-0.5 shrink-0 text-blue-500" />
               <div>
-                <h3 className="text-xs font-semibold text-blue-700">
-                  Real-World Analogy
-                </h3>
+                <h3 className="text-xs font-semibold text-blue-700">Real-World Analogy</h3>
 
-                <p className="mt-1 text-xs text-blue-600">
-                  {selectedRole.analogyDescription}
-                </p>
+                <p className="mt-1 text-xs text-blue-600">{selectedRole.analogyDescription}</p>
               </div>
             </div>
           </div>
@@ -205,17 +179,15 @@ export default function RolePermission() {
         <div className="mb-5 flex items-center gap-2">
           <History size={17} className="text-gray-500" />
 
-          <h3 className="text-sm font-semibold text-gray-800">
-            Role Change Audit Log
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-800">Role Change Audit Log</h3>
         </div>
 
         <div className="space-y-5">
           {auditLogs.map((log) => {
-            const isSuccess = log.type === "success";
-            const isAdd = log.type === "add";
-            const isWarning = log.type === "warning";
-            const isError = log.type === "error";
+            const isSuccess = log.type === 'success';
+            const isAdd = log.type === 'add';
+            const isWarning = log.type === 'warning';
+            const isError = log.type === 'error';
 
             const LogIcon = log.icon;
 
@@ -224,14 +196,14 @@ export default function RolePermission() {
                 <div
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
                     isSuccess
-                      ? "bg-green-50 text-green-500"
+                      ? 'bg-green-50 text-green-500'
                       : isAdd
-                        ? "bg-blue-50 text-blue-500"
+                        ? 'bg-blue-50 text-blue-500'
                         : isWarning
-                          ? "bg-yellow-50 text-yellow-500"
+                          ? 'bg-yellow-50 text-yellow-500'
                           : isError
-                            ? "bg-red-50 text-red-500"
-                            : "bg-gray-50 text-gray-500"
+                            ? 'bg-red-50 text-red-500'
+                            : 'bg-gray-50 text-gray-500'
                   }`}
                 >
                   <LogIcon size={15} />

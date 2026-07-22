@@ -1,17 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const DEFAULT_PRIVATE = "/dashboard";
-const DEFAULT_PUBLIC = "/signin";
+const DEFAULT_PRIVATE = '/dashboard';
+const DEFAULT_PUBLIC = '/signin';
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const token = req.cookies.get("accessToken")?.value;
+  const token = req.cookies.get('accessToken')?.value;
 
   const isPublicRoute =
-    pathname === "/" ||
-    pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup");
+    pathname === '/' || pathname.startsWith('/signin') || pathname.startsWith('/signup');
 
   // Not authenticated
   if (!token && !isPublicRoute) {
@@ -27,7 +25,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images).*)",
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|images).*)'],
 };

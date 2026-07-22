@@ -9,8 +9,8 @@ export interface UserProfile {
   location?: string;
   timezone?: string;
   created_at?: string;
-  username?:string;
-  is_active?:boolean;
+  username?: string;
+  is_active?: boolean;
 }
 
 export interface UserUpdatePayload {

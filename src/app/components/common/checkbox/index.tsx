@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
-interface WpCheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+interface WpCheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: React.ReactNode;
   error?: string;
 }
 
-export const WpCheckbox = ({ label, error, id, className = "", ...props }: WpCheckboxProps) => {
+export const WpCheckbox = ({ label, error, id, className = '', ...props }: WpCheckboxProps) => {
   return (
     <div className="flex flex-col gap-1">
       <label
@@ -16,12 +16,12 @@ export const WpCheckbox = ({ label, error, id, className = "", ...props }: WpChe
           id={id}
           type="checkbox"
           className={[
-            "mt-0.5 w-4 h-4 rounded border-[var(--color-gray-300)] accent-[var(--color-primary-focus)] cursor-pointer",
-            props.disabled ? "cursor-not-allowed opacity-50" : "",
+            'mt-0.5 w-4 h-4 rounded border-[var(--color-gray-300)] accent-[var(--color-primary-focus)] cursor-pointer',
+            props.disabled ? 'cursor-not-allowed opacity-50' : '',
             className,
           ]
             .filter(Boolean)
-            .join(" ")}
+            .join(' ')}
           {...props}
         />
         {label && <span>{label}</span>}

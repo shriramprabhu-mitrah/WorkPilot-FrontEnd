@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Check } from "lucide-react";
-import { colors } from "@/src/styles/colors";
+import { Check } from 'lucide-react';
+import { colors } from '@/src/styles/colors';
 
 export interface ChipProps {
   label: string;
@@ -25,22 +25,16 @@ export const Chip = ({
   active = false,
   onClick,
   icon,
-  className = "",
+  className = '',
 }: ChipProps) => {
-  const resolvedBg =
-    bg ??
-    (active
-      ? color
-        ? `${color}18`
-        : colors.primaryLight
-      : colors.gray100);
+  const resolvedBg = bg ?? (active ? (color ? `${color}18` : colors.primaryLight) : colors.gray100);
 
   const resolvedColor = color ?? (active ? colors.primary : colors.gray500);
 
-  const resolvedBorder = active ? (color ?? colors.primary) : "transparent";
+  const resolvedBorder = active ? (color ?? colors.primary) : 'transparent';
 
   const base =
-    "inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 transition-all";
+    'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 transition-all';
 
   const style = {
     color: resolvedColor,

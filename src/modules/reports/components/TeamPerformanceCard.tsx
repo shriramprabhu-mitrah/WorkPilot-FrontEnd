@@ -1,6 +1,6 @@
-import Panel from "@/src/app/components/common/panel/panel";
-import MemberProgressBar from "@/src/app/components/common/progressbar/progressbar";
-import { defaultMembers } from "@/src/modules/reports/data";
+import Panel from '@/src/app/components/common/panel/panel';
+import MemberProgressBar from '@/src/app/components/common/progressbar/progressbar';
+import { defaultMembers } from '@/src/modules/reports/data';
 
 interface TeamPerformanceCardProps {
   members?: Array<{ name: string; done: number; total: number; color: string }>;

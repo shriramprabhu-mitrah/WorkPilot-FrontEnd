@@ -1,15 +1,15 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
   /* Brand */
-  --color-primary: #155DFC;
+  --color-primary: #155dfc;
   --color-primary-hover: #1d4ed8;
-  --color-primary-light: #EFF6FF;
+  --color-primary-light: #eff6ff;
   --color-primary-focus: #2563eb;
-  --color-accent: #4F39F6;
+  --color-accent: #4f39f6;
 
   /* Neutrals */
   --color-gray-50: #f9fafb;
@@ -26,9 +26,9 @@
   --color-error: #ef4444;
   --color-logo-icon-bg: #0d6efd;
   --color-right-pane: #3b49df;
-  --color-navbar-bg: #E2E2E3;
-  --color-navbar-border: #D1D1D2;
-  --color-workspace-bg: #F4F5F7;
+  --color-navbar-bg: #e2e2e3;
+  --color-navbar-border: #d1d1d2;
+  --color-workspace-bg: #f4f5f7;
 
   /* Landing page - Slate */
   --color-slate-50: #f8fafc;
@@ -115,11 +115,13 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-radial-gradient(circle at center,
-      transparent 0,
-      transparent 120px,
-      rgba(255, 255, 255, 0.05) 121px,
-      rgba(255, 255, 255, 0.05) 122px);
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0,
+    transparent 120px,
+    rgba(255, 255, 255, 0.05) 121px,
+    rgba(255, 255, 255, 0.05) 122px
+  );
   z-index: 1;
 }
 

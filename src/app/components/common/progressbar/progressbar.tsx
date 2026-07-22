@@ -1,4 +1,4 @@
-import { colors } from "@/src/styles/colors";
+import { colors } from '@/src/styles/colors';
 
 interface MemberProgressBarProps {
   name: string;
@@ -22,10 +22,7 @@ export default function MemberProgressBar({
       >
         {name}
       </span>
-      <div
-        className="flex-1 h-2 rounded-full min-w-0"
-        style={{ backgroundColor: colors.gray100 }}
-      >
+      <div className="flex-1 h-2 rounded-full min-w-0" style={{ backgroundColor: colors.gray100 }}>
         <div
           className="h-2 rounded-full transition-all"
           style={{ width: `${pct}%`, backgroundColor: color }}

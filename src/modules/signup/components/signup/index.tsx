@@ -1,34 +1,40 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useSignup } from "../../hooks/useSignup";
-import { useRouter } from "next/navigation";
-import { TermsConditions } from "../../../../app/components/common/terms-coditions";
-import { PrivacyPolicy } from "../../../../app/components/common/privacy";
-import { TrackrLogoSvg, EmailIconSvg, UserIconSvg, LockIconSvg, CloseIconSvg } from "@/src/assets/svgs";
-import { WpInput } from "@/src/app/components/common/input";
-import { WpButton } from "@/src/app/components/common/button";
-import { WpCheckbox } from "@/src/app/components/common/checkbox";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useSignup } from '../../hooks/useSignup';
+import { useRouter } from 'next/navigation';
+import { TermsConditions } from '../../../../app/components/common/terms-coditions';
+import { PrivacyPolicy } from '../../../../app/components/common/privacy';
+import {
+  TrackrLogoSvg,
+  EmailIconSvg,
+  UserIconSvg,
+  LockIconSvg,
+  CloseIconSvg,
+} from '@/src/assets/svgs';
+import { WpInput } from '@/src/app/components/common/input';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpCheckbox } from '@/src/app/components/common/checkbox';
 
 export const SignUp = () => {
   const { handleSignUp, isLoading, error } = useSignup();
-  const [full_name, setName] = useState("");
-  const [username, setuserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPwd, setConfirmPwd] = useState("");
+  const [full_name, setName] = useState('');
+  const [username, setuserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [sidebarContent, setSidebarContent] = useState<"terms" | "privacy" | null>(null);
+  const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const passwordsMatch = password === confirmPwd;
   const isFormValid =
-    full_name.trim() !== "" &&
-    username.trim() !== "" &&
-    email.trim() !== "" &&
-    password !== "" &&
-    confirmPwd !== "" &&
+    full_name.trim() !== '' &&
+    username.trim() !== '' &&
+    email.trim() !== '' &&
+    password !== '' &&
+    confirmPwd !== '' &&
     passwordsMatch &&
     agreedToTerms;
 
@@ -51,12 +57,16 @@ export const SignUp = () => {
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50" />
           <h1 className="signinTitle mb-4">Account created!</h1>
           <p className="mb-8 text-sm leading-[1.6] text-gray-500">
-            As a <strong className="text-gray-900 dark:text-gray-100">User</strong>, you need an invitation to join an organization.<br />
+            As a <strong className="text-gray-900 dark:text-gray-100">User</strong>, you need an
+            invitation to join an organization.
+            <br />
             Ask your Organization Admin to invite you via email.
           </p>
 
           <div className="mb-10 w-full rounded-xl border border-amber-200 bg-amber-50 p-6 text-left dark:border-amber-900 dark:bg-amber-900/20">
-            <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-500">What happens next?</h3>
+            <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-500">
+              What happens next?
+            </h3>
             <ul className="m-0 flex flex-col gap-2 pl-5 text-[13px] text-amber-600 dark:text-amber-400">
               <li>Your Organization Admin sends you an invite link</li>
               <li>Click the link to join their workspace</li>
@@ -64,7 +74,7 @@ export const SignUp = () => {
             </ul>
           </div>
 
-          <WpButton type="button" variant="ghost" onClick={() => router.push("/signin")}>
+          <WpButton type="button" variant="ghost" onClick={() => router.push('/signin')}>
             Back to sign in
           </WpButton>
         </div>
@@ -80,7 +90,7 @@ export const SignUp = () => {
           <h1 className="signinTitle">Create your account</h1>
           <h2 className="subtitle">Get started free — no credit card required.</h2>
 
-          <form onSubmit={onSubmit} style={{ width: "100%" }}>
+          <form onSubmit={onSubmit} style={{ width: '100%' }}>
             <WpInput
               id="name"
               type="text"
@@ -136,10 +146,16 @@ export const SignUp = () => {
               onChange={(e) => setConfirmPwd(e.target.value)}
               required
               minLength={8}
-              error={password && confirmPwd && !passwordsMatch ? "Passwords do not match" : undefined}
+              error={
+                password && confirmPwd && !passwordsMatch ? 'Passwords do not match' : undefined
+              }
             />
 
-            {error && <div style={{ color: "var(--color-error)", marginBottom: "16px", fontSize: "14px" }}>{error}</div>}
+            {error && (
+              <div style={{ color: 'var(--color-error)', marginBottom: '16px', fontSize: '14px' }}>
+                {error}
+              </div>
+            )}
 
             <div className="mb-6">
               <WpCheckbox
@@ -148,12 +164,24 @@ export const SignUp = () => {
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
                 label={
                   <span className="text-xs text-gray-500">
-                    By continuing you agree to our{" "}
-                    <WpButton type="button" variant="ghost" size="sm" className="!p-0 !text-xs text-blue-600" onClick={() => setSidebarContent("terms")}>
+                    By continuing you agree to our{' '}
+                    <WpButton
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="!p-0 !text-xs text-blue-600"
+                      onClick={() => setSidebarContent('terms')}
+                    >
                       Terms
-                    </WpButton>{" "}
-                    and{" "}
-                    <WpButton type="button" variant="ghost" size="sm" className="!p-0 !text-xs text-blue-600" onClick={() => setSidebarContent("privacy")}>
+                    </WpButton>{' '}
+                    and{' '}
+                    <WpButton
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="!p-0 !text-xs text-blue-600"
+                      onClick={() => setSidebarContent('privacy')}
+                    >
                       Privacy Policy
                     </WpButton>
                   </span>
@@ -161,12 +189,18 @@ export const SignUp = () => {
               />
             </div>
 
-            <WpButton type="submit" fullWidth isLoading={isLoading} loadingText="Creating account..." disabled={!isFormValid}>
+            <WpButton
+              type="submit"
+              fullWidth
+              isLoading={isLoading}
+              loadingText="Creating account..."
+              disabled={!isFormValid}
+            >
               Create Account
             </WpButton>
           </form>
 
-          <div className="signupPrompt" style={{ marginTop: "24px" }}>
+          <div className="signupPrompt" style={{ marginTop: '24px' }}>
             Already have an account?
             <Link href="/signin" className="signupLink">
               Sign in
@@ -176,10 +210,16 @@ export const SignUp = () => {
           {sidebarContent && (
             <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
               <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
-                <WpButton type="button" variant="ghost" size="sm" className="sidebarCloseBtn" onClick={() => setSidebarContent(null)}>
+                <WpButton
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="sidebarCloseBtn"
+                  onClick={() => setSidebarContent(null)}
+                >
                   <CloseIconSvg />
                 </WpButton>
-                {sidebarContent === "terms" ? <TermsConditions /> : <PrivacyPolicy />}
+                {sidebarContent === 'terms' ? <TermsConditions /> : <PrivacyPolicy />}
               </div>
             </div>
           )}

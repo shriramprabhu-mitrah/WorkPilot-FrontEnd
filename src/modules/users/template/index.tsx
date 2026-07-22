@@ -1,9 +1,9 @@
-import Profile from "../components/profile"
+import Profile from '../components/profile';
 
-export const UserProfileTemplate =()=>{
-    return (
-        <>
-        <Profile/>
-        </>
-    )
-}
+export const UserProfileTemplate = () => {
+  return (
+    <>
+      <Profile />
+    </>
+  );
+};

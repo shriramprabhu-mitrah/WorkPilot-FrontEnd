@@ -1,12 +1,12 @@
 export const formatMonthYear = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
   });
 };
 
 export const getInitials = (name?: string | null): string => {
-  if (!name?.trim()) return "U";
+  if (!name?.trim()) return 'U';
 
   const parts = name.trim().split(/\s+/);
 

@@ -1,12 +1,9 @@
-import { colors } from "@/src/styles/colors";
-import Panel from "@/src/app/components/common/panel/panel";
-import BarChart from "@/src/app/components/common/charts/barChart";
-import type {
-  CallbackDataParams,
-  TopLevelFormatterParams,
-} from "echarts/types/dist/shared";
-import type { EChartsOption } from "echarts";
-import { statusData } from "@/src/modules/reports/data";
+import { colors } from '@/src/styles/colors';
+import Panel from '@/src/app/components/common/panel/panel';
+import BarChart from '@/src/app/components/common/charts/barChart';
+import type { CallbackDataParams, TopLevelFormatterParams } from 'echarts/types/dist/shared';
+import type { EChartsOption } from 'echarts';
+import { statusData } from '@/src/modules/reports/data';
 interface StatusDistributionCardProps {
   isMobile: boolean;
   chartHeight: number;
@@ -19,9 +16,9 @@ export default function StatusDistributionCard({
   const option: EChartsOption = {
     animation: true,
     animationDuration: 1200,
-    animationEasing: "cubicOut",
+    animationEasing: 'cubicOut',
     animationDurationUpdate: 800,
-    animationEasingUpdate: "cubicOut",
+    animationEasingUpdate: 'cubicOut',
     grid: {
       left: 8,
       right: 8,
@@ -30,20 +27,18 @@ export default function StatusDistributionCard({
       containLabel: true,
     },
     tooltip: {
-      trigger: "item",
+      trigger: 'item',
       backgroundColor: colors.white,
       borderColor: colors.gray200,
       borderWidth: 1,
       textStyle: { color: colors.gray900, fontSize: 12 },
       formatter: (params: TopLevelFormatterParams) => {
-        const p = (
-          Array.isArray(params) ? params[0] : params
-        ) as CallbackDataParams;
+        const p = (Array.isArray(params) ? params[0] : params) as CallbackDataParams;
         return `<strong>${p.name}</strong><br/>Tasks : ${p.value}`;
       },
     },
     xAxis: {
-      type: "category",
+      type: 'category',
       data: statusData.map((item) => item.name),
       axisLine: { show: false },
       axisTick: { show: false },
@@ -55,15 +50,15 @@ export default function StatusDistributionCard({
       },
     },
     yAxis: {
-      type: "value",
+      type: 'value',
       splitLine: { lineStyle: { color: colors.gray100 } },
       axisLabel: { fontSize: 11, color: colors.gray500 },
     },
     series: [
       {
-        type: "bar",
+        type: 'bar',
         barMaxWidth: 40,
-        emphasis: { focus: "series" },
+        emphasis: { focus: 'series' },
         animation: true,
         data: statusData.map((item) => ({
           value: item.value,
@@ -74,10 +69,7 @@ export default function StatusDistributionCard({
   };
 
   return (
-    <Panel
-      title="Tasks by Status"
-      subtitle="Current distribution across all projects"
-    >
+    <Panel title="Tasks by Status" subtitle="Current distribution across all projects">
       <BarChart option={option} height={chartHeight} />
     </Panel>
   );

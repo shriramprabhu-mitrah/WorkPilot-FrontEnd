@@ -1,28 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Search, Filter } from "lucide-react";
-import { SPRINTS, BACKLOG_TASKS } from "../data";
-import { SprintSection } from "../components/SprintSection";
-import { BacklogRow } from "../components/BacklogRow";
-import { colors } from "@/src/styles/colors";
-import { WpButton } from "@/src/app/components/common/button";
-import { WpInput } from "@/src/app/components/common/input";
+import { useState } from 'react';
+import { ChevronDown, ChevronRight, Plus, Search, Filter } from 'lucide-react';
+import { SPRINTS, BACKLOG_TASKS } from '../data';
+import { SprintSection } from '../components/SprintSection';
+import { BacklogRow } from '../components/BacklogRow';
+import { colors } from '@/src/styles/colors';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpInput } from '@/src/app/components/common/input';
 
 export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const q = search.toLowerCase();
   const filteredBacklog = BACKLOG_TASKS.filter(
-    (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q),
+    (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
   );
 
   const filteredSprints = SPRINTS.map((s) => ({
     ...s,
     tasks: s.tasks.filter(
-      (t) =>
-        t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q),
+      (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
     ),
   }));
 
@@ -31,18 +30,11 @@ export const BacklogTemplate = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 flex-shrink-0">
         <div className="min-w-0">
-          <h1
-            className="text-xl sm:text-2xl font-bold"
-            style={{ color: colors.gray900 }}
-          >
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
             Backlog
           </h1>
-          <p
-            className="text-sm mt-0.5 truncate"
-            style={{ color: colors.gray500 }}
-          >
-            Atlas Platform · {SPRINTS.length} sprints · {BACKLOG_TASKS.length}{" "}
-            unassigned tasks
+          <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
+            Atlas Platform · {SPRINTS.length} sprints · {BACKLOG_TASKS.length} unassigned tasks
           </p>
         </div>
 
@@ -84,16 +76,9 @@ export const BacklogTemplate = () => {
             onClick={() => setBacklogOpen((v) => !v)}
           >
             <span className="text-gray-400 shrink-0">
-              {backlogOpen ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
+              {backlogOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </span>
-            <span
-              className="font-semibold text-sm"
-              style={{ color: colors.gray900 }}
-            >
+            <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
               Backlog
             </span>
             <span
@@ -118,16 +103,17 @@ export const BacklogTemplate = () => {
           {backlogOpen && (
             <div>
               {filteredBacklog.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">
-                  No backlog tasks found.
-                </p>
+                <p className="text-sm text-gray-400 text-center py-6">No backlog tasks found.</p>
               ) : (
-                filteredBacklog.map((task) => (
-                  <BacklogRow key={task.id} task={task} />
-                ))
+                filteredBacklog.map((task) => <BacklogRow key={task.id} task={task} />)
               )}
               <div className="px-3 sm:px-4 py-2">
-                <WpButton variant="ghost" size="sm" leftIcon={<Plus size={13} />} className="text-gray-400 hover:text-blue-600">
+                <WpButton
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Plus size={13} />}
+                  className="text-gray-400 hover:text-blue-600"
+                >
                   Add task
                 </WpButton>
               </div>

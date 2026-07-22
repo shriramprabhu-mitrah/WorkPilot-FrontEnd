@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useResize } from "@/src/hooks/useResize";
-import ReportsHeader from "@/src/modules/reports/components/ReportsHeader";
-import StatCardsSection from "@/src/modules/reports/components/StatCardsSection";
-import StatusDistributionCard from "@/src/modules/reports/components/StatusDistributionCard";
-import PriorityDistributionCard from "@/src/modules/reports/components/PriorityDistributionCard";
-import SprintProgressCard from "@/src/modules/reports/components/SprintProgressCard";
-import TeamPerformanceCard from "@/src/modules/reports/components/TeamPerformanceCard";
-import BurndownCard from "@/src/modules/reports/components/BurndownCard";
-import { STATS } from "../data";
+import { useResize } from '@/src/hooks/useResize';
+import ReportsHeader from '@/src/modules/reports/components/ReportsHeader';
+import StatCardsSection from '@/src/modules/reports/components/StatCardsSection';
+import StatusDistributionCard from '@/src/modules/reports/components/StatusDistributionCard';
+import PriorityDistributionCard from '@/src/modules/reports/components/PriorityDistributionCard';
+import SprintProgressCard from '@/src/modules/reports/components/SprintProgressCard';
+import TeamPerformanceCard from '@/src/modules/reports/components/TeamPerformanceCard';
+import BurndownCard from '@/src/modules/reports/components/BurndownCard';
+import { STATS } from '../data';
 
 export const SummaryTemplate = () => {
   const { width } = useResize();

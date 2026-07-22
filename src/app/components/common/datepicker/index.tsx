@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useRef } from "react";
-import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useOutsideClick } from "@/src/hooks/useOutsideClick";
+import React, { useState, useRef } from 'react';
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 
 interface WpDatePickerProps {
   label?: string;
@@ -16,22 +16,32 @@ interface WpDatePickerProps {
   onChange: (value: string) => void;
 }
 
-const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function formatDisplay(iso: string) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
   return `${MONTHS[parseInt(m) - 1]} ${parseInt(d)}, ${y}`;
 }
 
 export const WpDatePicker = ({
   label,
-  value = "",
-  placeholder = "Select a date",
+  value = '',
+  placeholder = 'Select a date',
   error,
   hint,
   disabled = false,
@@ -40,7 +50,7 @@ export const WpDatePicker = ({
   onChange,
 }: WpDatePickerProps) => {
   const today = new Date();
-  const initDate = value ? new Date(value + "T00:00:00") : today;
+  const initDate = value ? new Date(value + 'T00:00:00') : today;
 
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(initDate.getFullYear());
@@ -53,17 +63,21 @@ export const WpDatePicker = ({
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
-    else setViewMonth((m) => m - 1);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else setViewMonth((m) => m - 1);
   };
 
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
-    else setViewMonth((m) => m + 1);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else setViewMonth((m) => m + 1);
   };
 
   const toISO = (y: number, m: number, d: number) =>
-    `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
   const isDisabled = (d: number) => {
     const iso = toISO(viewYear, viewMonth, d);
@@ -78,7 +92,7 @@ export const WpDatePicker = ({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange("");
+    onChange('');
   };
 
   return (
@@ -94,23 +108,31 @@ export const WpDatePicker = ({
           disabled={disabled}
           onClick={() => setOpen((p) => !p)}
           className={[
-            "w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white",
+            'w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white',
             error
-              ? "border-[var(--color-error)]"
+              ? 'border-[var(--color-error)]'
               : open
-              ? "border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]"
-              : "border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]",
-            disabled ? "bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]" : "cursor-pointer",
+                ? 'border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]'
+                : 'border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]',
+            disabled
+              ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
+              : 'cursor-pointer',
           ]
             .filter(Boolean)
-            .join(" ")}
+            .join(' ')}
         >
-          <span className={`flex items-center gap-2 ${!value ? "text-[var(--color-gray-400)]" : "text-[var(--color-gray-900)]"}`}>
+          <span
+            className={`flex items-center gap-2 ${!value ? 'text-[var(--color-gray-400)]' : 'text-[var(--color-gray-900)]'}`}
+          >
             <Calendar size={15} className="text-[var(--color-gray-400)]" />
             {value ? formatDisplay(value) : placeholder}
           </span>
           {value && !disabled ? (
-            <X size={14} className="text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)]" onClick={handleClear} />
+            <X
+              size={14}
+              className="text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)]"
+              onClick={handleClear}
+            />
           ) : null}
         </button>
 
@@ -118,13 +140,21 @@ export const WpDatePicker = ({
           <div className="absolute z-50 mt-1 bg-white border border-[var(--color-gray-200)] rounded-lg shadow-lg p-3 w-72">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prevMonth} className="p-1 rounded hover:bg-[var(--color-gray-100)]">
+              <button
+                type="button"
+                onClick={prevMonth}
+                className="p-1 rounded hover:bg-[var(--color-gray-100)]"
+              >
                 <ChevronLeft size={16} className="text-[var(--color-gray-600)]" />
               </button>
               <span className="text-sm font-semibold text-[var(--color-gray-900)]">
                 {MONTHS[viewMonth]} {viewYear}
               </span>
-              <button type="button" onClick={nextMonth} className="p-1 rounded hover:bg-[var(--color-gray-100)]">
+              <button
+                type="button"
+                onClick={nextMonth}
+                className="p-1 rounded hover:bg-[var(--color-gray-100)]"
+              >
                 <ChevronRight size={16} className="text-[var(--color-gray-600)]" />
               </button>
             </div>
@@ -132,7 +162,10 @@ export const WpDatePicker = ({
             {/* Day headers */}
             <div className="grid grid-cols-7 mb-1">
               {DAYS.map((d) => (
-                <span key={d} className="text-center text-xs font-medium text-[var(--color-gray-400)] py-1">
+                <span
+                  key={d}
+                  className="text-center text-xs font-medium text-[var(--color-gray-400)] py-1"
+                >
                   {d}
                 </span>
               ))}
@@ -140,12 +173,15 @@ export const WpDatePicker = ({
 
             {/* Dates */}
             <div className="grid grid-cols-7 gap-y-1">
-              {Array.from({ length: firstDay }).map((_, i) => <span key={`e-${i}`} />)}
+              {Array.from({ length: firstDay }).map((_, i) => (
+                <span key={`e-${i}`} />
+              ))}
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
                 const iso = toISO(viewYear, viewMonth, day);
                 const isSelected = iso === value;
-                const isToday = iso === toISO(today.getFullYear(), today.getMonth(), today.getDate());
+                const isToday =
+                  iso === toISO(today.getFullYear(), today.getMonth(), today.getDate());
                 const disabled = isDisabled(day);
 
                 return (
@@ -155,16 +191,16 @@ export const WpDatePicker = ({
                     disabled={disabled}
                     onClick={() => handleSelect(day)}
                     className={[
-                      "w-8 h-8 mx-auto flex items-center justify-center rounded-full text-xs transition-colors",
+                      'w-8 h-8 mx-auto flex items-center justify-center rounded-full text-xs transition-colors',
                       isSelected
-                        ? "bg-[var(--color-primary-focus)] text-white font-semibold"
+                        ? 'bg-[var(--color-primary-focus)] text-white font-semibold'
                         : isToday
-                        ? "border border-[var(--color-primary-focus)] text-[var(--color-primary-focus)] font-semibold"
-                        : "hover:bg-[var(--color-primary-light)] text-[var(--color-gray-700)]",
-                      disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
+                          ? 'border border-[var(--color-primary-focus)] text-[var(--color-primary-focus)] font-semibold'
+                          : 'hover:bg-[var(--color-primary-light)] text-[var(--color-gray-700)]',
+                      disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer',
                     ]
                       .filter(Boolean)
-                      .join(" ")}
+                      .join(' ')}
                   >
                     {day}
                   </button>

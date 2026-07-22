@@ -11,18 +11,19 @@ import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 
 export default function Profile() {
-  const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } = useUser();
+  const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
+    useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [formData, setFormData] = useState<UserUpdatePayload>({
     full_name: '',
     department: '',
     location: '',
-    timezone: ''
+    timezone: '',
   });
   const [pwdData, setPwdData] = useState({
     old_password: '',
-    new_password: ''
+    new_password: '',
   });
   const [pwdError, setPwdError] = useState<string | null>(null);
   const [pwdSuccess, setPwdSuccess] = useState(false);
@@ -87,11 +88,11 @@ export default function Profile() {
 
   const displayName = user?.name || user?.full_name || '-';
   const STATS = [
-    { label: "Total Assigned", value: 0, color: colors.primary },
-    { label: "In Progress", value: 0, color: colors.orange500 },
-    { label: "Completed", value: 0, color: colors.green500 },
+    { label: 'Total Assigned', value: 0, color: colors.primary },
+    { label: 'In Progress', value: 0, color: colors.orange500 },
+    { label: 'Completed', value: 0, color: colors.green500 },
   ];
-  const createdAt = formatMonthYear(user?.created_at || '-')
+  const createdAt = formatMonthYear(user?.created_at || '-');
 
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6 max-w-7xl mx-auto w-full">
@@ -115,7 +116,9 @@ export default function Profile() {
 
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
             <p className="mb-1">{user?.email || '-'}</p>
-            <p>{user?.department || '-'} • {user?.location || '-'}</p>
+            <p>
+              {user?.department || '-'} • {user?.location || '-'}
+            </p>
           </div>
 
           <div className="w-full space-y-3 text-sm text-gray-600 dark:text-gray-300 mb-6 border-t border-gray-100 dark:border-gray-700 pt-6">
@@ -129,16 +132,11 @@ export default function Profile() {
             </div>
           </div>
 
-          <WpButton
-            variant='primary'
-            onClick={handleEditToggle}>
+          <WpButton variant="primary" onClick={handleEditToggle}>
             {isEditing ? 'Cancel editing' : 'Edit profile'}
           </WpButton>
 
-
-          <WpButton
-            variant='danger'
-            onClick={() => setIsChangingPwd(!isChangingPwd)}>
+          <WpButton variant="danger" onClick={() => setIsChangingPwd(!isChangingPwd)}>
             {isChangingPwd ? 'Cancel' : 'Change password'}
           </WpButton>
         </div>
@@ -149,12 +147,7 @@ export default function Profile() {
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {STATS.map((stat) => (
-            <StatCard
-              key={stat.label}
-              label={stat.label}
-              value={stat.value}
-              color={stat.color}
-            />
+            <StatCard key={stat.label} label={stat.label} value={stat.value} color={stat.color} />
           ))}
         </div>
 
@@ -173,24 +166,34 @@ export default function Profile() {
         {/* Role Description */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-2 mb-3">
-            <div className="text-orange-500"><Briefcase size={20} /></div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Your Role: {user?.role || '-'}</h3>
+            <div className="text-orange-500">
+              <Briefcase size={20} />
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Your Role: {user?.role || '-'}
+            </h3>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-            Leads one or more projects within the organization. Responsible for delivery, sprint planning, and team coordination.
+            Leads one or more projects within the organization. Responsible for delivery, sprint
+            planning, and team coordination.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Capabilities</h4>
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                Capabilities
+              </h4>
               <ul className="space-y-3">
                 {[
                   'Create projects (if org policy allows)',
                   'Create / Edit / Delete parent & child tasks',
                   'Assign and reassign tasks to members',
-                  'Manage sprint lifecycle & backlog'
+                  'Manage sprint lifecycle & backlog',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                  >
                     <CheckCircle2 size={16} className="text-green-500 shrink-0 mt-0.5" />
                     {item}
                   </li>
@@ -198,15 +201,20 @@ export default function Profile() {
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Restrictions</h4>
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                Restrictions
+              </h4>
               <ul className="space-y-3">
                 {[
                   'Cannot invite new users into the organization',
                   'Cannot access projects they are not assigned to',
                   'Cannot manage organization settings',
-                  'Cannot change organization-wide user roles'
+                  'Cannot change organization-wide user roles',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                  >
                     <Ban size={16} className="text-red-400 shrink-0 mt-0.5" />
                     {item}
                   </li>
@@ -224,44 +232,54 @@ export default function Profile() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Full Name
+                  </label>
                   <WpInput
-                    type='text'
-                    name='full_name'
+                    type="text"
+                    name="full_name"
                     value={formData.full_name}
                     onChange={handleChange}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Email
+                  </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <WpInput
-                      type='email'
-                      disabled
-                      value={user?.email} />
+                    <Mail
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <WpInput type="email" disabled value={user?.email} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Department</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Department
+                  </label>
                   <WpInput
-                    type='text'
-                    name='department'
+                    type="text"
+                    name="department"
                     value={formData.department}
-                    onChange={handleChange} />
-
+                    onChange={handleChange}
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Location
+                  </label>
                   <WpInput
-                    type='text'
-                    name='location'
+                    type="text"
+                    name="location"
                     value={formData.location}
-                    onChange={handleChange} />
-
+                    onChange={handleChange}
+                  />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Timezone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Timezone
+                  </label>
                   <select
                     name="timezone"
                     value={formData.timezone}
@@ -277,17 +295,11 @@ export default function Profile() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <WpButton
-                  type='button'
-                  variant='danger'
-                  onClick={() => setIsEditing(false)}
-                >
+                <WpButton type="button" variant="danger" onClick={() => setIsEditing(false)}>
                   Cancel
                 </WpButton>
 
-                <WpButton
-                  type='submit'
-                  disabled={isUpdating}>
+                <WpButton type="submit" disabled={isUpdating}>
                   {isUpdating ? 'Saving...' : 'Save Changes'}
                 </WpButton>
               </div>
@@ -298,7 +310,9 @@ export default function Profile() {
         {/* Change Password Form */}
         {isChangingPwd && (
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Change Password</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
+              Change Password
+            </h3>
 
             {pwdError && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100">
@@ -315,18 +329,22 @@ export default function Profile() {
             <form onSubmit={handlePasswordSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Old Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Old Password
+                  </label>
                   <WpInput
-                    type='password'
+                    type="password"
                     value={pwdData.old_password}
                     onChange={(e) => setPwdData({ ...pwdData, old_password: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    New Password
+                  </label>
                   <WpInput
-                    type='password'
+                    type="password"
                     value={pwdData.new_password}
                     onChange={(e) => setPwdData({ ...pwdData, new_password: e.target.value })}
                     required
@@ -335,18 +353,10 @@ export default function Profile() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <WpButton
-                  type='button'
-                  onClick={() => setIsChangingPwd(false)}
-                  variant='warning'
-                >
+                <WpButton type="button" onClick={() => setIsChangingPwd(false)} variant="warning">
                   Cancel
                 </WpButton>
-                <WpButton
-                  type="submit"
-                  disabled={isChangingPassword}
-                  variant='danger'
-                >
+                <WpButton type="submit" disabled={isChangingPassword} variant="danger">
                   {isChangingPassword ? 'Changing...' : 'Change Password'}
                 </WpButton>
               </div>

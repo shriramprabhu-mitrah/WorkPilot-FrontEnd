@@ -1,28 +1,29 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useSignin } from "../../hooks/useSignin";
-import { useRouter } from "next/navigation";
-import { setTokens } from "@/src/lib/utils/cookies";
-import { TrackrLogoSvg, EmailIconSvg, CloseIconSvg } from "@/src/assets/svgs";
-import { WpInput } from "@/src/app/components/common/input";
-import { WpButton } from "@/src/app/components/common/button";
-import { WpCheckbox } from "@/src/app/components/common/checkbox";
-import { LockIcon } from "lucide-react";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useSignin } from '../../hooks/useSignin';
+import { useRouter } from 'next/navigation';
+import { setTokens } from '@/src/lib/utils/cookies';
+import { TrackrLogoSvg, EmailIconSvg, CloseIconSvg } from '@/src/assets/svgs';
+import { WpInput } from '@/src/app/components/common/input';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpCheckbox } from '@/src/app/components/common/checkbox';
+import { LockIcon } from 'lucide-react';
 
 export const SignIn = () => {
-  const { handleSignIn, handleForgotPassword, handleResetPasswordConfirm, isLoading, error } = useSignin();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { handleSignIn, handleForgotPassword, handleResetPasswordConfirm, isLoading, error } =
+    useSignin();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   const [showForgotSidebar, setShowForgotSidebar] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [resetOtp, setResetOtp] = useState("");
-  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState<string | null>(null);
   const [forgotErrorMsg, setForgotErrorMsg] = useState<string | null>(null);
 
@@ -33,7 +34,7 @@ export const SignIn = () => {
       if (response.data) {
         setTokens(response.data.access_token, response.data.refresh_token);
       }
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch {
       // Error is handled by the hook and exposed via error state
     }
@@ -46,10 +47,10 @@ export const SignIn = () => {
     setForgotErrorMsg(null);
     try {
       const response = await handleForgotPassword(forgotEmail);
-      setForgotSuccessMessage(response?.message || "Reset link sent successfully to your email.");
+      setForgotSuccessMessage(response?.message || 'Reset link sent successfully to your email.');
       setForgotStep(2);
     } catch (err: unknown) {
-      setForgotErrorMsg(err instanceof Error ? err.message : "Failed to send reset link");
+      setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to send reset link');
       throw err;
     }
   };
@@ -65,10 +66,10 @@ export const SignIn = () => {
         otp: resetOtp,
         new_password: resetNewPassword,
       });
-      setForgotSuccessMessage(response?.message || "Password reset successfully.");
-      setTimeout(() => router.push("/dashboard"), 1000);
+      setForgotSuccessMessage(response?.message || 'Password reset successfully.');
+      setTimeout(() => router.push('/dashboard'), 1000);
     } catch (err: unknown) {
-      setForgotErrorMsg(err instanceof Error ? err.message : "Failed to reset password");
+      setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to reset password');
     }
   };
 
@@ -84,7 +85,7 @@ export const SignIn = () => {
       <h1 className="signinTitle">Welcome back</h1>
       <h2 className="subtitle">Sign in to your workspace to continue.</h2>
 
-      <form onSubmit={onSubmit} style={{ width: "100%" }}>
+      <form onSubmit={onSubmit} style={{ width: '100%' }}>
         <WpInput
           id="email"
           type="email"
@@ -130,7 +131,11 @@ export const SignIn = () => {
           </WpButton>
         </div>
 
-        {error && <div style={{ color: "var(--color-error)", marginBottom: "16px", fontSize: "14px" }}>{error}</div>}
+        {error && (
+          <div style={{ color: 'var(--color-error)', marginBottom: '16px', fontSize: '14px' }}>
+            {error}
+          </div>
+        )}
 
         <WpButton type="submit" fullWidth isLoading={isLoading} loadingText="Signing in...">
           Sign in
@@ -175,7 +180,10 @@ export const SignIn = () => {
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
 
-            <form onSubmit={forgotStep === 1 ? handleForgotSubmit : handleResetSubmit} className="w-full">
+            <form
+              onSubmit={forgotStep === 1 ? handleForgotSubmit : handleResetSubmit}
+              className="w-full"
+            >
               <WpInput
                 id="forgotEmail"
                 type="email"
@@ -214,21 +222,28 @@ export const SignIn = () => {
               )}
 
               {forgotErrorMsg && <div className="mb-4 text-sm text-red-500">{forgotErrorMsg}</div>}
-              {forgotSuccessMessage && <div className="mb-4 text-sm text-green-600">{forgotSuccessMessage}</div>}
+              {forgotSuccessMessage && (
+                <div className="mb-4 text-sm text-green-600">{forgotSuccessMessage}</div>
+              )}
 
               <WpButton
                 type="submit"
                 fullWidth
                 isLoading={isLoading}
-                loadingText={forgotStep === 1 ? "Sending link..." : "Resetting Password..."}
+                loadingText={forgotStep === 1 ? 'Sending link...' : 'Resetting Password...'}
                 disabled={!forgotEmail || (forgotStep === 2 && (!resetOtp || !resetNewPassword))}
                 className="mb-4"
               >
-                {forgotStep === 1 ? "Send Reset Link" : "Reset Password"}
+                {forgotStep === 1 ? 'Send Reset Link' : 'Reset Password'}
               </WpButton>
             </form>
 
-            <WpButton type="button" variant="secondary" fullWidth onClick={() => setShowForgotSidebar(false)}>
+            <WpButton
+              type="button"
+              variant="secondary"
+              fullWidth
+              onClick={() => setShowForgotSidebar(false)}
+            >
               Back to Login
             </WpButton>
           </div>

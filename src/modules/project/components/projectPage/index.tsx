@@ -1,22 +1,28 @@
-"use client";
-import ProjectCard from "../projectCard";
-import { Projects } from "../../data/project";
-import { useState, useMemo } from "react";
-import { ProjectFilter, filters } from "@/src/app/components/common/enum";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { WpButton } from "@/src/app/components/common/button";
-import { WpInput } from "@/src/app/components/common/input";
+'use client';
+import ProjectCard from '../projectCard';
+import { Projects } from '../../data/project';
+import { useState, useMemo } from 'react';
+import { ProjectFilter, filters } from '@/src/app/components/common/enum';
+import { Search, SlidersHorizontal } from 'lucide-react';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpInput } from '@/src/app/components/common/input';
 
 const ProjectPage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const displayedProjects = useMemo(() => {
     return [...Projects]
-      .filter((project) => selectedFilter === ProjectFilter.ALL || project.status === selectedFilter)
-      .filter((project) => !searchTerm || project.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => sortOrder === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+      .filter(
+        (project) => selectedFilter === ProjectFilter.ALL || project.status === selectedFilter
+      )
+      .filter(
+        (project) => !searchTerm || project.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+      );
   }, [selectedFilter, searchTerm, sortOrder]);
 
   return (
@@ -44,7 +50,7 @@ const ProjectPage = () => {
             <WpButton
               key={filter}
               size="sm"
-              variant={selectedFilter === filter ? "primary" : "secondary"}
+              variant={selectedFilter === filter ? 'primary' : 'secondary'}
               onClick={() => setSelectedFilter(filter)}
             >
               {filter}
@@ -55,7 +61,7 @@ const ProjectPage = () => {
           variant="secondary"
           size="sm"
           leftIcon={<SlidersHorizontal size={16} />}
-          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
         >
           Sort
         </WpButton>

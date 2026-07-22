@@ -6,7 +6,7 @@ class UserService {
   async getUserProfile(): Promise<UserProfile> {
     const response = await apiService.get<UserProfile>(ApiEndpoints.User.getUser.url);
     if (!response.data) {
-      throw new Error("Failed to fetch user profile");
+      throw new Error('Failed to fetch user profile');
     }
     return response.data;
   }
@@ -14,7 +14,7 @@ class UserService {
   async updateUserProfile(payload: UserUpdatePayload): Promise<UserProfile> {
     const response = await apiService.patch<UserProfile>(ApiEndpoints.Sign.userUpdate.url, payload);
     if (!response.data) {
-      throw new Error("Failed to update user profile");
+      throw new Error('Failed to update user profile');
     }
     return response.data;
   }

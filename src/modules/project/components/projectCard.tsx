@@ -1,6 +1,6 @@
-import { Project } from "../types/project";
-import { Calendar } from "lucide-react";
-import { AssigneeAvatar } from "@/src/app/components/common/task";
+import { Project } from '../types/project';
+import { Calendar } from 'lucide-react';
+import { AssigneeAvatar } from '@/src/app/components/common/task';
 
 interface ProjectCardProps {
   project: Project;
@@ -16,15 +16,18 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-700 transition-colors hover:text-blue-700">{project.name}</h3>
+            <h3 className="text-xl font-semibold text-gray-700 transition-colors hover:text-blue-700">
+              {project.name}
+            </h3>
             <p className="text-xs text-gray-400">{project.code}</p>
           </div>
         </div>
         <span
-          className={`inline-flex h-6 items-center rounded-full px-3 text-xs font-medium ${project.status === "Active"
-            ? "bg-green-100 text-green-700"
-            : "bg-blue-100 text-blue-700"
-            }`}
+          className={`inline-flex h-6 items-center rounded-full px-3 text-xs font-medium ${
+            project.status === 'Active'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-blue-100 text-blue-700'
+          }`}
         >
           {project.status}
         </span>
@@ -51,12 +54,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
       <div className="mt-4 flex items-center justify-between">
         <div className="flex -space-x-2">
           {project.members.slice(0, 3).map((member, index) => (
-            <AssigneeAvatar
-              key={index}
-              initials={member.name}
-              color={member.color}
-              size="sm"
-            />
+            <AssigneeAvatar key={index} initials={member.name} color={member.color} size="sm" />
           ))}
 
           {project.members.length > 3 && (
@@ -77,6 +75,6 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
       </div>
     </div>
   );
-}
+};
 
 export default ProjectCard;

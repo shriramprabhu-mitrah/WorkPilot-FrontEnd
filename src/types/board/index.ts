@@ -1,12 +1,6 @@
-export type Priority = "Critical" | "High" | "Medium" | "Low";
+export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
-export type ColumnId =
-  | "backlog"
-  | "todo"
-  | "inprogress"
-  | "inreview"
-  | "testing"
-  | "done";
+export type ColumnId = 'backlog' | 'todo' | 'inprogress' | 'inreview' | 'testing' | 'done';
 
 export interface KanbanTask {
   id: string;

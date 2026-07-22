@@ -1,9 +1,9 @@
-import { WorkingProgress } from "@/src/app/components/common/working-progress"
+import { WorkingProgress } from '@/src/app/components/common/working-progress';
 
-export const HomeDashboard =()=>{
-    return(
-        <>
-        <WorkingProgress/>
-        </>
-    )
-}
+export const HomeDashboard = () => {
+  return (
+    <>
+      <WorkingProgress />
+    </>
+  );
+};

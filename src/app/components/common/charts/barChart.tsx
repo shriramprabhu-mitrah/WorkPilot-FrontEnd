@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import ReactEcharts from "echarts-for-react";
-import * as echarts from "echarts";
-import { EChartsOption } from "echarts";
-import { useResize } from "@/src/hooks/useResize";
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import ReactEcharts from 'echarts-for-react';
+import * as echarts from 'echarts';
+import { EChartsOption } from 'echarts';
+import { useResize } from '@/src/hooks/useResize';
 
 interface BarChartProps {
   option: EChartsOption;
@@ -13,7 +13,7 @@ interface BarChartProps {
 }
 
 const BarChart = forwardRef<ReactEcharts, BarChartProps>(
-  ({ option, height = 240, className = "" }, ref) => {
+  ({ option, height = 240, className = '' }, ref) => {
     const innerRef = useRef<ReactEcharts | null>(null);
     const { width } = useResize();
     const [renderVersion, setRenderVersion] = useState(0);
@@ -38,20 +38,18 @@ const BarChart = forwardRef<ReactEcharts, BarChartProps>(
           notMerge
           ref={(node) => {
             innerRef.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref)
-              (ref as React.MutableRefObject<ReactEcharts | null>).current =
-                node;
+            if (typeof ref === 'function') ref(node);
+            else if (ref) (ref as React.MutableRefObject<ReactEcharts | null>).current = node;
           }}
           echarts={echarts}
           option={option}
-          style={{ width: "100%", height: "100%" }}
-          opts={{ renderer: "svg" }}
+          style={{ width: '100%', height: '100%' }}
+          opts={{ renderer: 'svg' }}
         />
       </div>
     );
-  },
+  }
 );
 
-BarChart.displayName = "BarChart";
+BarChart.displayName = 'BarChart';
 export default BarChart;

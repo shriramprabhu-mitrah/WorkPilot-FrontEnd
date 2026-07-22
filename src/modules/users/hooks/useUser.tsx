@@ -8,58 +8,54 @@ import { signupService } from '@/src/services/signup';
 import { ChangePassword } from '@/src/types/signin';
 
 export const useUser = () => {
-    const dispatch = useAppDispatch();
-    const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
-    const { 
-        data: user, 
-        isLoading, 
-        error, 
-        refetch: fetchUser 
-    } = useQuery({
-        queryKey: ['userProfile'],
-        queryFn: async () => {
-            const data = await userService.getUserProfile();
-            dispatch(setUserRedux({
-                name: data.name || data.full_name,
-                email: data.email,
-                role: data.role,
-                avatar_url: data.avatar_url,
-            }));
-            return data;
-        }
-    });
+  const {
+    data: user,
+    isLoading,
+    error,
+    refetch: fetchUser,
+  } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const data = await userService.getUserProfile();
+      dispatch(
+        setUserRedux({
+          name: data.name || data.full_name,
+          email: data.email,
+          role: data.role,
+          avatar_url: data.avatar_url,
+        })
+      );
+      return data;
+    },
+  });
 
-    const { 
-        mutateAsync: updateUser, 
-        isPending: isUpdating 
-    } = useMutation({
-        mutationFn: async (payload: UserUpdatePayload) => {
-            return await userService.updateUserProfile(payload);
-        },
-        onSuccess: () => {
-            // Automatically triggers a background refetch and syncs with Redux
-            queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-        },
-    });
+  const { mutateAsync: updateUser, isPending: isUpdating } = useMutation({
+    mutationFn: async (payload: UserUpdatePayload) => {
+      return await userService.updateUserProfile(payload);
+    },
+    onSuccess: () => {
+      // Automatically triggers a background refetch and syncs with Redux
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    },
+  });
 
-    const {
-        mutateAsync: changePassword,
-        isPending: isChangingPassword
-    } = useMutation({
-        mutationFn: async (payload: ChangePassword) => {
-            return await signupService.changePassword(payload);
-        }
-    });
+  const { mutateAsync: changePassword, isPending: isChangingPassword } = useMutation({
+    mutationFn: async (payload: ChangePassword) => {
+      return await signupService.changePassword(payload);
+    },
+  });
 
-    return {
-        user: user as UserProfile | null | undefined,
-        isLoading,
-        isUpdating,
-        isChangingPassword,
-        error: error ? error.message : null,
-        fetchUser,
-        updateUser,
-        changePassword
-    };
+  return {
+    user: user as UserProfile | null | undefined,
+    isLoading,
+    isUpdating,
+    isChangingPassword,
+    error: error ? error.message : null,
+    fetchUser,
+    updateUser,
+    changePassword,
+  };
 };

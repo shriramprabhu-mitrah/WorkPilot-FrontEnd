@@ -1,11 +1,7 @@
-"use client";
+'use client';
 
 export type SettingsTab =
-  | "General"
-  | "Roles & Permissions"
-  | "Permissions Matrix"
-  | "Notifications"
-  | "Security";
+  'General' | 'Roles & Permissions' | 'Permissions Matrix' | 'Notifications' | 'Security';
 
 interface SettingsHeaderProps {
   activeTab: SettingsTab;
@@ -13,17 +9,14 @@ interface SettingsHeaderProps {
 }
 
 const tabs: SettingsTab[] = [
-  "General",
-  "Roles & Permissions",
-  "Permissions Matrix",
-  "Notifications",
-  "Security",
+  'General',
+  'Roles & Permissions',
+  'Permissions Matrix',
+  'Notifications',
+  'Security',
 ];
 
-export default function SettingsHeader({
-  activeTab,
-  onTabChange,
-}: SettingsHeaderProps) {
+export default function SettingsHeader({ activeTab, onTabChange }: SettingsHeaderProps) {
   return (
     <div className="mb-6">
       <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
@@ -36,8 +29,8 @@ export default function SettingsHeader({
             onClick={() => onTabChange(tab)}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
               activeTab === tab
-                ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             {tab}

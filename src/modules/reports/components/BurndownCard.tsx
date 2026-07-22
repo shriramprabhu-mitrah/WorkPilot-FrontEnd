@@ -1,6 +1,6 @@
-import Panel from "@/src/app/components/common/panel/panel";
-import LineChart from "@/src/app/components/common/charts/lineChart";
-import { option } from "@/src/modules/reports/data";
+import Panel from '@/src/app/components/common/panel/panel';
+import LineChart from '@/src/app/components/common/charts/lineChart';
+import { option } from '@/src/modules/reports/data';
 
 export default function BurndownCard({ chartHeight }: { chartHeight: number }) {
   return (

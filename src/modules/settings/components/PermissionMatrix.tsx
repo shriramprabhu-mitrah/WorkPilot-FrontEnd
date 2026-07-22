@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Fragment, useMemo, useState } from "react";
-import { permissionsData } from "../data/matrixJson";
-import { Check, X, TriangleAlert, Search } from "lucide-react";
-type PermissionStatus = "allowed" | "not_allowed" | "conditional";
+import { Fragment, useMemo, useState } from 'react';
+import { permissionsData } from '../data/matrixJson';
+import { Check, X, TriangleAlert, Search } from 'lucide-react';
+type PermissionStatus = 'allowed' | 'not_allowed' | 'conditional';
 
 export type Permission = {
   name: string;
@@ -15,39 +15,28 @@ export type Permission = {
   viewer: PermissionStatus;
 };
 
-const categories = [
-  "All",
-  "Organization",
-  "Projects",
-  "Sprints",
-  "Tasks",
-  "Reports",
-];
+const categories = ['All', 'Organization', 'Projects', 'Sprints', 'Tasks', 'Reports'];
 
 export const roleHeaders = [
-  { key: "superAdmin", label: "Super Admin" },
-  { key: "orgAdmin", label: "Org Admin" },
-  { key: "pm", label: "PM" },
-  { key: "developer", label: "Developer" },
-  { key: "viewer", label: "Viewer" },
+  { key: 'superAdmin', label: 'Super Admin' },
+  { key: 'orgAdmin', label: 'Org Admin' },
+  { key: 'pm', label: 'PM' },
+  { key: 'developer', label: 'Developer' },
+  { key: 'viewer', label: 'Viewer' },
 ] as const;
 
 function PermissionStatusIcon({ status }: { status: PermissionStatus }) {
-  if (status === "allowed") {
+  if (status === 'allowed') {
     return (
       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-50 text-green-500">
         <Check size={14} strokeWidth={2.5} className="text-green-500" />
       </span>
     );
   }
-  if (status === "conditional") {
+  if (status === 'conditional') {
     return (
       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-50 text-orange-500">
-        <TriangleAlert
-          size={14}
-          strokeWidth={2.5}
-          className="text-orange-500"
-        />
+        <TriangleAlert size={14} strokeWidth={2.5} className="text-orange-500" />
       </span>
     );
   }
@@ -59,17 +48,15 @@ function PermissionStatusIcon({ status }: { status: PermissionStatus }) {
 }
 
 export default function PermissionsMatrix() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const filteredPermissions = useMemo(() => {
     return permissionsData.filter((permission) => {
-      const matchesSearch = permission.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      const matchesSearch = permission.name.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory =
-        selectedCategory === "All" || permission.category === selectedCategory;
+        selectedCategory === 'All' || permission.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -101,8 +88,8 @@ export default function PermissionsMatrix() {
               onClick={() => setSelectedCategory(category)}
               className={`rounded-lg px-4 py-2 text-xs font-medium transition ${
                 selectedCategory === category
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >
               {category}
@@ -146,9 +133,7 @@ export default function PermissionsMatrix() {
             <tbody>
               {filteredPermissions.map((permission, index) => {
                 const isFirstCategory =
-                  index === 0 ||
-                  filteredPermissions[index - 1].category !==
-                    permission.category;
+                  index === 0 || filteredPermissions[index - 1].category !== permission.category;
 
                 return (
                   <Fragment key={permission.name}>
@@ -170,9 +155,7 @@ export default function PermissionsMatrix() {
 
                       <td className="w-[12%] px-4 py-4 text-center align-middle">
                         <div className="flex items-center justify-center">
-                          <PermissionStatusIcon
-                            status={permission.superAdmin}
-                          />
+                          <PermissionStatusIcon status={permission.superAdmin} />
                         </div>
                       </td>
 

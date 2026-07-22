@@ -1,5 +1,5 @@
-import { KanbanTask } from "@/src/types/board";
-import { KanbanCardContent } from "./KanbanCardContent";
+import { KanbanTask } from '@/src/types/board';
+import { KanbanCardContent } from './KanbanCardContent';
 
 export const KanbanCardPreview = ({ task }: { task: KanbanTask }) => {
   return (

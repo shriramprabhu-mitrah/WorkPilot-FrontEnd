@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { Bell, Search, Settings, ChevronRight } from "lucide-react";
-import { colors } from "@/src/styles/colors";
-import { WpButton } from "@/src/app/components/common/button";
-import { WpInput } from "@/src/app/components/common/input";
-import { useAppSelector } from "@/src/store";
-import { getInitials } from "../format";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Bell, Search, Settings, ChevronRight } from 'lucide-react';
+import { colors } from '@/src/styles/colors';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpInput } from '@/src/app/components/common/input';
+import { useAppSelector } from '@/src/store';
+import { getInitials } from '../format';
 
 export const Navbar = () => {
   const pathname = usePathname();
-  const segment = pathname.split("/").filter(Boolean).pop() ?? "home";
+  const segment = pathname.split('/').filter(Boolean).pop() ?? 'home';
   const title = segment.charAt(0).toUpperCase() + segment.slice(1);
   const user = useAppSelector((state) => state.user);
   return (
@@ -27,19 +27,22 @@ export const Navbar = () => {
           <span className="text-gray-800 font-semibold">{title}</span>
         </div>
         <WpInput
-            type="text"
-            placeholder="Search tasks, projects..."
-            icon={<Search size={13} />}
-            wrapperClassName="w-80"
-            className="bg-white/70 text-[12px] !h-8"
-          />
+          type="text"
+          placeholder="Search tasks, projects..."
+          icon={<Search size={13} />}
+          wrapperClassName="w-80"
+          className="bg-white/70 text-[12px] !h-8"
+        />
       </div>
       {/* Right side */}
       <div className="flex items-center gap-2">
         {/* Notifications */}
         <WpButton variant="ghost" size="sm" className="relative !p-1.5 text-gray-500">
           <Bell size={17} />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.error }} />
+          <span
+            className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: colors.error }}
+          />
         </WpButton>
         <WpButton variant="ghost" size="sm" className="!p-1.5 text-gray-500">
           <Settings size={17} />
@@ -49,16 +52,17 @@ export const Navbar = () => {
         <div className="w-px h-5 bg-gray-300" />
 
         {/* Avatar */}
-        <Link href="/profile" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+        <Link
+          href="/profile"
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
             style={{ backgroundColor: colors.accent }}
           >
             {getInitials(user.name)}
           </div>
-          <span className="text-[13px] font-medium text-gray-700">
-            {user.name || "User Name"}
-          </span>
+          <span className="text-[13px] font-medium text-gray-700">{user.name || 'User Name'}</span>
           <ChevronRight size={13} className="text-gray-400 rotate-90" />
         </Link>
       </div>

@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { KanbanTask } from "@/src/types/board";
-import { colors } from "@/src/styles/colors";
-import { KanbanCardContent } from "./KanbanCardContent";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { KanbanTask } from '@/src/types/board';
+import { colors } from '@/src/styles/colors';
+import { KanbanCardContent } from './KanbanCardContent';
 
 export const KanbanCard = ({ task }: { task: KanbanTask }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id, data: { type: "card", task } });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+    data: { type: 'card', task },
+  });
 
   if (isDragging) {
     return (

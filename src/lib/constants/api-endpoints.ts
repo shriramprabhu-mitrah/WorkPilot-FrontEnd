@@ -134,19 +134,19 @@ const createQueryEndpoint = (path: string) => {
 };
 
 export const ApiEndpoints = {
-    Sign: {
-        signIn: createEndpoint("/auth/signin"),
-        signUp: createEndpoint("/auth/signup"),
-        logOut: createEndpoint("/auth/logout"),
-        refresh: createEndpoint("/auth/refresh"),
-        forgotPassword: createEndpoint("/auth/change-password"),
-        passwordReset: createEndpoint("/auth/password-reset/request"),
-        passwordConfirm:createEndpoint("/auth/password-reset/confirm"),
-        userUpdate: createEndpoint("auth/update"),
-    },
-    User:{
-      getUser:createQueryEndpoint("auth/me")
-    }
-} 
+  Sign: {
+    signIn: createEndpoint('/auth/signin'),
+    signUp: createEndpoint('/auth/signup'),
+    logOut: createEndpoint('/auth/logout'),
+    refresh: createEndpoint('/auth/refresh'),
+    forgotPassword: createEndpoint('/auth/change-password'),
+    passwordReset: createEndpoint('/auth/password-reset/request'),
+    passwordConfirm: createEndpoint('/auth/password-reset/confirm'),
+    userUpdate: createEndpoint('auth/update'),
+  },
+  User: {
+    getUser: createQueryEndpoint('auth/me'),
+  },
+};
 
-export type ApiEndpointType= typeof ApiEndpoints
+export type ApiEndpointType = typeof ApiEndpoints;

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useRef } from "react";
-import { ChevronDown, Check } from "lucide-react";
-import { useOutsideClick } from "@/src/hooks/useOutsideClick";
+import React, { useState, useRef } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
+import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 
 export interface WpDropdownOption {
   label: string;
@@ -25,7 +25,7 @@ export const WpDropdown = ({
   label,
   options,
   value,
-  placeholder = "Select an option",
+  placeholder = 'Select an option',
   error,
   hint,
   disabled = false,
@@ -51,24 +51,28 @@ export const WpDropdown = ({
           disabled={disabled}
           onClick={() => setOpen((p) => !p)}
           className={[
-            "w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white",
+            'w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white',
             error
-              ? "border-[var(--color-error)] focus:ring-red-100"
+              ? 'border-[var(--color-error)] focus:ring-red-100'
               : open
-              ? "border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]"
-              : "border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]",
-            disabled ? "bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]" : "cursor-pointer",
+                ? 'border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]'
+                : 'border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]',
+            disabled
+              ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
+              : 'cursor-pointer',
           ]
             .filter(Boolean)
-            .join(" ")}
+            .join(' ')}
         >
-          <span className={`flex items-center gap-2 ${!selected ? "text-[var(--color-gray-400)]" : "text-[var(--color-gray-900)]"}`}>
+          <span
+            className={`flex items-center gap-2 ${!selected ? 'text-[var(--color-gray-400)]' : 'text-[var(--color-gray-900)]'}`}
+          >
             {selected?.icon && <span className="flex items-center">{selected.icon}</span>}
             {selected ? selected.label : placeholder}
           </span>
           <ChevronDown
             size={16}
-            className={`text-[var(--color-gray-400)] transition-transform ${open ? "rotate-180" : ""}`}
+            className={`text-[var(--color-gray-400)] transition-transform ${open ? 'rotate-180' : ''}`}
           />
         </button>
 

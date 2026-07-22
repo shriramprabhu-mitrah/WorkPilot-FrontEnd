@@ -1,10 +1,6 @@
-import { Hash, Calendar } from "lucide-react";
-import { KanbanTask } from "@/src/types/board";
-import {
-  PriorityBadge,
-  AssigneeAvatar,
-  TaskLabel,
-} from "@/src/app/components/common/task";
+import { Hash, Calendar } from 'lucide-react';
+import { KanbanTask } from '@/src/types/board';
+import { PriorityBadge, AssigneeAvatar, TaskLabel } from '@/src/app/components/common/task';
 
 export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
   return (
@@ -15,9 +11,7 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
         <PriorityBadge priority={task.priority} />
       </div>
 
-      <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">
-        {task.title}
-      </p>
+      <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">{task.title}</p>
 
       {task.labels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
@@ -28,11 +22,7 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
       )}
 
       <div className="flex items-center justify-between mt-1">
-        <AssigneeAvatar
-          initials={task.assigneeInitials}
-          color={task.assigneeColor}
-          size="md"
-        />
+        <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} size="md" />
 
         <div className="flex items-center gap-3 text-xs text-gray-400">
           <span className="flex items-center gap-0.5">

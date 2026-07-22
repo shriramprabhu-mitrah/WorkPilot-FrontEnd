@@ -1,10 +1,10 @@
 export interface SignupPayload {
-  full_name:string;
-  username:string;
+  full_name: string;
+  username: string;
   email: string;
   password: string;
-  avatar_url?:string;
-  timezone?:string
+  avatar_url?: string;
+  timezone?: string;
   confirmPwd?: string;
 }
 

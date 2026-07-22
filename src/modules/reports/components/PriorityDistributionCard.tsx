@@ -1,8 +1,8 @@
-import { colors } from "@/src/styles/colors";
-import Panel from "@/src/app/components/common/panel/panel";
-import Piechart from "@/src/app/components/common/charts/pieChart";
-import type { CallbackDataParams } from "echarts/types/dist/shared";
-import { priorityData } from "@/src/modules/reports/data";
+import { colors } from '@/src/styles/colors';
+import Panel from '@/src/app/components/common/panel/panel';
+import Piechart from '@/src/app/components/common/charts/pieChart';
+import type { CallbackDataParams } from 'echarts/types/dist/shared';
+import { priorityData } from '@/src/modules/reports/data';
 interface PriorityDistributionCardProps {
   isMobile: boolean;
   chartHeight: number;
@@ -13,14 +13,11 @@ export default function PriorityDistributionCard({
   chartHeight,
 }: PriorityDistributionCardProps) {
   return (
-    <Panel
-      title="Tasks by Priority"
-      subtitle="Risk distribution across active sprint"
-    >
+    <Panel title="Tasks by Priority" subtitle="Risk distribution across active sprint">
       <Piechart
         data={priorityData}
-        radius={["0%", "72%"]}
-        center={isMobile ? ["36%", "50%"] : ["40%", "50%"]}
+        radius={['0%', '72%']}
+        center={isMobile ? ['36%', '50%'] : ['40%', '50%']}
         startAngle={30}
         label={{
           show: true,

@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Play, CheckCircle2, Clock, Plus } from "lucide-react";
-import { Sprint } from "../data";
-import { BacklogRow } from "./BacklogRow";
-import { colors } from "@/src/styles/colors";
-import { WpButton } from "@/src/app/components/common/button";
+import { useState } from 'react';
+import { ChevronDown, ChevronRight, Play, CheckCircle2, Clock, Plus } from 'lucide-react';
+import { Sprint } from '../data';
+import { BacklogRow } from './BacklogRow';
+import { colors } from '@/src/styles/colors';
+import { WpButton } from '@/src/app/components/common/button';
 
 const statusBadge: Record<
-  Sprint["status"],
+  Sprint['status'],
   { label: string; color: string; bg: string; icon: React.ReactNode }
 > = {
   active: {
-    label: "Active",
+    label: 'Active',
     color: colors.colActive,
     bg: colors.dropgreenBg,
     icon: <Play size={10} />,
   },
   planned: {
-    label: "Planned",
+    label: 'Planned',
     color: colors.colTodo,
     bg: colors.dropBg,
     icon: <Clock size={10} />,
   },
   completed: {
-    label: "Completed",
+    label: 'Completed',
     color: colors.gray500,
     bg: colors.gray100,
     icon: <CheckCircle2 size={10} />,
@@ -35,7 +35,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
   const [open, setOpen] = useState(true);
   const badge = statusBadge[sprint.status];
 
-  const doneTasks = sprint.tasks.filter((t) => t.status === "Done").length;
+  const doneTasks = sprint.tasks.filter((t) => t.status === 'Done').length;
   const totalTasks = sprint.tasks.length;
   const totalPoints = sprint.tasks.reduce((sum, t) => sum + t.storyPoints, 0);
 
@@ -49,9 +49,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
           {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </span>
 
-        <span className="font-semibold text-sm text-gray-900 truncate">
-          {sprint.name}
-        </span>
+        <span className="font-semibold text-sm text-gray-900 truncate">{sprint.name}</span>
 
         <span
           className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full shrink-0"
@@ -61,9 +59,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
           {badge.label}
         </span>
 
-        <span className="hidden sm:inline text-xs text-gray-400 shrink-0">
-          {sprint.dateRange}
-        </span>
+        <span className="hidden sm:inline text-xs text-gray-400 shrink-0">{sprint.dateRange}</span>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto text-xs text-gray-400">
           <span className="hidden xs:inline sm:hidden">
@@ -73,7 +69,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
             {doneTasks}/{totalTasks} tasks
           </span>
           <span className="hidden md:inline">{totalPoints} pts</span>
-          {sprint.status !== "completed" && (
+          {sprint.status !== 'completed' && (
             <WpButton
               variant="secondary"
               size="sm"
@@ -81,11 +77,9 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
               leftIcon={<Plus size={12} />}
             >
               <span className="hidden sm:inline">
-                {sprint.status === "active" ? "Complete Sprint" : "Start Sprint"}
+                {sprint.status === 'active' ? 'Complete Sprint' : 'Start Sprint'}
               </span>
-              <span className="sm:hidden">
-                {sprint.status === "active" ? "Complete" : "Start"}
-              </span>
+              <span className="sm:hidden">{sprint.status === 'active' ? 'Complete' : 'Start'}</span>
             </WpButton>
           )}
         </div>
@@ -106,14 +100,17 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
       {open && (
         <div>
           {sprint.tasks.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
-              No tasks in this sprint.
-            </p>
+            <p className="text-sm text-gray-400 text-center py-6">No tasks in this sprint.</p>
           ) : (
             sprint.tasks.map((task) => <BacklogRow key={task.id} task={task} />)
           )}
           <div className="px-3 sm:px-4 py-2">
-          <WpButton variant="ghost" size="sm" leftIcon={<Plus size={13} />} className="text-gray-400 hover:text-blue-600">
+            <WpButton
+              variant="ghost"
+              size="sm"
+              leftIcon={<Plus size={13} />}
+              className="text-gray-400 hover:text-blue-600"
+            >
               Add task
             </WpButton>
           </div>

@@ -1,25 +1,25 @@
-"use client";
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import ReactEcharts from "echarts-for-react";
-import * as echarts from "echarts";
-import { EChartsOption, PieSeriesOption } from "echarts";
-import type { TopLevelFormatterParams } from "echarts/types/dist/shared";
-import { colors } from "@/src/styles/colors";
-import { useResize } from "@/src/hooks/useResize";
+'use client';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import ReactEcharts from 'echarts-for-react';
+import * as echarts from 'echarts';
+import { EChartsOption, PieSeriesOption } from 'echarts';
+import type { TopLevelFormatterParams } from 'echarts/types/dist/shared';
+import { colors } from '@/src/styles/colors';
+import { useResize } from '@/src/hooks/useResize';
 
 interface PieChartProps {
-  legends?: EChartsOption["legend"];
+  legends?: EChartsOption['legend'];
   name?: string;
-  radius?: PieSeriesOption["radius"];
-  center?: PieSeriesOption["center"];
-  itemstyle?: PieSeriesOption["itemStyle"];
-  rosetype?: PieSeriesOption["roseType"];
-  labelline?: PieSeriesOption["labelLine"];
-  label?: PieSeriesOption["label"];
-  data?: PieSeriesOption["data"];
-  title?: EChartsOption["title"];
-  graphic?: EChartsOption["graphic"];
-  tooltip?: EChartsOption["tooltip"];
+  radius?: PieSeriesOption['radius'];
+  center?: PieSeriesOption['center'];
+  itemstyle?: PieSeriesOption['itemStyle'];
+  rosetype?: PieSeriesOption['roseType'];
+  labelline?: PieSeriesOption['labelLine'];
+  label?: PieSeriesOption['label'];
+  data?: PieSeriesOption['data'];
+  title?: EChartsOption['title'];
+  graphic?: EChartsOption['graphic'];
+  tooltip?: EChartsOption['tooltip'];
   padAngle?: number;
   startAngle?: number;
   minAngle?: number;
@@ -28,8 +28,8 @@ interface PieChartProps {
   className?: string;
 }
 
-const defaultTooltip: EChartsOption["tooltip"] = {
-  trigger: "item",
+const defaultTooltip: EChartsOption['tooltip'] = {
+  trigger: 'item',
   backgroundColor: colors.white,
   borderColor: colors.gray200,
   borderWidth: 1,
@@ -59,10 +59,10 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
       startAngle = 40,
       minAngle,
       minShowLabelAngle,
-      height = "100%",
-      className = "",
+      height = '100%',
+      className = '',
     },
-    ref,
+    ref
   ) => {
     const innerRef = useRef<ReactEcharts | null>(null);
     const { width } = useResize();
@@ -104,7 +104,7 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
         minAngle,
         minShowLabelAngle,
         name,
-      ],
+      ]
     );
 
     useEffect(() => {
@@ -121,7 +121,7 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
 
     const normalizedData = Array.isArray(data)
       ? data.map((item) => {
-          if (typeof item === "object" && item !== null) {
+          if (typeof item === 'object' && item !== null) {
             const pieItem = item as {
               name?: string;
               value?: number;
@@ -142,16 +142,16 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
     const option: EChartsOption = {
       animation: true,
       animationDuration: 1000,
-      animationEasing: "cubicOut",
+      animationEasing: 'cubicOut',
       animationDurationUpdate: 700,
-      animationEasingUpdate: "cubicOut",
+      animationEasingUpdate: 'cubicOut',
       title,
       legend: legends,
       tooltip: tooltip ?? defaultTooltip,
       series: [
         {
           name,
-          type: "pie",
+          type: 'pie',
           emphasis: { disabled: true },
           radius,
           center,
@@ -187,20 +187,18 @@ const Piechart = forwardRef<ReactEcharts, Readonly<PieChartProps>>(
           notMerge
           ref={(node) => {
             innerRef.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref)
-              (ref as React.MutableRefObject<ReactEcharts | null>).current =
-                node;
+            if (typeof ref === 'function') ref(node);
+            else if (ref) (ref as React.MutableRefObject<ReactEcharts | null>).current = node;
           }}
           echarts={echarts}
           option={option}
-          style={{ width: "100%", height: "100%" }}
-          opts={{ renderer: "svg" }}
+          style={{ width: '100%', height: '100%' }}
+          opts={{ renderer: 'svg' }}
         />
       </div>
     );
-  },
+  }
 );
 
-Piechart.displayName = "Piechart";
+Piechart.displayName = 'Piechart';
 export default Piechart;
