@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import { SettingPageTemplate } from "@/src/modules/settings/templates";
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <SettingPageTemplate />;
 }

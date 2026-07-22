@@ -1,3 +1,4 @@
+import { colors } from "@/src/styles/colors";
 import { Task } from "@/src/types/task";
 
 export const tasksData : Task[]=[
@@ -9,7 +10,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Marcus",
             "initials": "MU",
-            "color": "#6366F1",
+            "color": colors.avatarBlue
         },
         "points": 8,
         "dueDate": "Jul 5",
@@ -27,7 +28,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Marcus",
             "initials": "MU",
-            "color": "#6366F1",
+            "color": colors.avatarBlue,
         },
         "points": 13,
         "dueDate": "Jul 12",
@@ -45,7 +46,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Marcus",
             "initials": "MU",
-            "color": "#6366F1",
+            "color": colors.avatarBlue,
         },
         "points": 8,
         "dueDate": "Jul 14",
@@ -63,7 +64,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Priya",
             "initials": "PP",
-            "color": "#EC4899"
+            "color": colors.avatarPink
         },
         "points": 3,
         "dueDate": "Jul 18",
@@ -80,7 +81,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Jordan",
             "initials": "JW",
-            "color": "#F59E0B"
+            "color": colors.avatarAmber
         },
         "points": 5,
         "dueDate": "Jul 10",
@@ -97,7 +98,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Marcus",
             "initials": "MU",
-            "color": "#6366F1",
+            "color": colors.avatarBlue,
 
         },
         "points": 13,
@@ -115,7 +116,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Alex",
             "initials": "AK",
-            "color": "#14B8A6"
+            "color": colors.avatarGreen
         },
         "points": 8,
         "dueDate": "Jul 15",
@@ -133,7 +134,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Priya",
             "initials": "PP",
-            "color": "#EC4899"
+            "color": colors.avatarPink
         },
         "points": 5,
         "dueDate": "Jul 22",
@@ -151,7 +152,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Priya",
             "initials": "PP",
-            "color": "#EC4899"
+            "color": colors.avatarPink
         },
         "points": 3,
         "dueDate": "Jul 8",
@@ -169,7 +170,7 @@ export const tasksData : Task[]=[
         "assignee": {
             "name": "Marcus",
             "initials": "MU",
-            "color": "#6366F1",
+            "color": colors.avatarBlue,
         },
         "points": 13,
         "dueDate": "Aug 1",
@@ -184,7 +185,7 @@ export const tasksData : Task[]=[
         "title": "Build Kafka consumer service",
         "priority": "Critical",
         "status": "Done",
-        "assignee": { "name": "Marcus", "initials": "MJ", "color": "#6366F1", },
+        "assignee": { "name": "Marcus", "initials": "MJ", "color": colors.avatarBlue, },
         "points": 13,
         "dueDate": "Jul 1",
         "sprint": "Sprint 7",
@@ -195,7 +196,7 @@ export const tasksData : Task[]=[
         "title": "Create analytics dashboard UI",
         "priority": "High",
         "status": "In Review",
-        "assignee": { "name": "Priya", "initials": "PP", "color": "#EC4899" },
+        "assignee": { "name": "Priya", "initials": "PP", "color": colors.avatarPink },
         "points": 8,
         "dueDate": "Jul 10",
         "sprint": "Sprint 7",
@@ -206,7 +207,7 @@ export const tasksData : Task[]=[
         "title": "Write unit tests for ETL jobs",
         "priority": "Medium",
         "status": "Testing",
-        "assignee": { "name": "Jordan", "initials": "JW", "color": "#F59E0B" },
+        "assignee": { "name": "Jordan", "initials": "JW", "color": colors.avatarAmber },
         "points": 5,
         "dueDate": "Jul 12",
         "sprint": "Sprint 7",
@@ -217,7 +218,7 @@ export const tasksData : Task[]=[
         "title": "Define color token system",
         "priority": "High",
         "status": "Done",
-        "assignee": { "name": "Alex", "initials": "AK", "color": "#14B8A6" },
+        "assignee": { "name": "Alex", "initials": "AK", "color": colors.avatarGreen },
         "points": 5,
         "dueDate": "Jul 3",
         "sprint": "Sprint 1",
@@ -228,7 +229,7 @@ export const tasksData : Task[]=[
         "title": "Build Button component variants",
         "priority": "Medium",
         "status": "In Progress",
-        "assignee": { "name": "Priya", "initials": "PP", "color": "#EC4899" },
+        "assignee": { "name": "Priya", "initials": "PP", "color": colors.avatarPink },
         "points": 3,
         "dueDate": "Jul 15",
         "sprint": "Sprint 1",
@@ -239,7 +240,7 @@ export const tasksData : Task[]=[
         "title": "Document component usage guidelines",
         "priority": "Low",
         "status": "To Do",
-        "assignee": { "name": "Alex", "initials": "AK", "color": "#14B8A6" },
+        "assignee": { "name": "Alex", "initials": "AK", "color": colors.avatarGreen },
         "points": 2,
         "dueDate": "Jul 20",
         "sprint": "Sprint 1",
@@ -250,7 +251,7 @@ export const tasksData : Task[]=[
         "title": "Wireframes for customer portal",
         "priority": "High",
         "status": "In Progress",
-        "assignee": { "name": "Alex", "initials": "AK", "color": "#14B8A6" },
+        "assignee": { "name": "Alex", "initials": "AK", "color": colors.avatarGreen },
         "points": 8,
         "dueDate": "Jul 18",
         "sprint": "Sprint 1",
@@ -261,7 +262,7 @@ export const tasksData : Task[]=[
         "title": "Set up project repository and CI",
         "priority": "Medium",
         "status": "Done",
-        "assignee": { "name": "Marcus", "initials": "MJ", "color": "#6366F1", },
+        "assignee": { "name": "Marcus", "initials": "MJ", "color": colors.avatarBlue, },
         "points": 1,
         "dueDate": "Jul 5",
         "sprint": "Sprint 1",
@@ -272,7 +273,7 @@ export const tasksData : Task[]=[
         "title": "Define tech stack and architecture",
         "priority": "Critical",
         "status": "In Review",
-        "assignee": { "name": "Marcus", "initials": "MJ", "color": "#6366F1", },
+        "assignee": { "name": "Marcus", "initials": "MJ", "color": colors.avatarBlue, },
         "points": 5,
         "dueDate": "Jul 10",
         "sprint": "Sprint 1",
