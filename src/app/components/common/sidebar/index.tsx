@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { removeTokens } from "@/src/lib/utils/cookies";
+import { useAppSelector } from "@/src/store";
+import { useSignin } from "@/src/modules/signin/hooks/useSignin";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -18,6 +20,7 @@ import {
   SquareKanban,
   User,
   KanbanSquareDashedIcon,
+  icons,
 } from "lucide-react";
 import { TrackrLogoSmSvg } from "@/src/assets/svgs";
 import { colors } from "@/src/styles/colors";
@@ -33,15 +36,26 @@ const navItems = [
   { label: "Teams", href: "/teams", icon: User },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "My Profile", href:"/profile",icon: User}
 ];
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const user = useAppSelector((state) => state.user);
+  const { handleLogOut } = useSignin();
 
-  const handleLogout = () => {
+  const handleLogoutClick = async () => {
+    await handleLogOut();
     removeTokens();
     router.push("/signin");
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0].substring(0, 2).toUpperCase();
   };
 
   return (
@@ -139,16 +153,16 @@ export const Sidebar = () => {
           className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
           style={{ backgroundColor: colors.accent }}
         >
-          U
+          {getInitials(user.name)}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-gray-800 truncate">
-            User Name
+            {user.name || "User Name"}
           </p>
-          <p className="text-[11px] text-gray-400 truncate">user@email.com</p>
+          <p className="text-[11px] text-gray-400 truncate">{user.email || "user@email.com"}</p>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
           title="Logout"
         >

@@ -142,7 +142,10 @@ export const ApiEndpoints = {
         forgotPassword: createEndpoint("/auth/change-password"),
         passwordReset: createEndpoint("/auth/password-reset/request"),
         passwordConfirm:createEndpoint("/auth/password-reset/confirm"),
-        userUpdate: createEndpoint("auth/update")
+        userUpdate: createEndpoint("auth/update"),
+    },
+    User:{
+      getUser:createQueryEndpoint("auth/me")
     }
 } 
 
