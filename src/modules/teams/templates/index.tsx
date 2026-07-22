@@ -5,6 +5,7 @@ import { colors } from "@/src/styles/colors";
 import { MemberCard } from "@/src/modules/teams/components/membercard";
 import { RoleCardView } from "../components/rolecared";
 import { MEMBERS, ROLES } from "../data";
+import { WpButton } from "@/src/app/components/common/button";
 
 export const TeamTemplate = () => (
   <div className="flex flex-col gap-8 h-full overflow-y-auto [scrollbar-width:thin]">
@@ -21,14 +22,10 @@ export const TeamTemplate = () => (
           {MEMBERS.length} members · Acme Corp
         </p>
       </div>
-      <button
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white shrink-0 transition-colors hover:opacity-90"
-        style={{ backgroundColor: colors.primary }}
-      >
-        <UserPlus size={15} />
+      <WpButton size="sm" leftIcon={<UserPlus size={15} />}>
         <span className="hidden sm:inline">Invite Member</span>
         <span className="sm:hidden">Invite</span>
-      </button>
+      </WpButton>
     </div>
 
     {/* Member grid */}

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { removeTokens } from "@/src/lib/utils/cookies";
-import { useAppSelector } from "@/src/store";
-import { useSignin } from "@/src/modules/signin/hooks/useSignin";
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { removeTokens } from '@/src/lib/utils/cookies';
+import { useAppSelector } from '@/src/store';
+import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -21,22 +21,24 @@ import {
   User,
   KanbanSquareDashedIcon,
   icons,
-} from "lucide-react";
-import { TrackrLogoSmSvg } from "@/src/assets/svgs";
-import { colors } from "@/src/styles/colors";
+} from 'lucide-react';
+import { TrackrLogoSmSvg } from '@/src/assets/svgs';
+import { colors } from '@/src/styles/colors';
+import { WpInput } from '@/src/app/components/common/input';
+import { WpButton } from '@/src/app/components/common/button';
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Boards", href: "/boards", icon: KanbanSquareDashedIcon },
-  { label: "Backlog", href: "/backlog", icon: BarChart2 },
-  { label: "Sprint", href: "/sprint", icon: SquareKanban },
-  { label: "Tasks", href: "/tasks", icon: ClipboardList },
-  { label: "Reports", href: "/reports", icon: Flag },
-  { label: "Teams", href: "/teams", icon: User },
-  { label: "Calendar", href: "/calendar", icon: Calendar },
-  { label: "Settings", href: "/settings", icon: Settings },
-  { label: "My Profile", href:"/profile",icon: User}
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Projects', href: '/projects', icon: FolderKanban },
+  { label: 'Boards', href: '/boards', icon: KanbanSquareDashedIcon },
+  { label: 'Backlog', href: '/backlog', icon: BarChart2 },
+  { label: 'Sprint', href: '/sprint', icon: SquareKanban },
+  { label: 'Tasks', href: '/tasks', icon: ClipboardList },
+  { label: 'Reports', href: '/reports', icon: Flag },
+  { label: 'Teams', href: '/teams', icon: User },
+  { label: 'Calendar', href: '/calendar', icon: Calendar },
+  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'My Profile', href: '/profile', icon: User },
 ];
 
 export const Sidebar = () => {
@@ -48,7 +50,7 @@ export const Sidebar = () => {
   const handleLogoutClick = async () => {
     await handleLogOut();
     removeTokens();
-    router.push("/signin");
+    router.push('/signin');
   };
 
   const getInitials = (name: string | null) => {
@@ -84,9 +86,7 @@ export const Sidebar = () => {
             >
               W
             </div>
-            <span className="text-[13px] font-medium text-gray-700">
-              My Workspace
-            </span>
+            <span className="text-[13px] font-medium text-gray-700">My Workspace</span>
           </div>
           <ChevronDown size={13} className="text-gray-400" />
         </div>
@@ -94,14 +94,12 @@ export const Sidebar = () => {
 
       {/* Search */}
       <div className="px-3 pb-2">
-        <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-2.5 py-1.5">
-          <Search size={13} className="text-gray-400 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent text-[12px] text-gray-500 placeholder-gray-400 outline-none w-full"
-          />
-        </div>
+        <WpInput
+          type="text"
+          placeholder="Search..."
+          icon={<Search size={13} />}
+          className="bg-gray-100 border-1 text-[12px] !h-8"
+        />
       </div>
 
       {/* Nav label */}
@@ -123,10 +121,7 @@ export const Sidebar = () => {
                 color: active ? colors.primary : colors.gray700,
               }}
             >
-              <Icon
-                size={15}
-                style={{ color: active ? colors.primary : colors.gray700 }}
-              />
+              <Icon size={15} style={{ color: active ? colors.primary : colors.gray700 }} />
               {label}
             </Link>
           );
@@ -135,13 +130,15 @@ export const Sidebar = () => {
 
       {/* New Project */}
       <div className="px-3 py-2">
-        <button
-          className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-[13px] font-medium hover:bg-gray-100 hover:text-gray-700 transition-colors border border-dashed border-gray-200"
-          style={{ color: colors.gray400 }}
+        <WpButton
+          variant="secondary"
+          size="sm"
+          fullWidth
+          leftIcon={<Plus size={14} />}
+          className="border-dashed text-gray-400 justify-start"
         >
-          <Plus size={14} />
           New Project
-        </button>
+        </WpButton>
       </div>
 
       {/* Divider */}
@@ -157,17 +154,19 @@ export const Sidebar = () => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-gray-800 truncate">
-            {user.name || "User Name"}
+            {user.name || 'User Name'}
           </p>
-          <p className="text-[11px] text-gray-400 truncate">{user.email || "user@email.com"}</p>
+          <p className="text-[11px] text-gray-400 truncate">{user.email || 'user@email.com'}</p>
         </div>
-        <button
+        <WpButton
+          variant="ghost"
+          size="sm"
           onClick={handleLogoutClick}
-          className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+          className="!p-1.5 text-gray-400 hover:bg-red-50 hover:!text-red-500"
           title="Logout"
         >
           <LogOut size={15} />
-        </button>
+        </WpButton>
       </div>
     </aside>
   );

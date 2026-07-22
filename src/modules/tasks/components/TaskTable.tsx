@@ -1,12 +1,14 @@
 "use client";
-import { tasksData } from "../data/tasks"
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TableCheckbox } from "./TableCheckbox";
 import { ActionMenu } from "./ActionMenu";
 import { AssigneeAvatar, PriorityBadge, StatusBadge } from "@/src/app/components/common/task";
 import { Task } from "@/src/types/task";
 import { logger } from "@/src/lib/utils/logger";
+import { tasksData } from "../data/tasks";
+import { WpButton } from "@/src/app/components/common/button";
 
 type TaskTableProps = {
     selectedFilters: {
@@ -163,32 +165,32 @@ export const TaskTable = ({
                 </p>
 
                 <div className="flex items-center gap-2">
-                    <button
+                    <WpButton
+                        variant="secondary"
+                        size="sm"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage((p) => p - 1)}
-                        className="rounded p-1 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
                     >
                         <ChevronLeft size={18} />
-                    </button>
+                    </WpButton>
                     {Array.from({ length: totalPages }).map((_, index) => (
-                        <button
+                        <WpButton
                             key={index}
+                            size="sm"
+                            variant={currentPage === index + 1 ? "primary" : "secondary"}
                             onClick={() => setCurrentPage(index + 1)}
-                            className={`flex h-8 w-8 items-center justify-center rounded-md text-sm ${currentPage === index + 1
-                                ? "bg-blue-600 text-white"
-                                : "text-gray-600 hover:bg-gray-100"
-                                }`}
                         >
                             {index + 1}
-                        </button>
+                        </WpButton>
                     ))}
-                    <button
+                    <WpButton
+                        variant="secondary"
+                        size="sm"
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage((p) => p + 1)}
-                        className="rounded p-1 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
                     >
                         <ChevronRight size={18} />
-                    </button>
+                    </WpButton>
                 </div>
             </div>
         </div>

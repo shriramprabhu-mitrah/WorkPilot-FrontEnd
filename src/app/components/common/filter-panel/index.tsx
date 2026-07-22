@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { Priority } from "@/src/types/board";
 import { colors } from "@/src/styles/colors";
 import { Chip } from "@/src/app/components/common/chip";
+import { WpButton } from "@/src/app/components/common/button";
 
 export interface FilterState {
   priorities: Priority[];
@@ -57,22 +58,17 @@ export const FilterPanel = ({
         </span>
         <div className="flex items-center gap-2">
           {hasActive && (
-            <button
-              onClick={() =>
-                onChange({ priorities: [], assignees: [], labels: [] })
-              }
-              className="text-xs font-medium"
-              style={{ color: colors.primary }}
+            <WpButton
+              variant="ghost"
+              size="sm"
+              onClick={() => onChange({ priorities: [], assignees: [], labels: [] })}
             >
               Clear all
-            </button>
+            </WpButton>
           )}
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-red-300 transition-colors"
-          >
+          <WpButton variant="ghost" size="sm" className="!p-1 text-gray-400 hover:text-red-300" onClick={onClose}>
             <X size={15} />
-          </button>
+          </WpButton>
         </div>
       </div>
 

@@ -1,11 +1,12 @@
 'use client';
 
-import  { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import '../../../styles/landing-page.css';
 import { CheckIconSvg, ProjectMgmtIconSvg, AgileBoardIconSvg, SprintIconSvg, CollaborationIconSvg, ReportsIconSvg, NotificationsIconSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
+import { WpButton } from '@/src/app/components/common/button';
 
 // Intersection Observer Hook for scroll animations
 const useScrollReveal = () => {
@@ -37,8 +38,8 @@ export const LandingPage = () => {
           <a href="#features" className="lp-nav-link">Features</a>
           <a href="#how-it-works" className="lp-nav-link">How it Works</a>
           <a href="#pricing" className="lp-nav-link">Pricing</a>
-          <button onClick={() => router.push('/signin')} className="lp-btn-outline">Sign In</button>
-          <button onClick={() => router.push('/signup')} className="lp-btn-primary">Get Started</button>
+          <WpButton variant="secondary" onClick={() => router.push('/signin')} className="lp-btn-outline">Sign In</WpButton>
+          <WpButton onClick={() => router.push('/signup')} className="lp-btn-primary">Get Started</WpButton>
         </div>
       </header>
 
@@ -49,8 +50,8 @@ export const LandingPage = () => {
           MitrahSoft is an all-in-one project management platform that helps teams plan projects, organize backlogs, manage sprints, track tasks, and collaborate efficiently—all from a single workspace.
         </p>
         <div className="lp-hero-actions animate-on-scroll" style={{ transitionDelay: '0.2s' }}>
-          <button onClick={() => router.push('/signup')} className="lp-btn-accent">Start for Free</button>
-          <button onClick={() => router.push('/signin')} className="lp-btn-outline">Sign In</button>
+          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent">Start for Free</WpButton>
+          <WpButton variant="secondary" onClick={() => router.push('/signin')} className="lp-btn-outline">Sign In</WpButton>
         </div>
         
         <div className="lp-hero-image-wrapper animate-on-scroll" style={{ transitionDelay: '0.3s' }}>
@@ -180,7 +181,7 @@ export const LandingPage = () => {
                 </li>
               ))}
             </ul>
-            <button onClick={() => router.push('/signup')} className="lp-btn-outline" style={{ width: '100%' }}>Start Free</button>
+            <WpButton variant="secondary" onClick={() => router.push('/signup')} className="lp-btn-outline" fullWidth>Start Free</WpButton>
           </div>
 
           <div className="lp-pricing-card popular animate-on-scroll" style={{ transitionDelay: '0.1s' }}>
@@ -194,7 +195,7 @@ export const LandingPage = () => {
                 </li>
               ))}
             </ul>
-            <button onClick={() => router.push('/signup')} className="lp-btn-accent" style={{ width: '100%' }}>Get Started</button>
+            <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent" fullWidth>Get Started</WpButton>
           </div>
 
           <div className="lp-pricing-card animate-on-scroll" style={{ transitionDelay: '0.2s' }}>
@@ -207,7 +208,7 @@ export const LandingPage = () => {
                 </li>
               ))}
             </ul>
-            <button className="lp-btn-outline" style={{ width: '100%' }}>Contact Sales</button>
+            <WpButton variant="secondary" className="lp-btn-outline" fullWidth>Contact Sales</WpButton>
           </div>
         </div>
       </section>
@@ -217,8 +218,8 @@ export const LandingPage = () => {
         <h2 className="lp-cta-title">Ready to Build Better Projects?</h2>
         <p className="lp-cta-desc">Join thousands of professionals who trust MitrahSoft to manage projects, collaborate with teams, and deliver results beyond expectations.</p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-          <button onClick={() => router.push('/signup')} className="lp-btn-accent">Start Free</button>
-          <button className="lp-btn-outline" style={{ background: 'transparent', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>Contact Sales</button>
+          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent">Start Free</WpButton>
+          <WpButton variant="secondary" className="lp-btn-outline">Contact Sales</WpButton>
         </div>
       </section>
 

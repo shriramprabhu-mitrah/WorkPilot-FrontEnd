@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { WpButton } from "@/src/app/components/common/button";
 
 type ActionMenuProps = {
     onView?: () => void;
@@ -33,38 +34,21 @@ export const ActionMenu = ({
 
     return (
         <div className="relative" ref={menuRef}>
-            <button
-                onClick={() => setOpen(!open)}
-                className="rounded-md p-2 hover:bg-gray-100"
-            >
+            <WpButton variant="ghost" size="sm" className="!p-2" onClick={() => setOpen(!open)}>
                 <MoreHorizontal size={18} />
-            </button>
+            </WpButton>
 
             {open && (
                 <div className="absolute right-0 z-50 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg">
-                    <button
-                        onClick={onView}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
-                    >
-                        <Eye size={16} />
+                    <WpButton variant="ghost" size="sm" fullWidth onClick={onView} leftIcon={<Eye size={16} />} className="justify-start rounded-none">
                         View
-                    </button>
-
-                    <button
-                        onClick={onUpdate}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
-                    >
-                        <Pencil size={16} />
+                    </WpButton>
+                    <WpButton variant="ghost" size="sm" fullWidth onClick={onUpdate} leftIcon={<Pencil size={16} />} className="justify-start rounded-none">
                         Update
-                    </button>
-
-                    <button
-                        onClick={onDelete}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                        <Trash2 size={16} />
+                    </WpButton>
+                    <WpButton variant="ghost" size="sm" fullWidth onClick={onDelete} leftIcon={<Trash2 size={16} />} className="justify-start rounded-none text-red-600 hover:bg-red-50">
                         Delete
-                    </button>
+                    </WpButton>
                 </div>
             )}
         </div>
