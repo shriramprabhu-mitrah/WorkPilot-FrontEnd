@@ -1,5 +1,5 @@
 import { Flag } from 'lucide-react';
-import { Priority } from '@/src/types/board';
+import { Priority, SubTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { Chip } from '@/src/app/components/common/chip';
 
@@ -58,6 +58,23 @@ export const AssigneeAvatar = ({ initials, color, size = 'sm' }: AvatarProps) =>
   );
 };
 
+const STATUS_STYLES: Record<SubTask['status'], { label: string; color: string; bg: string }> = {
+  todo: { label: 'TO DO', color: colors.gray500, bg: colors.colBacklogBg },
+  inprogress: { label: 'IN PROGRESS', color: colors.primaryFocus, bg: colors.colTodoBg },
+  done: { label: 'DONE', color: colors.colActive, bg: colors.dropgreenBg },
+};
+
+export const SubStatusBadge = ({ status }: { status: SubTask['status'] }) => {
+  const s = STATUS_STYLES[status];
+  return (
+    <span
+      className="text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
+      style={{ color: s.color, backgroundColor: s.bg }}
+    >
+      {s.label}
+    </span>
+  );
+};
 // ─── Task Label ───────────────────────────────────────────────────────────────
 
 export const TaskLabel = ({ label }: { label: string }) => <Chip label={label} />;
