@@ -1,7 +1,7 @@
 'use client';
 import ProjectCard from '../projectCard';
 import { Projects } from '../../data/project';
-import { useState} from 'react';
+import { useState } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
