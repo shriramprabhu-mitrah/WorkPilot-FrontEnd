@@ -50,15 +50,6 @@ export const LandingPage = () => {
     <div className="lp-page">
       {/* Header */}
       <header className="lp-header">
-        {/* <Image
-          src="/images/WorkPilot-logo.png"
-          alt="WorkPilot Logo"
-          width={150}
-          height={40}
-          className="lp-logo"
-          priority
-          style={{ width: 'auto' }}
-        /> */}
         <div className="logo mt-5">
           <div className="logoIcon">
             <TrackrLogoSvg />
@@ -438,14 +429,6 @@ export const LandingPage = () => {
       <footer className="lp-footer">
         <div className="lp-footer-grid">
           <div>
-            {/* <Image
-              src="/images/mitrahsoft-logo.png"
-              alt="WorkPilot Logo"
-              width={150}
-              height={40}
-              className="lp-footer-logo"
-              style={{ width: 'auto' }}
-            /> */}
             <div className="logo">
               <div className="logoIcon">
                 <TrackrLogoSvg />
@@ -479,11 +462,6 @@ export const LandingPage = () => {
                   Features
                 </a>
               </li>
-              {/* <li>
-                <a href="#" className="lp-footer-link">
-                  Pricing
-                </a>
-              </li> */}
               <li>
                 <a href="#" className="lp-footer-link">
                   Integrations
@@ -550,7 +528,8 @@ export const LandingPage = () => {
               </li>
             </ul>
           </div>
-          {/* <div>
+          {/* Comment the Linkedin for fututre purpose */
+          /* <div>
             <h4 className="lp-footer-col-title">Connect</h4>
             <ul className="lp-footer-links">
               <li>
