@@ -1,41 +1,86 @@
-import { Hash, Calendar } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { Calendar, ChevronDown, ChevronRight, GitBranch, Plus } from 'lucide-react';
 import { KanbanTask } from '@/src/types/board';
-import { PriorityBadge, AssigneeAvatar, TaskLabel } from '@/src/app/components/common/task';
+import { PriorityBadge, AssigneeAvatar, SubStatusBadge } from '@/src/app/components/common/task';
 
 export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
+  const subtasks = task.subtasks ?? [];
+  const doneCount = subtasks.filter((s) => s.status === 'done').length;
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-blue-600">{task.id}</span>
-
-        <PriorityBadge priority={task.priority} />
-      </div>
-
+      {/* Title */}
       <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">{task.title}</p>
 
-      {task.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {task.labels.map((label) => (
-            <TaskLabel key={label} label={label} />
-          ))}
+      {/* Due date */}
+      {task.dueDate && (
+        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+          <Calendar size={11} className="text-gray-400" />
+          <span>{task.dueDate}</span>
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-1">
-        <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} size="md" />
-
-        <div className="flex items-center gap-3 text-xs text-gray-400">
-          <span className="flex items-center gap-0.5">
-            <Hash size={11} />
-            {task.storyPoints}
-          </span>
-
-          <span className="flex items-center gap-0.5">
-            <Calendar size={11} />
-            {task.dueDate}
-          </span>
+      {/* Task ID row */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <GitBranch size={12} className="text-blue-400" />
+          <span className="text-xs font-semibold text-blue-500">{task.id}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <PriorityBadge priority={task.priority} />
+          <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} size="sm" />
         </div>
       </div>
+
+      {/* Subtasks row */}
+      {subtasks.length > 0 && (
+        <div className="border-t border-gray-100 mt-1 pt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((v) => !v);
+            }}
+            className="flex items-center justify-between w-full text-xs text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <div className="flex items-center gap-1.5">
+              <GitBranch size={11} className="text-gray-400" />
+              <span className="font-medium">Subtasks</span>
+              <span className="font-semibold text-gray-600">
+                {doneCount}/{subtasks.length}
+              </span>
+            </div>
+            {expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+          </button>
+
+          {expanded && (
+            <div className="mt-2 space-y-1.5" onClick={(e) => e.stopPropagation()}>
+              {subtasks.map((sub) => (
+                <div
+                  key={sub.id}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-2 py-1.5 hover:bg-blue-50 transition-colors cursor-pointer"
+                >
+                  <span
+                    className={`text-xs flex-1 truncate ${
+                      sub.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'
+                    }`}
+                  >
+                    {sub.title}
+                  </span>
+                  <SubStatusBadge status={sub.status} />
+                  <AssigneeAvatar
+                    initials={sub.assigneeInitials}
+                    color={sub.assigneeColor}
+                    size="sm"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };
