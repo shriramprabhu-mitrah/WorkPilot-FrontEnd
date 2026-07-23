@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Ms-Kanban',
-  description: 'Tracker App',
+  title: 'Workpilot',
+  description: 'WorkPilot App',
 };
 
 export default async function RootLayout({
