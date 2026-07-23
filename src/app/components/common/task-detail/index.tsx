@@ -53,26 +53,32 @@ const useResizable = (initial: number, min: number, max: number) => {
 };
 
 export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
-  const [subtasks, setSubtasks] = useState<SubTask[]>(task.subtasks ?? []);
-  const [status, setStatus] = useState<ColumnId>(task.columnId);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [description, setDescription] = useState(task.description ?? '');
-  const [editingDesc, setEditingDesc] = useState(false);
-  const [priority, setPriority] = useState<Priority>(task.priority);
-  const [labels, setLabels] = useState<string[]>(task.labels);
-  const [dueDate, setDueDate] = useState(task.dueDate ?? '');
-  const [startDate, setStartDate] = useState(task.startDate ?? '');
-  const [storyPoints, setStoryPoints] = useState(task.storyPoints);
-  const [sprint, setSprint] = useState(task.sprint ?? '');
-  const [parent, setParent] = useState(task.parent ?? '');
-  const [assignee, setAssignee] = useState(task.assigneeInitials);
+  const [taskData, setTaskData] = useState({
+    subtasks: task.subtasks ?? [],
+    status: task.columnId,
+    description: task.description ?? '',
+    priority: task.priority,
+    labels: task.labels,
+    dueDate: task.dueDate ?? '',
+    startDate: task.startDate ?? '',
+    storyPoints: task.storyPoints,
+    sprint: task.sprint ?? '',
+    parent: task.parent ?? '',
+    assignee: task.assigneeInitials,
+  });
+  
+  const [uiState, setUiState] = useState({
+    showStatusMenu: false,
+    editingDesc: false,
+  });
+  
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
       if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
-        setShowStatusMenu(false);
+        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
       }
     };
 
@@ -135,18 +141,18 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
 
             <section className="mb-6 pb-6 border-b border-gray-200">
               <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
-              {editingDesc ? (
+              {uiState.editingDesc ? (
                 <div>
                   <textarea
                     autoFocus
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
+                    value={taskData.description}
+                    onChange={(event) => setTaskData((prev) => ({ ...prev, description: event.target.value }))}
                     rows={4}
                     className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
                   />
                   <div className="flex gap-2 mt-2">
                     <button
-                      onClick={() => setEditingDesc(false)}
+                      onClick={() => setUiState((prev) => ({ ...prev, editingDesc: false }))}
                       className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors"
                       style={{ backgroundColor: colors.primary }}
                     >
@@ -154,8 +160,8 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                     </button>
                     <button
                       onClick={() => {
-                        setDescription(task.description ?? '');
-                        setEditingDesc(false);
+                        setTaskData((prev) => ({ ...prev, description: task.description ?? '' }));
+                        setUiState((prev) => ({ ...prev, editingDesc: false }));
                       }}
                       className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                     >
@@ -165,15 +171,19 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                 </div>
               ) : (
                 <div
-                  onClick={() => setEditingDesc(true)}
+                  onClick={() => setUiState((prev) => ({ ...prev, editingDesc: true }))}
                   className="text-sm text-gray-600 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 transition-colors min-h-[48px]"
                 >
-                  {description || <span className="text-gray-400">Add a description…</span>}
+                  {taskData.description || <span className="text-gray-400">Add a description…</span>}
                 </div>
               )}
             </section>
 
-            <SubtasksSection subtasks={subtasks} onChange={setSubtasks} onOpenSubtask={() => {}} />
+            <SubtasksSection 
+              subtasks={taskData.subtasks} 
+              onChange={(subtasks) => setTaskData((prev) => ({ ...prev, subtasks }))} 
+              onOpenSubtask={() => {}} 
+            />
 
             <section className="mb-6 pb-6 border-b border-gray-200">
               <p className="text-base font-semibold text-gray-800 mb-2">Linked work items</p>
@@ -198,37 +208,37 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
               <div className="relative" ref={statusMenuRef}>
                 <button
-                  onClick={() => setShowStatusMenu((value) => !value)}
+                  onClick={() => setUiState((prev) => ({ ...prev, showStatusMenu: !prev.showStatusMenu }))}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
                   style={{
-                    color: COLUMN_CONFIG[status].color,
-                    backgroundColor: COLUMN_CONFIG[status].bg,
-                    borderColor: `${COLUMN_CONFIG[status].dot}55`,
+                    color: COLUMN_CONFIG[taskData.status].color,
+                    backgroundColor: COLUMN_CONFIG[taskData.status].bg,
+                    borderColor: `${COLUMN_CONFIG[taskData.status].dot}55`,
                   }}
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: COLUMN_CONFIG[status].dot }}
+                      style={{ backgroundColor: COLUMN_CONFIG[taskData.status].dot }}
                     />
-                    {COLUMN_CONFIG[status].label}
+                    {COLUMN_CONFIG[taskData.status].label}
                   </span>
                   <ChevronDown size={14} />
                 </button>
-                {showStatusMenu && (
+                {uiState.showStatusMenu && (
                   <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
                     {COLUMN_ORDER.map((column) => (
                       <button
                         key={column}
                         onClick={() => {
-                          setStatus(column);
-                          setShowStatusMenu(false);
+                          setTaskData((prev) => ({ ...prev, status: column }));
+                          setUiState((prev) => ({ ...prev, showStatusMenu: false }));
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50"
                         style={{
-                          fontWeight: column === status ? 700 : 500,
+                          fontWeight: column === taskData.status ? 700 : 500,
                           color: COLUMN_CONFIG[column].color,
-                          backgroundColor: column === status ? COLUMN_CONFIG[column].bg : undefined,
+                          backgroundColor: column === taskData.status ? COLUMN_CONFIG[column].bg : undefined,
                         }}
                       >
                         <span
@@ -236,7 +246,7 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                           style={{ backgroundColor: COLUMN_CONFIG[column].dot }}
                         />
                         {COLUMN_CONFIG[column].label}
-                        {column === status && <Check size={13} className="ml-auto" />}
+                        {column === taskData.status && <Check size={13} className="ml-auto" />}
                       </button>
                     ))}
                   </div>
@@ -254,7 +264,11 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                     color={task.assigneeColor}
                     size="sm"
                   />
-                  <EditableText value={assignee} onChange={setAssignee} placeholder="Unassigned" />
+                  <EditableText 
+                    value={taskData.assignee} 
+                    onChange={(assignee) => setTaskData((prev) => ({ ...prev, assignee }))} 
+                    placeholder="Unassigned" 
+                  />
                 </div>
               </DetailRow>
 
@@ -274,35 +288,56 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               </DetailRow>
 
               <DetailRow label="Priority">
-                <EditablePriority value={priority} onChange={setPriority} />
+                <EditablePriority 
+                  value={taskData.priority} 
+                  onChange={(priority) => setTaskData((prev) => ({ ...prev, priority }))} 
+                />
               </DetailRow>
 
               <DetailRow label="Sprint">
-                <EditableText value={sprint} onChange={setSprint} placeholder="No sprint" />
+                <EditableText 
+                  value={taskData.sprint} 
+                  onChange={(sprint) => setTaskData((prev) => ({ ...prev, sprint }))} 
+                  placeholder="No sprint" 
+                />
               </DetailRow>
 
               <DetailRow label="Labels">
-                <EditableLabels value={labels} onChange={setLabels} />
+                <EditableLabels 
+                  value={taskData.labels} 
+                  onChange={(labels) => setTaskData((prev) => ({ ...prev, labels }))} 
+                />
               </DetailRow>
 
               <DetailRow label="Due date">
-                <EditableDate value={dueDate} onChange={setDueDate} placeholder="Set due date" />
+                <EditableDate 
+                  value={taskData.dueDate} 
+                  onChange={(dueDate) => setTaskData((prev) => ({ ...prev, dueDate }))} 
+                  placeholder="Set due date" 
+                />
               </DetailRow>
 
               <DetailRow label="Start date">
                 <EditableDate
-                  value={startDate}
-                  onChange={setStartDate}
+                  value={taskData.startDate}
+                  onChange={(startDate) => setTaskData((prev) => ({ ...prev, startDate }))}
                   placeholder="Set start date"
                 />
               </DetailRow>
 
               <DetailRow label="Story pts">
-                <EditableNumber value={storyPoints} onChange={setStoryPoints} />
+                <EditableNumber 
+                  value={taskData.storyPoints} 
+                  onChange={(storyPoints) => setTaskData((prev) => ({ ...prev, storyPoints }))} 
+                />
               </DetailRow>
 
               <DetailRow label="Parent">
-                <EditableText value={parent} onChange={setParent} placeholder="None" />
+                <EditableText 
+                  value={taskData.parent} 
+                  onChange={(parent) => setTaskData((prev) => ({ ...prev, parent }))} 
+                  placeholder="None" 
+                />
               </DetailRow>
             </div>
           </div>
