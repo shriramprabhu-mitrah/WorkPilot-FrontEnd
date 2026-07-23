@@ -71,7 +71,11 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
+#contact:target {
+  background-color: var(--color-blue-50);
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
 .lp-btn-primary:hover {
   background: var(--color-slate-700);
 }
@@ -82,14 +86,14 @@
   font-size: 16px;
   font-weight: 600;
   color: white;
-  background: var(--color-green-600);
+  background: var(--color-blue-600);
   border: none;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .lp-btn-accent:hover {
-  background: var(--color-green-700);
+  background: var(--color-blue-700);
 }
 
 /* Hero Section */
@@ -227,8 +231,8 @@
 .lp-feature-icon {
   width: 48px;
   height: 48px;
-  background: var(--color-green-50);
-  color: var(--color-green-600);
+  background: var(--color-blue-50);
+  color: var(--color-blue-600);
   border-radius: 12px;
   display: flex;
   align-items: center;

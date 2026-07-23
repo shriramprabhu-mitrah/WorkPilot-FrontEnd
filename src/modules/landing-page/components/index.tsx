@@ -3,6 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useState } from 'react';
+import { PrivacyPolicy } from '@/src/app/components/common/privacy';
+import { CloseIconSvg } from '@/src/assets/svgs';
 import '../../../styles/landing-page.css';
 import {
   CheckIconSvg,
@@ -12,6 +15,7 @@ import {
   CollaborationIconSvg,
   ReportsIconSvg,
   NotificationsIconSvg,
+  TrackrLogoSvg,
 } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
@@ -37,14 +41,16 @@ const useScrollReveal = () => {
 };
 
 export const LandingPage = () => {
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const router = useRouter();
+
   useScrollReveal();
 
   return (
     <div className="lp-page">
       {/* Header */}
       <header className="lp-header">
-        <Image
+        {/* <Image
           src="/images/WorkPilot-logo.png"
           alt="WorkPilot Logo"
           width={150}
@@ -52,7 +58,13 @@ export const LandingPage = () => {
           className="lp-logo"
           priority
           style={{ width: 'auto' }}
-        />
+        /> */}
+        <div className="logo mt-5">
+          <div className="logoIcon">
+            <TrackrLogoSvg />
+          </div>
+          WorkPilot
+        </div>
         <div className="lp-header-nav">
           <a href="#features" className="lp-nav-link">
             Features
@@ -83,7 +95,7 @@ export const LandingPage = () => {
           <br />
           Empower Teams.
           <br />
-          <span style={{ color: colors.green600 }}>Deliver Beyond Expectations.</span>
+          <span style={{ color: colors.primaryFocus }}>Deliver Beyond Expectations.</span>
         </h1>
         <p className="lp-hero-subtitle animate-on-scroll" style={{ transitionDelay: '0.1s' }}>
           WorkPilot is an all-in-one project management platform that helps teams plan projects,
@@ -91,7 +103,11 @@ export const LandingPage = () => {
           single workspace.
         </p>
         <div className="lp-hero-actions animate-on-scroll" style={{ transitionDelay: '0.2s' }}>
-          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent">
+          <WpButton
+            onClick={() => router.push('/signup')}
+            className="lp-btn-accent"
+            style={{ backgroundColor: colors.primaryFocus }}
+          >
             Start for Free
           </WpButton>
           <WpButton
@@ -286,7 +302,7 @@ export const LandingPage = () => {
                     fontSize: '16px',
                   }}
                 >
-                  <span style={{ color: colors.green600, flexShrink: 0 }}>
+                  <span style={{ color: colors.primaryFocus, flexShrink: 0 }}>
                     <CheckIconSvg />
                   </span>
                   {item}
@@ -422,17 +438,38 @@ export const LandingPage = () => {
       <footer className="lp-footer">
         <div className="lp-footer-grid">
           <div>
-            <Image
+            {/* <Image
               src="/images/mitrahsoft-logo.png"
               alt="WorkPilot Logo"
               width={150}
               height={40}
               className="lp-footer-logo"
               style={{ width: 'auto' }}
-            />
+            /> */}
+            <div className="logo">
+              <div className="logoIcon">
+                <TrackrLogoSvg />
+              </div>
+              WorkPilot
+            </div>
             <p className="lp-footer-tagline">
               Project Management Made Simple. Collaboration Made Powerful. Beyond eXpectation.
             </p>
+            <section id="contact">
+              <h2 className=" mt-2 text-sm text-gray-500">Contact Us</h2>
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className=" text-sm text-gray-500">Email</span>
+                  <a className="ml-2 text-sm text-blue-600 hover:underline">
+                    support@workpilot.com
+                  </a>
+                </div>
+                <div>
+                  <span className=" text-sm text-gray-500">Phone</span>
+                  <span className="ml-2 text-sm text-blue-600">12345678</span>
+                </div>
+              </div>
+            </section>
           </div>
           <div>
             <h4 className="lp-footer-col-title">Product</h4>
@@ -442,11 +479,11 @@ export const LandingPage = () => {
                   Features
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#" className="lp-footer-link">
                   Pricing
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a href="#" className="lp-footer-link">
                   Integrations
@@ -498,14 +535,18 @@ export const LandingPage = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="lp-footer-link">
+                <a href="#contact" className="lp-footer-link">
                   Contact
                 </a>
               </li>
               <li>
-                <a href="/privacy-policy" className="lp-footer-link">
+                <button
+                  type="button"
+                  className="lp-footer-link"
+                  onClick={() => setShowPrivacy(true)}
+                >
                   Privacy Policy
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -539,6 +580,22 @@ export const LandingPage = () => {
           &copy; {new Date().getFullYear()} WorkPilot. All rights reserved.
         </div>
       </footer>
+      {showPrivacy && (
+        <div className="sidebarOverlay" onClick={() => setShowPrivacy(false)}>
+          <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
+            <WpButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="sidebarCloseBtn"
+              onClick={() => setShowPrivacy(false)}
+            >
+              <CloseIconSvg />
+            </WpButton>
+            <PrivacyPolicy />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
