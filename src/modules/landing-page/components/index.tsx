@@ -45,8 +45,8 @@ export const LandingPage = () => {
       {/* Header */}
       <header className="lp-header">
         <Image
-          src="/images/mitrahsoft-logo.png"
-          alt="MitrahSoft Logo"
+          src="/images/WorkPilot-logo.png"
+          alt="WorkPilot Logo"
           width={150}
           height={40}
           className="lp-logo"
@@ -86,7 +86,7 @@ export const LandingPage = () => {
           <span style={{ color: colors.green600 }}>Deliver Beyond Expectations.</span>
         </h1>
         <p className="lp-hero-subtitle animate-on-scroll" style={{ transitionDelay: '0.1s' }}>
-          MitrahSoft is an all-in-one project management platform that helps teams plan projects,
+          WorkPilot is an all-in-one project management platform that helps teams plan projects,
           organize backlogs, manage sprints, track tasks, and collaborate efficiently—all from a
           single workspace.
         </p>
@@ -128,12 +128,12 @@ export const LandingPage = () => {
         </p>
       </section>
 
-      {/* Why Choose MitrahSoft */}
+      {/* Why Choose WorkPilot */}
       <section id="features" className="lp-section">
         <div className="lp-section-header animate-on-scroll">
-          <h2 className="lp-section-title">Why Choose MitrahSoft?</h2>
+          <h2 className="lp-section-title">Why Choose WorkPilot?</h2>
           <p className="lp-section-desc">
-            MitrahSoft combines agile project management, real-time collaboration, and intelligent
+            WorkPilot combines agile project management, real-time collaboration, and intelligent
             reporting to simplify software development and business operations.
           </p>
         </div>
@@ -196,7 +196,7 @@ export const LandingPage = () => {
           </div>
           <div className="lp-dashboard-preview animate-on-scroll">
             <Image
-              src="/images/dashboard.jpg"
+              src="/images/dashboard-landing.png"
               alt="Dashboard Preview"
               width={1200}
               height={675}
@@ -254,7 +254,7 @@ export const LandingPage = () => {
                 color: colors.slate800,
               }}
             >
-              Why Teams Love MitrahSoft
+              Why Teams Love WorkPilot
             </h3>
             <ul
               style={{
@@ -306,7 +306,7 @@ export const LandingPage = () => {
           <div className="lp-grid-2">
             <div className="lp-testimonial-card animate-on-scroll">
               <p className="lp-testimonial-quote">
-                &ldquo;MitrahSoft has transformed the way our team manages projects. Sprint planning
+                &ldquo;WorkPilot has transformed the way our team manages projects. Sprint planning
                 is faster, collaboration is smoother, and reporting is effortless.&rdquo;
               </p>
               <div className="lp-testimonial-author">— Product Manager</div>
@@ -325,8 +325,8 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="lp-section">
+      {/* Comment the Pricing for fututre purpose */}
+      {/* <section id="pricing" className="lp-section">
         <div className="lp-section-header animate-on-scroll">
           <h2 className="lp-section-title">Pricing</h2>
           <p className="lp-section-desc">Choose the plan that fits your team&lsquo;s needs.</p>
@@ -399,13 +399,13 @@ export const LandingPage = () => {
             </WpButton>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Call to Action */}
       <section className="lp-cta-section animate-on-scroll">
         <h2 className="lp-cta-title">Ready to Build Better Projects?</h2>
         <p className="lp-cta-desc">
-          Join thousands of professionals who trust MitrahSoft to manage projects, collaborate with
+          Join thousands of professionals who trust WorkPilot to manage projects, collaborate with
           teams, and deliver results beyond expectations.
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
@@ -424,7 +424,7 @@ export const LandingPage = () => {
           <div>
             <Image
               src="/images/mitrahsoft-logo.png"
-              alt="MitrahSoft Logo"
+              alt="WorkPilot Logo"
               width={150}
               height={40}
               className="lp-footer-logo"
@@ -509,7 +509,7 @@ export const LandingPage = () => {
               </li>
             </ul>
           </div>
-          <div>
+          {/* <div>
             <h4 className="lp-footer-col-title">Connect</h4>
             <ul className="lp-footer-links">
               <li>
@@ -533,10 +533,10 @@ export const LandingPage = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
         <div className="lp-footer-bottom">
-          &copy; {new Date().getFullYear()} MitrahSoft. All rights reserved.
+          &copy; {new Date().getFullYear()} WorkPilot. All rights reserved.
         </div>
       </footer>
     </div>

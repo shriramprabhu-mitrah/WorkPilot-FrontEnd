@@ -29,7 +29,7 @@ export const PrivacyPolicy = () => {
         Introduction
       </h2>
       <p>
-        At <strong>MitrahSoft</strong>, we respect your privacy and are committed to protecting your
+        At <strong>WorkPilot</strong>, we respect your privacy and are committed to protecting your
         personal information.
       </p>
       <p>
@@ -102,7 +102,7 @@ export const PrivacyPolicy = () => {
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '32px', marginBottom: '16px' }}>
         3. Cookies
       </h2>
-      <p>MitrahSoft uses cookies and similar technologies to:</p>
+      <p>WorkPilot uses cookies and similar technologies to:</p>
       <ul style={{ paddingLeft: '20px', marginBottom: '16px' }}>
         <li>Keep you signed in.</li>
         <li>Remember your preferences.</li>
@@ -175,7 +175,7 @@ export const PrivacyPolicy = () => {
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '32px', marginBottom: '16px' }}>
         8. Third-Party Integrations
       </h2>
-      <p>MitrahSoft may integrate with third-party services such as:</p>
+      <p>WorkPilot may integrate with third-party services such as:</p>
       <ul style={{ paddingLeft: '20px', marginBottom: '16px' }}>
         <li>Google Sign-In</li>
         <li>Microsoft Sign-In</li>
@@ -191,7 +191,7 @@ export const PrivacyPolicy = () => {
         9. Children&lsquo;s Privacy
       </h2>
       <p>
-        MitrahSoft is intended for business and professional use and is not designed for children
+        WorkPilot is intended for business and professional use and is not designed for children
         under the age of 13.
       </p>
       <hr style={hr} />
@@ -210,21 +210,21 @@ export const PrivacyPolicy = () => {
       </h2>
       <p>If you have questions or concerns about this Privacy Policy, please contact:</p>
       <p>
-        <strong>MitrahSoft Support</strong>
+        <strong>WorkPilot Support</strong>
         <br />
         <strong>Email:</strong>{' '}
-        <a href="mailto:support@mitrahsoft.com" style={linkStyle}>
-          support@mitrahsoft.com
+        <a href="mailto:support@WorkPilot.com" style={linkStyle}>
+          support@WorkPilot.com
         </a>
         <br />
         <strong>Website:</strong>{' '}
         <a
-          href="https://www.mitrahsoft.com"
+          href="https://www.WorkPilot.com"
           target="_blank"
           rel="noopener noreferrer"
           style={linkStyle}
         >
-          https://www.mitrahsoft.com
+          https://www.WorkPilot.com
         </a>
         <br />
         <strong>Business Hours:</strong> Monday – Friday, 9:00 AM – 6:00 PM (IST)

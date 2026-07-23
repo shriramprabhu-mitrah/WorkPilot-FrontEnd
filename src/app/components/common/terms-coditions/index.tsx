@@ -28,15 +28,15 @@ export const TermsConditions = () => {
       </p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '32px', marginBottom: '16px' }}>
-        Welcome to MitrahSoft
+        Welcome to WorkPilot
       </h2>
       <p>
-        Welcome to <strong>MitrahSoft</strong>, a collaborative project management platform that
+        Welcome to <strong>WorkPilot</strong>, a collaborative project management platform that
         helps teams plan projects, manage tasks, organize sprints, track progress, and work together
         efficiently.
       </p>
       <p>
-        By accessing or using MitrahSoft, you agree to comply with these Terms & Conditions. If you
+        By accessing or using WorkPilot, you agree to comply with these Terms & Conditions. If you
         do not agree, please discontinue use of the application.
       </p>
       <hr style={hr} />
@@ -46,7 +46,7 @@ export const TermsConditions = () => {
       </h2>
       <p>
         You must be at least <strong>18 years of age</strong>, or have authorization from your
-        organization, to create and use a MitrahSoft account.
+        organization, to create and use a WorkPilot account.
       </p>
       <hr style={hr} />
 
@@ -66,7 +66,7 @@ export const TermsConditions = () => {
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '32px', marginBottom: '16px' }}>
         3. Workspace Usage
       </h2>
-      <p>MitrahSoft enables users to:</p>
+      <p>WorkPilot enables users to:</p>
       <ul style={{ paddingLeft: '20px', marginBottom: '16px' }}>
         <li>Create and manage workspaces</li>
         <li>Create and manage projects</li>
@@ -98,7 +98,7 @@ export const TermsConditions = () => {
       </h2>
       <p>
         All trademarks, software, logos, designs, and application content are the property of{' '}
-        <strong>MitrahSoft</strong> unless otherwise stated.
+        <strong>WorkPilot</strong> unless otherwise stated.
       </p>
       <p>Users retain ownership of the content they create within their own workspaces.</p>
       <hr style={hr} />
@@ -116,7 +116,7 @@ export const TermsConditions = () => {
         <li>Project data</li>
       </ul>
       <p>
-        By uploading content, you grant MitrahSoft permission to store and process it solely to
+        By uploading content, you grant WorkPilot permission to store and process it solely to
         provide the service.
       </p>
       <hr style={hr} />
@@ -125,7 +125,7 @@ export const TermsConditions = () => {
         7. Data Protection
       </h2>
       <p>
-        MitrahSoft implements reasonable technical and organizational measures to safeguard your
+        WorkPilot implements reasonable technical and organizational measures to safeguard your
         information from unauthorized access, alteration, or disclosure.
       </p>
       <hr style={hr} />
@@ -144,7 +144,7 @@ export const TermsConditions = () => {
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '32px', marginBottom: '16px' }}>
         9. Limitation of Liability
       </h2>
-      <p>MitrahSoft is provided on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo; basis.</p>
+      <p>WorkPilot is provided on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo; basis.</p>
       <p>We are not liable for:</p>
       <ul style={{ paddingLeft: '20px', marginBottom: '16px' }}>
         <li>Data loss caused by user actions.</li>
@@ -158,7 +158,7 @@ export const TermsConditions = () => {
         10. Changes to These Terms
       </h2>
       <p>
-        We may update these Terms from time to time. Continued use of MitrahSoft after updates
+        We may update these Terms from time to time. Continued use of WorkPilot after updates
         indicates your acceptance of the revised Terms.
       </p>
       <hr style={hr} />
@@ -168,11 +168,11 @@ export const TermsConditions = () => {
       </h2>
       <p>For questions regarding these Terms, please contact:</p>
       <p>
-        <strong>MitrahSoft Support</strong>
+        <strong>WorkPilot Support</strong>
         <br />
         Email:{' '}
-        <a href="mailto:support@mitrahsoft.com" style={linkStyle}>
-          support@mitrahsoft.com
+        <a href="mailto:support@WorkPilot.com" style={linkStyle}>
+          support@WorkPilot.com
         </a>
       </p>
     </div>
