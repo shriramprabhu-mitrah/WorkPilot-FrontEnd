@@ -2,13 +2,26 @@ import { colors } from '@/src/styles/colors';
 import Panel from '@/src/app/components/common/panel/panel';
 import BarChart from '@/src/app/components/common/charts/barChart';
 import { EChartsOption } from 'echarts-for-react';
-import { sprintLabels, sprintPlanned, sprintCompleted } from '@/src/modules/reports/data';
+// import { sprintLabels, sprintPlanned, sprintCompleted } from '@/src/modules/reports/data';
 interface SprintProgressCardProps {
   isMobile: boolean;
   chartHeight: number;
+  labels: string[];
+  planned: number[];
+  completed: number[];
+  title?: string;
+  subtitle?: string;
 }
 
-export default function SprintProgressCard({ isMobile, chartHeight }: SprintProgressCardProps) {
+export default function SprintProgressCard({
+  isMobile,
+  chartHeight,
+  labels,
+  planned,
+  completed,
+  title = 'Sprint Progress',
+  subtitle = 'Planned vs completed story points per sprint',
+}: SprintProgressCardProps) {
   const sprintProgressOption: EChartsOption = {
     animation: true,
     animationDuration: 1200,
@@ -35,7 +48,7 @@ export default function SprintProgressCard({ isMobile, chartHeight }: SprintProg
     },
     xAxis: {
       type: 'category',
-      data: sprintLabels,
+      data: labels,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: { fontSize: 11, color: colors.gray500 },
@@ -55,19 +68,19 @@ export default function SprintProgressCard({ isMobile, chartHeight }: SprintProg
         barGap: '10%',
         barMaxWidth: isMobile ? 18 : 28,
         itemStyle: { color: colors.colLightBlue, borderRadius: [4, 4, 0, 0] },
-        data: sprintPlanned,
+        data: planned,
       },
       {
         name: 'Completed',
         type: 'bar',
         barMaxWidth: isMobile ? 18 : 28,
         itemStyle: { color: colors.primary, borderRadius: [4, 4, 0, 0] },
-        data: sprintCompleted,
+        data: completed,
       },
     ],
   };
   return (
-    <Panel title="Sprint Progress" subtitle="Planned vs completed story points per sprint">
+    <Panel title={title} subtitle={subtitle}>
       <BarChart option={sprintProgressOption} height={chartHeight} />
     </Panel>
   );

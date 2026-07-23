@@ -8,7 +8,7 @@ import PriorityDistributionCard from '@/src/modules/reports/components/PriorityD
 import SprintProgressCard from '@/src/modules/reports/components/SprintProgressCard';
 import TeamPerformanceCard from '@/src/modules/reports/components/TeamPerformanceCard';
 import BurndownCard from '@/src/modules/reports/components/BurndownCard';
-import { STATS } from '../data';
+import { sprintCompleted, sprintLabels, sprintPlanned, STATS } from '../data';
 
 export const SummaryTemplate = () => {
   const { width } = useResize();
@@ -27,7 +27,13 @@ export const SummaryTemplate = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 shrink-0">
-        <SprintProgressCard isMobile={isMobile} chartHeight={chartH} />
+        <SprintProgressCard
+          isMobile={isMobile}
+          chartHeight={chartH}
+          labels={sprintLabels}
+          planned={sprintPlanned}
+          completed={sprintCompleted}
+        />
         <TeamPerformanceCard />
       </div>
 
