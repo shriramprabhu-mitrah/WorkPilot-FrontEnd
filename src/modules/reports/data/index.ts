@@ -110,6 +110,10 @@ export const sprintLabels = ['Spr 9', 'Spr 10', 'Spr 11', 'Spr 12'];
 export const sprintPlanned = [40, 44, 48, 56];
 export const sprintCompleted = [35, 40, 44, 52];
 
+export const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+export const weeklyPlanned = [20, 25, 30, 28, 35, 22, 18];
+export const weeklyCompleted = [15, 20, 25, 22, 30, 18, 15];
+
 export const statusData = [
   { name: 'Backlog', value: 2, color: colors.colBacklog },
   { name: 'To Do', value: 3, color: colors.colTodo },
