@@ -21,3 +21,8 @@ export interface SignupResponse {
   refreshToken?: string;
   user?: User;
 }
+
+export interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}

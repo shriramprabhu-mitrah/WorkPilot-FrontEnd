@@ -22,29 +22,38 @@ export interface PaginationInfo {
 export interface PaginatedApiResponse<T> extends ApiResponse<T> {
   pagination?: PaginationInfo;
 }
-// Define a type for the error response data
 interface ErrorResponseData {
+  error?: {
+    message?: string;
+    code?: string;
+    details?: Array<{ field: string; message: string }>;
+  };
   message?: string;
 }
 
 // Centralized error handling function
 const handleApiError = (error: unknown, requestType: string): never => {
   logger.error(`${requestType} request failed`, error);
+
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
     const status = axiosError.response?.status ?? 500;
-    const data = axiosError.response?.data;
+    const data = axiosError.response?.data as ErrorResponseData | undefined;
 
-    // Extract error message with proper type checking
-    const errorResponseData = axiosError.response?.data as ErrorResponseData | undefined;
-    const errorMessage = errorResponseData?.message || axiosError.message || 'Something went wrong';
+    const errorMessage =
+      data?.error?.message ?? data?.message ?? axiosError.message ?? 'Something went wrong';
 
-    throw {
-      message: errorMessage,
-      status,
-      data,
+    const apiError = new Error(errorMessage) as Error & {
+      status: number;
+      data: unknown;
     };
+
+    apiError.status = status;
+    apiError.data = data;
+
+    throw apiError;
   }
+
   throw error;
 };
 

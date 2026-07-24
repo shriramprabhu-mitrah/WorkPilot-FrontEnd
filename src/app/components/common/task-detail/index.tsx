@@ -66,12 +66,12 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
     parent: task.parent ?? '',
     assignee: task.assigneeInitials,
   });
-  
+
   const [uiState, setUiState] = useState({
     showStatusMenu: false,
     editingDesc: false,
   });
-  
+
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
@@ -146,7 +146,9 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                   <textarea
                     autoFocus
                     value={taskData.description}
-                    onChange={(event) => setTaskData((prev) => ({ ...prev, description: event.target.value }))}
+                    onChange={(event) =>
+                      setTaskData((prev) => ({ ...prev, description: event.target.value }))
+                    }
                     rows={4}
                     className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
                   />
@@ -174,15 +176,17 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                   onClick={() => setUiState((prev) => ({ ...prev, editingDesc: true }))}
                   className="text-sm text-gray-600 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 transition-colors min-h-[48px]"
                 >
-                  {taskData.description || <span className="text-gray-400">Add a description…</span>}
+                  {taskData.description || (
+                    <span className="text-gray-400">Add a description…</span>
+                  )}
                 </div>
               )}
             </section>
 
-            <SubtasksSection 
-              subtasks={taskData.subtasks} 
-              onChange={(subtasks) => setTaskData((prev) => ({ ...prev, subtasks }))} 
-              onOpenSubtask={() => {}} 
+            <SubtasksSection
+              subtasks={taskData.subtasks}
+              onChange={(subtasks) => setTaskData((prev) => ({ ...prev, subtasks }))}
+              onOpenSubtask={() => {}}
             />
 
             <section className="mb-6 pb-6 border-b border-gray-200">
@@ -208,7 +212,9 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
               <div className="relative" ref={statusMenuRef}>
                 <button
-                  onClick={() => setUiState((prev) => ({ ...prev, showStatusMenu: !prev.showStatusMenu }))}
+                  onClick={() =>
+                    setUiState((prev) => ({ ...prev, showStatusMenu: !prev.showStatusMenu }))
+                  }
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
                   style={{
                     color: COLUMN_CONFIG[taskData.status].color,
@@ -238,7 +244,8 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                         style={{
                           fontWeight: column === taskData.status ? 700 : 500,
                           color: COLUMN_CONFIG[column].color,
-                          backgroundColor: column === taskData.status ? COLUMN_CONFIG[column].bg : undefined,
+                          backgroundColor:
+                            column === taskData.status ? COLUMN_CONFIG[column].bg : undefined,
                         }}
                       >
                         <span
@@ -264,10 +271,10 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                     color={task.assigneeColor}
                     size="sm"
                   />
-                  <EditableText 
-                    value={taskData.assignee} 
-                    onChange={(assignee) => setTaskData((prev) => ({ ...prev, assignee }))} 
-                    placeholder="Unassigned" 
+                  <EditableText
+                    value={taskData.assignee}
+                    onChange={(assignee) => setTaskData((prev) => ({ ...prev, assignee }))}
+                    placeholder="Unassigned"
                   />
                 </div>
               </DetailRow>
@@ -288,32 +295,32 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               </DetailRow>
 
               <DetailRow label="Priority">
-                <EditablePriority 
-                  value={taskData.priority} 
-                  onChange={(priority) => setTaskData((prev) => ({ ...prev, priority }))} 
+                <EditablePriority
+                  value={taskData.priority}
+                  onChange={(priority) => setTaskData((prev) => ({ ...prev, priority }))}
                 />
               </DetailRow>
 
               <DetailRow label="Sprint">
-                <EditableText 
-                  value={taskData.sprint} 
-                  onChange={(sprint) => setTaskData((prev) => ({ ...prev, sprint }))} 
-                  placeholder="No sprint" 
+                <EditableText
+                  value={taskData.sprint}
+                  onChange={(sprint) => setTaskData((prev) => ({ ...prev, sprint }))}
+                  placeholder="No sprint"
                 />
               </DetailRow>
 
               <DetailRow label="Labels">
-                <EditableLabels 
-                  value={taskData.labels} 
-                  onChange={(labels) => setTaskData((prev) => ({ ...prev, labels }))} 
+                <EditableLabels
+                  value={taskData.labels}
+                  onChange={(labels) => setTaskData((prev) => ({ ...prev, labels }))}
                 />
               </DetailRow>
 
               <DetailRow label="Due date">
-                <EditableDate 
-                  value={taskData.dueDate} 
-                  onChange={(dueDate) => setTaskData((prev) => ({ ...prev, dueDate }))} 
-                  placeholder="Set due date" 
+                <EditableDate
+                  value={taskData.dueDate}
+                  onChange={(dueDate) => setTaskData((prev) => ({ ...prev, dueDate }))}
+                  placeholder="Set due date"
                 />
               </DetailRow>
 
@@ -326,17 +333,17 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               </DetailRow>
 
               <DetailRow label="Story pts">
-                <EditableNumber 
-                  value={taskData.storyPoints} 
-                  onChange={(storyPoints) => setTaskData((prev) => ({ ...prev, storyPoints }))} 
+                <EditableNumber
+                  value={taskData.storyPoints}
+                  onChange={(storyPoints) => setTaskData((prev) => ({ ...prev, storyPoints }))}
                 />
               </DetailRow>
 
               <DetailRow label="Parent">
-                <EditableText 
-                  value={taskData.parent} 
-                  onChange={(parent) => setTaskData((prev) => ({ ...prev, parent }))} 
-                  placeholder="None" 
+                <EditableText
+                  value={taskData.parent}
+                  onChange={(parent) => setTaskData((prev) => ({ ...prev, parent }))}
+                  placeholder="None"
                 />
               </DetailRow>
             </div>
