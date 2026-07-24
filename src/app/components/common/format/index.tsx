@@ -16,3 +16,10 @@ export const getInitials = (name?: string | null): string => {
 
   return parts[0].slice(0, 2).toUpperCase();
 };
+
+export const formatTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+};
