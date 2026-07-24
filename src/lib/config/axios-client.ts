@@ -1,27 +1,14 @@
 import axios from 'axios';
-import { getAccessToken, getRefreshToken, setTokens, removeTokens } from '../utils/cookies';
 
 export const axiosInstance = axios.create({
   baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // Allows cookies to be sent and received
 });
 
-// Request Interceptor: Attach Access Token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = getAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response Interceptor: Handle Token Rotation on 401
+// Response Interceptor: Handle authentication errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -40,32 +27,23 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle 401 errors with automatic token refresh via backend
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = getRefreshToken();
-
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
-        // Use raw axios to avoid circular dependency with apiService
+        // Backend handles refresh token from HTTP-only cookies
         const baseURL = process.env.NEXT_PUBLIC_API_URL || '/api';
-        const response = await axios.post(`${baseURL}/auth/refresh`, { token: refreshToken });
+        await axios.post(
+          `${baseURL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data?.data || response.data;
-
-        if (accessToken) {
-          setTokens(accessToken, newRefreshToken || refreshToken);
-
-          // Update the failed request with the new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return axiosInstance(originalRequest);
-        }
+        // Retry the original request - backend will use refreshed cookie
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // Refresh failed (token expired or invalid)
-        removeTokens();
+        // Refresh failed - redirect to signin
         if (typeof window !== 'undefined') {
           window.location.href = '/signin';
         }

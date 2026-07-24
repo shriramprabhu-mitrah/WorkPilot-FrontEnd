@@ -1,58 +1,51 @@
+import { useMutation } from '@tanstack/react-query';
 import { signupService } from '@/src/services/signup';
 import { SignupPayload, VerifyEmailPayload } from '@/src/types/signup';
-import { useState } from 'react';
 
 export const useSignup = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const signUpMutation = useMutation({
+    mutationFn: (payload: SignupPayload) => signupService.signUp(payload),
+  });
 
-  const handleSignUp = async (payload: SignupPayload) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await signupService.signUp(payload);
-      return response;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const verifyEmailMutation = useMutation({
+    mutationFn: (payload: VerifyEmailPayload) => signupService.verifyEmail(payload),
+  });
 
-  const handleVerifyEmail = async (payload: VerifyEmailPayload) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await signupService.verifyEmail(payload);
-      return response;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Verification failed');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendOtp = async (email: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await signupService.resendOtp(email);
-      return response;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to resend OTP');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const resendOtpMutation = useMutation({
+    mutationFn: (email: string) => signupService.resendOtp(email),
+  });
 
   return {
-    handleSignUp,
-    handleVerifyEmail,
-    handleResendOtp,
-    isLoading,
-    error,
+    handleSignUp: signUpMutation.mutate,
+    handleSignUpAsync: signUpMutation.mutateAsync,
+    handleVerifyEmail: verifyEmailMutation.mutate,
+    handleVerifyEmailAsync: verifyEmailMutation.mutateAsync,
+    handleResendOtp: resendOtpMutation.mutate,
+    handleResendOtpAsync: resendOtpMutation.mutateAsync,
+    isLoading:
+      signUpMutation.isPending || verifyEmailMutation.isPending || resendOtpMutation.isPending,
+    error: signUpMutation.error || verifyEmailMutation.error || resendOtpMutation.error,
+
+    signUp: {
+      isLoading: signUpMutation.isPending,
+      isSuccess: signUpMutation.isSuccess,
+      isError: signUpMutation.isError,
+      error: signUpMutation.error,
+      data: signUpMutation.data,
+    },
+    verifyEmail: {
+      isLoading: verifyEmailMutation.isPending,
+      isSuccess: verifyEmailMutation.isSuccess,
+      isError: verifyEmailMutation.isError,
+      error: verifyEmailMutation.error,
+      data: verifyEmailMutation.data,
+    },
+    resendOtp: {
+      isLoading: resendOtpMutation.isPending,
+      isSuccess: resendOtpMutation.isSuccess,
+      isError: resendOtpMutation.isError,
+      error: resendOtpMutation.error,
+      data: resendOtpMutation.data,
+    },
   };
 };

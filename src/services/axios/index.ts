@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { logger } from '@/src/lib/utils/logger';
 import { ApiResponse } from '@/src/types/core';
 import { axiosInstance } from '@/src/lib/config/axios-client';
+import { showToast } from '@/src/utils/toast';
 
 // Generic pagination interface based on the API structure
 export interface PaginationInfo {
@@ -31,8 +32,20 @@ interface ErrorResponseData {
   message?: string;
 }
 
+// Options for API requests with toast control
+export interface ApiRequestOptions {
+  showSuccessToast?: boolean;
+  successMessage?: string;
+  showErrorToast?: boolean;
+  errorMessage?: string;
+}
+
 // Centralized error handling function
-const handleApiError = (error: unknown, requestType: string): never => {
+const handleApiError = (
+  error: unknown,
+  requestType: string,
+  options?: ApiRequestOptions
+): never => {
   logger.error(`${requestType} request failed`, error);
 
   if (axios.isAxiosError(error)) {
@@ -42,6 +55,11 @@ const handleApiError = (error: unknown, requestType: string): never => {
 
     const errorMessage =
       data?.error?.message ?? data?.message ?? axiosError.message ?? 'Something went wrong';
+
+    // Show error toast if not explicitly disabled
+    if (options?.showErrorToast !== false) {
+      showToast.error(options?.errorMessage ?? errorMessage);
+    }
 
     const apiError = new Error(errorMessage) as Error & {
       status: number;
@@ -54,16 +72,30 @@ const handleApiError = (error: unknown, requestType: string): never => {
     throw apiError;
   }
 
+  // Show generic error toast for non-axios errors
+  if (options?.showErrorToast !== false) {
+    showToast.error(options?.errorMessage ?? 'An unexpected error occurred');
+  }
+
   throw error;
 };
 
 // Process the API response to a standardized format
-const processResponse = <T>(response: AxiosResponse): ApiResponse<T> => {
+const processResponse = <T>(
+  response: AxiosResponse,
+  options?: ApiRequestOptions
+): ApiResponse<T> => {
   let data = response?.data?.data ?? response?.data;
 
   // If `data` has a `result` field, unwrap it
   if (data && typeof data === 'object' && 'result' in data) {
     data = data.result;
+  }
+
+  // Show success toast if requested
+  if (options?.showSuccessToast) {
+    const successMessage = options?.successMessage ?? response?.data?.message ?? 'Success!';
+    showToast.success(successMessage);
   }
 
   return {
@@ -74,12 +106,21 @@ const processResponse = <T>(response: AxiosResponse): ApiResponse<T> => {
 };
 
 // Process the API response with pagination support
-const processPaginatedResponse = <T>(response: AxiosResponse): PaginatedApiResponse<T> => {
+const processPaginatedResponse = <T>(
+  response: AxiosResponse,
+  options?: ApiRequestOptions
+): PaginatedApiResponse<T> => {
   let data = response?.data?.data ?? response?.data;
 
   // Handle nested `result` field
   if (data && typeof data === 'object' && 'result' in data) {
     data = data.result;
+  }
+
+  // Show success toast if requested
+  if (options?.showSuccessToast) {
+    const successMessage = options?.successMessage ?? response?.data?.message ?? 'Success!';
+    showToast.success(successMessage);
   }
 
   return {
@@ -92,32 +133,40 @@ const processPaginatedResponse = <T>(response: AxiosResponse): PaginatedApiRespo
 
 class AxiosApiService {
   // GET Request
-  async get<T>(endpoint: string, options: object = {}): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.get(endpoint, options);
-      return processResponse<T>(response);
+      const response = await axiosInstance.get(endpoint);
+      return processResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'GET');
+      return handleApiError(error, 'GET', options);
     }
   }
 
   // POST Request
-  async post<T>(endpoint: string, payload: unknown, options: object = {}): Promise<ApiResponse<T>> {
+  async post<T>(
+    endpoint: string,
+    payload: unknown,
+    options?: ApiRequestOptions
+  ): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.post(endpoint, payload, options);
-      return processResponse<T>(response);
+      const response = await axiosInstance.post(endpoint, payload);
+      return processResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'POST');
+      return handleApiError(error, 'POST', options);
     }
   }
 
   // PUT Request
-  async put<T>(endpoint: string, payload: unknown, options: object = {}): Promise<ApiResponse<T>> {
+  async put<T>(
+    endpoint: string,
+    payload: unknown,
+    options?: ApiRequestOptions
+  ): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.put(endpoint, payload, options);
-      return processResponse<T>(response);
+      const response = await axiosInstance.put(endpoint, payload);
+      return processResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'PUT');
+      return handleApiError(error, 'PUT', options);
     }
   }
 
@@ -125,13 +174,13 @@ class AxiosApiService {
   async patch<T>(
     endpoint: string,
     payload: unknown,
-    options: object = {}
+    options?: ApiRequestOptions
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.patch(endpoint, payload, options);
-      return processResponse<T>(response);
+      const response = await axiosInstance.patch(endpoint, payload);
+      return processResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'PATCH');
+      return handleApiError(error, 'PATCH', options);
     }
   }
 
@@ -139,14 +188,14 @@ class AxiosApiService {
   async delete<T>(
     endpoint: string,
     payload?: unknown,
-    options: object = {}
+    options?: ApiRequestOptions
   ): Promise<ApiResponse<T>> {
     try {
-      const config = payload ? { ...options, data: payload } : options;
+      const config = payload ? { data: payload } : undefined;
       const response = await axiosInstance.delete(endpoint, config);
-      return processResponse<T>(response);
+      return processResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'DELETE');
+      return handleApiError(error, 'DELETE', options);
     }
   }
 
@@ -154,13 +203,13 @@ class AxiosApiService {
   async postPaginated<T>(
     endpoint: string,
     payload: unknown,
-    options: object = {}
+    options?: ApiRequestOptions
   ): Promise<PaginatedApiResponse<T>> {
     try {
-      const response = await axiosInstance.post(endpoint, payload, options);
-      return processPaginatedResponse<T>(response);
+      const response = await axiosInstance.post(endpoint, payload);
+      return processPaginatedResponse<T>(response, options);
     } catch (error) {
-      return handleApiError(error, 'POST');
+      return handleApiError(error, 'POST', options);
     }
   }
 }

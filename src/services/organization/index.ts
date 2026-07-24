@@ -13,19 +13,28 @@ class OrganizationService {
     payload: OrganizationPaylaod
   ): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.createOrganization.url;
-    return apiService.post<OrganizationResponse>(url, payload);
+    return apiService.post<OrganizationResponse>(url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
   }
 
   async inviteUsers(payload: InviteUsersPayload): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.inviteUsers.url;
-    return apiService.post<OrganizationResponse>(url, payload);
+    return apiService.post<OrganizationResponse>(url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
   }
 
   async updateOrganization(
     payload: OrganizationUpdatePaylaod
   ): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.updateOrganization.url;
-    return apiService.post<OrganizationResponse>(url, payload);
+    return apiService.post<OrganizationResponse>(url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
   }
 }
 
