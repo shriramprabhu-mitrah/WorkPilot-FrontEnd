@@ -19,6 +19,8 @@ import {
 } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
+import { X } from 'lucide-react';
+import ContactSalesModal from '@/src/app/components/common/contactSales';
 
 // Intersection Observer Hook for scroll animations
 const useScrollReveal = () => {
@@ -63,9 +65,10 @@ export const LandingPage = () => {
           <a href="#how-it-works" className="lp-nav-link">
             How it Works
           </a>
+          {/* Comment the Pricing for future purpose
           <a href="#pricing" className="lp-nav-link">
             Pricing
-          </a>
+          </a> */}
           <WpButton
             variant="secondary"
             onClick={() => router.push('/signin')}
@@ -419,9 +422,11 @@ export const LandingPage = () => {
           <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent">
             Start Free
           </WpButton>
-          <WpButton variant="secondary" className="lp-btn-outline">
-            Contact Sales
-          </WpButton>
+          <ContactSalesModal>
+            <WpButton variant="secondary" className="lp-btn-outline h-12">
+              Contact Sales
+            </WpButton>
+          </ContactSalesModal>
         </div>
       </section>
 
