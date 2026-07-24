@@ -31,7 +31,7 @@ class OrganizationService {
     payload: OrganizationUpdatePaylaod
   ): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.updateOrganization.url;
-    return apiService.post<OrganizationResponse>(url, payload, {
+    return apiService.patch<OrganizationResponse>(url, payload, {
       showSuccessToast: true,
       showErrorToast: true,
     });

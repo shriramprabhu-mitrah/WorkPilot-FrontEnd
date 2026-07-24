@@ -5,6 +5,7 @@ import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { Mail, Lock } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { useSignup } from '../../hooks/useSignup';
+import { formatTime } from '@/src/app/components/common/format';
 
 interface VerifyEmailProps {
   email: string;
@@ -14,7 +15,7 @@ interface VerifyEmailProps {
 
 export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(300);
+  const [timer, setTimer] = useState(180);
   const { handleVerifyEmailAsync, handleResendOtpAsync, verifyEmail, resendOtp } = useSignup();
   const [error, setError] = useState<string | null>(null);
   const [resendMsg, setResendMsg] = useState<string | null>(null);
@@ -133,7 +134,8 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
               <p className="text-sm text-gray-500 mb-4">
                 {timer > 0 ? (
                   <>
-                    Resend code in <span className="font-semibold text-gray-900">{timer}s</span>
+                    Resend code in{' '}
+                    <span className="font-semibold text-gray-900">{formatTime(timer)}</span>
                   </>
                 ) : (
                   <button
