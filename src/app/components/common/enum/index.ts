@@ -35,3 +35,10 @@ export enum COMPANY_SIZE {
   SIZE_501_1000 = '501-1000',
   SIZE_1000_PLUS = '1000+',
 }
+
+export enum ROLE_TYPE {
+  PROJECT_MANAGER = 'project_manager',
+  DEVELOPER = 'developer',
+  VIEWER = 'viewer',
+  GUEST = 'guest',
+}
