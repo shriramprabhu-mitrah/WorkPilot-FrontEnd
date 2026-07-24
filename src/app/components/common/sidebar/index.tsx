@@ -47,14 +47,13 @@ export const Sidebar = () => {
   const user = useAppSelector((state) => state.user);
   const { handleLogOut } = useSignin();
 
-  const handleLogoutClick = async () => {
-    await handleLogOut();
+  const handleLogoutClick = () => {
     removeTokens();
-    router.push('/signin');
+    handleLogOut();
   };
 
   return (
-    <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0">
+    <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0 ">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
         <div

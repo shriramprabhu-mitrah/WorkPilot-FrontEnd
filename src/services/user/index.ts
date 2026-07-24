@@ -4,7 +4,9 @@ import { UserProfile, UserUpdatePayload } from '@/src/types/user';
 
 class UserService {
   async getUserProfile(): Promise<UserProfile> {
-    const response = await apiService.get<UserProfile>(ApiEndpoints.User.getUser.url);
+    const response = await apiService.get<UserProfile>(ApiEndpoints.User.getUser.url, {
+      showErrorToast: true,
+    });
     if (!response.data) {
       throw new Error('Failed to fetch user profile');
     }
@@ -12,7 +14,10 @@ class UserService {
   }
 
   async updateUserProfile(payload: UserUpdatePayload): Promise<UserProfile> {
-    const response = await apiService.patch<UserProfile>(ApiEndpoints.User.userUpdate.url, payload);
+    const response = await apiService.patch<UserProfile>(ApiEndpoints.User.userUpdate.url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
     if (!response.data) {
       throw new Error('Failed to update user profile');
     }

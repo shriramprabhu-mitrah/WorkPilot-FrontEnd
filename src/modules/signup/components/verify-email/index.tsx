@@ -14,8 +14,8 @@ interface VerifyEmailProps {
 
 export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(30);
-  const { handleVerifyEmail, handleResendOtp, isLoading } = useSignup();
+  const [timer, setTimer] = useState(300);
+  const { handleVerifyEmailAsync, handleResendOtpAsync, verifyEmail, resendOtp } = useSignup();
   const [error, setError] = useState<string | null>(null);
   const [resendMsg, setResendMsg] = useState<string | null>(null);
 
@@ -56,7 +56,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
     setError(null);
     setResendMsg(null);
     try {
-      await handleVerifyEmail({ email, otp: code });
+      await handleVerifyEmailAsync({ email, otp: code });
       onVerified();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Verification failed');
@@ -69,7 +69,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
     setError(null);
     setResendMsg(null);
     try {
-      await handleResendOtp(email);
+      await handleResendOtpAsync(email);
       setTimer(30);
       setResendMsg('OTP sent successfully');
     } catch (err: unknown) {
@@ -123,8 +123,8 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
               fullWidth
               size="lg"
               onClick={handleVerify}
-              isLoading={isLoading}
-              disabled={otp.join('').length !== 6 || isLoading}
+              isLoading={verifyEmail.isLoading}
+              disabled={otp.join('').length !== 6 || verifyEmail.isLoading}
             >
               Verify Email
             </WpButton>
@@ -139,7 +139,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                   <button
                     onClick={handleResend}
                     className="font-semibold text-blue-600 hover:text-blue-700 underline"
-                    disabled={isLoading}
+                    disabled={resendOtp.isLoading}
                   >
                     Resend code
                   </button>

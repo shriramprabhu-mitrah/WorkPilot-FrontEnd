@@ -20,7 +20,7 @@ import { VerifyEmailModal } from '../verify-email';
 import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
 
 export const SignUp = () => {
-  const { handleSignUp, isLoading, error } = useSignup();
+  const { handleSignUpAsync, signUp } = useSignup();
   const [full_name, setName] = useState('');
   const [username, setuserName] = useState('');
   const [email, setEmail] = useState('');
@@ -48,9 +48,11 @@ export const SignUp = () => {
     if (!isFormValid) return;
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await handleSignUp({ full_name, username, email, password, timezone });
+      await handleSignUpAsync({ full_name, username, email, password, timezone });
       setIsSuccess(true);
-    } catch {}
+    } catch {
+      // Error handled by React Query and toast
+    }
   };
 
   return (
@@ -157,12 +159,6 @@ export const SignUp = () => {
               }
             />
 
-            {error && (
-              <div style={{ color: 'var(--color-error)', marginBottom: '16px', fontSize: '14px' }}>
-                {error}
-              </div>
-            )}
-
             <div className="mb-6">
               <WpCheckbox
                 id="terms"
@@ -198,7 +194,7 @@ export const SignUp = () => {
             <WpButton
               type="submit"
               fullWidth
-              isLoading={isLoading}
+              isLoading={signUp.isLoading}
               loadingText="Creating account..."
               disabled={!isFormValid}
             >

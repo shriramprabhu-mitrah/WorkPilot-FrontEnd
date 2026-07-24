@@ -6,7 +6,7 @@ const DEFAULT_PUBLIC = '/signin';
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const token = req.cookies.get('accessToken')?.value;
+  const token = req.cookies.get('access_token')?.value;
 
   const isPublicRoute =
     pathname === '/' || pathname.startsWith('/signin') || pathname.startsWith('/signup');

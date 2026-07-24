@@ -12,8 +12,15 @@ import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { LockIcon } from 'lucide-react';
 
 export const SignIn = () => {
-  const { handleSignIn, handleForgotPassword, handleResetPasswordConfirm, isLoading, error } =
-    useSignin();
+  const {
+    handleSignInAsync,
+    handleForgotPasswordAsync,
+    handleResetPasswordConfirmAsync,
+    isLoading,
+    error,
+    forgotPassword,
+    resetPasswordConfirm,
+  } = useSignin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -30,13 +37,9 @@ export const SignIn = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await handleSignIn({ email, password, rememberMe });
-      if (response.data) {
-        setTokens(response.data.access_token, response.data.refresh_token);
-      }
-      router.push('/dashboard');
+      await handleSignInAsync({ email, password, rememberMe });
     } catch {
-      // Error is handled by the hook and exposed via error state
+      // Error is handled by React Query and toast
     }
   };
 
@@ -46,12 +49,11 @@ export const SignIn = () => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
-      const response = await handleForgotPassword(forgotEmail);
+      const response = await handleForgotPasswordAsync(forgotEmail);
       setForgotSuccessMessage(response?.message || 'Reset link sent successfully to your email.');
       setForgotStep(2);
     } catch (err: unknown) {
       setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to send reset link');
-      throw err;
     }
   };
 
@@ -61,13 +63,13 @@ export const SignIn = () => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
-      const response = await handleResetPasswordConfirm({
+      const response = await handleResetPasswordConfirmAsync({
         email: forgotEmail,
         otp: resetOtp,
         new_password: resetNewPassword,
       });
       setForgotSuccessMessage(response?.message || 'Password reset successfully.');
-      setTimeout(() => router.push('/dashboard'), 1000);
+      setTimeout(() => router.push('/signin'), 1500);
     } catch (err: unknown) {
       setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to reset password');
     }
@@ -130,12 +132,6 @@ export const SignIn = () => {
             Forgot Password?
           </WpButton>
         </div>
-
-        {error && (
-          <div style={{ color: 'var(--color-error)', marginBottom: '16px', fontSize: '14px' }}>
-            {error}
-          </div>
-        )}
 
         <WpButton type="submit" fullWidth isLoading={isLoading} loadingText="Signing in...">
           Sign in
@@ -229,7 +225,9 @@ export const SignIn = () => {
               <WpButton
                 type="submit"
                 fullWidth
-                isLoading={isLoading}
+                isLoading={
+                  forgotStep === 1 ? forgotPassword.isLoading : resetPasswordConfirm.isLoading
+                }
                 loadingText={forgotStep === 1 ? 'Sending link...' : 'Resetting Password...'}
                 disabled={!forgotEmail || (forgotStep === 2 && (!resetOtp || !resetNewPassword))}
                 className="mb-4"
