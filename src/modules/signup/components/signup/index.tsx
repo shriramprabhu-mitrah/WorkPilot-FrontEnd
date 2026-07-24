@@ -16,6 +16,8 @@ import {
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpCheckbox } from '@/src/app/components/common/checkbox';
+import { VerifyEmailModal } from '../verify-email';
+import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
 
 export const SignUp = () => {
   const { handleSignUp, isLoading, error } = useSignup();
@@ -27,6 +29,7 @@ export const SignUp = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
 
   const passwordsMatch = password === confirmPwd;
   const isFormValid =
@@ -52,30 +55,33 @@ export const SignUp = () => {
 
   return (
     <div className="signinContainer">
-      {isSuccess ? (
+      {isSuccess && onboardingStep === 'otp' && (
+        <VerifyEmailModal
+          email={email}
+          onBack={() => setIsSuccess(false)}
+          onVerified={() => setOnboardingStep('org')}
+        />
+      )}
+
+      {isSuccess && onboardingStep === 'org' && (
+        <OrganizationSetupModal
+          onComplete={() => {
+            setOnboardingStep('done');
+            router.push('/dashboard'); // or wherever makes sense after setup
+          }}
+        />
+      )}
+
+      {isSuccess && onboardingStep === 'done' ? (
         <div className="flex w-full flex-col items-center text-center">
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50" />
           <h1 className="signinTitle mb-4">Account created!</h1>
           <p className="mb-8 text-sm leading-[1.6] text-gray-500">
-            As a <strong className="text-gray-900 dark:text-gray-100">User</strong>, you need an
-            invitation to join an organization.
-            <br />
-            Ask your Organization Admin to invite you via email.
+            Setup complete. Welcome to WorkPilot.
           </p>
 
-          <div className="mb-10 w-full rounded-xl border border-amber-200 bg-amber-50 p-6 text-left dark:border-amber-900 dark:bg-amber-900/20">
-            <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-500">
-              What happens next?
-            </h3>
-            <ul className="m-0 flex flex-col gap-2 pl-5 text-[13px] text-amber-600 dark:text-amber-400">
-              <li>Your Organization Admin sends you an invite link</li>
-              <li>Click the link to join their workspace</li>
-              <li>Start collaborating immediately</li>
-            </ul>
-          </div>
-
-          <WpButton type="button" variant="ghost" onClick={() => router.push('/signin')}>
-            Back to sign in
+          <WpButton type="button" variant="primary" onClick={() => router.push('/dashboard')}>
+            Go to Dashboard
           </WpButton>
         </div>
       ) : (

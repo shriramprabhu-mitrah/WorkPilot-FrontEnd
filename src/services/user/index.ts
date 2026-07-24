@@ -12,7 +12,7 @@ class UserService {
   }
 
   async updateUserProfile(payload: UserUpdatePayload): Promise<UserProfile> {
-    const response = await apiService.patch<UserProfile>(ApiEndpoints.Sign.userUpdate.url, payload);
+    const response = await apiService.patch<UserProfile>(ApiEndpoints.User.userUpdate.url, payload);
     if (!response.data) {
       throw new Error('Failed to update user profile');
     }

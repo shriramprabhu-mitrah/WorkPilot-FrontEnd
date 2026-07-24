@@ -24,7 +24,7 @@ export interface ActivityItem {
   action: string;
   target?: string;
   timestamp: string;
-  type: "history" | "comment";
+  type: 'history' | 'comment';
   comment?: string;
 }
 
