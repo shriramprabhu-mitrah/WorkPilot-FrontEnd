@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useSignup } from '../../hooks/useSignup';
 import { useRouter } from 'next/navigation';
@@ -18,37 +21,66 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { VerifyEmailModal } from '../verify-email';
 import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
+import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
+const signupSchema = z
+  .object({
+    full_name: z.string().trim().min(1, 'Full name is required'),
+
+    username: z.string().trim().min(1, 'Username is required'),
+
+    email: z
+      .string()
+      .trim()
+      .min(1, 'Email address is required')
+      .email('Please enter a valid email address'),
+
+    password: z
+      .string()
+      .min(1, 'Password is required')
+      .min(8, 'Password must be at least 8 characters'),
+
+    confirmPwd: z.string().min(1, 'Please confirm your password'),
+
+    agreedToTerms: z.boolean().refine((value) => value === true, {
+      message: 'Please agree to the Terms and Privacy Policy',
+    }),
+  })
+  .refine((data) => data.password === data.confirmPwd, {
+    message: 'Passwords do not match',
+    path: ['confirmPwd'],
+  });
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 export const SignUp = () => {
   const { handleSignUpAsync, signUp } = useSignup();
-  const [full_name, setName] = useState('');
-  const [username, setuserName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
-
-  const passwordsMatch = password === confirmPwd;
-  const isFormValid =
-    full_name.trim() !== '' &&
-    username.trim() !== '' &&
-    email.trim() !== '' &&
-    password !== '' &&
-    confirmPwd !== '' &&
-    passwordsMatch &&
-    agreedToTerms;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onSubmit',
+  });
+  const firstErrorField = Object.keys(errors)[0];
+  const email = watch('email');
 
   const router = useRouter();
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
+  const onSubmit = async (data: SignupFormData) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await handleSignUpAsync({ full_name, username, email, password, timezone });
+      await handleSignUpAsync({
+        full_name: data.full_name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        timezone,
+      });
       setIsSuccess(true);
     } catch {
       // Error handled by React Query and toast
@@ -98,39 +130,42 @@ export const SignUp = () => {
           <h1 className="signinTitle">Create your account</h1>
           <h2 className="subtitle">Get started free — no credit card required.</h2>
 
-          <form onSubmit={onSubmit} style={{ width: '100%' }}>
+          <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
             <WpInput
               id="name"
               type="text"
               label="Full Name"
               placeholder="Jane Smith"
               icon={<UserIconSvg />}
-              value={full_name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              {...register('full_name')}
+              className={firstErrorField === 'full_name' ? inputErrorClass : ''}
+              showRequired
             />
-
+            {firstErrorField === 'full_name' && (
+              <ErrorMessage message={errors.full_name?.message} />
+            )}
             <WpInput
               id="username"
               type="text"
               label="User Name"
               placeholder="Enter username"
               icon={<UserIconSvg />}
-              value={username}
-              onChange={(e) => setuserName(e.target.value)}
-              required
+              {...register('username')}
+              className={firstErrorField === 'username' ? inputErrorClass : ''}
+              showRequired
             />
-
+            {firstErrorField === 'username' && <ErrorMessage message={errors.username?.message} />}
             <WpInput
               id="email"
-              type="email"
+              type="text"
               label="Work Email"
               placeholder="name@company.com"
               icon={<EmailIconSvg />}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register('email')}
+              className={firstErrorField === 'email' ? inputErrorClass : ''}
+              showRequired
             />
+            {firstErrorField === 'email' && <ErrorMessage message={errors.email?.message} />}
 
             <WpInput
               id="password"
@@ -138,11 +173,11 @@ export const SignUp = () => {
               label="Password"
               placeholder="8+ characters"
               icon={<LockIconSvg />}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
+              {...register('password')}
+              className={firstErrorField === 'password' ? inputErrorClass : ''}
+              showRequired
             />
+            {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
 
             <WpInput
               id="confirmPwd"
@@ -150,20 +185,18 @@ export const SignUp = () => {
               label="Confirm Password"
               placeholder="Re-enter your password"
               icon={<LockIconSvg />}
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              required
-              minLength={8}
-              error={
-                password && confirmPwd && !passwordsMatch ? 'Passwords do not match' : undefined
-              }
+              {...register('confirmPwd')}
+              className={firstErrorField === 'confirmPwd' ? inputErrorClass : ''}
+              showRequired
             />
+            {firstErrorField === 'confirmPwd' && (
+              <ErrorMessage message={errors.confirmPwd?.message} />
+            )}
 
             <div className="mb-6">
               <WpCheckbox
                 id="terms"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                {...register('agreedToTerms')}
                 label={
                   <span className="text-xs text-gray-500">
                     By continuing you agree to our{' '}
@@ -189,6 +222,9 @@ export const SignUp = () => {
                   </span>
                 }
               />
+              {firstErrorField === 'agreedToTerms' && (
+                <ErrorMessage message={errors.agreedToTerms?.message} />
+              )}
             </div>
 
             <WpButton
@@ -196,7 +232,6 @@ export const SignUp = () => {
               fullWidth
               isLoading={signUp.isLoading}
               loadingText="Creating account..."
-              disabled={!isFormValid}
             >
               Create Account
             </WpButton>

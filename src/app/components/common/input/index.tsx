@@ -8,6 +8,7 @@ interface WpInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
   error?: string;
   hint?: string;
+  showRequired?: boolean;
   wrapperClassName?: string;
 }
 
@@ -18,6 +19,7 @@ export const WpInput = ({
   hint,
   type = 'text',
   id,
+  showRequired,
   className = '',
   wrapperClassName = '',
   ...props
@@ -31,6 +33,7 @@ export const WpInput = ({
       {label && (
         <label htmlFor={id} className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
           {label}
+          {showRequired && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <div className="relative w-full">
@@ -44,7 +47,10 @@ export const WpInput = ({
           type={inputType}
           className={[
             'w-full border rounded-lg text-sm outline-none transition-all box-border',
-            'border-[var(--color-gray-300)] focus:border-[var(--color-primary-focus)] focus:ring-2 focus:ring-[rgba(37,99,235,0.2)]',
+            'border-[var(--color-gray-300)]',
+            !error
+              ? 'focus:border-[var(--color-primary-focus)] focus:ring-2 focus:ring-[rgba(37,99,235,0.2)]'
+              : 'focus:border-[var(--color-error)] focus:ring-2 focus:ring-red-100',
             icon ? 'pl-9 pr-3 py-[10px]' : 'pl-3 pr-3 py-[10px]',
             isPassword ? 'pr-9' : '',
             error
@@ -70,7 +76,7 @@ export const WpInput = ({
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>}
+      {error && <p className="absolute mt-1 text-xs text-[var(--color-error)]">{error}</p>}
       {hint && !error && <p className="mt-1 text-xs text-[var(--color-gray-400)]">{hint}</p>}
     </div>
   );
