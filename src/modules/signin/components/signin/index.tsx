@@ -4,12 +4,52 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSignin } from '../../hooks/useSignin';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { setTokens } from '@/src/lib/utils/cookies';
 import { TrackrLogoSvg, EmailIconSvg, CloseIconSvg } from '@/src/assets/svgs';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { LockIcon } from 'lucide-react';
+import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
+
+const signinSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address'),
+
+  password: z
+    .string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+});
+
+type SigninFormData = z.infer<typeof signinSchema>;
+
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address'),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+const resetPasswordSchema = z.object({
+  otp: z.string().trim().min(1, 'OTP is required'),
+
+  newPassword: z
+    .string()
+    .min(1, 'New password is required')
+    .min(8, 'Password must be at least 8 characters'),
+});
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export const SignIn = () => {
   const {
@@ -21,8 +61,6 @@ export const SignIn = () => {
     forgotPassword,
     resetPasswordConfirm,
   } = useSignin();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
@@ -34,22 +72,51 @@ export const SignIn = () => {
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState<string | null>(null);
   const [forgotErrorMsg, setForgotErrorMsg] = useState<string | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SigninFormData>({
+    resolver: zodResolver(signinSchema),
+    mode: 'onSubmit',
+  });
+  const firstErrorField = Object.keys(errors)[0];
+
+  const {
+    register: registerForgot,
+    handleSubmit: handleForgotFormSubmit,
+    formState: { errors: forgotErrors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: 'onSubmit',
+  });
+
+  const {
+    register: registerReset,
+    handleSubmit: handleResetFormSubmit,
+    formState: { errors: resetErrors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: 'onSubmit',
+  });
+
+  const onSubmit = async (data: SigninFormData) => {
     try {
-      await handleSignInAsync({ email, password, rememberMe });
+      await handleSignInAsync({
+        email: data.email,
+        password: data.password,
+        rememberMe,
+      });
     } catch {
       // Error is handled by React Query and toast
     }
   };
 
-  const handleForgotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail) return;
+  const handleForgotSubmit = async (data: ForgotPasswordFormData) => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
-      const response = await handleForgotPasswordAsync(forgotEmail);
+      const response = await handleForgotPasswordAsync(data.email);
       setForgotSuccessMessage(response?.message || 'Reset link sent successfully to your email.');
       setForgotStep(2);
     } catch (err: unknown) {
@@ -57,16 +124,14 @@ export const SignIn = () => {
     }
   };
 
-  const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail || !resetOtp || !resetNewPassword) return;
+  const handleResetSubmit = async (data: ResetPasswordFormData) => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
       const response = await handleResetPasswordConfirmAsync({
         email: forgotEmail,
-        otp: resetOtp,
-        new_password: resetNewPassword,
+        otp: data.otp,
+        new_password: data.newPassword,
       });
       setForgotSuccessMessage(response?.message || 'Password reset successfully.');
       setTimeout(() => router.push('/signin'), 1500);
@@ -87,17 +152,18 @@ export const SignIn = () => {
       <h1 className="signinTitle">Welcome back</h1>
       <h2 className="subtitle">Sign in to your workspace to continue.</h2>
 
-      <form onSubmit={onSubmit} style={{ width: '100%' }}>
+      <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
         <WpInput
           id="email"
-          type="email"
-          label="Email Address"
+          type="text"
+          label="Email Address "
           placeholder="name@company.com"
           icon={<EmailIconSvg />}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+          {...register('email')}
+          className={firstErrorField === 'email' ? inputErrorClass : ''}
+          showRequired
         />
+        {firstErrorField === 'email' && <ErrorMessage message={errors.email?.message} />}
 
         <WpInput
           id="password"
@@ -105,12 +171,12 @@ export const SignIn = () => {
           label="Password"
           placeholder="••••••••"
           icon={<LockIcon size={16} />}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+          {...register('password')}
+          className={firstErrorField === 'password' ? inputErrorClass : ''}
           minLength={8}
+          showRequired
         />
-
+        {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
         <div className="optionsRow">
           <WpCheckbox
             id="rememberMe"
@@ -177,32 +243,48 @@ export const SignIn = () => {
             </p>
 
             <form
-              onSubmit={forgotStep === 1 ? handleForgotSubmit : handleResetSubmit}
+              onSubmit={
+                forgotStep === 1
+                  ? handleForgotFormSubmit(handleForgotSubmit)
+                  : handleResetFormSubmit(handleResetSubmit)
+              }
               className="w-full"
             >
-              <WpInput
-                id="forgotEmail"
-                type="email"
-                label="Email Address"
-                placeholder="name@company.com"
-                icon={<EmailIconSvg />}
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                required
-                disabled={forgotStep === 2}
-              />
-
-              {forgotStep === 2 && (
+              {forgotStep === 1 ? (
                 <>
+                  <WpInput
+                    id="forgotEmail"
+                    type="email"
+                    label="Email Address"
+                    placeholder="name@company.com"
+                    icon={<EmailIconSvg />}
+                    {...registerForgot('email')}
+                    className={forgotErrors.email ? inputErrorClass : ''}
+                    showRequired
+                  />
+                  <ErrorMessage message={forgotErrors.email?.message} />
+                </>
+              ) : (
+                <>
+                  <WpInput
+                    id="forgotEmail"
+                    type="email"
+                    label="Email Address"
+                    value={forgotEmail}
+                    disabled
+                  />
+
                   <WpInput
                     id="resetOtp"
                     type="text"
                     label="OTP"
                     placeholder="Enter OTP"
-                    value={resetOtp}
-                    onChange={(e) => setResetOtp(e.target.value)}
-                    required
+                    {...registerReset('otp')}
+                    className={resetErrors.otp ? inputErrorClass : ''}
+                    showRequired
                   />
+
+                  <ErrorMessage message={resetErrors.otp?.message} />
 
                   <WpInput
                     id="resetNewPassword"
@@ -210,27 +292,29 @@ export const SignIn = () => {
                     label="New Password"
                     placeholder="••••••••"
                     icon={<LockIcon size={16} />}
-                    value={resetNewPassword}
-                    onChange={(e) => setResetNewPassword(e.target.value)}
-                    required
+                    {...registerReset('newPassword')}
+                    className={resetErrors.newPassword ? inputErrorClass : ''}
+                    showRequired
                   />
+
+                  <ErrorMessage message={resetErrors.newPassword?.message} />
                 </>
               )}
 
               {forgotErrorMsg && <div className="mb-4 text-sm text-red-500">{forgotErrorMsg}</div>}
+
               {forgotSuccessMessage && (
                 <div className="mb-4 text-sm text-green-600">{forgotSuccessMessage}</div>
               )}
 
               <WpButton
                 type="submit"
+                className="mt-5"
                 fullWidth
                 isLoading={
                   forgotStep === 1 ? forgotPassword.isLoading : resetPasswordConfirm.isLoading
                 }
                 loadingText={forgotStep === 1 ? 'Sending link...' : 'Resetting Password...'}
-                disabled={!forgotEmail || (forgotStep === 2 && (!resetOtp || !resetNewPassword))}
-                className="mb-4"
               >
                 {forgotStep === 1 ? 'Send Reset Link' : 'Reset Password'}
               </WpButton>

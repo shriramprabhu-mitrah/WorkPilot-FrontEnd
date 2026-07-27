@@ -1,3 +1,4 @@
+import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { colors } from '@/src/styles/colors';
 import { Member, RoleCard } from '@/src/types/teams';
 
@@ -5,7 +6,7 @@ export const MEMBERS: Member[] = [
   {
     id: '1',
     name: 'Sarah Chen',
-    role: 'Project Manager',
+    role: ROLE_TYPE.PROJECT_MANAGER,
     initials: 'SC',
     avatarColor: '#7c3aed',
     tasks: 0,
@@ -14,7 +15,7 @@ export const MEMBERS: Member[] = [
   {
     id: '2',
     name: 'Marcus Johnson',
-    role: 'Senior Developer',
+    role: ROLE_TYPE.VIEWER,
     initials: 'MJ',
     avatarColor: '#2563eb',
     tasks: 8,
@@ -32,7 +33,7 @@ export const MEMBERS: Member[] = [
   {
     id: '4',
     name: 'Alex Kim',
-    role: 'UI/UX Designer',
+    role: ROLE_TYPE.PROJECT_MANAGER,
     initials: 'AK',
     avatarColor: '#059669',
     tasks: 4,
@@ -41,7 +42,7 @@ export const MEMBERS: Member[] = [
   {
     id: '5',
     name: 'Jordan Williams',
-    role: 'QA Engineer',
+    role: ROLE_TYPE.DEVELOPER,
     initials: 'JW',
     avatarColor: '#d97706',
     tasks: 2,
