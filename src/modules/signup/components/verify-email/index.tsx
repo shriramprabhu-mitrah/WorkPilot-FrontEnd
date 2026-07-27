@@ -171,7 +171,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
             <h2 className="text-3xl font-bold text-white mb-4">Secure verification</h2>
             <p className="text-blue-100 text-center leading-relaxed">
               We verify your email to keep your account and organization data safe. Codes expire
-              after 10 minutes.
+              after 3 minutes.
             </p>
           </div>
         </div>

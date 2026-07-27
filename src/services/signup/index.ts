@@ -28,10 +28,14 @@ class SignupService {
 
   async logOut(): Promise<ApiResponse<{ message: string }>> {
     const url = ApiEndpoints.Sign.logOut.url;
-    return apiService.post<{ message: string }>(url, {}, {
-      showSuccessToast: true,
-      showErrorToast: true,
-    });
+    return apiService.post<{ message: string }>(
+      url,
+      {},
+      {
+        showSuccessToast: true,
+        showErrorToast: true,
+      }
+    );
   }
 
   async changePassword(payload: ChangePassword): Promise<ApiResponse<{ message: string }>> {
@@ -44,10 +48,14 @@ class SignupService {
 
   async resetPassword(email: string): Promise<ApiResponse<{ message: string }>> {
     const url = ApiEndpoints.Sign.passwordReset.url;
-    return apiService.post<{ message: string }>(url, { email }, {
-      showSuccessToast: true,
-      showErrorToast: true,
-    });
+    return apiService.post<{ message: string }>(
+      url,
+      { email },
+      {
+        showSuccessToast: true,
+        showErrorToast: true,
+      }
+    );
   }
 
   async resetPasswordConfirm(
@@ -70,10 +78,14 @@ class SignupService {
 
   async resendOtp(email: string): Promise<ApiResponse<{ message: string }>> {
     const url = ApiEndpoints.Sign.resendEmail.url;
-    return apiService.post<{ message: string }>(url, { email }, {
-      showSuccessToast: true,
-      showErrorToast: true,
-    });
+    return apiService.post<{ message: string }>(
+      url,
+      { email },
+      {
+        showSuccessToast: true,
+        showErrorToast: true,
+      }
+    );
   }
 }
 

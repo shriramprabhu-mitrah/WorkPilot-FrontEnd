@@ -39,7 +39,7 @@ export const showToast = {
    * Show a promise-based toast notification
    * Automatically shows loading, success, and error states
    */
-  promise: <T,>(
+  promise: <T>(
     promise: Promise<T>,
     messages: {
       loading: string;
