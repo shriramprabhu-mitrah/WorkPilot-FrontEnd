@@ -34,11 +34,7 @@ axiosInstance.interceptors.response.use(
       try {
         // Backend handles refresh token from HTTP-only cookies
         const baseURL = process.env.NEXT_PUBLIC_API_URL || '/api';
-        await axios.post(
-          `${baseURL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true });
 
         // Retry the original request - backend will use refreshed cookie
         return axiosInstance(originalRequest);
