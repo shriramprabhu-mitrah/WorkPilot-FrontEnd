@@ -30,10 +30,11 @@ export const SignIn = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await handleSignIn({ email, password, rememberMe });
-      if (response.data) {
-        setTokens(response.data.access_token, response.data.refresh_token);
-      }
+      // const response = await handleSignIn({ email, password, rememberMe });
+      // if (response.data) {
+      //   setTokens(response.data.access_token, response.data.refresh_token);
+      // }
+      setTokens('dummyaccesss');
       router.push('/dashboard');
     } catch {
       // Error is handled by the hook and exposed via error state
