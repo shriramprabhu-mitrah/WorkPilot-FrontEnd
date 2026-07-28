@@ -20,8 +20,7 @@ export default function SettingsHeader({ activeTab, onTabChange }: SettingsHeade
   return (
     <div className="mb-6">
       <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-
-      <div className="mt-5 flex items-center gap-2 rounded-xl bg-gray-100 w-2xl p-1">
+      <div className="mt-5 flex w-fit items-center gap-2 rounded-xl bg-gray-100 p-1">
         {tabs.map((tab) => (
           <button
             key={tab}
