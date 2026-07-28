@@ -1,4 +1,4 @@
-import { Permission } from '../components/permissionMatrix';
+import { Permission } from '../components/permissionMatrixx';
 
 export const permissionsData: Permission[] = [
   {

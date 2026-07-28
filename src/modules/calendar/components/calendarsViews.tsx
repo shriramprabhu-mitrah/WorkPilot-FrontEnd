@@ -7,10 +7,10 @@ import moment from 'moment';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import type { Formats } from 'react-big-calendar';
 import { CalendarEvent } from '../types';
-import CustomToolbar from './customToolbar';
-import CustomEvent from './customEvent';
-import CustomDateHeader from './customDateHeader';
-import { eventStyleGetter } from './calendarViewStl';
+import CustomToolbar from './customsToolbars';
+import CustomEvent from './customsEvents';
+import CustomDateHeader from './customsDatesHeaders';
+import { eventStyleGetter } from './calendarsViewStyle';
 import { View } from 'react-big-calendar';
 
 const localizer = momentLocalizer(moment);

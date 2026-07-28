@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import CalendarView from './calendarView';
-import UpcomingEvents from './upcomingEvents';
-import TodayCard from './todayCard';
-import EventLegends from './eventLegends';
+import CalendarView from './calendarsViews';
+import UpcomingEvents from './upcominggEventss';
+import TodayCard from './todaysCards';
+import EventLegends from './eventsLegendss';
 import { Views, View } from 'react-big-calendar';
 import { calendarEvents } from '../data/calendarEvents';
 import { expandMultiDayEvents } from '../../../utils/calendar';
