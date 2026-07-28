@@ -41,7 +41,7 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
         onClick={handleOpen}
         className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-lg font-semibold shadow-sm hover:bg-gray-50"
       >
-        {moment(value).format("MMMM YYYY")}
+        {moment(value).format('MMMM YYYY')}
         <ChevronDown size={18} />
       </button>
 
@@ -70,8 +70,9 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
                     onChange(new Date(year, index, 1));
                     setOpen(false);
                   }}
-                  className={`rounded-lg p-3 text-sm transition ${selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
-                    }`}
+                  className={`rounded-lg p-3 text-sm transition ${
+                    selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
+                  }`}
                 >
                   {month.substring(0, 3)}
                 </button>

@@ -5,7 +5,6 @@ import '../../../styles/calendar.css';
 import { useState } from 'react';
 import moment from 'moment';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
-
 import type { Formats } from 'react-big-calendar';
 import { CalendarEvent } from '../types';
 import CustomToolbar from './customToolbar';
