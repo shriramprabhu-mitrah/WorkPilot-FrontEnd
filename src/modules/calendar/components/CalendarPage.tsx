@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import CalendarView from './CalendarView';
-import UpcomingEvents from './UpcomingEvents';
-import TodayCard from './TodayCard';
-import EventLegends from './EventLegends';
+import CalendarView from './calendarView';
+import UpcomingEvents from './upcomingEvents';
+import TodayCard from './todayCard';
+import EventLegends from './eventLegends';
 import { Views, View } from 'react-big-calendar';
 import { calendarEvents } from '../data/calendarEvents';
-import { expandMultiDayEvents } from '../utils/calendarUtils';
+import { expandMultiDayEvents } from '../../../utils/calendar';
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>(Views.MONTH);

@@ -1,10 +1,8 @@
-'use client';
-
 import { Navigate, ToolbarProps, View } from 'react-big-calendar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CalendarEvent } from '../types';
 import { WpButton } from '@/src/app/components/common/button';
-import MonthYearPicker from './MonthYearPicker';
+import MonthYearPicker from './monthYearPicker';
 
 interface CustomToolbarProps extends ToolbarProps<CalendarEvent> {
   currentDate: Date;

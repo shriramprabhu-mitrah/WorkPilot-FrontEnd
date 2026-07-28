@@ -1,5 +1,3 @@
-'use client';
-
 import moment from 'moment';
 import { CalendarEvent } from '../types';
 

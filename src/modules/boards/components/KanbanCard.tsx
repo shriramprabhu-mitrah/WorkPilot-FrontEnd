@@ -5,7 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { KanbanTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
-import { KanbanCardContent } from './KanbanCardContent';
+import { KanbanCardContent } from './kanbanCardContent';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 
 export const KanbanCard = ({ task }: { task: KanbanTask }) => {

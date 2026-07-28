@@ -1,17 +1,17 @@
 'use client';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '../styles/calendar.css';
+import '../../../styles/calendar.css';
 import { useState } from 'react';
 import moment from 'moment';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 
 import type { Formats } from 'react-big-calendar';
 import { CalendarEvent } from '../types';
-import CustomToolbar from './CustomToolbar';
-import CustomEvent from './CustomEvent';
-import CustomDateHeader from './CustomDateHeader';
-import { eventStyleGetter } from '../utils/calendarStyle';
+import CustomToolbar from './customToolbar';
+import CustomEvent from './customEvent';
+import CustomDateHeader from './customDateHeader';
+import { eventStyleGetter } from './calendarViewStl';
 import { View } from 'react-big-calendar';
 
 const localizer = momentLocalizer(moment);

@@ -1,8 +1,7 @@
-'use client';
-
 import moment from 'moment';
 import { CalendarEvent } from '../types';
 import { Chip } from '@/src/app/components/common/chip';
+import { colors } from '@/src/styles/colors';
 
 interface UpcomingEventsProps {
   events: CalendarEvent[];
@@ -11,19 +10,19 @@ interface UpcomingEventsProps {
 
 const eventStyles = {
   Sprint: {
-    color: '#8B5CF6',
-    bg: '#F5F0FF',
-    date: '#7C3AED',
+    color: colors.colInReview,
+    bg: colors.colInReviewBg,
+    date: colors.colInReview,
   },
   Meeting: {
-    color: '#F97316',
-    bg: '#FFF5EB',
-    date: '#EA580C',
+    color: colors.priorityHighText,
+    bg: colors.priorityHighBg,
+    date: colors.priorityHighText,
   },
   Task: {
-    color: '#2563EB',
-    bg: '#EEF4FF',
-    date: '#2563EB',
+    color: colors.primary,
+    bg: colors.primaryLight,
+    date: colors.primary,
   },
 };
 

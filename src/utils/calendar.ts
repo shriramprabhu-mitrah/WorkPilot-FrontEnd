@@ -1,4 +1,4 @@
-import { CalendarEvent } from '../types';
+import { CalendarEvent } from '../modules/calendar/types';
 
 export const expandMultiDayEvents = (events: CalendarEvent[]): CalendarEvent[] => {
   return events.flatMap((event) => {

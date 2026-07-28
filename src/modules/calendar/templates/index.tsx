@@ -1,6 +1,4 @@
-'use client';
-
-import CalendarPage from '../components/CalendarPage';
+import CalendarPage from "../components/calendarPage";
 
 export default function CalendarTemplate() {
   return <CalendarPage />;
