@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from '@/src/modules/home/templates';
+import CalendarTemplate from '@/src/modules/calendar/templates';
 
-export default function Page() {
-  return <HomeDashboardTemplate />;
+export default function Calendar() {
+  return <CalendarTemplate />;
 }

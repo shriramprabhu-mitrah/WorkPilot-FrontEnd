@@ -17,8 +17,8 @@ import {
 import type { DropAnimation } from '@dnd-kit/core';
 import { ASSIGNEE_AVATARS, BOARD_COLUMNS } from '../data';
 import { KanbanColumn as KanbanColumnType, KanbanTask } from '@/src/types/board';
-import { KanbanColumn } from '../components/KanbanColumn';
-import { KanbanCardPreview } from '@/src/modules/boards/components/KanbanCardPreview';
+import { KanbanColumn } from '../components/kanbanColumn';
+import { KanbanCardPreview } from '../components/kanbanCardPreview';
 import { FilterPanel, FilterState } from '@/src/app/components/common/filter-panel';
 import { colors } from '@/src/styles/colors';
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
