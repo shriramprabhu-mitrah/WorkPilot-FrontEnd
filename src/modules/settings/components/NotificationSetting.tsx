@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import {
   deliveryChannels,
@@ -11,11 +10,11 @@ type DeliveryChannel = 'email' | 'inApp' | 'browser';
 type DeliveryState = Record<DeliveryChannel, boolean>;
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => {
   return (
-    <button
+    <WpButton
       type="button"
       onClick={onChange}
       aria-label={checked ? 'Turn off' : 'Turn on'}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${
+      className={`relative h-5 w-9 shrink-0 rounded-full p-0 transition-colors duration-200 ${
         checked ? 'bg-blue-600' : 'bg-gray-200'
       }`}
     >
@@ -24,7 +23,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void 
           checked ? 'left-[18px]' : 'left-[2px]'
         }`}
       />
-    </button>
+    </WpButton>
   );
 };
 export const NotificationSettings = () => {
@@ -68,7 +67,6 @@ export const NotificationSettings = () => {
             Choose how you want to receive notifications.
           </p>
         </div>
-
         <div>
           {deliveryChannels.map((channel, index) => (
             <div
@@ -137,23 +135,26 @@ export const NotificationSettings = () => {
           {emailFrequencyOptions.map((option) => {
             const active = emailFrequency === option.id;
             return (
-              <button
+              <WpButton
                 key={option.id}
                 type="button"
+                variant="secondary"
                 onClick={() => setEmailFrequency(option.id)}
-                className={`rounded-xl border p-4 text-left transition-all ${
-                  active
-                    ? 'border-2 border-blue-600 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                className={`w-full rounded-xl border p-4 text-left ${
+                  active ? 'border-2 border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'
                 }`}
               >
-                <p
-                  className={`text-sm font-semibold ${active ? 'text-blue-600' : 'text-gray-800'}`}
-                >
-                  {option.title}
-                </p>
-                <p className="mt-1 text-xs text-gray-400">{option.description}</p>
-              </button>
+                <div>
+                  <p
+                    className={`text-sm font-semibold ${
+                      active ? 'text-blue-600' : 'text-gray-800'
+                    }`}
+                  >
+                    {option.title}
+                  </p>
+                  <p className="mt-1 text-xs font-normal text-gray-400">{option.description}</p>
+                </div>
+              </WpButton>
             );
           })}
         </div>

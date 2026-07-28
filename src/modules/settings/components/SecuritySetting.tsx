@@ -37,11 +37,11 @@ export const SecuritySetting = () => {
               Once enabled, you will be asked for a 6-digit code when signing in.
             </p>
           </div>
-          <button
+          <WpButton
             type="button"
             onClick={handleTwoFactorToggle}
-            className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${
-              twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative h-5 w-9 rounded-full p-0 ${
+              twoFactorEnabled ? '!bg-blue-600' : '!bg-gray-200'
             }`}
           >
             <span
@@ -49,7 +49,7 @@ export const SecuritySetting = () => {
                 twoFactorEnabled ? 'left-4' : 'left-0.5'
               }`}
             />
-          </button>
+          </WpButton>
         </div>
 
         {twoFactorEnabled && (
@@ -87,13 +87,13 @@ export const SecuritySetting = () => {
             <Clock3 size={15} className="text-gray-500" />
             <h3 className="text-xs font-semibold text-gray-900">Active sessions</h3>
           </div>
-          <button
+          <WpButton
             type="button"
             onClick={() => setShowRevokeModal(true)}
-            className="text-xs font-medium text-red-500 hover:text-red-600"
+            className="!bg-transparent !p-0 text-xs font-medium !text-red-500 hover:!bg-transparent hover:!text-red-500"
           >
             Revoke all other sessions
-          </button>
+          </WpButton>
         </div>
 
         <div className="space-y-2">
@@ -132,13 +132,13 @@ export const SecuritySetting = () => {
                 </div>
               </div>
               {!session.isCurrent && (
-                <button
+                <WpButton
                   type="button"
                   onClick={() => handleRevoke(session.id)}
-                  className="text-xs font-medium text-red-500 hover:text-red-600"
+                  className="!bg-transparent !p-0 text-xs font-medium !text-red-500 hover:!bg-transparent hover:!text-red-500"
                 >
                   Revoke
-                </button>
+                </WpButton>
               )}
             </div>
           ))}
@@ -170,7 +170,6 @@ export const SecuritySetting = () => {
       <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <CircleAlert size={15} className="text-gray-500" />
-
           <h3 className="text-xs font-semibold text-gray-900">Recent login activity</h3>
         </div>
 

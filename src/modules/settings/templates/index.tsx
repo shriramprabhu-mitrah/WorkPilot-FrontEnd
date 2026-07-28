@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
 import GeneralSettings from '../components/generalSetting';
-import SettingsHeader, { SettingsTab } from '../components/SettingHeader';
-import PermissionsMatrix from '../components/PermissionMatrix';
-import RolePermission from '../components/RolesPermission';
-import { NotificationSettings } from '../components/NotificationSetting';
-import { SecuritySetting } from '../components/SecuritySetting';
+import SettingsHeader, { SettingsTab } from '../components/settingHeader';
+import PermissionsMatrix from '../components/permissionMatrix';
+import RolePermission from '../components/rolesPermission';
+import { NotificationSettings } from '../components/notificationSetting';
+import { SecuritySetting } from '../components/securitySetting';
 
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
