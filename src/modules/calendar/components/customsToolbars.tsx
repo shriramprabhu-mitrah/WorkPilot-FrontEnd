@@ -2,7 +2,7 @@ import { Navigate, ToolbarProps, View } from 'react-big-calendar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CalendarEvent } from '../types';
 import { WpButton } from '@/src/app/components/common/button';
-import MonthYearPicker from './monthYearPicker';
+import MonthYearPicker from './monthhYearrPickerr';
 
 interface CustomToolbarProps extends ToolbarProps<CalendarEvent> {
   currentDate: Date;

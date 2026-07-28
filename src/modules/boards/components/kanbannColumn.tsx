@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { KanbanColumn as KanbanColumnType } from '@/src/types/board';
-import { KanbanCard } from './kanbanCard';
+import { KanbanCard } from './kanbannCards';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 
