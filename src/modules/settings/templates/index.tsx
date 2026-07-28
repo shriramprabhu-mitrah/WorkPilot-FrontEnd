@@ -4,6 +4,8 @@ import GeneralSettings from '../components/generalSetting';
 import SettingsHeader, { SettingsTab } from '../components/SettingHeader';
 import PermissionsMatrix from '../components/PermissionMatrix';
 import RolePermission from '../components/RolesPermission';
+import { NotificationSettings } from '../components/NotificationSetting';
+import { SecuritySetting } from '../components/SecuritySetting';
 
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
@@ -13,6 +15,8 @@ export const SettingPageTemplate = () => {
       {activeTab === 'General' && <GeneralSettings />}
       {activeTab === 'Permissions Matrix' && <PermissionsMatrix />}
       {activeTab === 'Roles & Permissions' && <RolePermission />}
+      {activeTab === 'Notifications' && <NotificationSettings />}
+      {activeTab === 'Security' && <SecuritySetting />}
     </>
   );
 };
