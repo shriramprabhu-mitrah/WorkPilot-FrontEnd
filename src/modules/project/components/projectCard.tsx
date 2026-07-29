@@ -4,17 +4,20 @@ import { AssigneeAvatar } from '@/src/app/components/common/task';
 
 interface ProjectCardProps {
   project: Project;
+  onClick: () => void;
 }
 
-const ProjectCard = ({ project }: ProjectCardProps) => {
+const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
   return (
-    <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md">
+    <div
+      onClick={onClick}
+      className="w-full cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md"
+    >
       <div className="flex justify-between">
         <div className="flex gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
             {project.initials}
           </div>
-
           <div>
             <h3 className="text-xl font-semibold text-gray-700 transition-colors hover:text-blue-700">
               {project.name}

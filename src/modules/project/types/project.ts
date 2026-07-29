@@ -3,6 +3,14 @@ export interface Member {
   color: string;
 }
 
+export interface Sprint {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: 'Planned' | 'Active' | 'Completed';
+  tasks: number;
+}
 export interface Project {
   initials: string;
   name: string;
