@@ -29,7 +29,7 @@ export const WpInput = ({
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
   return (
-    <div className={`${label ? 'mb-5' : ''} ${wrapperClassName}`}>
+    <div className={`relative ${label ? 'mb-5' : ''} ${wrapperClassName}`}>
       {label && (
         <label htmlFor={id} className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
           {label}
@@ -76,7 +76,11 @@ export const WpInput = ({
           </button>
         )}
       </div>
-      {error && <p className="absolute mt-1 text-xs text-[var(--color-error)]">{error}</p>}
+      {error && (
+        <p className="absolute left-0 top-full mt-1 text-xs text-[var(--color-error)] whitespace-nowrap">
+          {error}
+        </p>
+      )}
       {hint && !error && <p className="mt-1 text-xs text-[var(--color-gray-400)]">{hint}</p>}
     </div>
   );

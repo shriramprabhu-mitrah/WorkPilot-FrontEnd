@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showToast } from '@/src/utils/toast';
 
 export const axiosInstance = axios.create({
   baseURL: '/api/v1',
@@ -39,19 +40,29 @@ axiosInstance.interceptors.response.use(
         // Retry the original request - backend will use refreshed cookie
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - redirect to signin
         if (typeof window !== 'undefined') {
-          window.location.href = '/signin';
+          showToast.error('Session expired. Please sign in again.');
+
+          setTimeout(() => {
+            window.location.href = '/signin';
+          }, 2000); // Increased delay to allow toast to show
         }
         return Promise.reject(refreshError);
       }
     }
 
     // If 403 or other unauthorized access not handled by refresh
-    if ((status === 401 || status === 403) && typeof window !== 'undefined') {
-      window.location.href = '/signin';
-    }
+    if (status === 401 || status === 403) {
+      if (typeof window !== 'undefined') {
+        showToast.error('Session expired. Please sign in again.');
 
+        setTimeout(() => {
+          window.location.href = '/signin';
+        }, 2000); // Increased delay to allow toast to show
+      }
+
+      return Promise.reject(error);
+    }
     return Promise.reject(error);
   }
 );

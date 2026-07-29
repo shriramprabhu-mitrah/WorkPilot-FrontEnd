@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 export const setTokens = (accessToken: string, refreshToken?: string) => {
   const isProduction = process.env.NODE_ENV === 'production';

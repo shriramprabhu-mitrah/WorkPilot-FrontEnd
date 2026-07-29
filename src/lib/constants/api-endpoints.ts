@@ -149,10 +149,15 @@ export const ApiEndpoints = {
     createOrganization: createEndpoint('/organization/create'),
     inviteUsers: createEndpoint('/organization/invite'),
     updateOrganization: createEndpoint('/organization/update'),
+    getOrganization: createEndpoint('/organization/get'),
+    deleteOrganization: createEndpoint('/organization/delete'),
   },
   User: {
     userUpdate: createEndpoint('auth/update'),
     getUser: createQueryEndpoint('auth/me'),
+  },
+  Country: {
+    getCountry: createEndpoint('/countries'),
   },
 };
 
