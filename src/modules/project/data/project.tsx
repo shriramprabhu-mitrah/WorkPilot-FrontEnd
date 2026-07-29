@@ -1,5 +1,6 @@
 import { colors } from '@/src/styles/colors';
-export const Projects = [
+import { Project } from '../types/project';
+export const Projects: Project[] = [
   {
     initials: 'ATL',
     name: 'Atlas Platform',
@@ -79,5 +80,77 @@ export const Projects = [
       { name: 'P', color: colors.avatarGreen },
       { name: 'A', color: colors.avatarPink },
     ],
+  },
+];
+
+export const assigneeOptions = [
+  {
+    label: 'Sarah Chen',
+    value: 'Sarah Chen',
+  },
+  {
+    label: 'John Doe',
+    value: 'John Doe',
+  },
+  {
+    label: 'Alex Smith',
+    value: 'Alex Smith',
+  },
+];
+
+export const statusOptions = [
+  {
+    label: 'To Do',
+    value: 'To Do',
+  },
+  {
+    label: 'In Progress',
+    value: 'In Progress',
+  },
+  {
+    label: 'Review',
+    value: 'Review',
+  },
+  {
+    label: 'Done',
+    value: 'Done',
+  },
+  {
+    label: 'Blocked',
+    value: 'Blocked',
+  },
+];
+
+export const statusOptionss = [
+  {
+    label: 'Planned',
+    value: 'Planned',
+  },
+  {
+    label: 'Active',
+    value: 'Active',
+  },
+  {
+    label: 'Completed',
+    value: 'Completed',
+  },
+];
+
+export const memberOptions = [
+  {
+    label: 'Sarah Chen',
+    value: 'Sarah Chen',
+  },
+  {
+    label: 'John Doe',
+    value: 'John Doe',
+  },
+  {
+    label: 'Alex Smith',
+    value: 'Alex Smith',
+  },
+  {
+    label: 'Michael Brown',
+    value: 'Michael Brown',
   },
 ];

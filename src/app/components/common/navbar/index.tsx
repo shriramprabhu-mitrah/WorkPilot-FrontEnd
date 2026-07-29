@@ -11,8 +11,8 @@ import { getInitials } from '../format';
 
 export const Navbar = () => {
   const pathname = usePathname();
-  const segment = pathname.split('/').filter(Boolean).pop() ?? 'home';
-  const title = segment.charAt(0).toUpperCase() + segment.slice(1);
+  const segments = pathname.split('/').filter(Boolean);
+  const title = segments[0] ? segments[0].charAt(0).toUpperCase() + segments[0].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
   return (
     <header
