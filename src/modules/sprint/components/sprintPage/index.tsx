@@ -6,14 +6,26 @@ import TaskColumn from '../taskColumn';
 import WorkloadItem from '../workloadItem';
 import { WpButton } from '@/src/app/components/common/button';
 import { sprintStats, progressCards, taskColumns, workload } from '../../data/sprint';
-
+import { useState } from 'react';
+import { sprints } from '../../data/sprint';
 const SprintPage = () => {
+  const [selectedSprint, setSelectedSprint] = useState('Sprint 1');
   return (
     <div className="min-h-screen bg-gray-50 p-1">
       <div className="mb-8 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[28px] font-bold leading-none text-gray-900">Sprint 12</h1>
+            <select
+              value={selectedSprint}
+              onChange={(e) => setSelectedSprint(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[17px] font-bold shadow-sm hover:bg-gray-50"
+            >
+              {sprints.map((sprint) => (
+                <option key={sprint.id} value={sprint.name} className="text-[16px]">
+                  {sprint.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <p className="mt-3 text-sm text-gray-500">
