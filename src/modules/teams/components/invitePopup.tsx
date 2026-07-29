@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { X, Mail, Plus } from 'lucide-react';
-
-type Role = 'Developer' | 'Admin' | 'Viewer' | 'Manager';
+import { ROLE_TYPE } from '@/src/app/components/common/enum';
+import { useInviteUsers } from '../../organization/hooks/useOrganization';
 
 interface Member {
   email: string;
-  role: Role;
+  role: ROLE_TYPE;
 }
 
 interface InviteTeamModalProps {
@@ -15,13 +15,18 @@ interface InviteTeamModalProps {
   onClose: () => void;
 }
 
-const ROLES: Role[] = ['Developer', 'Admin', 'Viewer', 'Manager'];
+const ROLES: ROLE_TYPE[] = [
+  ROLE_TYPE.DEVELOPER,
+  ROLE_TYPE.PROJECT_MANAGER,
+  ROLE_TYPE.VIEWER,
+  ROLE_TYPE.GUEST,
+];
 
 export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
-  const [members, setMembers] = useState<Member[]>([{ email: '', role: 'Developer' }]);
-
+  const [members, setMembers] = useState<Member[]>([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+  const { inviteOrgUsers, isInvitingUsers } = useInviteUsers();
   const addMember = () => {
-    setMembers([...members, { email: '', role: 'Developer' }]);
+    setMembers([...members, { email: '', role: ROLE_TYPE.DEVELOPER }]);
   };
 
   const removeMember = (index: number) => {
@@ -32,12 +37,17 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
     setMembers(members.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const validMembers = members.filter((m) => m.email.trim() !== '');
+    if (validMembers.length > 0) {
+      await inviteOrgUsers({ members: validMembers });
+    }
     onClose();
   };
 
   const handleCancel = () => {
     onClose();
+    setMembers([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
   };
 
   if (!open) return null;
@@ -94,7 +104,7 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
 
                 <select
                   value={member.role}
-                  onChange={(e) => updateMember(index, 'role', e.target.value as Role)}
+                  onChange={(e) => updateMember(index, 'role', e.target.value as ROLE_TYPE)}
                   className="min-w-[130px] px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white outline-none cursor-pointer focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
                   {ROLES.map((r) => (
@@ -129,9 +139,10 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
             </span>
             <button
               onClick={handleSubmit}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg whitespace-nowrap"
+              disabled={isInvitingUsers}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg whitespace-nowrap  disabled:opacity-70"
             >
-              Submit Invitations
+              {isInvitingUsers ? 'Submitting...' : 'Submit Invitations'}
             </button>
           </div>
         </div>

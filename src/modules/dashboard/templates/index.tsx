@@ -18,7 +18,12 @@ import TeamWorkloadCard from '../components/TeamWorkLoadCard';
 import { assignedTasks, completedTasks, teamLabels } from '../data/teamWorkLoadData';
 import UpcomingDeadlines from '../components/UpcomingDeadlines';
 import { STATS, weekLabels, weeklyCompleted, weeklyPlanned } from '../../reports/data';
+import { useGetOrganization } from '../../organization/hooks/useOrganization';
+import { useEffect } from 'react';
+
 export const DashBoardTemplate = () => {
+  useGetOrganization();
+
   return (
     <div className="space-y-6 w-350">
       <StatCardsSection stats={STATS} />

@@ -45,11 +45,22 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAppSelector((state) => state.user);
+  const organization = useAppSelector((state) => state.organization);
   const { handleLogOut } = useSignin();
 
   const handleLogoutClick = () => {
     removeTokens();
     handleLogOut();
+  };
+
+  // Get organization name initials
+  const getOrgInitials = (orgName?: string) => {
+    if (!orgName) return 'W';
+    return orgName
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join('');
   };
 
   return (
@@ -77,9 +88,11 @@ export const Sidebar = () => {
                 className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white"
                 style={{ backgroundColor: colors.accent }}
               >
-                W
+                {getOrgInitials(organization?.name)}
               </div>
-              <span className="text-[13px] font-medium text-gray-700">My Workspace</span>
+              <span className="text-[13px] font-medium text-gray-700">
+                {organization?.name || 'My Workspace'}
+              </span>
             </div>
             <ChevronDown size={13} className="text-gray-400" />
           </div>

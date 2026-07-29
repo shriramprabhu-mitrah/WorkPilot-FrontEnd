@@ -4,7 +4,11 @@ import { useRef, useState } from 'react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { WpButton } from '@/src/app/components/common/button';
 import { Check, Upload, X } from 'lucide-react';
-import { useOrganization } from '../../hooks/useOrganization';
+import {
+  useCreateOrganization,
+  useInviteUsers,
+  useUpdateOrganization,
+} from '../../hooks/useOrganization';
 import { INDUSTRY_TYPE, COMPANY_SIZE, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { colors } from '@/src/styles/colors';
 
@@ -32,8 +36,9 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // API Hooks
-  const { createOrg, isCreatingOrg, inviteOrgUsers, isInvitingUsers, updateOrg, isUpdatingOrg } =
-    useOrganization();
+  const { createOrg, isCreatingOrg } = useCreateOrganization();
+  const { inviteOrgUsers, isInvitingUsers } = useInviteUsers();
+  const { updateOrg, isUpdatingOrg } = useUpdateOrganization();
   const [error, setError] = useState<string | null>(null);
 
   const isLoading = isCreatingOrg || isInvitingUsers || isUpdatingOrg;
@@ -58,7 +63,6 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
         }
         setStep(3);
       } else if (step === 3) {
-        // logo_url is optional — only call updateOrg if a logo was uploaded
         if (logoFile) {
           await updateOrg({ logo_url: logoPreview || '' });
         }
@@ -73,7 +77,6 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
     if (step === 2) {
       setStep(3);
     } else if (step === 3) {
-      // Skip branding → go straight to dashboard
       onComplete();
     }
   };
@@ -167,14 +170,12 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
 
         {/* Form Container */}
         <div className="w-full bg-white border border-gray-200 rounded-xl p-8">
-          {/* ─── STEP 1: Organization ─── */}
           {step === 1 && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Set up your organization</h2>
               <p className="text-gray-500 mb-8">This step is required to access your workspace.</p>
 
               <div className="space-y-6">
-                {/* Organization Name */}
                 <div>
                   <label className="block text-sm font-bold mb-2 text-gray-700">
                     Organization name <span className="text-red-500">*</span>
@@ -189,7 +190,6 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                   />
                 </div>
 
-                {/* Organization URL */}
                 <div>
                   <label className="block text-sm font-bold mb-2 text-gray-700">
                     Organization URL (slug) <span className="text-red-500">*</span>
@@ -208,7 +208,6 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                   </div>
                 </div>
 
-                {/* Industry + Company Size */}
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-bold mb-2 text-gray-700">
@@ -384,7 +383,6 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
             </div>
           )}
 
-          {/* ─── STEP 3: Branding ─── */}
           {step === 3 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="flex items-center gap-3 mb-2">

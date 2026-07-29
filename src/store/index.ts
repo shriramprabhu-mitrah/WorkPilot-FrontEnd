@@ -3,15 +3,17 @@ import storage from './storage';
 import { persistReducer, persistStore } from 'redux-persist';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import userReducer from './slices/users';
+import organizationReducer from './slices/organization';
 
 const rootReducer = combineReducers({
   user: userReducer,
+  organization: organizationReducer,
 });
 
 const persitConfig = {
   key: 'root',
   storage,
-  whitelist: ['user'],
+  whitelist: ['user', 'organization'],
 };
 
 const persistedReducer = persistReducer(persitConfig, rootReducer);
