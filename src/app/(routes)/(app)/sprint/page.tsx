@@ -1,5 +1,5 @@
-import { HomeDashboardTemplate } from "@/src/modules/home/templates";
+import SprintPageTemplate from '@/src/modules/sprint/templates';
 
 export default function Page() {
-  return <HomeDashboardTemplate />;
+  return <SprintPageTemplate />;
 }

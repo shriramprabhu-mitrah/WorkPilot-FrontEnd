@@ -1,287 +1,266 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useSignup } from "../../hooks/useSignup";
-import { useRouter } from "next/navigation";
-import { TermsConditions } from "../../../../app/components/common/terms-coditions";
-import { PrivacyPolicy } from "../../../../app/components/common/privacy";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
+import { useSignup } from '../../hooks/useSignup';
+import { useRouter } from 'next/navigation';
+import { TermsConditions } from '../../../../app/components/common/terms-coditions';
+import { PrivacyPolicy } from '../../../../app/components/common/privacy';
 import {
   TrackrLogoSvg,
   EmailIconSvg,
   UserIconSvg,
   LockIconSvg,
   CloseIconSvg,
-} from "@/src/assets/svgs";
-import { colors } from "@/src/styles/colors";
+} from '@/src/assets/svgs';
+import { WpInput } from '@/src/app/components/common/input';
+import { WpButton } from '@/src/app/components/common/button';
+import { WpCheckbox } from '@/src/app/components/common/checkbox';
+import { VerifyEmailModal } from '../verify-email';
+import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
+import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
+const signupSchema = z
+  .object({
+    full_name: z.string().trim().min(1, 'Full name is required'),
+
+    username: z.string().trim().min(1, 'Username is required'),
+
+    email: z
+      .string()
+      .trim()
+      .min(1, 'Email address is required')
+      .email('Please enter a valid email address'),
+
+    password: z
+      .string()
+      .min(1, 'Password is required')
+      .min(8, 'Password must be at least 8 characters'),
+
+    confirmPwd: z.string().min(1, 'Please confirm your password'),
+
+    agreedToTerms: z.boolean().refine((value) => value === true, {
+      message: 'Please agree to the Terms and Privacy Policy',
+    }),
+  })
+  .refine((data) => data.password === data.confirmPwd, {
+    message: 'Passwords do not match',
+    path: ['confirmPwd'],
+  });
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 export const SignUp = () => {
-  const { handleSignUp, isLoading, error } = useSignup();
-  const [full_name, setName] = useState("");
-  const [username, setuserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPwd, setConfirmPwd] = useState("");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-  const [sidebarContent, setSidebarContent] = useState<
-    "terms" | "privacy" | null
-  >(null);
-
-  const passwordsMatch = password === confirmPwd;
-  const isFormValid =
-    full_name.trim() !== "" &&
-    username.trim() !=="" &&
-    email.trim() !== "" &&
-    password !== "" &&
-    confirmPwd !== "" &&
-    passwordsMatch &&
-    agreedToTerms;
+  const { handleSignUpAsync, signUp } = useSignup();
+  const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onSubmit',
+  });
+  const firstErrorField = Object.keys(errors)[0];
+  const email = watch('email');
 
   const router = useRouter();
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
+  const onSubmit = async (data: SignupFormData) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await handleSignUp({ full_name, username, email, password, timezone });
-      router.push("/home");
-    } catch {}
+      await handleSignUpAsync({
+        full_name: data.full_name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        timezone,
+      });
+      setIsSuccess(true);
+    } catch {
+      // Error handled by React Query and toast
+    }
   };
 
   return (
     <div className="signinContainer">
-      <div className="logo">
-        <div className="logoIcon">
-          <TrackrLogoSvg />
+      {isSuccess && onboardingStep === 'otp' && (
+        <VerifyEmailModal
+          email={email}
+          onBack={() => setIsSuccess(false)}
+          onVerified={() => setOnboardingStep('org')}
+        />
+      )}
+
+      {isSuccess && onboardingStep === 'org' && (
+        <OrganizationSetupModal
+          onComplete={() => {
+            setOnboardingStep('done');
+            router.push('/dashboard'); // or wherever makes sense after setup
+          }}
+        />
+      )}
+
+      {isSuccess && onboardingStep === 'done' ? (
+        <div className="flex w-full flex-col items-center text-center">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50" />
+          <h1 className="signinTitle mb-4">Account created!</h1>
+          <p className="mb-8 text-sm leading-[1.6] text-gray-500">
+            Setup complete. Welcome to WorkPilot.
+          </p>
+
+          <WpButton type="button" variant="primary" onClick={() => router.push('/dashboard')}>
+            Go to Dashboard
+          </WpButton>
         </div>
-        WorkPilot
-      </div>
+      ) : (
+        <>
+          <div className="logo">
+            <div className="logoIcon">
+              <TrackrLogoSvg />
+            </div>
+            WorkPilot
+          </div>
 
-      <h1 className="signinTitle">Create your account</h1>
-      <h2 className="subtitle">Get started free — no credit card required.</h2>
+          <h1 className="signinTitle">Create your account</h1>
+          <h2 className="subtitle">Get started free — no credit card required.</h2>
 
-      <form onSubmit={onSubmit} style={{ width: "100%" }}>
-        <div className="formGroup">
-          <label className="label" htmlFor="name">
-            Full Name
-          </label>
-          <div className="inputWrapper">
-            <UserIconSvg />
-            <input
-              type="text"
+          <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
+            <WpInput
               id="name"
-              className="input"
-              placeholder="Jane Smith"
-              value={full_name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="formGroup">
-          <label className="label" htmlFor="username">
-            User Name
-          </label>
-          <div className="inputWrapper">
-            <UserIconSvg />
-            <input
               type="text"
+              label="Full Name"
+              placeholder="Jane Smith"
+              icon={<UserIconSvg />}
+              {...register('full_name')}
+              className={firstErrorField === 'full_name' ? inputErrorClass : ''}
+              showRequired
+            />
+            {firstErrorField === 'full_name' && (
+              <ErrorMessage message={errors.full_name?.message} />
+            )}
+            <WpInput
               id="username"
-              className="input"
+              type="text"
+              label="User Name"
               placeholder="Enter username"
-              value={username}
-              onChange={(e) => setuserName(e.target.value)}
-              required
+              icon={<UserIconSvg />}
+              {...register('username')}
+              className={firstErrorField === 'username' ? inputErrorClass : ''}
+              showRequired
             />
-          </div>
-        </div>
-
-        <div className="formGroup">
-          <label className="label" htmlFor="email">
-            Work Email
-          </label>
-          <div className="inputWrapper">
-            <EmailIconSvg />
-            <input
-              type="email"
+            {firstErrorField === 'username' && <ErrorMessage message={errors.username?.message} />}
+            <WpInput
               id="email"
-              className="input"
+              type="text"
+              label="Work Email"
               placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              icon={<EmailIconSvg />}
+              {...register('email')}
+              className={firstErrorField === 'email' ? inputErrorClass : ''}
+              showRequired
             />
-          </div>
-        </div>
+            {firstErrorField === 'email' && <ErrorMessage message={errors.email?.message} />}
 
-        <div className="formGroup">
-          <label className="label" htmlFor="password">
-            Password
-          </label>
-          <div className="inputWrapper">
-            <LockIconSvg />
-            <input
-              type={showPassword ? "text" : "password"}
+            <WpInput
               id="password"
-              className="input"
+              type="password"
+              label="Password"
               placeholder="8+ characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              icon={<LockIconSvg />}
+              {...register('password')}
+              className={firstErrorField === 'password' ? inputErrorClass : ''}
+              showRequired
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((p) => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-        </div>
+            {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
 
-        <div className="formGroup" style={{ marginBottom: "32px" }}>
-          <label className="label" htmlFor="confirmPwd">
-            Confirm Password
-          </label>
-          <div className="inputWrapper">
-            <LockIconSvg />
-            <input
-              type={showConfirmPwd ? "text" : "password"}
+            <WpInput
               id="confirmPwd"
-              className="input"
+              type="password"
+              label="Confirm Password"
               placeholder="Re-enter your password"
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              required
+              icon={<LockIconSvg />}
+              {...register('confirmPwd')}
+              className={firstErrorField === 'confirmPwd' ? inputErrorClass : ''}
+              showRequired
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPwd((p) => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            {firstErrorField === 'confirmPwd' && (
+              <ErrorMessage message={errors.confirmPwd?.message} />
+            )}
+
+            <div className="mb-6">
+              <WpCheckbox
+                id="terms"
+                {...register('agreedToTerms')}
+                label={
+                  <span className="text-xs text-gray-500">
+                    By continuing you agree to our{' '}
+                    <WpButton
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="!p-0 !text-xs text-blue-600"
+                      onClick={() => setSidebarContent('terms')}
+                    >
+                      Terms
+                    </WpButton>{' '}
+                    and{' '}
+                    <WpButton
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="!p-0 !text-xs text-blue-600"
+                      onClick={() => setSidebarContent('privacy')}
+                    >
+                      Privacy Policy
+                    </WpButton>
+                  </span>
+                }
+              />
+              {firstErrorField === 'agreedToTerms' && (
+                <ErrorMessage message={errors.agreedToTerms?.message} />
+              )}
+            </div>
+
+            <WpButton
+              type="submit"
+              fullWidth
+              isLoading={signUp.isLoading}
+              loadingText="Creating account..."
             >
-              {showConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+              Create Account
+            </WpButton>
+          </form>
+
+          <div className="signupPrompt" style={{ marginTop: '24px' }}>
+            Already have an account?
+            <Link href="/signin" className="signupLink">
+              Sign in
+            </Link>
           </div>
-          {password && confirmPwd && !passwordsMatch && (
-            <div
-              style={{
-                color: colors.error,
-                fontSize: "12px",
-                marginTop: "4px",
-              }}
-            >
-              Passwords do not match
+
+          {sidebarContent && (
+            <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
+              <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
+                <WpButton
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="sidebarCloseBtn"
+                  onClick={() => setSidebarContent(null)}
+                >
+                  <CloseIconSvg />
+                </WpButton>
+                {sidebarContent === 'terms' ? <TermsConditions /> : <PrivacyPolicy />}
+              </div>
             </div>
           )}
-        </div>
-
-        {error && (
-          <div
-            style={{
-              color: colors.error,
-              marginBottom: "16px",
-              fontSize: "14px",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "8px",
-            marginBottom: "24px",
-            fontSize: "12px",
-            color: colors.gray500,
-          }}
-        >
-          <input
-            type="checkbox"
-            id="terms"
-            checked={agreedToTerms}
-            onChange={(e) => setAgreedToTerms(e.target.checked)}
-            style={{ marginTop: "2px", cursor: "pointer" }}
-          />
-          <label htmlFor="terms" style={{ cursor: "pointer" }}>
-            By continuing you agree to our{" "}
-            <button
-              type="button"
-              onClick={() => setSidebarContent("terms")}
-              style={{
-                color: colors.primaryFocus,
-                textDecoration: "none",
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontSize: "inherit",
-                fontFamily: "inherit",
-              }}
-            >
-              Terms
-            </button>{" "}
-            and{" "}
-            <button
-              type="button"
-              onClick={() => setSidebarContent("privacy")}
-              style={{
-                color: colors.primaryFocus,
-                textDecoration: "none",
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontSize: "inherit",
-                fontFamily: "inherit",
-              }}
-            >
-              Privacy Policy
-            </button>
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          className="submitBtn"
-          disabled={isLoading || !isFormValid}
-        >
-          {isLoading ? "Creating account..." : "Create Account"}
-        </button>
-      </form>
-
-      <div className="signupPrompt" style={{ marginTop: "24px" }}>
-        Already have an account?
-        <Link href="/signin" className="signupLink">
-          Sign in
-        </Link>
-      </div>
-
-      {sidebarContent && (
-        <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
-          <div
-            className="sidebarContainer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="sidebarCloseBtn"
-              onClick={() => setSidebarContent(null)}
-            >
-              <CloseIconSvg />
-            </button>
-            {sidebarContent === "terms" ? (
-              <TermsConditions />
-            ) : (
-              <PrivacyPolicy />
-            )}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

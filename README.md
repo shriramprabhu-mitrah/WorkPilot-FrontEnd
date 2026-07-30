@@ -9,6 +9,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 ## 📌 Features
 
 ### Authentication
+
 - User Registration
 - Secure Login
 - Remember Me
@@ -17,6 +18,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Role Selection during Registration
 
 ### Organization Management
+
 - Create Organization
 - Organization Onboarding
 - Organization Settings
@@ -24,6 +26,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Role Management
 
 ### Project Management
+
 - Create Projects
 - Edit/Delete Projects
 - Project Dashboard
@@ -31,6 +34,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Project Analytics
 
 ### Task Management
+
 - Parent Tasks
 - Child Tasks
 - Task Assignment
@@ -43,6 +47,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Activity Timeline
 
 ### Sprint Management
+
 - Create Sprint
 - Start Sprint
 - Complete Sprint
@@ -51,6 +56,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Burndown Charts
 
 ### Kanban Board
+
 - Drag & Drop Tasks
 - Custom Workflow Columns
 - Task Filtering
@@ -58,6 +64,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Quick Actions
 
 ### Reports & Dashboard
+
 - Project Overview
 - Task Status
 - Team Workload
@@ -296,13 +303,13 @@ hotfix/*
 
 # 👥 User Roles
 
-| Role | Description |
-|------|-------------|
-| Super Admin | Platform-wide administrator |
+| Role               | Description                               |
+| ------------------ | ----------------------------------------- |
+| Super Admin        | Platform-wide administrator               |
 | Organization Admin | Manages organization, users, and projects |
-| Project Manager | Manages projects, sprints, and tasks |
-| Developer | Works on assigned tasks |
-| Viewer | Read-only access |
+| Project Manager    | Manages projects, sprints, and tasks      |
+| Developer          | Works on assigned tasks                   |
+| Viewer             | Read-only access                          |
 
 ---
 

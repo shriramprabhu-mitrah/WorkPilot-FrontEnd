@@ -1,6 +1,6 @@
-import { colors } from "@/src/styles/colors";
-import { PermissionIcon } from "./permissionIcon";
-import { RoleCard } from "@/src/types/teams";
+import { colors } from '@/src/styles/colors';
+import { PermissionIcon } from './permissionIcon';
+import { RoleCard } from '@/src/types/teams';
 
 export const RoleCardView = ({ role }: { role: RoleCard }) => (
   <div
@@ -17,21 +17,14 @@ export const RoleCardView = ({ role }: { role: RoleCard }) => (
           {role.name}
         </span>
       </div>
-      <p
-        className="text-xs ml-4.5"
-        style={{ color: role.dotColor, paddingLeft: "18px" }}
-      >
+      <p className="text-xs ml-4.5" style={{ color: role.dotColor, paddingLeft: '18px' }}>
         {role.description}
       </p>
     </div>
 
     <ul className="flex flex-col gap-2">
       {role.permissions.map((perm) => (
-        <li
-          key={perm}
-          className="flex items-start gap-2 text-xs"
-          style={{ color: colors.gray700 }}
-        >
+        <li key={perm} className="flex items-start gap-2 text-xs" style={{ color: colors.gray700 }}>
           <PermissionIcon color={role.dotColor} />
           {perm}
         </li>

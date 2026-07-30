@@ -1,9 +1,8 @@
-import { colors } from "@/src/styles/colors";
-import { Member } from "@/src/types/teams";
+import { colors } from '@/src/styles/colors';
+import { Member } from '@/src/types/teams';
 
 export const MemberCard = ({ member }: { member: Member }) => {
-  const pct =
-    member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
+  const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
 
   return (
@@ -19,50 +18,35 @@ export const MemberCard = ({ member }: { member: Member }) => {
           {member.initials}
         </span>
         <div className="flex-1 min-w-0">
-          <p
-            className="text-sm font-semibold truncate"
-            style={{ color: colors.gray900 }}
-          >
+          <p className="text-sm font-semibold truncate" style={{ color: colors.gray900 }}>
             {member.name}
           </p>
           <p
             className="text-xs truncate"
             style={{
-              color:
-                member.tasks > 0 && pct > 0
-                  ? member.avatarColor
-                  : colors.gray500,
+              color: member.tasks > 0 && pct > 0 ? member.avatarColor : colors.gray500,
             }}
           >
             {member.role}
           </p>
         </div>
-        <span
-          className="text-xs font-medium shrink-0"
-          style={{ color: colors.gray400 }}
-        >
+        <span className="text-xs font-medium shrink-0" style={{ color: colors.gray400 }}>
           {pct}%
         </span>
       </div>
 
-      <div
-        className="h-1 rounded-full w-full"
-        style={{ backgroundColor: colors.gray100 }}
-      >
+      <div className="h-1 rounded-full w-full" style={{ backgroundColor: colors.gray100 }}>
         <div
           className="h-1 rounded-full transition-all"
           style={{ width: `${pct}%`, backgroundColor: member.avatarColor }}
         />
       </div>
 
-      <div
-        className="flex items-center gap-4 text-xs"
-        style={{ color: colors.gray500 }}
-      >
+      <div className="flex items-center gap-4 text-xs" style={{ color: colors.gray500 }}>
         <span>
           <span className="font-medium" style={{ color: colors.gray700 }}>
             {member.tasks}
-          </span>{" "}
+          </span>{' '}
           tasks
         </span>
         <span style={{ color: colors.colActive }}>
@@ -71,7 +55,7 @@ export const MemberCard = ({ member }: { member: Member }) => {
         <span>
           <span className="font-medium" style={{ color: colors.gray700 }}>
             {open}
-          </span>{" "}
+          </span>{' '}
           open
         </span>
       </div>

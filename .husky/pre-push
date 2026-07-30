@@ -5,9 +5,11 @@ echo "🚀 Running pre-push checks..."
 # Validate branch name
 sh .husky/validate-branch-name.sh || exit 1
 
-# Run lint
-npm run lint || exit 1
+# Verify formatting
+npm run format || exit 1
 
+# Run ESLint
+npm run lint || exit 1
 
 # Build application
 npm run build || exit 1

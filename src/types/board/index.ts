@@ -1,12 +1,32 @@
-export type Priority = "Critical" | "High" | "Medium" | "Low";
+export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
-export type ColumnId =
-  | "backlog"
-  | "todo"
-  | "inprogress"
-  | "inreview"
-  | "testing"
-  | "done";
+export type ColumnId = 'backlog' | 'todo' | 'inprogress' | 'inreview' | 'testing' | 'done';
+
+export interface SubTask {
+  id: string;
+  title: string;
+  status: 'todo' | 'inprogress' | 'done';
+  priority: Priority;
+  assigneeInitials: string;
+  assigneeColor: string;
+  description?: string;
+  dueDate?: string;
+  storyPoints?: number;
+  labels?: string[];
+  activity?: ActivityItem[];
+}
+
+export interface ActivityItem {
+  id: string;
+  user: string;
+  userInitials: string;
+  userColor: string;
+  action: string;
+  target?: string;
+  timestamp: string;
+  type: 'history' | 'comment';
+  comment?: string;
+}
 
 export interface KanbanTask {
   id: string;
@@ -18,6 +38,15 @@ export interface KanbanTask {
   storyPoints: number;
   dueDate: string;
   columnId: ColumnId;
+  description?: string;
+  subtasks?: SubTask[];
+  reporter?: string;
+  reporterInitials?: string;
+  reporterColor?: string;
+  sprint?: string;
+  startDate?: string;
+  parent?: string;
+  activity?: ActivityItem[];
 }
 
 export interface KanbanColumn {

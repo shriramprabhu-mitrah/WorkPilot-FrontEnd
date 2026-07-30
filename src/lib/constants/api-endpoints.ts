@@ -134,16 +134,40 @@ const createQueryEndpoint = (path: string) => {
 };
 
 export const ApiEndpoints = {
-    Sign: {
-        signIn: createEndpoint("/auth/signin"),
-        signUp: createEndpoint("/auth/signup"),
-        logOut: createEndpoint("/auth/logout"),
-        refresh: createEndpoint("/auth/refresh"),
-        forgotPassword: createEndpoint("/auth/change-password"),
-        passwordReset: createEndpoint("/auth/password-reset/request"),
-        passwordConfirm:createEndpoint("/auth/password-reset/confirm"),
-        userUpdate: createEndpoint("auth/update")
-    }
-} 
+  Sign: {
+    signIn: createEndpoint('/auth/signin'),
+    signUp: createEndpoint('/auth/signup'),
+    logOut: createEndpoint('/auth/logout'),
+    refresh: createEndpoint('/auth/refresh'),
+    forgotPassword: createEndpoint('/auth/change-password'),
+    passwordReset: createEndpoint('/auth/password-reset/request'),
+    passwordConfirm: createEndpoint('/auth/password-reset/confirm'),
+    verifyPassword: createEndpoint('/auth/verify-email'),
+    resendEmail: createEndpoint('/auth/resend-verification-otp'),
+  },
+  Organization: {
+    createOrganization: createEndpoint('/organization/create'),
+    inviteUsers: createEndpoint('/organization/invite'),
+    updateOrganization: createEndpoint('/organization/update'),
+    getOrganization: createEndpoint('/organization/get'),
+    deleteOrganization: createEndpoint('/organization/delete'),
+    getUsers: createQueryEndpoint('/organization/get-users'),
+  },
+  User: {
+    userUpdate: createEndpoint('auth/update'),
+    getUser: createQueryEndpoint('auth/me'),
+  },
+  Country: {
+    getCountry: createEndpoint('/countries'),
+  },
+  Project: {
+    createProject: createEndpoint('/project/create'),
+    getProject: createQueryEndpoint('/project/get'),
+    updateProject: createEndpoint('/project/update/{projectId}'),
+    addMembers: createEndpoint('/project/add-members'),
+    getProjectMembers: createEndpoint('/project/members/{projectId}'),
+    removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
+  },
+};
 
-export type ApiEndpointType= typeof ApiEndpoints
+export type ApiEndpointType = typeof ApiEndpoints;
