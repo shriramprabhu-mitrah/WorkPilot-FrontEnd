@@ -1,0 +1,30 @@
+import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
+import { ApiResponse } from '@/src/types/core';
+import { RemoveUserPayload, TeamMember, UpdateRolePayload } from '@/src/types/teams';
+import { apiService } from '../axios';
+
+class TeamService {
+  async getTeamMembers(page: number, pageSize: number): Promise<ApiResponse<TeamMember[]>> {
+    const url = `${ApiEndpoints.Team.getUsers.url}?page=${page}&page_size=${pageSize}`;
+    return apiService.get<TeamMember[]>(url, {
+      showErrorToast: true,
+    });
+  }
+
+  async removeUser(payload: RemoveUserPayload) {
+    const url = ApiEndpoints.Team.removeUser.url;
+
+    return apiService.delete(url, {
+      data: payload,
+    });
+  }
+
+  async updateRole(payload: UpdateRolePayload) {
+    return apiService.patch(ApiEndpoints.Team.updateRole.url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
+  }
+}
+
+export const teamService = new TeamService();
