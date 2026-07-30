@@ -151,6 +151,7 @@ export const ApiEndpoints = {
     updateOrganization: createEndpoint('/organization/update'),
     getOrganization: createEndpoint('/organization/get'),
     deleteOrganization: createEndpoint('/organization/delete'),
+    getUsers: createQueryEndpoint('/organization/get-users'),
   },
   User: {
     userUpdate: createEndpoint('auth/update'),
@@ -158,6 +159,14 @@ export const ApiEndpoints = {
   },
   Country: {
     getCountry: createEndpoint('/countries'),
+  },
+  Project: {
+    createProject: createEndpoint('/project/create'),
+    getProject: createQueryEndpoint('/project/get'),
+    updateProject: createEndpoint('/project/update/{projectId}'),
+    addMembers: createEndpoint('/project/add-members'),
+    getProjectMembers: createEndpoint('/project/members/{projectId}'),
+    removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
   },
 };
 

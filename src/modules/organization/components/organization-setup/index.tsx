@@ -8,6 +8,7 @@ import {
   useCreateOrganization,
   useInviteUsers,
   useUpdateOrganization,
+  useGetCountries,
 } from '../../hooks/useOrganization';
 import { INDUSTRY_TYPE, COMPANY_SIZE, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { colors } from '@/src/styles/colors';
@@ -25,10 +26,11 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   const [orgSlug, setOrgSlug] = useState('');
   const [industry, setIndustry] = useState<string>(INDUSTRY_TYPE.IT);
   const [orgSize, setOrgSize] = useState<string>(COMPANY_SIZE.SIZE_11_50);
-  const [country, setCountry] = useState('India');
+  const [countryId, setCountryId] = useState('');
 
-  // Team Setup State
   const [teamMembers, setTeamMembers] = useState([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+
+  const { countries, isCountriesLoading } = useGetCountries();
 
   // Branding state
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -53,7 +55,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
           domain: orgSlug,
           industry,
           team_size: orgSize,
-          country,
+          country_id: countryId,
         });
         setStep(2);
       } else if (step === 2) {
@@ -249,15 +251,19 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                     Country / Region <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                    value={countryId}
+                    onChange={(e) => setCountryId(e.target.value)}
+                    disabled={isCountriesLoading}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <option>United States</option>
-                    <option>United Kingdom</option>
-                    <option>Canada</option>
-                    <option>Australia</option>
-                    <option>India</option>
+                    <option value="">
+                      {isCountriesLoading ? 'Loading countries...' : 'Select a country'}
+                    </option>
+                    {countries?.data?.map((country) => (
+                      <option key={country.id} value={country.id}>
+                        {country.flag_emoji} {country.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -278,7 +284,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                     !orgSlug.trim() ||
                     !industry ||
                     !orgSize ||
-                    !country ||
+                    !countryId ||
                     isLoading
                   }
                   isLoading={isLoading}
