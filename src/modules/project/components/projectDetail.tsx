@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import { useRouter } from 'next/navigation';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
-import { memberOptions } from '../data/project';
+import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
+import { useAddProjectMembers } from '@/src/modules/project/hooks/useProject';
+import { showToast } from '@/src/utils/toast';
 
 interface ProjectDetailProps {
-  project: Project;
+  project: Project & { id?: string };
 }
 
 const ProjectDetail = ({ project }: ProjectDetailProps) => {
@@ -20,9 +22,47 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [expandedSprint, setExpandedSprint] = useState<string | null>(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState('');
+
+  // Fetch organization users for member dropdown
+  const { users, isUsersLoading } = useGetOrganizationUsers(1, 50);
+
+  // Hook to add members to project
+  const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
+
+  // Transform users to dropdown options
+  const memberOptions = useMemo(() => {
+    if (!users || users.length === 0) return [];
+
+    return users.map((user) => ({
+      label: user.name || user.email,
+      value: user.id,
+    }));
+  }, [users]);
+
   const handleCreateSprints = (newSprints: Sprint[]) => {
     setSprints((prev) => [...prev, ...newSprints]);
     setShowAddSprintModal(false);
+  };
+
+  const handleAddMember = async () => {
+    if (!selectedMember) {
+      showToast.error('Please select a member');
+      return;
+    }
+
+    if (!project.id) {
+      showToast.error('Project ID is missing');
+      return;
+    }
+
+    try {
+      await addMembersAsync({
+        project_id: project.id,
+        user_id: [selectedMember],
+      });
+      setShowAddMemberModal(false);
+      setSelectedMember('');
+    } catch (error) {}
   };
 
   const handleSprintClick = (sprint: Sprint) => {
@@ -210,7 +250,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 options={memberOptions}
                 value={selectedMember}
                 onChange={setSelectedMember}
-                placeholder="Select member"
+                placeholder={isUsersLoading ? 'Loading members...' : 'Select member'}
+                disabled={isUsersLoading}
               />
             </div>
 
@@ -223,6 +264,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   setShowAddMemberModal(false);
                   setSelectedMember('');
                 }}
+                disabled={isAddingMembers}
               >
                 Cancel
               </WpButton>
@@ -231,13 +273,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 type="button"
                 variant="primary"
                 size="md"
-                disabled={!selectedMember}
-                onClick={() => {
-                  setShowAddMemberModal(false);
-                  setSelectedMember('');
-                }}
+                disabled={!selectedMember || isAddingMembers}
+                onClick={handleAddMember}
               >
-                Add Member
+                {isAddingMembers ? 'Adding...' : 'Add Member'}
               </WpButton>
             </div>
           </div>

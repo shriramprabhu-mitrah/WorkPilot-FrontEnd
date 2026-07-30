@@ -112,3 +112,24 @@ export const useGetCountries = () => {
     refetchCountries,
   };
 };
+
+// Hook for fetching organization users with pagination
+export const useGetOrganizationUsers = (page = 1, pageSize = 10) => {
+  const {
+    data: users,
+    isLoading: isUsersLoading,
+    refetch: refetchUsers,
+    error,
+  } = useQuery({
+    queryKey: ['organizationUsers', page, pageSize],
+    queryFn: () => organizationService.getUsers({ page, page_size: pageSize }),
+  });
+
+  return {
+    users: users?.data ?? [],
+    pagination: users?.pagination,
+    isUsersLoading,
+    refetchUsers,
+    error,
+  };
+};

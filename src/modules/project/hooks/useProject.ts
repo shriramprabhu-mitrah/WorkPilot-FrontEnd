@@ -1,0 +1,144 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { projectService } from '@/src/services/project';
+import {
+  CreateProjectPayload,
+  UpdateProjectPayload,
+  AddProjectMembersPayload,
+  GetProjectQueryParams,
+} from '@/src/types/project';
+
+export const useGetProjects = () => {
+  const query = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => projectService.getProject(),
+  });
+
+  return {
+    projects: query.data?.data,
+    isLoadingProjects: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetchProjects: query.refetch,
+  };
+};
+
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (payload: CreateProjectPayload) => projectService.createProject(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+
+  return {
+    createProject: mutation.mutate,
+    createProjectAsync: mutation.mutateAsync,
+    isCreatingProject: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+    data: mutation.data,
+  };
+};
+
+export const useGetProject = (enabled = true) => {
+  const query = useQuery({
+    queryKey: ['project'],
+    queryFn: () => projectService.getProject(),
+    enabled: enabled,
+  });
+
+  return {
+    project: query.data?.data,
+    isLoadingProject: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetchProject: query.refetch,
+  };
+};
+
+export const useUpdateProject = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ projectId, payload }: { projectId: string; payload: UpdateProjectPayload }) =>
+      projectService.updateProject(projectId, payload),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['project'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+      if (data?.data) {
+        queryClient.setQueryData(['project', data.data.key], data);
+      }
+    },
+  });
+
+  return {
+    updateProject: mutation.mutate,
+    updateProjectAsync: mutation.mutateAsync,
+    isUpdatingProject: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+    data: mutation.data,
+  };
+};
+
+export const useAddProjectMembers = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (payload: AddProjectMembersPayload) => projectService.addMembers(payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['projectMembers', variables.project_id] });
+    },
+  });
+
+  return {
+    addMembers: mutation.mutate,
+    addMembersAsync: mutation.mutateAsync,
+    isAddingMembers: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};
+
+export const useGetProjectMembers = (projectId: string, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['projectMembers', projectId],
+    queryFn: () => projectService.getProjectMembers(projectId),
+    enabled: enabled && !!projectId,
+  });
+
+  return {
+    members: query.data?.data,
+    isLoadingMembers: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetchMembers: query.refetch,
+  };
+};
+
+export const useRemoveProjectMember = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ projectId, userId }: { projectId: string; userId: string }) =>
+      projectService.removeMember(projectId, userId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['projectMembers', variables.projectId] });
+    },
+  });
+
+  return {
+    removeMember: mutation.mutate,
+    removeMemberAsync: mutation.mutateAsync,
+    isRemovingMember: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};

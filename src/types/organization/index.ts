@@ -4,7 +4,7 @@ export interface OrganizationPaylaod {
   logo_url?: string;
   industry?: string;
   team_size?: string;
-  country?: string;
+  country_id?: string;
 }
 
 export interface OrganizationResponse {
