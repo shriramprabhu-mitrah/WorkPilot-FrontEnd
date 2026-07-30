@@ -8,8 +8,46 @@ import { WpButton } from '@/src/app/components/common/button';
 import { sprintStats, progressCards, taskColumns, workload } from '../../data/sprint';
 import { useState } from 'react';
 import { sprints } from '../../data/sprint';
+import AddTaskModal from '../AddTaskModal';
+import { Task } from '../../types/sprint';
+
+type NewTask = Task & {
+  description: string;
+  assignee: string;
+  status: string;
+};
+
 const SprintPage = () => {
-  const [selectedSprint, setSelectedSprint] = useState('Sprint 1');
+  const [selectedSprint, setSelectedSprint] = useState('All Sprints');
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [columns, setColumns] = useState(taskColumns);
+
+  const handleSaveTask = (newTask: NewTask) => {
+    setColumns((prev) =>
+      prev.map((column) => {
+        if (column.status !== newTask.status) {
+          return column;
+        }
+
+        const updatedTasks = [
+          ...column.tasks,
+          {
+            title: newTask.title,
+            description: newTask.description,
+            priority: newTask.priority,
+          },
+        ];
+
+        return {
+          ...column,
+          tasks: updatedTasks,
+          count: updatedTasks.length,
+        };
+      })
+    );
+
+    setIsAddTaskOpen(false);
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-1">
       <div className="mb-8 flex items-start justify-between">
@@ -20,6 +58,9 @@ const SprintPage = () => {
               onChange={(e) => setSelectedSprint(e.target.value)}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[17px] font-bold shadow-sm hover:bg-gray-50"
             >
+              <option value="All Sprints" className="text-[16px]">
+                All Sprints
+              </option>
               {sprints.map((sprint) => (
                 <option key={sprint.id} value={sprint.name} className="text-[16px]">
                   {sprint.name}
@@ -32,16 +73,18 @@ const SprintPage = () => {
             Complete authentication refactor and ship onboarding v2.
           </p>
         </div>
+
         <div className="flex items-center gap-3">
           <span className="inline-flex h-8 items-center gap-2 rounded-full bg-green-50 px-3 text-sm font-medium text-green-700">
             <span className="h-2 w-2 rounded-full bg-green-500" />
             Active
           </span>
+
           <WpButton variant="secondary" size="sm" className="h-10 px-4">
             Complete Sprint
           </WpButton>
 
-          <WpButton size="sm" className="h-10 px-4">
+          <WpButton size="sm" className="h-10 px-4" onClick={() => setIsAddTaskOpen(true)}>
             + Add Task
           </WpButton>
         </div>
@@ -77,7 +120,7 @@ const SprintPage = () => {
         <h2 className="mb-4 text-xl font-semibold text-gray-900">Task Status Board</h2>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
-          {taskColumns.map((column) => (
+          {columns.map((column) => (
             <TaskColumn key={column.status} column={column} />
           ))}
         </div>
@@ -91,6 +134,12 @@ const SprintPage = () => {
             <WorkloadItem key={member.name} member={member} />
           ))}
         </div>
+
+        <AddTaskModal
+          open={isAddTaskOpen}
+          onClose={() => setIsAddTaskOpen(false)}
+          onSave={handleSaveTask}
+        />
       </div>
     </div>
   );

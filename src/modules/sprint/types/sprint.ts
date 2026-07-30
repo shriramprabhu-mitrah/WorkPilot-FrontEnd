@@ -18,6 +18,7 @@ export interface ProgressCardData {
 
 export interface Task {
   title: string;
+  description: string;
   priority: Priority;
 }
 
@@ -25,7 +26,7 @@ export interface TaskColumnData {
   status: string;
   count: number;
   dotColor: string;
-  task?: Task;
+  tasks: Task[];
 }
 
 export interface Workload {
