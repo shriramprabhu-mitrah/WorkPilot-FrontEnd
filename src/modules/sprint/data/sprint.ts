@@ -147,5 +147,5 @@ export const sprints = [
   { id: 2, name: 'Sprint 2' },
   { id: 3, name: 'Sprint 3' },
   { id: 4, name: 'Sprint 4' },
-  { id: 5, name: 'Sprint 5' }
+  { id: 5, name: 'Sprint 5' },
 ];

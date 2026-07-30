@@ -70,9 +70,7 @@ class OrganizationService {
     });
   }
 
-  async getUsers(
-    params: GetUsersParams = {}
-  ): Promise<PaginatedApiResponse<OrganizationUser[]>> {
+  async getUsers(params: GetUsersParams = {}): Promise<PaginatedApiResponse<OrganizationUser[]>> {
     const { page = 1, page_size = 10 } = params;
     const url = ApiEndpoints.Organization.getUsers.withQuery({ page, page_size });
 

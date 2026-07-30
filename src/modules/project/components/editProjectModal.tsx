@@ -28,8 +28,8 @@ const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps
   const normalizeStatus = (status: string | undefined): ProjectStatus => {
     if (!status) return 'active';
     const normalized = status.toLowerCase().replace(/\s+/g, '_') as ProjectStatus;
-    return ['active', 'on_hold', 'completed', 'archived'].includes(normalized) 
-      ? normalized 
+    return ['active', 'on_hold', 'completed', 'archived'].includes(normalized)
+      ? normalized
       : 'active';
   };
 
