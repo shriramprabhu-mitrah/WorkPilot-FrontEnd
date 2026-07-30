@@ -37,6 +37,7 @@ export enum COMPANY_SIZE {
 }
 
 export enum ROLE_TYPE {
+  ORG_ADMIN = 'org_admin',
   PROJECT_MANAGER = 'project_manager',
   DEVELOPER = 'developer',
   VIEWER = 'viewer',

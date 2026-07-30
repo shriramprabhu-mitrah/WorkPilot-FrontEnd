@@ -13,6 +13,7 @@ export interface Project {
   updated_at?: string;
   owner_id?: string;
   organization_id?: string;
+  creator?: Creator;
 }
 
 // Create Project Payload
@@ -55,4 +56,21 @@ export interface AddProjectMembersPayload {
 // Get Project Query Params
 export interface GetProjectQueryParams {
   Key?: string;
+}
+
+export interface Creator {
+  id: string;
+  organization_id: string;
+  name: string;
+  username: string;
+  email: string;
+  password_hash: string;
+  role: string;
+  avatar_url: string;
+  timezone: string;
+  is_active: boolean;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  joined_at: string;
 }

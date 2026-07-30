@@ -17,7 +17,13 @@ const ProjectSprintTemplate = () => {
       id: selectedApiProject.id, // Pass the project ID
       name: selectedApiProject.name,
       description: selectedApiProject.description || 'No description added.',
-      initials: selectedApiProject?.key?.slice(0, 2)?.toUpperCase(),
+      initials: selectedApiProject?.name
+        ?.trim()
+        .split(/\s+/)
+        .map((word) => word.charAt(0))
+        .join('')
+        .slice(0, 2)
+        .toUpperCase(),
       code: selectedApiProject.key,
       status:
         selectedApiProject.status === 'active'
@@ -39,6 +45,7 @@ const ProjectSprintTemplate = () => {
             year: 'numeric',
           })
         : '',
+      owner: selectedApiProject?.creator ? selectedApiProject?.creator.name : 'Unassigned',
     };
   }, [selectedApiProject]);
 

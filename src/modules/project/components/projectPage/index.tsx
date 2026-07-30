@@ -17,7 +17,13 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
   return {
     name: apiProject.name,
     description: apiProject.description || 'No description added.',
-    initials: apiProject?.key?.slice(0, 2).toUpperCase(),
+    initials: apiProject?.name
+      ?.trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toUpperCase(),
     code: apiProject.key,
     status:
       apiProject.status === 'active'

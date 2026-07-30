@@ -21,4 +21,23 @@ export interface Project {
   tasks: string;
   date: string;
   members: Member[];
+  owner?: string;
+  creator?: Creator;
+}
+
+export interface Creator {
+  id: string;
+  organization_id: string;
+  name: string;
+  username: string;
+  email: string;
+  password_hash: string;
+  role: string;
+  avatar_url: string;
+  timezone: string;
+  is_active: boolean;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  joined_at: string;
 }
