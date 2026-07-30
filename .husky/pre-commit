@@ -1,5 +1,14 @@
 #!/usr/bin/env sh
 
+echo "🚀 Running pre-commit checks..."
+
+# Validate branch name
 sh .husky/validate-branch-name.sh || exit 1
 
-npm run lint || exit 1
+# Format the project
+npm run format || exit 1
+
+# Run ESLint & Prettier on staged files
+npx lint-staged || exit 1
+
+echo "✅ Pre-commit checks passed."

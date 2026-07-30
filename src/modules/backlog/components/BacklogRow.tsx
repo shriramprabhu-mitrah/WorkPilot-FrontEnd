@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Hash, Calendar } from "lucide-react";
-import { BacklogTask } from "../data";
+import { Hash, Calendar } from 'lucide-react';
+import { BacklogTask } from '../data';
 import {
   PriorityBadge,
   StatusBadge,
   AssigneeAvatar,
   TaskLabel,
-} from "@/src/app/components/common/task";
-import { colors } from "@/src/styles/colors";
+} from '@/src/app/components/common/task';
+import { colors } from '@/src/styles/colors';
 
 export const BacklogRow = ({ task }: { task: BacklogTask }) => (
   <div
@@ -26,10 +26,7 @@ export const BacklogRow = ({ task }: { task: BacklogTask }) => (
       <PriorityBadge priority={task.priority} />
     </div>
 
-    <span
-      className="text-sm flex-1 min-w-0 truncate"
-      style={{ color: colors.gray800 }}
-    >
+    <span className="text-sm flex-1 min-w-0 truncate" style={{ color: colors.gray800 }}>
       {task.title}
     </span>
 
@@ -59,9 +56,6 @@ export const BacklogRow = ({ task }: { task: BacklogTask }) => (
       <span className="truncate">{task.dueDate}</span>
     </span>
 
-    <AssigneeAvatar
-      initials={task.assigneeInitials}
-      color={task.assigneeColor}
-    />
+    <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} />
   </div>
 );

@@ -1,7 +1,7 @@
-import { LandingPageTemplate } from "../modules/landing-page/templates";
+import { LandingPageTemplate } from '../modules/landing-page/templates';
 
 function Page() {
-  return <LandingPageTemplate/> ;
+  return <LandingPageTemplate />;
 }
 
-export default Page
+export default Page;

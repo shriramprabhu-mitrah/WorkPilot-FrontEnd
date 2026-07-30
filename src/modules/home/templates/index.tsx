@@ -1,5 +1,5 @@
-import { HomeDashboard } from "../components/home-dashboard"
+import { HomeDashboard } from '../components/home-dashboard';
 
 export const HomeDashboardTemplate = () => {
-    return <HomeDashboard />
-}
+  return <HomeDashboard />;
+};

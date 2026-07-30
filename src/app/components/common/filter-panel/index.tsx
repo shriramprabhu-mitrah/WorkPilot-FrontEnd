@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { X } from "lucide-react";
-import { Priority } from "@/src/types/board";
-import { colors } from "@/src/styles/colors";
-import { Chip } from "@/src/app/components/common/chip";
+import { X } from 'lucide-react';
+import { Priority } from '@/src/types/board';
+import { colors } from '@/src/styles/colors';
+import { Chip } from '@/src/app/components/common/chip';
+import { WpButton } from '@/src/app/components/common/button';
 
 export interface FilterState {
   priorities: Priority[];
@@ -19,7 +20,7 @@ interface Props {
   onClose: () => void;
 }
 
-const PRIORITIES: Priority[] = ["Critical", "High", "Medium", "Low"];
+const PRIORITIES: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
 
 const priorityColors: Record<Priority, string> = {
   Critical: colors.priorityCriticalText,
@@ -31,17 +32,9 @@ const priorityColors: Record<Priority, string> = {
 const toggle = <T,>(arr: T[], val: T): T[] =>
   arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
 
-export const FilterPanel = ({
-  filters,
-  allAssignees,
-  allLabels,
-  onChange,
-  onClose,
-}: Props) => {
+export const FilterPanel = ({ filters, allAssignees, allLabels, onChange, onClose }: Props) => {
   const hasActive =
-    filters.priorities.length > 0 ||
-    filters.assignees.length > 0 ||
-    filters.labels.length > 0;
+    filters.priorities.length > 0 || filters.assignees.length > 0 || filters.labels.length > 0;
 
   return (
     <div
@@ -49,30 +42,27 @@ export const FilterPanel = ({
       style={{ backgroundColor: colors.white, borderColor: colors.gray200 }}
     >
       <div className="flex items-center justify-between">
-        <span
-          className="text-sm font-semibold"
-          style={{ color: colors.gray800 }}
-        >
+        <span className="text-sm font-semibold" style={{ color: colors.gray800 }}>
           Filters
         </span>
         <div className="flex items-center gap-2">
           {hasActive && (
-            <button
-              onClick={() =>
-                onChange({ priorities: [], assignees: [], labels: [] })
-              }
-              className="text-xs font-medium"
-              style={{ color: colors.primary }}
+            <WpButton
+              variant="ghost"
+              size="sm"
+              onClick={() => onChange({ priorities: [], assignees: [], labels: [] })}
             >
               Clear all
-            </button>
+            </WpButton>
           )}
-          <button
+          <WpButton
+            variant="ghost"
+            size="sm"
+            className="!p-1 text-gray-400 hover:text-red-300"
             onClick={onClose}
-            className="text-gray-400 hover:text-red-300 transition-colors"
           >
             <X size={15} />
-          </button>
+          </WpButton>
         </div>
       </div>
 
@@ -141,9 +131,7 @@ export const FilterPanel = ({
                 key={l}
                 label={l}
                 active={filters.labels.includes(l)}
-                onClick={() =>
-                  onChange({ ...filters, labels: toggle(filters.labels, l) })
-                }
+                onClick={() => onChange({ ...filters, labels: toggle(filters.labels, l) })}
               />
             ))}
           </div>

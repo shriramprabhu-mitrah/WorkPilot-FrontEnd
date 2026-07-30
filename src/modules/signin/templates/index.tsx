@@ -1,5 +1,5 @@
-import { SignIn } from "../components/signin";
-import { BarChartIconSvg } from "@/src/assets/svgs";
+import { SignIn } from '../components/signin';
+import { BarChartIconSvg } from '@/src/assets/svgs';
 
 export const SignInTemplate = () => {
   return (
@@ -19,8 +19,8 @@ export const SignInTemplate = () => {
           <h2 className="templateTitle">Ship projects faster, together</h2>
 
           <p className="description">
-            Trackr brings your team&apos;s work together — sprint planning,
-            kanban boards, and real-time analytics in one place.
+            Trackr brings your team&apos;s work together — sprint planning, kanban boards, and
+            real-time analytics in one place.
           </p>
 
           <div className="statsContainer">
