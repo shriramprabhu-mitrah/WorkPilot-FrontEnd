@@ -11,6 +11,7 @@ import { useCreateProject, useGetProjects } from '../../hooks/useProject';
 import { CreateProjectPayload, Project as ApiProject } from '@/src/types/project';
 import { useAppDispatch } from '@/src/store';
 import { setSelectedProject } from '@/src/store/slices/project';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
@@ -48,6 +49,15 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
   };
 };
 
+export const PROJECT_STATUS_API_MAP = {
+  [ProjectFilter.ACTIVE]: 'active',
+  [ProjectFilter.PLANNING]: 'planning',
+  [ProjectFilter.ON_HOLD]: 'on_hold',
+  [ProjectFilter.COMPLETED]: 'completed',
+  [ProjectFilter.CANCELLED]: 'cancelled',
+  [ProjectFilter.ARCHIVED]: 'archived',
+} as const;
+
 const ProjectPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
@@ -58,7 +68,17 @@ const ProjectPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { createProjectAsync, isCreatingProject } = useCreateProject();
-  const { projects: apiProjects, isLoadingProjects, refetchProjects } = useGetProjects();
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const {
+    projects: apiProjects,
+    isLoadingProjects,
+    refetchProjects,
+  } = useGetProjects({
+    name: debouncedSearch,
+    status:
+      selectedFilter === ProjectFilter.ALL ? undefined : PROJECT_STATUS_API_MAP[selectedFilter],
+  });
 
   // Convert API projects to UI format
   const allProjects = useMemo((): Project[] => {
@@ -74,22 +94,8 @@ const ProjectPage = () => {
 
   // Filter and search projects
   const displayedProjects = useMemo(() => {
-    let filtered = allProjects;
-
-    // Apply status filter
-    if (selectedFilter !== ProjectFilter.ALL) {
-      filtered = filtered.filter((project: Project) => project.status === selectedFilter);
-    }
-
-    // Apply search
-    if (searchTerm.trim()) {
-      filtered = filtered.filter((project: Project) =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
     // Apply sort
-    const sorted = [...filtered].sort((a, b) =>
+    const sorted = [...allProjects].sort((a, b) =>
       sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
     );
 
