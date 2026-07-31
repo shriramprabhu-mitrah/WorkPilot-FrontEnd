@@ -45,7 +45,7 @@ const ProjectSprintTemplate = () => {
             year: 'numeric',
           })
         : '',
-      owner: selectedApiProject?.creator ? selectedApiProject?.creator.name : 'Unassigned',
+      owner: selectedApiProject?.creator || 'Unassigned',
     };
   }, [selectedApiProject]);
 

@@ -2,7 +2,7 @@
 export type ProjectStatus = 'active' | 'on_hold' | 'completed' | 'archived';
 
 export interface Project {
-  id: string;
+  id?: string;
   name: string;
   key: string;
   description?: string;
@@ -74,4 +74,37 @@ export interface Creator {
   created_at: string;
   updated_at: string;
   joined_at: string;
+}
+
+// Sprint Types for Project Detail
+export interface SprintDetail {
+  id: string;
+  name: string;
+  goal?: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+}
+
+// Project Member for Project Detail
+export interface ProjectDetailMember {
+  user_id: string;
+  username: string;
+  full_name: string;
+  role: string;
+}
+
+// Project Detail Response (includes sprints and members)
+export interface ProjectDetail {
+  id: string;
+  organization_id: string;
+  name: string;
+  description?: string;
+  status: ProjectStatus;
+  created_by: string;
+  creator: string; // This is just the creator's name
+  created_at: string;
+  members: ProjectDetailMember[];
+  sprints: SprintDetail[];
+  key?: string; // Optional key to be added after fetching
 }

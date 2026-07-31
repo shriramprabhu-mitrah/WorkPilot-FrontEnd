@@ -3,6 +3,7 @@ import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
 import {
   Project,
+  ProjectDetail,
   CreateProjectPayload,
   UpdateProjectPayload,
   ProjectMember,
@@ -31,6 +32,12 @@ class ProjectService {
     const query = searchParams.toString();
     const url = `${ApiEndpoints.Project.getProject.url}${query ? `?${query}` : ''}`;
     return apiService.get<Project>(url);
+  }
+
+  async getProjectDetail(projectId: string): Promise<ApiResponse<ProjectDetail>> {
+    const url = ApiEndpoints.Project.getProjectDetail.withParams({ projectId });
+
+    return apiService.get<ProjectDetail>(url);
   }
 
   async updateProject(
@@ -66,6 +73,15 @@ class ProjectService {
     return apiService.delete<unknown>(url, undefined, {
       showSuccessToast: true,
       successMessage: 'Member removed successfully',
+    });
+  }
+
+  async deleteProject(projectId: string): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Project.deleteProject.withParams({ projectId });
+
+    return apiService.delete<unknown>(url, undefined, {
+      showSuccessToast: true,
+      successMessage: 'Project deleted successfully',
     });
   }
 }

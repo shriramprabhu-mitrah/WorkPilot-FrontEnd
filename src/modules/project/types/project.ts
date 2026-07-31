@@ -10,8 +10,10 @@ export interface Sprint {
   endDate: string;
   status: 'Planned' | 'Active' | 'Completed';
   tasks: number;
+  goal?: string;
 }
 export interface Project {
+  id?: string;
   initials: string;
   name: string;
   code: string;

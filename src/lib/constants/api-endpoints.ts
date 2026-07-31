@@ -168,7 +168,9 @@ export const ApiEndpoints = {
   Project: {
     createProject: createEndpoint('/project/create'),
     getProject: createQueryEndpoint('/project/get'),
+    getProjectDetail: createEndpoint('/project/{projectId}/detail'),
     updateProject: createEndpoint('/project/update/{projectId}'),
+    deleteProject: createEndpoint('/project/{projectId}'),
     addMembers: createEndpoint('/project/add-members'),
     getProjectMembers: createEndpoint('/project/members/{projectId}'),
     removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
