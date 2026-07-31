@@ -16,6 +16,7 @@ import { useDebounce } from '@/src/hooks/useDebounce';
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
   return {
+    id: apiProject.id,
     name: apiProject.name,
     description: apiProject.description || 'No description added.',
     initials: apiProject?.name
@@ -86,13 +87,11 @@ const ProjectPage = () => {
     return apiProjects.map(mapApiProjectToUiProject);
   }, [apiProjects]);
 
-  // Create a mapping of project codes to API projects for easy lookup
   const apiProjectsMap = useMemo(() => {
     if (!apiProjects || !Array.isArray(apiProjects)) return new Map<string, ApiProject>();
-    return new Map(apiProjects.map((proj: ApiProject) => [proj.key, proj]));
+    return new Map(apiProjects.map((proj: ApiProject) => [proj.id, proj]));
   }, [apiProjects]);
 
-  // Filter and search projects
   const displayedProjects = useMemo(() => {
     // Apply sort
     const sorted = [...allProjects].sort((a, b) =>
@@ -113,10 +112,8 @@ const ProjectPage = () => {
 
       await createProjectAsync(payload);
 
-      // Refetch the projects list to get the updated data
       await refetchProjects();
 
-      // Reset form
       setProjectName('');
       setDescription('');
       setIsModalOpen(false);
@@ -124,7 +121,23 @@ const ProjectPage = () => {
   };
 
   const handleProjectClick = (project: Project, apiProject: ApiProject) => {
-    dispatch(setSelectedProject(apiProject));
+    dispatch(
+      setSelectedProject({
+        id: apiProject.id,
+        organization_id: apiProject.organization_id || '',
+        name: apiProject.name,
+        description: apiProject.description,
+        status: apiProject.status || 'active',
+        created_at: apiProject.created_at || '',
+        key: apiProject.key,
+        start_date: apiProject.start_date,
+        end_date: apiProject.end_date,
+        owner_id: apiProject.owner_id,
+        created_by: '',
+        members: [],
+        sprints: [],
+      })
+    );
 
     router.push('/projects/sprints');
   };
@@ -198,10 +211,10 @@ const ProjectPage = () => {
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {displayedProjects.map((project) => {
-            const apiProject = apiProjectsMap.get(project.code);
+            const apiProject = apiProjectsMap.get(project?.id);
             return (
               <ProjectCard
-                key={project.code}
+                key={project.id}
                 project={project}
                 onClick={() => apiProject && handleProjectClick(project, apiProject)}
               />

@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Project } from '@/src/types/project';
+import { Project, ProjectDetail } from '@/src/types/project';
 
 interface ProjectState {
-  selectedProject: Project | null;
+  selectedProject: (Project & Partial<ProjectDetail>) | null;
   isLoading: boolean;
 }
 
@@ -15,7 +15,7 @@ const projectSlice = createSlice({
   name: 'project',
   initialState,
   reducers: {
-    setSelectedProject: (state, action: PayloadAction<Project>) => {
+    setSelectedProject: (state, action: PayloadAction<Project & Partial<ProjectDetail>>) => {
       state.selectedProject = action.payload;
     },
     clearSelectedProject: (state) => {

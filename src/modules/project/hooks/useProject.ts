@@ -66,8 +66,10 @@ export const useUpdateProject = () => {
     mutationFn: ({ projectId, payload }: { projectId: string; payload: UpdateProjectPayload }) =>
       projectService.updateProject(projectId, payload),
     onSuccess: (data, variables) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['project'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projectDetail', variables.projectId] });
 
       if (data?.data) {
         queryClient.setQueryData(['project', data.data.key], data);
@@ -93,6 +95,7 @@ export const useAddProjectMembers = () => {
     mutationFn: (payload: AddProjectMembersPayload) => projectService.addMembers(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['projectMembers', variables.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['projectDetail', variables.project_id] });
     },
   });
 
@@ -130,6 +133,7 @@ export const useRemoveProjectMember = () => {
       projectService.removeMember(projectId, userId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['projectMembers', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projectDetail', variables.projectId] });
     },
   });
 
@@ -137,6 +141,43 @@ export const useRemoveProjectMember = () => {
     removeMember: mutation.mutate,
     removeMemberAsync: mutation.mutateAsync,
     isRemovingMember: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};
+
+export const useGetProjectDetail = (projectId: string, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['projectDetail', projectId],
+    queryFn: () => projectService.getProjectDetail(projectId),
+    enabled: enabled && !!projectId,
+  });
+
+  return {
+    projectDetail: query.data?.data,
+    isLoadingProjectDetail: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetchProjectDetail: query.refetch,
+  };
+};
+
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (projectId: string) => projectService.deleteProject(projectId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+
+  return {
+    deleteProject: mutation.mutate,
+    deleteProjectAsync: mutation.mutateAsync,
+    isDeletingProject: mutation.isPending,
     isSuccess: mutation.isSuccess,
     isError: mutation.isError,
     error: mutation.error,

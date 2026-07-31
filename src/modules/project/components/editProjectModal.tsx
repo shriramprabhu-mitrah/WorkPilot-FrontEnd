@@ -13,7 +13,6 @@ import { UpdateProjectPayload, ProjectStatus } from '@/src/types/project';
 interface EditProjectModalProps {
   project: Project & { id?: string };
   onClose: () => void;
-  onSuccess?: () => void;
 }
 
 const statusOptions: WpDropdownOption[] = [
@@ -23,7 +22,7 @@ const statusOptions: WpDropdownOption[] = [
   { label: 'Archived', value: 'archived' },
 ];
 
-const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps) => {
+const EditProjectModal = ({ project, onClose }: EditProjectModalProps) => {
   // Normalize status to lowercase for API compatibility
   const normalizeStatus = (status: string | undefined): ProjectStatus => {
     if (!status) return 'active';
@@ -58,7 +57,6 @@ const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps
         payload: formData,
       });
 
-      onSuccess?.();
       onClose();
     } catch (error) {
       // Error is already handled by the mutation
