@@ -1,5 +1,4 @@
 import CalendarTemplate from '@/src/modules/calendar/templates';
-
-export default function Calendar() {
+export default function Page() {
   return <CalendarTemplate />;
 }

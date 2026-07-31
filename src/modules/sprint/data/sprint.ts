@@ -57,51 +57,67 @@ export const taskColumns: TaskColumnData[] = [
     status: 'Backlog',
     count: 0,
     dotColor: colors.colBacklog,
+    tasks: [],
   },
   {
     status: 'To Do',
     count: 1,
     dotColor: colors.colTodo,
-    task: {
-      title: 'Update API documentation with examples',
-      priority: 'Medium',
-    },
+    tasks: [
+      {
+        title: 'Update API documentation with examples',
+        description: '',
+        priority: 'Medium',
+      },
+    ],
   },
   {
     status: 'In Progress',
     count: 1,
     dotColor: colors.colInProgress,
-    task: {
-      title: 'Implement rate limiting middleware',
-      priority: 'Critical',
-    },
+    tasks: [
+      {
+        title: 'Implement rate limiting middleware',
+        description: '',
+        priority: 'Critical',
+      },
+    ],
   },
   {
     status: 'In Review',
     count: 1,
     dotColor: colors.colInReview,
-    task: {
-      title: 'Refactor database connection pooling',
-      priority: 'High',
-    },
+    tasks: [
+      {
+        title: 'Refactor database connection pooling',
+        description: '',
+        priority: 'High',
+      },
+    ],
   },
   {
     status: 'Testing',
     count: 1,
     dotColor: colors.colTesting,
-    task: {
-      title: 'Set up CI/CD pipeline for staging',
-      priority: 'High',
-    },
+    tasks: [
+      {
+        title: 'Set up CI/CD pipeline for staging',
+        description: '',
+        priority: 'High',
+      },
+    ],
   },
   {
     status: 'Done',
     count: 1,
     dotColor: colors.colDone,
-    task: {
-      title: 'Design new API authentication flow',
-      priority: 'High',
-    },
+    tasks: [
+      {
+        title: 'Design new API authentication flow',
+        description: '',
+        priority: 'High',
+      },
+    ],
   },
 ];
 export const workload: Workload[] = [
@@ -148,4 +164,28 @@ export const sprints = [
   { id: 3, name: 'Sprint 3' },
   { id: 4, name: 'Sprint 4' },
   { id: 5, name: 'Sprint 5' },
+];
+
+export const priorityOptions = [
+  { label: 'Low', value: 'Low' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'High', value: 'High' },
+  { label: 'Critical', value: 'Critical' },
+];
+
+export const assigneeOptions = [
+  { label: 'Sarah Chen', value: 'Sarah Chen' },
+  { label: 'David J', value: 'David J' },
+  { label: 'John', value: 'John' },
+  { label: 'Priya Patel', value: 'Priya Patel' },
+  { label: 'Alex', value: 'Alex' },
+];
+
+export const statusOptions = [
+  { label: 'To Do', value: 'To Do' },
+  { label: 'In Progress', value: 'In Progress' },
+  { label: 'In Review', value: 'In Review' },
+  { label: 'Done', value: 'Done' },
+  { label: 'Backlog', value: 'Backlog' },
+  { label: 'Testing', value: 'Testing' },
 ];

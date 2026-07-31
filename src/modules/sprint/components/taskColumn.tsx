@@ -18,16 +18,21 @@ const TaskColumn = ({ column }: TaskColumnProps) => {
         <span className="text-sm font-semibold text-gray-500">{column.count}</span>
       </div>
 
-      {!column.task ? (
+      {column.tasks.length === 0 ? (
         <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-400">
           Empty
         </div>
       ) : (
-        <div className="rounded-lg border border-gray-100 bg-gray-50 p-2.5">
-          <p className="mb-2 text-sm font-medium text-gray-800">{column.task.title}</p>
+        column.tasks.map((task, index) => (
+          <div key={index} className="mb-2 rounded-lg border border-gray-100 bg-gray-50 p-2.5">
+            <p className="mb-2 text-sm font-medium text-gray-800">{task.title}</p>
+            {task.description && (
+              <p className="mt-1 mb-2 text-xs text-gray-500">{task.description}</p>
+            )}
 
-          <PriorityBadge priority={column.task.priority} />
-        </div>
+            <PriorityBadge priority={task.priority} />
+          </div>
+        ))
       )}
     </div>
   );
