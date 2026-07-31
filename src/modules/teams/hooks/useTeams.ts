@@ -1,17 +1,17 @@
 import { teamService } from '@/src/services/teams';
 import { RemoveUserPayload, UpdateRolePayload } from '@/src/types/teams';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+const QUERY_KEY = ['team-members'] as const;
 
-export const useGetTeamMembers = (page: number, pageSize: number) => {
+export const useGetTeamMembers = (page: number, pageSize: number ) => {
   const {
     data: teamMembers,
     isLoading: isTeamMembersLoading,
     refetch: refetchTeamMembers,
   } = useQuery({
-    queryKey: ['team-members', page, pageSize],
+    queryKey: [...QUERY_KEY, page, pageSize],
     queryFn: () => teamService.getTeamMembers(page, pageSize),
   });
-
   return {
     teamMembers,
     isTeamMembersLoading,
@@ -27,7 +27,7 @@ export const useRemoveUser = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['team-members'],
+        queryKey: QUERY_KEY,
       });
     },
   });
@@ -41,7 +41,7 @@ export const useUpdateRole = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['team-members'],
+        queryKey: QUERY_KEY,
       });
     },
   });

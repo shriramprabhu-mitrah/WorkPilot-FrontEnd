@@ -10,14 +10,14 @@ import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '../components/invitePopup';
 import { useGetTeamMembers, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
-import { useUser } from '../../users/hooks/useUser';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 export const TeamTemplate = () => {
   const [page] = useState(1);
   const pageSize = 10;
 
-  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
+ 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -26,9 +26,12 @@ export const TeamTemplate = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const { mutate: removeUser } = useRemoveUser();
   const { mutate: updateRole } = useUpdateRole();
-  const { user } = useUser();
-  const canManageUsers = user?.role === 'org_admin' || user?.role === 'project_manager';
-
+  const { hasPermission} = usePermissions();
+   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
+     page,
+     pageSize,
+   );
+ 
   if (isTeamMembersLoading) {
     return <p>Loading...</p>;
   }
@@ -74,7 +77,7 @@ export const TeamTemplate = () => {
             <MemberCard
               key={member.id}
               member={memberData}
-              canManageUsers={canManageUsers}
+              canManageUsers={ hasPermission('TEAMS_DELETE')}
               openMenu={openMenuId === member.id}
               onToggleMenu={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
               onDelete={() => {
