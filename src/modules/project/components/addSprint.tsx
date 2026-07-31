@@ -109,101 +109,96 @@ const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
             </div>
           </>
         )}
-        {step === 2 && (
-          <>
-            <div className="flex items-center justify-between border-b p-5">
-              <h2 className="text-xl font-bold">Configure {sprintForms.length} Sprints</h2>
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                aria-label="Close"
-                className="p-2"
-                leftIcon={<X size={18} />}
-              />
-            </div>
-            <div className="space-y-3 p-5">
-              {sprintForms.map((sprint, index) => {
-                const isOpen = openSprint === index;
-                return (
-                  <div
-                    key={sprint.id}
-                    className="overflow-hidden rounded-xl border border-gray-200"
-                  >
-                    <WpButton
-                      variant="ghost"
-                      size="md"
-                      type="button"
-                      onClick={() => setOpenSprint(isOpen ? -1 : index)}
-                      className="w-full justify-between rounded-none p-4 text-gray-900 hover:bg-gray-50"
-                      rightIcon={isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+        <div className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl bg-white">
+          {step === 2 && (
+            <>
+              <div className="flex items-center justify-between border-b p-5">
+                <h2 className="text-xl font-bold">Configure {sprintForms.length} Sprints</h2>
+                <WpButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="p-2"
+                  leftIcon={<X size={18} />}
+                />
+              </div>
+              <div className="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-4">
+                {sprintForms.map((sprint, index) => {
+                  const isOpen = openSprint === index;
+                  return (
+                    <div
+                      key={sprint.id}
+                      className="overflow-hidden rounded-xl border border-gray-200"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-600">
-                          {index + 1}
-                        </span>
-                        <span className="text-sm font-medium">{sprint.name}</span>
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">
-                          {sprint.status}
-                        </span>
-                      </div>
-                    </WpButton>
-                    {isOpen && (
-                      <div className="border-t p-4">
-                        <WpInput
-                          id={`sprint-name-${sprint.id}`}
-                          label="Sprint name"
-                          value={sprint.name}
-                          onChange={(e) => updateSprint(index, 'name', e.target.value)}
-                        />
-                        <div className="mt-4 grid grid-cols-2 gap-3">
-                          <div>
-                            <WpInput
-                              id={`start-date-${sprint.id}`}
-                              type="date"
-                              label="Start date"
-                              value={sprint.startDate}
-                              onChange={(e) => updateSprint(index, 'startDate', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <WpInput
-                              id={`end-date-${sprint.id}`}
-                              type="date"
-                              label="Due date"
-                              value={sprint.endDate}
-                              onChange={(e) => updateSprint(index, 'endDate', e.target.value)}
-                            />
+                      <WpButton
+                        variant="ghost"
+                        size="md"
+                        type="button"
+                        onClick={() => setOpenSprint(isOpen ? -1 : index)}
+                        className="w-full justify-between rounded-none p-4 text-gray-900 hover:bg-gray-50"
+                        rightIcon={isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-600">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm font-medium">{sprint.name}</span>
+                          <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">
+                            {sprint.status}
+                          </span>
+                        </div>
+                      </WpButton>
+                      {isOpen && (
+                        <div className="p-4">
+                          <WpInput
+                            id={`sprint-name-${sprint.id}`}
+                            label="Sprint name"
+                            value={sprint.name}
+                            onChange={(e) => updateSprint(index, 'name', e.target.value)}
+                          />
+                          <div className="mt-4 grid grid-cols-2 gap-3">
+                            <div>
+                              <WpInput
+                                id={`start-date-${sprint.id}`}
+                                type="date"
+                                label="Start date"
+                                value={sprint.startDate}
+                                onChange={(e) => updateSprint(index, 'startDate', e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <WpInput
+                                id={`end-date-${sprint.id}`}
+                                type="date"
+                                label="Due date"
+                                value={sprint.endDate}
+                                onChange={(e) => updateSprint(index, 'endDate', e.target.value)}
+                              />
+                            </div>
                           </div>
                         </div>
-                        <WpDropdown
-                          label="Status"
-                          options={statusOptionss}
-                          value={sprint.status}
-                          onChange={(value) => updateSprint(index, 'status', value)}
-                          placeholder="Select status"
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex justify-between border-t p-5">
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep(1)}
-                leftIcon={<ArrowLeft size={16} />}
-              >
-                Back
-              </WpButton>
-              <WpButton variant="primary" size="md" onClick={handleCreateSprints}>
-                Create Sprints
-              </WpButton>
-            </div>
-          </>
-        )}
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between p-5">
+                <WpButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setStep(1)}
+                  leftIcon={<ArrowLeft size={16} />}
+                >
+                  Back
+                </WpButton>
+                <WpButton variant="primary" size="md" onClick={handleCreateSprints}>
+                  Create Sprints
+                </WpButton>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

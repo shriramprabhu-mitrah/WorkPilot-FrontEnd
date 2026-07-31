@@ -4,6 +4,8 @@ export enum ProjectFilter {
   PLANNING = 'Planning',
   ON_HOLD = 'On Hold',
   COMPLETED = 'Completed',
+  CANCELLED = 'Cancelled',
+  ARCHIVED = 'Archived',
 }
 
 export const filters = [
@@ -12,6 +14,8 @@ export const filters = [
   ProjectFilter.PLANNING,
   ProjectFilter.ON_HOLD,
   ProjectFilter.COMPLETED,
+  ProjectFilter.CANCELLED,
+  ProjectFilter.ARCHIVED,
 ];
 
 export enum INDUSTRY_TYPE {

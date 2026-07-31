@@ -20,9 +20,16 @@ class ProjectService {
     });
   }
 
-  async getProject(): Promise<ApiResponse<Project>> {
-    const url = ApiEndpoints.Project.getProject.url;
-
+  async getProject(params?: GetProjectQueryParams): Promise<ApiResponse<Project>> {
+    const searchParams = new URLSearchParams();
+    if (params?.name) {
+      searchParams.append('name', params.name);
+    }
+    if (params?.status) {
+      searchParams.append('status', params.status);
+    }
+    const query = searchParams.toString();
+    const url = `${ApiEndpoints.Project.getProject.url}${query ? `?${query}` : ''}`;
     return apiService.get<Project>(url);
   }
 

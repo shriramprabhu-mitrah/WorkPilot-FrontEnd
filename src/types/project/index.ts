@@ -55,7 +55,8 @@ export interface AddProjectMembersPayload {
 
 // Get Project Query Params
 export interface GetProjectQueryParams {
-  Key?: string;
+  name?: string;
+  status?: string;
 }
 
 export interface Creator {

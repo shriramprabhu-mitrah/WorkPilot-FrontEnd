@@ -7,10 +7,10 @@ import {
   GetProjectQueryParams,
 } from '@/src/types/project';
 
-export const useGetProjects = () => {
+export const useGetProjects = (params?: GetProjectQueryParams) => {
   const query = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => projectService.getProject(),
+    queryKey: ['projects', params],
+    queryFn: () => projectService.getProject(params),
   });
 
   return {
