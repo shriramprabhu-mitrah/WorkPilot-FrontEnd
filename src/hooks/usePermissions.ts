@@ -62,6 +62,14 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
   TASK_DELETE: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
   },
+
+  //Team permissions
+  TEAMS_EDIT: {
+    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
+  },
+  TEAMS_DELETE: {
+    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
+  },
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;

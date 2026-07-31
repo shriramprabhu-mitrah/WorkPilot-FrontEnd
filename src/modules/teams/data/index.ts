@@ -84,3 +84,11 @@ export const ROLES: RoleCard[] = [
     permissions: ['View Tasks', 'Update Status', 'Comment', 'Upload Attachments', 'Log Work Hours'],
   },
 ];
+
+export const roleOptions = [
+  { label: 'Organization Admin', value: 'org_admin' },
+  { label: 'Project Manager', value: 'project_manager' },
+  { label: 'Developer', value: 'developer' },
+  { label: 'Viewer', value: 'viewer' },
+  { label: 'Guest', value: 'guest' },
+];

@@ -1,10 +1,28 @@
+import { WpButton } from '@/src/app/components/common/button';
 import { colors } from '@/src/styles/colors';
 import { Member } from '@/src/types/teams';
+import { MoreVertical, Pencil, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
 
-export const MemberCard = ({ member }: { member: Member }) => {
+interface MemberCardProps {
+  member: Member;
+  canManageUsers: boolean;
+  openMenu: boolean;
+  onToggleMenu: () => void;
+  onDelete: () => void;
+  onUpdateRole: () => void;
+}
+
+export const MemberCard = ({
+  member,
+  canManageUsers,
+  openMenu,
+  onToggleMenu,
+  onDelete,
+  onUpdateRole,
+}: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
-
   return (
     <div
       className="bg-white rounded-xl border p-4 flex flex-col gap-3 hover:shadow-md transition-shadow"
@@ -33,6 +51,32 @@ export const MemberCard = ({ member }: { member: Member }) => {
         <span className="text-xs font-medium shrink-0" style={{ color: colors.gray400 }}>
           {pct}%
         </span>
+        {canManageUsers && (
+          <div className="ml-auto relative">
+            <WpButton variant="ghost" onClick={onToggleMenu}>
+              <MoreVertical size={16} />
+            </WpButton>
+
+            {openMenu && (
+              <div className="absolute right-0 top-full mt-2 z-20 flex items-center gap-2 rounded-lg border border-gray-200 bg-white shadow-lg">
+                <WpButton variant="ghost" onClick={onUpdateRole}>
+                  <Pencil size={16} />
+                </WpButton>
+
+                <WpButton
+                  variant="ghost"
+                  className="text-red-600 hover:bg-red-50"
+                  onClick={onDelete}
+                >
+                  <Trash2 size={16} />
+                </WpButton>
+                <WpButton variant="ghost" onClick={onToggleMenu}>
+                  <X size={16} />
+                </WpButton>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="h-1 rounded-full w-full" style={{ backgroundColor: colors.gray100 }}>

@@ -160,6 +160,11 @@ export const ApiEndpoints = {
   Country: {
     getCountry: createEndpoint('/countries'),
   },
+  Team: {
+    getUsers: createQueryEndpoint('/organization/get-users'),
+    removeUser: createEndpoint('/organization/remove-user'),
+    updateRole: createEndpoint('/organization/user-role'),
+  },
   Project: {
     createProject: createEndpoint('/project/create'),
     getProject: createQueryEndpoint('/project/get'),

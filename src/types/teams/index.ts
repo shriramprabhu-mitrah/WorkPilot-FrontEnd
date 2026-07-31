@@ -13,3 +13,25 @@ export interface RoleCard {
   dotColor: string;
   permissions: string[];
 }
+export interface TeamMember {
+  id: string;
+  organization_id: string;
+  name: string;
+  username: string;
+  email: string;
+  role: string;
+  avatar_url: string | null;
+  timezone: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RemoveUserPayload {
+  user_id: string;
+}
+
+export interface UpdateRolePayload {
+  user_id: string;
+  role: string;
+}
