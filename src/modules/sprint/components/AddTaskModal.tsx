@@ -63,7 +63,6 @@ const AddTaskModal = ({ open, onClose, onSave }: Props) => {
 
         <div className="space-y-5 px-6 py-6">
           <div className="space-y-5">
-
             <WpInput
               label="Task Name"
               showRequired
@@ -103,21 +102,13 @@ const AddTaskModal = ({ open, onClose, onSave }: Props) => {
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <WpButton
-                variant="secondary"
-                onClick={onClose}
-              >
+              <WpButton variant="secondary" onClick={onClose}>
                 Cancel
               </WpButton>
 
-              <WpButton
-                variant="primary"
-                onClick={handleSave}
-                disabled={isSaveDisabled}
-              >
+              <WpButton variant="primary" onClick={handleSave} disabled={isSaveDisabled}>
                 Save Task
               </WpButton>
-
             </div>
           </div>
         </div>

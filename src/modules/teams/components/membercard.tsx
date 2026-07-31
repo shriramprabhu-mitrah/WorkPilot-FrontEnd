@@ -3,7 +3,7 @@ import { colors } from '@/src/styles/colors';
 import { Member } from '@/src/types/teams';
 import { MoreVertical, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { ROLE_LABELS } from '@/src/app/components/common/enum/roleName';
+import { ROLE_LABELS } from '@/src/app/components/common/enum/index'
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
 interface MemberCardProps {
   member: Member;

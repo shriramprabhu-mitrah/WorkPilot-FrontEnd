@@ -9,7 +9,7 @@ import { formatMonthYear } from '@/src/app/components/common/format';
 import { UserUpdatePayload } from '@/src/types/user';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
-import { ROLE_LABELS } from '@/src/app/components/common/enum/roleName';
+import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { rolesData } from '@/src/modules/settings/data/rolesJson';
 export default function Profile() {

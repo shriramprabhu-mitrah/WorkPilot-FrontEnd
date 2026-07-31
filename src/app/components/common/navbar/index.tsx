@@ -74,7 +74,6 @@ export const Navbar = () => {
           <ChevronRight size={13} className="text-gray-400 rotate-90" />
         </Link>
       </div>
-
     </header>
   );
 };
