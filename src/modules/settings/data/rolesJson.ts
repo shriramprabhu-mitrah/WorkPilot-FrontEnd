@@ -49,6 +49,7 @@ export const rolesData = [
 
   {
     id: 'organization-admin',
+    role: 'org_admin',
     name: 'Organization Admin',
     number: 2,
     icon: Building2,
@@ -87,6 +88,7 @@ export const rolesData = [
 
   {
     id: 'project-manager',
+    role: 'project_manager',
     name: 'Project Manager',
     number: 3,
     icon: BriefcaseBusiness,
@@ -125,6 +127,7 @@ export const rolesData = [
 
   {
     id: 'developer',
+    role: 'developer',
     name: 'Developer',
     number: 8,
     icon: Code2,
@@ -164,6 +167,7 @@ export const rolesData = [
 
   {
     id: 'viewer',
+    role: 'viewer',
     name: 'Viewer',
     number: 4,
     icon: Eye,

@@ -3,7 +3,8 @@ import { colors } from '@/src/styles/colors';
 import { Member } from '@/src/types/teams';
 import { MoreVertical, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-
+import { ROLE_LABELS } from '@/src/app/components/common/enum/roleName';
+import { ROLE_TYPE } from '@/src/app/components/common/enum';
 interface MemberCardProps {
   member: Member;
   canManageUsers: boolean;
@@ -45,7 +46,7 @@ export const MemberCard = ({
               color: member.tasks > 0 && pct > 0 ? member.avatarColor : colors.gray500,
             }}
           >
-            {member.role}
+            {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
           </p>
         </div>
         <span className="text-xs font-medium shrink-0" style={{ color: colors.gray400 }}>

@@ -12,13 +12,7 @@ type ActionMenuProps = {
   canDelete: boolean;
 };
 
-export const ActionMenu = ({
-  onView,
-  onUpdate,
-  onDelete,
-  canEdit,
-  canDelete,
-}: ActionMenuProps) => {
+export const ActionMenu = ({ onView, onUpdate, onDelete, canEdit, canDelete }: ActionMenuProps) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

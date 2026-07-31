@@ -7,7 +7,7 @@ import WorkloadItem from '../workloadItem';
 import { WpButton } from '@/src/app/components/common/button';
 import { sprintStats, progressCards, taskColumns, workload } from '../../data/sprint';
 import { useState } from 'react';
-import { sprints } from '../../data/sprint';
+import { Projects } from '../../data/sprint';
 import AddTaskModal from '../AddTaskModal';
 import { Task } from '../../types/sprint';
 
@@ -59,9 +59,9 @@ const SprintPage = () => {
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[17px] font-bold shadow-sm hover:bg-gray-50"
             >
               <option value="All Sprints" className="text-[16px]">
-                All Sprints
+                All Projects
               </option>
-              {sprints.map((sprint) => (
+              {Projects.map((sprint) => (
                 <option key={sprint.id} value={sprint.name} className="text-[16px]">
                   {sprint.name}
                 </option>

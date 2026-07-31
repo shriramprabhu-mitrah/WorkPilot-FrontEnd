@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Search, Settings, ChevronRight } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
@@ -11,9 +11,11 @@ import { getInitials } from '../format';
 
 export const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const segments = pathname.split('/').filter(Boolean);
   const title = segments[0] ? segments[0].charAt(0).toUpperCase() + segments[0].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
+
   return (
     <header
       className="flex items-center justify-between h-[56px] px-5 border-b shrink-0"
@@ -44,7 +46,13 @@ export const Navbar = () => {
             style={{ backgroundColor: colors.error }}
           />
         </WpButton>
-        <WpButton variant="ghost" size="sm" className="!p-1.5 text-gray-500">
+
+        <WpButton
+          variant="ghost"
+          size="sm"
+          className="!p-1.5 text-gray-500"
+          onClick={() => router.push('/settings')}
+        >
           <Settings size={17} />
         </WpButton>
 
@@ -66,6 +74,7 @@ export const Navbar = () => {
           <ChevronRight size={13} className="text-gray-400 rotate-90" />
         </Link>
       </div>
+
     </header>
   );
 };
