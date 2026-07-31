@@ -9,7 +9,9 @@ import { formatMonthYear } from '@/src/app/components/common/format';
 import { UserUpdatePayload } from '@/src/types/user';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
-
+import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
+import { ROLE_TYPE } from '@/src/app/components/common/enum';
+import { rolesData } from '@/src/modules/settings/data/rolesJson';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
@@ -93,7 +95,7 @@ export default function Profile() {
     { label: 'Completed', value: 0, color: colors.green500 },
   ];
   const createdAt = formatMonthYear(user?.created_at || '-');
-
+  const roleDetails = rolesData.find((role) => role.role === user?.role);
   return (
     <div className="w-full">
       <h1 className="mb-6 text-2xl font-bold text-gray-900">My Profile</h1>
@@ -101,7 +103,7 @@ export default function Profile() {
         {/* Left Column */}
         <div className="w-full md:w-[320px] shrink-0 space-y-6">
           {/* Profile Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center h-135">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center h-166.5">
             <div className="relative mb-4">
               <div className="w-24 h-24 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-sm">
                 {getInitials(displayName)}
@@ -113,7 +115,7 @@ export default function Profile() {
 
             <div className="mt-2 mb-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-medium">
               <Briefcase size={14} />
-              {user?.role || '-'}
+              {user?.role ? ROLE_LABELS[user.role as ROLE_TYPE] : '-'}
             </div>
 
             <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
@@ -180,12 +182,11 @@ export default function Profile() {
                 <Briefcase size={20} />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Your Role: {user?.role || '-'}
+                Your Role: {user?.role ? ROLE_LABELS[user.role as ROLE_TYPE] : '-'}
               </h3>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-              Leads one or more projects within the organization. Responsible for delivery, sprint
-              planning, and team coordination.
+              {roleDetails?.description}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -194,12 +195,7 @@ export default function Profile() {
                   Capabilities
                 </h4>
                 <ul className="space-y-3">
-                  {[
-                    'Create projects (if org policy allows)',
-                    'Create / Edit / Delete parent & child tasks',
-                    'Assign and reassign tasks to members',
-                    'Manage sprint lifecycle & backlog',
-                  ].map((item, i) => (
+                  {roleDetails?.capabilities.map((item, i) => (
                     <li
                       key={i}
                       className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
@@ -215,12 +211,7 @@ export default function Profile() {
                   Restrictions
                 </h4>
                 <ul className="space-y-3">
-                  {[
-                    'Cannot invite new users into the organization',
-                    'Cannot access projects they are not assigned to',
-                    'Cannot manage organization settings',
-                    'Cannot change organization-wide user roles',
-                  ].map((item, i) => (
+                  {roleDetails?.restrictions.map((item, i) => (
                     <li
                       key={i}
                       className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"

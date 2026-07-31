@@ -3,7 +3,7 @@ import { RemoveUserPayload, UpdateRolePayload } from '@/src/types/teams';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 const QUERY_KEY = ['team-members'] as const;
 
-export const useGetTeamMembers = (page: number, pageSize: number ) => {
+export const useGetTeamMembers = (page: number, pageSize: number) => {
   const {
     data: teamMembers,
     isLoading: isTeamMembersLoading,

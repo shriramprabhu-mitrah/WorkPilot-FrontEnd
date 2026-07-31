@@ -182,9 +182,6 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
               </td>
 
               <td className="p-3 text-center">
-
-
-
                 <ActionMenu
                   canEdit={canEdit}
                   canDelete={canDelete}

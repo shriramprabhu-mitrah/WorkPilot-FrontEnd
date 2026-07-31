@@ -158,12 +158,12 @@ export const workload: Workload[] = [
   },
 ];
 
-export const sprints = [
-  { id: 1, name: 'Sprint 1' },
-  { id: 2, name: 'Sprint 2' },
-  { id: 3, name: 'Sprint 3' },
-  { id: 4, name: 'Sprint 4' },
-  { id: 5, name: 'Sprint 5' },
+export const Projects = [
+  { id: 1, name: 'Project 1' },
+  { id: 2, name: 'Project 2' },
+  { id: 3, name: 'Project 3' },
+  { id: 4, name: 'Project 4' },
+  { id: 5, name: 'Project 5' },
 ];
 
 export const priorityOptions = [
