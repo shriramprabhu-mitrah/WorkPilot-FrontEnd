@@ -165,3 +165,27 @@ export const sprints = [
   { id: 4, name: 'Sprint 4' },
   { id: 5, name: 'Sprint 5' },
 ];
+
+export const priorityOptions = [
+  { label: 'Low', value: 'Low' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'High', value: 'High' },
+  { label: 'Critical', value: 'Critical' },
+];
+
+export const assigneeOptions = [
+  { label: 'Sarah Chen', value: 'Sarah Chen' },
+  { label: 'David J', value: 'David J' },
+  { label: 'John', value: 'John' },
+  { label: 'Priya Patel', value: 'Priya Patel' },
+  { label: 'Alex', value: 'Alex' },
+];
+
+export const statusOptions = [
+  { label: 'To Do', value: 'To Do' },
+  { label: 'In Progress', value: 'In Progress' },
+  { label: 'In Review', value: 'In Review' },
+  { label: 'Done', value: 'Done' },
+  { label: 'Backlog', value: 'Backlog' },
+  { label: 'Testing', value: 'Testing' },
+];

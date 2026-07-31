@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useSelector } from 'react-redux';
 import { TableCheckbox } from './TableCheckbox';
 import { ActionMenu } from './ActionMenu';
 import { AssigneeAvatar, PriorityBadge, StatusBadge } from '@/src/app/components/common/task';
@@ -10,10 +9,9 @@ import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { WpButton } from '@/src/app/components/common/button';
 import { Task } from '@/src/types/task';
 import { KanbanTask, ColumnId } from '@/src/types/board';
-import { RootState } from '@/src/store';
 import { logger } from '@/src/lib/utils/logger';
 import { tasksData } from '../data/tasks';
-
+import { usePermissions } from '@/src/hooks/usePermissions';
 type TaskTableProps = {
   selectedFilters: {
     status: string;
@@ -30,9 +28,12 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [tasks, setTasks] = useState(tasksData);
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+
   const rowsPerPage = 10;
-  const role = useSelector((state: RootState) => state.user.role);
-  const canManageTasks = role === 'org_admin';
+  const { hasPermission } = usePermissions();
+
+  const canEdit = hasPermission('TASK_EDIT');
+  const canDelete = hasPermission('TASK_DELETE');
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -181,8 +182,12 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
               </td>
 
               <td className="p-3 text-center">
+
+
+
                 <ActionMenu
-                  canManageTasks={canManageTasks}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
                   onView={() => setSelectedTask(toKanbanTask(task))}
                   onUpdate={() => logger.log('Update', task.id)}
                   onDelete={() => setDeleteTaskId(task.id)}

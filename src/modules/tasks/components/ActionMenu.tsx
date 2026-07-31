@@ -8,10 +8,17 @@ type ActionMenuProps = {
   onView: () => void;
   onUpdate: () => void;
   onDelete: () => void;
-  canManageTasks: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 };
 
-export const ActionMenu = ({ onView, onUpdate, onDelete, canManageTasks }: ActionMenuProps) => {
+export const ActionMenu = ({
+  onView,
+  onUpdate,
+  onDelete,
+  canEdit,
+  canDelete,
+}: ActionMenuProps) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -47,30 +54,30 @@ export const ActionMenu = ({ onView, onUpdate, onDelete, canManageTasks }: Actio
             View
           </WpButton>
 
-          {canManageTasks && (
-            <>
-              <WpButton
-                variant="ghost"
-                size="sm"
-                fullWidth
-                onClick={onUpdate}
-                leftIcon={<Pencil size={16} />}
-                className="justify-start rounded-none"
-              >
-                Update
-              </WpButton>
+          {canEdit && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              fullWidth
+              onClick={onUpdate}
+              leftIcon={<Pencil size={16} />}
+              className="justify-start rounded-none"
+            >
+              Update
+            </WpButton>
+          )}
 
-              <WpButton
-                variant="ghost"
-                size="sm"
-                fullWidth
-                onClick={onDelete}
-                leftIcon={<Trash2 size={16} />}
-                className="justify-start rounded-none text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </WpButton>
-            </>
+          {canDelete && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              fullWidth
+              onClick={onDelete}
+              leftIcon={<Trash2 size={16} />}
+              className="justify-start rounded-none text-red-600 hover:bg-red-50"
+            >
+              Delete
+            </WpButton>
           )}
         </div>
       )}
