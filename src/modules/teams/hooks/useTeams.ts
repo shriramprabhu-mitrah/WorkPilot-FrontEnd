@@ -2,8 +2,10 @@ import { teamService } from '@/src/services/teams';
 import { ApiResponse } from '@/src/types/core';
 import { RemoveUserPayload, UpdateRolePayload, User } from '@/src/types/teams';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-const QUERY_KEY = ['team-members'] as const;
-const USER_QUERY_KEY = ['user'] as const;
+export const QUERY_KEYS = {
+  TEAM_MEMBERS: 'team-members',
+  USER: 'user',
+} as const;
 
 export const useGetTeamMembers = (page: number, pageSize: number) => {
   const {
@@ -11,7 +13,7 @@ export const useGetTeamMembers = (page: number, pageSize: number) => {
     isLoading: isTeamMembersLoading,
     refetch: refetchTeamMembers,
   } = useQuery({
-    queryKey: [...QUERY_KEY, page, pageSize],
+    queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize],
     queryFn: () => teamService.getTeamMembers(page, pageSize),
   });
   return {
@@ -29,7 +31,7 @@ export const useRemoveUser = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEY,
+        queryKey:[QUERY_KEYS.TEAM_MEMBERS],
       });
     },
   });
@@ -43,7 +45,7 @@ export const useUpdateRole = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEY,
+        queryKey: [QUERY_KEYS.TEAM_MEMBERS],
       });
     },
   });
@@ -55,7 +57,7 @@ export const useGetUserById = (id: string) => {
     isLoading: isUserLoading,
     refetch: refetchUser,
   } = useQuery<ApiResponse<User>>({
-    queryKey: [...USER_QUERY_KEY, id],
+    queryKey: [QUERY_KEYS.USER, id],
     queryFn: () => teamService.getUserById(id),
     enabled: !!id,
   });
