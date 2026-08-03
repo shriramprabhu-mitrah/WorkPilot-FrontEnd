@@ -341,17 +341,17 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                           />
                         </div>
-                        <select
-                          value={member.role}
-                          onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
-                          className="w-44 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
-                        >
-                          {Object.entries(ROLE_TYPE).map(([, val]) => (
-                            <option key={val} value={val}>
-                              {toLabel(val)}
-                            </option>
-                          ))}
-                        </select>
+                        {/* <select
+                        value={member.role}
+                        onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
+                        className="w-44 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                      >
+                        {Object.entries(ROLE_TYPE).map(([, val]) => (
+                          <option key={val} value={val}>
+                            {toLabel(val)}
+                          </option>
+                        ))}
+                      </select> */}
                         <button
                           onClick={() => removeTeamMember(index)}
                           className="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors bg-white shrink-0"

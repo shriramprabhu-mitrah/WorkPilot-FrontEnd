@@ -31,7 +31,7 @@ export const useRemoveUser = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey:[QUERY_KEYS.TEAM_MEMBERS],
+        queryKey: [QUERY_KEYS.TEAM_MEMBERS],
       });
     },
   });

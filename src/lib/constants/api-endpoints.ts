@@ -144,6 +144,7 @@ export const ApiEndpoints = {
     passwordConfirm: createEndpoint('/auth/password-reset/confirm'),
     verifyPassword: createEndpoint('/auth/verify-email'),
     resendEmail: createEndpoint('/auth/resend-verification-otp'),
+    validateUser: createQueryEndpoint('/auth/validate'),
   },
   Organization: {
     createOrganization: createEndpoint('/organization/create'),
