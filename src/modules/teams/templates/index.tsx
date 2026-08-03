@@ -8,7 +8,7 @@ import { RoleCardView } from '../components/rolecared';
 import { MEMBERS, roleOptions, ROLES } from '../data';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '../components/invitePopup';
-import { useGetTeamMembers, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
+import { useGetTeamMembers, useGetUserById, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -17,17 +17,21 @@ import TeamMemberCardSkeleton from '../components/TeamSkeleton';
 export const TeamTemplate = () => {
   const [page] = useState(1);
   const pageSize = 10;
-
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [showUserDetails, setShowUserDetails] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
+  const [showAll, setShowAll] = useState(false);
   const { mutate: removeUser } = useRemoveUser();
   const { mutate: updateRole } = useUpdateRole();
   const { hasPermission } = usePermissions();
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
+  const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 2);
+  const { user, isUserLoading } = useGetUserById(selectedUserId);
 
   if (isTeamMembersLoading) {
     return <TeamMemberCardSkeleton page />;
@@ -53,8 +57,8 @@ export const TeamTemplate = () => {
           <span className="sm:hidden">Invite</span>
         </WpButton>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-shrink-0">
-        {teamMembers?.data?.map((member) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
+        {visibleMembers?.map((member) => {
           const memberData = {
             id: member.id,
             name: member.name,
@@ -86,10 +90,25 @@ export const TeamTemplate = () => {
                 setSelectedRole(member.role);
                 setShowRoleModal(true);
               }}
+              onClick={() => {
+                setSelectedUserId(member.id);
+                setShowUserDetails(true);
+              }}
             />
           );
         })}
       </div>
+      {!showAll && teamMembers?.data && teamMembers.data.length > 2 && (
+        <div className="mt-2 flex justify-center">
+          <WpButton
+            variant="ghost"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline p-0"
+            onClick={() => setShowAll(true)}
+          >
+            View More
+          </WpButton>
+        </div>
+      )}
 
       {/* RBAC */}
       <div className="flex-shrink-0">
@@ -104,6 +123,40 @@ export const TeamTemplate = () => {
       </div>
       {/* Invite Modal */}
       <InviteTeamModal open={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
+      {showUserDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Team Member Details</h2>
+
+              <WpButton variant="ghost" onClick={() => setShowUserDetails(false)}>
+                ✕
+              </WpButton>
+            </div>
+
+            {isUserLoading ? (
+              <div className="py-8 text-center">Loading...</div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500">Name</p>
+                  <p className="font-medium">{user?.data?.name}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p>{user?.data?.email}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-500">Role</p>
+                  <p>{user?.data?.role}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
@@ -143,6 +196,7 @@ export const TeamTemplate = () => {
           </div>
         </div>
       )}
+
       {showRoleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6">

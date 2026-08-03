@@ -1,6 +1,6 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { ApiResponse } from '@/src/types/core';
-import { RemoveUserPayload, TeamMember, UpdateRolePayload } from '@/src/types/teams';
+import { RemoveUserPayload, TeamMember, UpdateRolePayload, User } from '@/src/types/teams';
 import { apiService } from '../axios';
 
 class TeamService {
@@ -25,6 +25,11 @@ class TeamService {
       showErrorToast: true,
     });
   }
-}
 
+  async getUserById(id: string): Promise<ApiResponse<User>> {
+    return apiService.get<User>(ApiEndpoints.Team.getUserById.url.replace('{id}', id), {
+      showErrorToast: true,
+    });
+  }
+}
 export const teamService = new TeamService();

@@ -167,26 +167,26 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             Menu
           </p>
 
-          {/* Nav */}
-          <nav className="flex-1 px-3 space-y-0.5">
-            {navItems.map(({ label, href, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors"
-                  style={{
-                    backgroundColor: active ? colors.primaryLight : undefined,
-                    color: active ? colors.primary : colors.gray700,
-                  }}
-                >
-                  <Icon size={15} style={{ color: active ? colors.primary : colors.gray700 }} />
-                  {label}
-                </Link>
-              );
-            })}
-          </nav>
+        {/* Nav */}
+        <nav className="flex-1 px-3 space-y-0.5">
+          {navItems.map(({ label, href, icon: Icon }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors"
+                style={{
+                  backgroundColor: active ? colors.primaryLight : undefined,
+                  color: active ? colors.primary : colors.gray700,
+                }}
+              >
+                <Icon size={15} style={{ color: active ? colors.primary : colors.gray700 }} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
           {/* New Project */}
           <div className="px-3 py-2">

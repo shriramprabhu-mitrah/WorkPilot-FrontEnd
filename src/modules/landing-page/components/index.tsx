@@ -49,7 +49,7 @@ export const LandingPage = () => {
   useScrollReveal();
 
   return (
-    <div className="lp-page">
+    <div className={`lp-page ${showPrivacy ? 'overflow-hidden h-screen' : ''}`}>
       {/* Header */}
       <header className="lp-header">
         <div className="logo mt-5">

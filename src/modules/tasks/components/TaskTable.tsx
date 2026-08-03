@@ -100,10 +100,10 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-gray-200">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] border-collapse text-sm">
-          <thead className="bg-gray-100">
+    <div className="w-350 overflow-x-hidden rounded-xl border border-gray-200">
+      <div className="max-h-[600px] overflow-y-auto overflow-x-hidden">
+        <table className="w-350 border-collapse text-sm table-fixed">
+          <thead className="sticky top-0 z-10 bg-gray-100">
             <tr className="h-12 text-[11px] font-medium uppercase tracking-wide text-gray-500">
               <th className="w-12 p-3">
                 <TableCheckbox
