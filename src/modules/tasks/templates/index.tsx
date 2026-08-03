@@ -27,7 +27,7 @@ export const TaskTemplate = () => {
     return <TaskSkeleton />;
   }
   return (
-    <div className="w-350">
+    <div className="w-full">
       <>
         <TaskHeader
           searchTerm={searchTerm}

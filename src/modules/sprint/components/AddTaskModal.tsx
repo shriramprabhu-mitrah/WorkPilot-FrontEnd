@@ -48,8 +48,8 @@ const AddTaskModal = ({ open, onClose, onSave }: Props) => {
   };
   const isSaveDisabled = taskName.trim() === '';
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="w-full max-w-[520px] overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm p-0 sm:p-4">
+      <div className="w-full sm:max-w-[520px] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5">
           <h2 className="text-[20px] font-semibold text-gray-900">Add Task</h2>
           <button
@@ -86,7 +86,7 @@ const AddTaskModal = ({ open, onClose, onSave }: Props) => {
               onChange={(value) => setPriority(value as Priority)}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <WpDropdown
                 label="Assignee"
                 options={assigneeOptions}

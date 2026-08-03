@@ -63,6 +63,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           ...restProjectDetail,
           key: selectedApiProject?.key || project.code,
           start_date: selectedApiProject?.start_date || new Date().toISOString(),
+          owner: creator,
         })
       );
     }
@@ -292,7 +293,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
           <div>
             <p className="text-[10px] font-medium text-gray-400">PROJECT OWNER</p>
-            <p className="mt-2 text-sm font-medium text-gray-900">{project?.owner}</p>
+            <p className="mt-2 text-sm font-medium text-gray-900">
+              {selectedApiProject?.owner || project?.owner || 'Not assigned'}
+            </p>
           </div>
 
           <div>

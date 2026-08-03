@@ -100,102 +100,104 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
   };
 
   return (
-    <div className="w-350 overflow-hidden rounded-xl border border-gray-200">
-      <table className="w-350 border-collapse text-sm">
-        <thead className="bg-gray-100">
-          <tr className="h-12 text-[11px] font-medium uppercase tracking-wide text-gray-500">
-            <th className="w-12 p-3">
-              <TableCheckbox
-                checked={selectedRows.length === tasks.length}
-                onChange={handleSelectAll}
-              />
-            </th>
-
-            <th className="p-3 text-left">Task ID</th>
-            <th className="p-3 text-left">Title</th>
-            <th className="p-3 text-left">Priority</th>
-            <th className="p-3 text-left">Status</th>
-            <th className="p-3 text-left">Assignee</th>
-            <th className="p-3 text-left">PTS</th>
-            <th className="p-3 text-left">Due Date</th>
-            <th className="p-3 text-left">Sprint</th>
-            <th className="p-3 text-left">Labels</th>
-            <th className="p-3 text-center"></th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {paginatedTasks.map((task) => (
-            <tr key={task.id} className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-3">
+    <div className="w-full overflow-hidden rounded-xl border border-gray-200">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px] border-collapse text-sm">
+          <thead className="bg-gray-100">
+            <tr className="h-12 text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              <th className="w-12 p-3">
                 <TableCheckbox
-                  checked={selectedRows.includes(task.id)}
-                  onChange={() => handleSelectRow(task.id)}
+                  checked={selectedRows.length === tasks.length}
+                  onChange={handleSelectAll}
                 />
-              </td>
+              </th>
 
-              <td className="p-3 font-semibold text-blue-600">
-                <span className="rounded bg-blue-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600">
-                  {task.id}
-                </span>
-              </td>
-
-              <td className="p-3">{task.title}</td>
-
-              <td className="w-16 shrink-0 sm:w-20">
-                <PriorityBadge priority={task.priority} />
-              </td>
-
-              <td className="p-3">
-                <StatusBadge status={task.status} />
-              </td>
-
-              <td className="p-3">
-                <div className="flex items-center gap-2">
-                  <AssigneeAvatar
-                    initials={task.assignee.initials}
-                    color={task.assignee.color}
-                    size="md"
-                  />
-                  <span>{task.assignee.name}</span>
-                </div>
-              </td>
-
-              <td className="p-3">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
-                  {task.points}
-                </span>
-              </td>
-
-              <td className="p-3">{task.dueDate}</td>
-
-              <td className="p-3">{task.sprint}</td>
-
-              <td className="p-3">
-                <div className="flex flex-wrap gap-2">
-                  {task.labels.map((label) => (
-                    <span key={label} className="rounded bg-gray-200 px-2 py-1 text-xs">
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              </td>
-
-              <td className="p-3 text-center">
-                <ActionMenu
-                  canEdit={canEdit}
-                  canDelete={canDelete}
-                  onView={() => setSelectedTask(toKanbanTask(task))}
-                  onUpdate={() => logger.log('Update', task.id)}
-                  onDelete={() => setDeleteTaskId(task.id)}
-                />
-              </td>
+              <th className="p-3 text-left">Task ID</th>
+              <th className="p-3 text-left">Title</th>
+              <th className="p-3 text-left">Priority</th>
+              <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Assignee</th>
+              <th className="p-3 text-left">PTS</th>
+              <th className="p-3 text-left">Due Date</th>
+              <th className="p-3 text-left">Sprint</th>
+              <th className="p-3 text-left">Labels</th>
+              <th className="p-3 text-center"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      <div className="flex items-center justify-between border-t border-gray-200 px-4 py-4">
+          <tbody>
+            {paginatedTasks.map((task) => (
+              <tr key={task.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="p-3">
+                  <TableCheckbox
+                    checked={selectedRows.includes(task.id)}
+                    onChange={() => handleSelectRow(task.id)}
+                  />
+                </td>
+
+                <td className="p-3 font-semibold text-blue-600">
+                  <span className="rounded bg-blue-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600">
+                    {task.id}
+                  </span>
+                </td>
+
+                <td className="p-3">{task.title}</td>
+
+                <td className="w-16 shrink-0 sm:w-20">
+                  <PriorityBadge priority={task.priority} />
+                </td>
+
+                <td className="p-3">
+                  <StatusBadge status={task.status} />
+                </td>
+
+                <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    <AssigneeAvatar
+                      initials={task.assignee.initials}
+                      color={task.assignee.color}
+                      size="md"
+                    />
+                    <span>{task.assignee.name}</span>
+                  </div>
+                </td>
+
+                <td className="p-3">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+                    {task.points}
+                  </span>
+                </td>
+
+                <td className="p-3">{task.dueDate}</td>
+
+                <td className="p-3">{task.sprint}</td>
+
+                <td className="p-3">
+                  <div className="flex flex-wrap gap-2">
+                    {task.labels.map((label) => (
+                      <span key={label} className="rounded bg-gray-200 px-2 py-1 text-xs">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+
+                <td className="p-3 text-center">
+                  <ActionMenu
+                    canEdit={canEdit}
+                    canDelete={canDelete}
+                    onView={() => setSelectedTask(toKanbanTask(task))}
+                    onUpdate={() => logger.log('Update', task.id)}
+                    onDelete={() => setDeleteTaskId(task.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 px-4 py-4">
         <p className="text-sm text-gray-500">
           Showing {startIndex + 1}-{Math.min(endIndex, filteredTasks.length)} of{' '}
           {filteredTasks.length} tasks
@@ -238,8 +240,8 @@ export const TaskTable = ({ selectedFilters, searchTerm }: TaskTableProps) => {
       )}
 
       {deleteTaskId && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-          <div className="w-96 rounded-xl bg-white p-6">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6">
             <h2>Delete Task</h2>
             <p>Are you sure you want to delete this task?</p>
 

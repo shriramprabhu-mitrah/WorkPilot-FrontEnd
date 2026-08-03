@@ -25,10 +25,10 @@ export const eventStyleGetter: EventPropGetter<CalendarEvent> = (event) => {
       backgroundColor: style.backgroundColor,
       color: style.color,
       border: 'none',
-      borderRadius: '999px',
-      fontSize: '12px',
+      borderRadius: '4px',
+      fontSize: '11px',
       fontWeight: 600,
-      padding: '2px 10px',
+      padding: '1px 4px',
     },
   };
 };

@@ -38,7 +38,7 @@ export const FilterPanel = ({ filters, allAssignees, allLabels, onChange, onClos
 
   return (
     <div
-      className="absolute top-full right-0 mt-2 z-50 w-72 rounded-xl shadow-xl border p-4 flex flex-col gap-4"
+      className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 z-50 w-72 rounded-xl shadow-xl border p-4 flex flex-col gap-4"
       style={{ backgroundColor: colors.white, borderColor: colors.gray200 }}
     >
       <div className="flex items-center justify-between">

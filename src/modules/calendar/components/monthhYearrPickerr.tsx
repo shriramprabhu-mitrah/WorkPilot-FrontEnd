@@ -46,7 +46,7 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-14 z-50 w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
+        <div className="absolute left-0 top-14 z-50 w-72 sm:w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
           <div className="mb-4 flex items-center justify-between">
             <button onClick={() => setYear(year - 1)} className="rounded-lg p-2 hover:bg-gray-100">
               <ChevronLeft size={18} />

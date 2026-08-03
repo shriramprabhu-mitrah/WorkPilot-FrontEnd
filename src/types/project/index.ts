@@ -14,6 +14,7 @@ export interface Project {
   owner_id?: string;
   organization_id?: string;
   creator?: Creator;
+  owner?: string;
 }
 
 // Create Project Payload
@@ -107,4 +108,5 @@ export interface ProjectDetail {
   members: ProjectDetailMember[];
   sprints: SprintDetail[];
   key?: string; // Optional key to be added after fetching
+  owner?: string; // Optional owner to be added after fetching
 }

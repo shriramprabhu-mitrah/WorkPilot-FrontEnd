@@ -14,6 +14,7 @@ import {
   EditableText,
 } from './components/editable-fields';
 import { SubtasksSection } from './components/subtasks-section';
+import { useResize } from '@/src/hooks/useResize';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -72,6 +73,9 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
     editingDesc: false,
   });
 
+  const { width: screenWidth } = useResize();
+  const isMobile = screenWidth < 640;
+  const [mobileTab, setMobileTab] = useState<'content' | 'details'>('content');
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
@@ -111,9 +115,6 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
             )}
           </div>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
-              <MoreHorizontal size={17} />
-            </button>
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
@@ -123,19 +124,40 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
           </div>
         </div>
 
+        {/* Mobile tab switcher */}
+        <div className="flex sm:hidden border-b border-gray-200 shrink-0">
+          <button
+            onClick={() => setMobileTab('content')}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
+            }`}
+          >
+            Content
+          </button>
+          <button
+            onClick={() => setMobileTab('details')}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
+            }`}
+          >
+            Details
+          </button>
+        </div>
+
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-8 py-6 border-r border-gray-200">
+          <div
+            className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+              mobileTab === 'details' ? 'hidden sm:block' : 'block'
+            }`}
+          >
             <h1 className="text-2xl font-bold text-gray-900 mb-5 leading-snug">{task.title}</h1>
 
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Plus size={14} /> Add child issue
               </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Link2 size={14} /> Link issue
-              </button>
-              <button className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-500">
-                <MoreHorizontal size={15} />
               </button>
             </div>
 
@@ -201,13 +223,18 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
 
           <div
             onMouseDown={onDividerMouseDown}
-            className="w-1.5 shrink-0 cursor-col-resize hover:bg-blue-100 active:bg-blue-200 transition-colors group flex items-center justify-center"
+            className="hidden sm:flex w-1.5 shrink-0 cursor-col-resize hover:bg-blue-100 active:bg-blue-200 transition-colors group items-center justify-center"
             style={{ backgroundColor: 'transparent' }}
           >
             <div className="w-0.5 h-8 rounded-full bg-gray-300 group-hover:bg-blue-400 transition-colors" />
           </div>
 
-          <div className="shrink-0 overflow-y-auto bg-gray-50/60" style={{ width: rightWidth }}>
+          <div
+            className={`overflow-y-auto bg-gray-50/60 ${
+              mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+            }`}
+            style={{ width: isMobile ? undefined : rightWidth }}
+          >
             <div className="px-5 py-5 border-b border-gray-300">
               <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
               <div className="relative" ref={statusMenuRef}>
