@@ -8,11 +8,25 @@ import { BacklogRow } from '../components/BacklogRow';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
-
+import BacklogSkeleton from '../components/backlogSkeleton';
+import { useEffect } from 'react';
 export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
   const [search, setSearch] = useState('');
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <BacklogSkeleton />;
+  }
   const q = search.toLowerCase();
   const filteredBacklog = BACKLOG_TASKS.filter(
     (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
@@ -27,7 +41,6 @@ export const BacklogTemplate = () => {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 flex-shrink-0">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
@@ -39,7 +52,6 @@ export const BacklogTemplate = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Search */}
           <WpInput
             type="text"
             placeholder="Search tasks..."
@@ -50,12 +62,10 @@ export const BacklogTemplate = () => {
             className="!py-1.5"
           />
 
-          {/* Filter */}
           <WpButton variant="secondary" size="sm" leftIcon={<Filter size={14} />}>
             <span className="hidden sm:inline">Filter</span>
           </WpButton>
 
-          {/* Create Sprint */}
           <WpButton size="sm" leftIcon={<Plus size={14} />}>
             <span className="hidden sm:inline">Create Sprint</span>
             <span className="sm:hidden">Sprint</span>
@@ -63,13 +73,11 @@ export const BacklogTemplate = () => {
         </div>
       </div>
 
-      {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1">
         {filteredSprints.map((sprint) => (
           <SprintSection key={sprint.id} sprint={sprint} />
         ))}
 
-        {/* Backlog section */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
           <div
             className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"

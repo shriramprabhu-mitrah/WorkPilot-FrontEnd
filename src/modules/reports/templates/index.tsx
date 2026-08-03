@@ -9,13 +9,27 @@ import SprintProgressCard from '@/src/modules/reports/components/SprintProgressC
 import TeamPerformanceCard from '@/src/modules/reports/components/TeamPerformanceCard';
 import BurndownCard from '@/src/modules/reports/components/BurndownCard';
 import { sprintCompleted, sprintLabels, sprintPlanned, STATS } from '../data';
-
+import { useEffect, useState } from 'react';
+import ReportsSkeleton from '../components/reportsSkeleton';
 export const SummaryTemplate = () => {
   const { width } = useResize();
   const isMobile = width < 640;
   const chartH = isMobile ? 240 : 300;
   const burndownH = isMobile ? 260 : 340;
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <ReportsSkeleton />;
+  }
   return (
     <div className="flex flex-col gap-4 sm:gap-5 h-full">
       <ReportsHeader />

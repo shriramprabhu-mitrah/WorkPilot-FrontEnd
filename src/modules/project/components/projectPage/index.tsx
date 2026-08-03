@@ -12,6 +12,7 @@ import { CreateProjectPayload, Project as ApiProject } from '@/src/types/project
 import { useAppDispatch } from '@/src/store';
 import { setSelectedProject } from '@/src/store/slices/project';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import ProjectSkeleton from '../projectSkeleton';
 
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
@@ -141,16 +142,20 @@ const ProjectPage = () => {
 
     router.push('/projects/sprints');
   };
-
+  if (isLoadingProjects) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-0.5">
+        <ProjectSkeleton />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-0.5">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-[25px] font-bold text-gray-900">Projects</h1>
-          <p className="mt-1 text-gray-500">
-            {isLoadingProjects
-              ? 'Loading projects...'
-              : `${displayedProjects.length} projects across your workspace`}
+          <p className="mt-2 text-gray-500">
+            {displayedProjects.length} projects across your workspace
           </p>
         </div>
         <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
@@ -191,14 +196,7 @@ const ProjectPage = () => {
         </WpButton>
       </div>
 
-      {isLoadingProjects ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="text-gray-500">Loading projects...</p>
-          </div>
-        </div>
-      ) : displayedProjects.length === 0 ? (
+      {displayedProjects.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <p className="text-gray-500">

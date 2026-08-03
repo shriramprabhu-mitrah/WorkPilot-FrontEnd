@@ -6,9 +6,14 @@ import PermissionsMatrix from '../components/permissionMatrixx';
 import RolePermission from '../components/rolesPermissions';
 import { NotificationSettings } from '../components/notificationSettings';
 import { SecuritySetting } from '../components/securitySettings';
-
+import SettingsSkeleton from '../components/settingSkeleton';
+import { useGetOrganization } from '../../organization/hooks/useOrganization';
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
+  const { isOrganizationLoading } = useGetOrganization();
+  if (isOrganizationLoading) {
+    return <SettingsSkeleton />;
+  }
   return (
     <>
       <SettingsHeader activeTab={activeTab} onTabChange={setActiveTab} />

@@ -12,6 +12,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { rolesData } from '@/src/modules/settings/data/rolesJson';
+import ProfileSkeleton from './profileSkeleton';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
@@ -81,7 +82,7 @@ export default function Profile() {
   };
 
   if (isLoading) {
-    return <div className="flex h-full items-center justify-center p-8">Loading profile...</div>;
+    return <ProfileSkeleton />;
   }
 
   if (error) {
