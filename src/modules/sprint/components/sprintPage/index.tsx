@@ -11,6 +11,8 @@ import { Projects } from '../../data/sprint';
 import AddTaskModal from '../AddTaskModal';
 import { Task } from '../../types/sprint';
 
+import SprintSkeleton from '../sprintSkeleton';
+import { useEffect } from 'react';
 type NewTask = Task & {
   description: string;
   assignee: string;
@@ -21,7 +23,16 @@ const SprintPage = () => {
   const [selectedSprint, setSelectedSprint] = useState('All Sprints');
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [columns, setColumns] = useState(taskColumns);
+  //temp loading
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
+  if (loading) {
+    return <SprintSkeleton />;
+  }
   const handleSaveTask = (newTask: NewTask) => {
     setColumns((prev) =>
       prev.map((column) => {
@@ -48,6 +59,7 @@ const SprintPage = () => {
 
     setIsAddTaskOpen(false);
   };
+
   return (
     <div className="min-h-screen bg-gray-50 p-1">
       <div className="mb-8 flex items-start justify-between">

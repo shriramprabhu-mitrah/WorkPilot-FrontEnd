@@ -19,11 +19,25 @@ import { assignedTasks, completedTasks, teamLabels } from '../data/teamWorkLoadD
 import UpcomingDeadlines from '../components/UpcomingDeadlines';
 import { STATS, weekLabels, weeklyCompleted, weeklyPlanned } from '../../reports/data';
 import { useGetOrganization } from '../../organization/hooks/useOrganization';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import DashboardSkeleton from '../components/dashboardSkeletons';
 
 export const DashBoardTemplate = () => {
   useGetOrganization();
+  // temp loading
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
   return (
     <div className="space-y-6 w-350">
       <StatCardsSection stats={STATS} />

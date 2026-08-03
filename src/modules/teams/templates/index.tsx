@@ -12,6 +12,7 @@ import { useGetTeamMembers, useRemoveUser, useUpdateRole } from '../hooks/useTea
 import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import TeamMemberCardSkeleton from '../components/TeamSkeleton';
 
 export const TeamTemplate = () => {
   const [page] = useState(1);
@@ -29,7 +30,7 @@ export const TeamTemplate = () => {
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
 
   if (isTeamMembersLoading) {
-    return <p>Loading...</p>;
+    return <TeamMemberCardSkeleton page />;
   }
   return (
     <div className="flex flex-col gap-8 h-full overflow-y-auto [scrollbar-width:thin]">

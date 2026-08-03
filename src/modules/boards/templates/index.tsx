@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Filter, UserCircle2 } from 'lucide-react';
 import {
   DndContext,
@@ -23,11 +23,14 @@ import { FilterPanel, FilterState } from '@/src/app/components/common/filter-pan
 import { colors } from '@/src/styles/colors';
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 import { WpButton } from '@/src/app/components/common/button';
+import BoardSkeleton from '../components/boardSkeleton';
 
 export const KanbanBoardTemplate = () => {
   const [columns, setColumns] = useState<KanbanColumnType[]>(BOARD_COLUMNS);
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
+  //temp loading
+  const [loading, setLoading] = useState(true);
   const [dropTarget, setDropTarget] = useState<{
     columnId: string;
     index: number;
@@ -181,6 +184,17 @@ export const KanbanBoardTemplate = () => {
     setDropTarget(null);
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <BoardSkeleton />;
+  }
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
