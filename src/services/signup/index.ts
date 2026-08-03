@@ -87,6 +87,17 @@ class SignupService {
       }
     );
   }
+
+  async validateUserDetail(
+    type: 'email' | 'username',
+    value: string
+  ): Promise<ApiResponse<{ available: boolean; type: string; value: string }>> {
+    const url = ApiEndpoints.Sign.validateUser.withQuery({ type, value });
+    return apiService.get<{ available: boolean; type: string; value: string }>(url, {
+      showSuccessToast: false,
+      showErrorToast: false,
+    });
+  }
 }
 
 export const signupService = new SignupService();

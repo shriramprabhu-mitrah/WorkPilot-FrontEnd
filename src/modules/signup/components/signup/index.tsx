@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { signupService } from '@/src/services/signup';
 import Link from 'next/link';
 import { useSignup } from '../../hooks/useSignup';
 import { useRouter } from 'next/navigation';
@@ -16,12 +17,12 @@ import {
   LockIconSvg,
   CloseIconSvg,
 } from '@/src/assets/svgs';
-import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { VerifyEmailModal } from '../verify-email';
 import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
 import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
+import { WpInput } from '@/src/app/components/common/input';
 const signupSchema = z
   .object({
     full_name: z.string().trim().min(1, 'Full name is required'),
@@ -61,6 +62,8 @@ export const SignUp = () => {
     register,
     handleSubmit,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -68,6 +71,59 @@ export const SignUp = () => {
   });
   const firstErrorField = Object.keys(errors)[0];
   const email = watch('email');
+  const username = watch('username');
+
+  // Debounced Username Validation
+  useEffect(() => {
+    if (!username || username.trim() === '') return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const res = await signupService.validateUserDetail('username', username);
+        if (res.data?.available === false) {
+          setError('username', {
+            type: 'manual',
+            message: res.message || 'Username is already taken',
+          });
+        } else if (errors.username?.type === 'manual') {
+          clearErrors('username');
+        }
+      } catch (err: unknown) {
+        setError('username', {
+          type: 'manual',
+          message: err instanceof Error ? err.message : 'Username is already taken',
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [username, setError, clearErrors, errors.username?.type]);
+
+  // Debounced Email Validation
+  useEffect(() => {
+    if (!email || email.trim() === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const res = await signupService.validateUserDetail('email', email);
+        if (res.data?.available === false) {
+          setError('email', {
+            type: 'manual',
+            message: res.message || 'Email is already taken',
+          });
+        } else if (errors.email?.type === 'manual') {
+          clearErrors('email');
+        }
+      } catch (err: unknown) {
+        setError('email', {
+          type: 'manual',
+          message: err instanceof Error ? err.message : 'Email is already taken',
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [email, setError, clearErrors, errors.email?.type]);
 
   const router = useRouter();
 
