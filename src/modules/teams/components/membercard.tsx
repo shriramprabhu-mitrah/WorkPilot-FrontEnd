@@ -2,7 +2,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { colors } from '@/src/styles/colors';
 import { Member } from '@/src/types/teams';
 import { MoreVertical, Pencil, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
 interface MemberCardProps {
@@ -12,6 +12,7 @@ interface MemberCardProps {
   onToggleMenu: () => void;
   onDelete: () => void;
   onUpdateRole: () => void;
+  onClick?: () => void;
 }
 
 export const MemberCard = ({
@@ -21,11 +22,29 @@ export const MemberCard = ({
   onToggleMenu,
   onDelete,
   onUpdateRole,
+  onClick,
 }: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        if (openMenu) {
+          onToggleMenu();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenu, onToggleMenu]);
+  const menuRef = useRef<HTMLDivElement>(null);
   return (
     <div
+      onClick={onClick}
       className="bg-white rounded-xl border p-4 flex flex-col gap-3 hover:shadow-md transition-shadow"
       style={{ borderColor: colors.gray200 }}
     >
@@ -53,26 +72,38 @@ export const MemberCard = ({
           {pct}%
         </span>
         {canManageUsers && (
-          <div className="ml-auto relative">
-            <WpButton variant="ghost" onClick={onToggleMenu}>
+          <div className="relative" ref={menuRef}>
+            <WpButton
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleMenu();
+              }}
+            >
               <MoreVertical size={16} />
             </WpButton>
 
             {openMenu && (
-              <div className="absolute right-0 top-full mt-2 z-20 flex items-center gap-2 rounded-lg border border-gray-200 bg-white shadow-lg">
-                <WpButton variant="ghost" onClick={onUpdateRole}>
+              <div className="absolute right-0 top-full z-20 mt-1 flex w-12 flex-col rounded-lg border border-gray-200 bg-white shadow-lg">
+                <WpButton
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUpdateRole();
+                  }}
+                >
                   <Pencil size={16} />
                 </WpButton>
 
                 <WpButton
                   variant="ghost"
                   className="text-red-600 hover:bg-red-50"
-                  onClick={onDelete}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
                 >
                   <Trash2 size={16} />
-                </WpButton>
-                <WpButton variant="ghost" onClick={onToggleMenu}>
-                  <X size={16} />
                 </WpButton>
               </div>
             )}

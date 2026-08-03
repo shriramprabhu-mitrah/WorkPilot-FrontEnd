@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Mail, Plus } from 'lucide-react';
-import { ROLE_TYPE } from '@/src/app/components/common/enum';
+import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { useInviteUsers } from '../../organization/hooks/useOrganization';
 
 interface Member {
@@ -109,7 +109,7 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
                 >
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {ROLE_LABELS[r]}
                     </option>
                   ))}
                 </select>

@@ -35,3 +35,17 @@ export interface UpdateRolePayload {
   user_id: string;
   role: string;
 }
+
+export interface User {
+  id: string;
+  organization_id: string;
+  name: string;
+  username: string;
+  email: string;
+  role: string;
+  avatar_url: string | null;
+  timezone: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
