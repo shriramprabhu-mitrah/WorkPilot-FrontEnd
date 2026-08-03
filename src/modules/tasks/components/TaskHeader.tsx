@@ -58,7 +58,7 @@ export const TaskHeader = ({
           icon={<Search size={16} />}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          wrapperClassName="w-52"
+          wrapperClassName="w-full sm:w-52"
           className="!py-1.5"
         />
         <div className="flex flex-wrap gap-3">

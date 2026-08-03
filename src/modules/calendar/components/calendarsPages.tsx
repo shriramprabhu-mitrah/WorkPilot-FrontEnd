@@ -22,16 +22,16 @@ const CalendarPage = () => {
       : displayEvents.filter((event) => event.type === selectedType);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Calendar</h1>
 
         <p className="mt-1 text-gray-500">Plan, track and manage your project schedule.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-4">
         <div className="xl:col-span-3">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-6 shadow-sm">
             <CalendarView
               events={filteredEvents}
               currentDate={currentDate}

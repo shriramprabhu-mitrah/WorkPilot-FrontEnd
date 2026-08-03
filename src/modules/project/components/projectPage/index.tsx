@@ -37,7 +37,9 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
             ? 'Completed'
             : apiProject.status === 'archived'
               ? 'Archived'
-              : 'Active',
+              : apiProject.status === 'planning'
+                ? 'Planning'
+                : 'Active',
     progress: 0,
     members: [],
     tasks: '0',
@@ -48,6 +50,7 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
           year: 'numeric',
         })
       : '',
+    owner: String(apiProject?.creator) || 'Unassigned',
   };
 };
 
@@ -81,8 +84,6 @@ const ProjectPage = () => {
     status:
       selectedFilter === ProjectFilter.ALL ? undefined : PROJECT_STATUS_API_MAP[selectedFilter],
   });
-
-  // Convert API projects to UI format
   const allProjects = useMemo((): Project[] => {
     if (!apiProjects || !Array.isArray(apiProjects)) return [];
     return apiProjects.map(mapApiProjectToUiProject);
@@ -112,12 +113,11 @@ const ProjectPage = () => {
       };
 
       await createProjectAsync(payload);
-
+      setIsModalOpen(false);
       await refetchProjects();
 
       setProjectName('');
       setDescription('');
-      setIsModalOpen(false);
     } catch (error) {}
   };
 
@@ -134,6 +134,7 @@ const ProjectPage = () => {
         start_date: apiProject.start_date,
         end_date: apiProject.end_date,
         owner_id: apiProject.owner_id,
+        owner: String(apiProject.creator) || 'Unassigned',
         created_by: '',
         members: [],
         sprints: [],

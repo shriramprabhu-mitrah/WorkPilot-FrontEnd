@@ -196,9 +196,9 @@ export const KanbanBoardTemplate = () => {
     return <BoardSkeleton />;
   }
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 px-3 sm:px-0">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6 flex-shrink-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
             Sprint 12 Board
@@ -336,7 +336,7 @@ export const KanbanBoardTemplate = () => {
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4 flex-1 items-start [scrollbar-width:thin]">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start snap-x snap-mandatory [scrollbar-width:thin] -mx-3 sm:mx-0 px-3 sm:px-0">
           {filteredColumns.map((column) => (
             <KanbanColumn key={column.id} column={column} isOver={overColumnId === column.id} />
           ))}

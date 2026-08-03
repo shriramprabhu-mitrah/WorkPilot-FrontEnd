@@ -57,6 +57,37 @@
 
 .rbc-event {
   border: none;
-  border-radius: 999px;
-  padding: 2px 8px;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+@media (max-width: 639px) {
+  .rbc-month-row {
+    min-height: 52px;
+  }
+
+  .rbc-header {
+    font-size: 10px;
+    padding: 6px 0;
+  }
+
+  .rbc-date-cell {
+    padding: 2px 3px;
+    font-size: 10px;
+  }
+
+  .rbc-row-segment {
+    padding: 1px 1px;
+  }
+
+  .rbc-event {
+    padding: 0px 2px;
+    font-size: 9px;
+    border-radius: 3px;
+  }
+
+  .rbc-show-more {
+    font-size: 9px;
+    padding: 0 2px;
+  }
 }

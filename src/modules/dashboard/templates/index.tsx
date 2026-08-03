@@ -39,17 +39,17 @@ export const DashBoardTemplate = () => {
     return <DashboardSkeleton />;
   }
   return (
-    <div className="space-y-6 w-350">
+    <div className="space-y-4 md:space-y-6 w-full max-w-full">
       <StatCardsSection stats={STATS} />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 w-6xl">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 w-full max-w-full">
         <div className="lg:col-span-2">
           <TaskStatusCard />
         </div>
 
-        <div className="lg:col-span-3 w-232">
+        <div className="lg:col-span-3 w-full">
           <BurndownCard chartHeight={300} />
         </div>
-        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-6 w-350">
+        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
           <SprintProgressCard
             isMobile={false}
             chartHeight={200}
@@ -66,7 +66,7 @@ export const DashBoardTemplate = () => {
             completed={completedTasks}
           />
         </div>
-        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-6 w-350">
+        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
           <RecentActivityCard />
           <UpcomingDeadlines />
         </div>

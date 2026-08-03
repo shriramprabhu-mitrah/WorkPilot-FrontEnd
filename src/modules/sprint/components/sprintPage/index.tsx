@@ -61,8 +61,8 @@ const SprintPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-1">
-      <div className="mb-8 flex items-start justify-between">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-5">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
             <select
@@ -86,23 +86,23 @@ const SprintPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex h-8 items-center gap-2 rounded-full bg-green-50 px-3 text-sm font-medium text-green-700">
             <span className="h-2 w-2 rounded-full bg-green-500" />
             Active
           </span>
 
-          <WpButton variant="secondary" size="sm" className="h-10 px-4">
+          <WpButton variant="secondary" size="sm" className="h-9 px-3">
             Complete Sprint
           </WpButton>
 
-          <WpButton size="sm" className="h-10 px-4" onClick={() => setIsAddTaskOpen(true)}>
+          <WpButton size="sm" className="h-9 px-3" onClick={() => setIsAddTaskOpen(true)}>
             + Add Task
           </WpButton>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
         {sprintStats.map((task) => (
           <SprintStatsCard
             key={task.title}
@@ -131,7 +131,7 @@ const SprintPage = () => {
       <div className="mt-8">
         <h2 className="mb-4 text-xl font-semibold text-gray-900">Task Status Board</h2>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           {columns.map((column) => (
             <TaskColumn key={column.status} column={column} />
           ))}

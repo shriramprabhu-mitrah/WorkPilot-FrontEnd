@@ -13,6 +13,8 @@ import CustomDateHeader from './customsDatesHeaders';
 import { eventStyleGetter } from './calendarsViewStyle';
 import { View } from 'react-big-calendar';
 
+import { useResize } from '@/src/hooks/useResize';
+
 const localizer = momentLocalizer(moment);
 
 interface CalendarViewProps {
@@ -43,6 +45,8 @@ const CalendarView = ({
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const { width: screenWidth } = useResize();
+  const isMobile = screenWidth > 0 && screenWidth < 640;
 
   return (
     <>
@@ -75,7 +79,7 @@ const CalendarView = ({
         onSelectEvent={(event) => {
           setSelectedEvent(event);
         }}
-        style={{ height: 750 }}
+        style={{ height: isMobile ? 500 : 750 }}
         eventPropGetter={eventStyleGetter}
         components={{
           toolbar: (props) => (
@@ -101,7 +105,7 @@ const CalendarView = ({
           <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSelectedEvent(null)} />
 
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="w-[calc(100vw-2rem)] sm:w-[420px] rounded-2xl bg-white p-5 sm:p-6 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Event Details</h2>
 

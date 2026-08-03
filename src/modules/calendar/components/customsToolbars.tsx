@@ -24,12 +24,12 @@ const CustomToolbar = ({
   onTypeChange,
 }: CustomToolbarProps) => {
   return (
-    <div className="mb-6 flex items-center justify-between">
+    <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <MonthYearPicker value={currentDate} onChange={onDateChange} />
 
         {currentView === 'day' ? (
-          <p className="mt-5 text-lg font-semibold text-gray-900">{label}</p>
+          <p className="mt-3 text-lg font-semibold text-gray-900">{label}</p>
         ) : currentView === 'week' ? (
           <p className="mt-2 text-lg font-semibold text-gray-900">{label}</p>
         ) : (
@@ -37,11 +37,11 @@ const CustomToolbar = ({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value as 'All' | 'Sprint' | 'Meeting' | 'Task')}
-          className="h-10 rounded-lg border border-gray-200 px-3 shadow-sm hover:bg-gray-50"
+          className="h-9 sm:h-10 rounded-lg border border-gray-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50"
         >
           <option value="All">All Types</option>
           <option value="Sprint">Sprint</option>
@@ -77,7 +77,7 @@ const CustomToolbar = ({
         <select
           value={currentView}
           onChange={(e) => onViewChange(e.target.value as View)}
-          className="h-10 rounded-lg border border-gray-200 px-3 shadow-sm hover:bg-gray-50"
+          className="h-9 sm:h-10 rounded-lg border border-gray-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50"
         >
           <option value="month">Month</option>
           <option value="week">Week</option>

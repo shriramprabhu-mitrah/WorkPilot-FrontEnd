@@ -98,13 +98,13 @@ export default function Profile() {
   const createdAt = formatMonthYear(user?.created_at || '-');
   const roleDetails = rolesData.find((role) => role.role === user?.role);
   return (
-    <div className="w-full">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">My Profile</h1>
-      <div className="flex flex-col w-6xl md:flex-row gap-6 p-6">
+    <div className="w-full px-3 sm:px-0">
+      <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900">My Profile</h1>
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {/* Left Column */}
         <div className="w-full md:w-[320px] shrink-0 space-y-6">
           {/* Profile Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center h-166.5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
             <div className="relative mb-4">
               <div className="w-24 h-24 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-sm">
                 {getInitials(displayName)}
