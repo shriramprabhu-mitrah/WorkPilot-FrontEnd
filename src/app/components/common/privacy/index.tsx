@@ -17,10 +17,7 @@ interface PrivacyPolicyProps {
   onContinue?: () => void;
   showActions?: boolean;
 }
-export const PrivacyPolicy = ({
-  onContinue,
-  showActions = true,
-}: PrivacyPolicyProps) => {
+export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyProps) => {
   const dispatch = useAppDispatch();
   const accepted = useAppSelector((state) => state.agreement.privacyAccepted);
   const handleContinue = () => {
@@ -301,33 +298,33 @@ export const PrivacyPolicy = ({
       </div>
       <hr style={hr} />
 
-{showActions && (
-  <div
-    style={{
-      marginTop: '40px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-    }}
-  >
-    <WpCheckbox
-      id="accept-privacy"
-      checked={accepted}
-      onChange={(e) => dispatch(setPrivacyAccepted(e.target.checked))}
-      label="I have read and agree to the Privacy Policy."
-    />
+      {showActions && (
+        <div
+          style={{
+            marginTop: '40px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}
+        >
+          <WpCheckbox
+            id="accept-privacy"
+            checked={accepted}
+            onChange={(e) => dispatch(setPrivacyAccepted(e.target.checked))}
+            label="I have read and agree to the Privacy Policy."
+          />
 
-    <WpButton
-      type="button"
-      size="sm"
-      disabled={!accepted}
-      onClick={handleContinue}
-      className="mt-5 w-full"
-    >
-      Continue
-    </WpButton>
-  </div>
-)}
+          <WpButton
+            type="button"
+            size="sm"
+            disabled={!accepted}
+            onClick={handleContinue}
+            className="mt-5 w-full"
+          >
+            Continue
+          </WpButton>
+        </div>
+      )}
     </div>
   );
 };
