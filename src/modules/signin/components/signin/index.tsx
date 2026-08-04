@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { signupService } from '@/src/services/signup';
 import { useSignin } from '../../hooks/useSignin';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { setTokens } from '@/src/lib/utils/cookies';
 import { TrackrLogoSvg, EmailIconSvg, CloseIconSvg } from '@/src/assets/svgs';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
@@ -58,7 +56,6 @@ export const SignIn = () => {
     handleForgotPasswordAsync,
     handleResetPasswordConfirmAsync,
     isLoading,
-    error,
     forgotPassword,
     resetPasswordConfirm,
   } = useSignin();
@@ -68,50 +65,18 @@ export const SignIn = () => {
   const [showForgotSidebar, setShowForgotSidebar] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [resetOtp, setResetOtp] = useState('');
-  const [resetNewPassword, setResetNewPassword] = useState('');
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState<string | null>(null);
   const [forgotErrorMsg, setForgotErrorMsg] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    watch,
-    setError,
-    clearErrors,
     formState: { errors },
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
     mode: 'onSubmit',
   });
   const firstErrorField = Object.keys(errors)[0];
-  const email = watch('email');
-
-  // Debounced Email Validation
-  useEffect(() => {
-    if (!email || email.trim() === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-
-    const timeoutId = setTimeout(async () => {
-      try {
-        const res = await signupService.validateUserDetail('email', email);
-        if (res.data?.available === false) {
-          setError('email', {
-            type: 'manual',
-            message: res.message || 'Invalid email',
-          });
-        } else if (errors.email?.type === 'manual') {
-          clearErrors('email');
-        }
-      } catch (err: unknown) {
-        setError('email', {
-          type: 'manual',
-          message: err instanceof Error ? err.message : 'Invalid email',
-        });
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [email, setError, clearErrors, errors.email?.type]);
 
   const {
     register: registerForgot,
