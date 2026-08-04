@@ -177,6 +177,13 @@ export const ApiEndpoints = {
     getProjectMembers: createEndpoint('/project/members/{projectId}'),
     removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
   },
+  Sprint: {
+    getSprints: createEndpoint('/projects/{projectId}/sprint'),
+    createSprint: createEndpoint('/projects/{projectId}/sprint'),
+    getSprintById: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
+    updateSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
+    deleteSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;
