@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import TaskSkeleton from '../components/taskSkeleton';
 export const TaskTemplate = () => {
   const [selectedFilters, setSelectedFilters] = useState({
+    project: 'All Projects',
     status: 'All Statuses',
     priority: 'All Priorities',
     assignee: 'All Assignees',
@@ -14,7 +15,7 @@ export const TaskTemplate = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
+  const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -34,8 +35,15 @@ export const TaskTemplate = () => {
           setSearchTerm={setSearchTerm}
           selectedFilters={selectedFilters}
           setSelectedFilters={setSelectedFilters}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
         />
-        <TaskTable selectedFilters={selectedFilters} searchTerm={searchTerm} />
+        <TaskTable
+          selectedFilters={selectedFilters}
+          searchTerm={searchTerm}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+        />
       </>
     </div>
   );

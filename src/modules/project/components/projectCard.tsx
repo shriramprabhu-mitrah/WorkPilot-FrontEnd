@@ -40,20 +40,6 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
         {project.description}
       </p>
 
-      <div className="mt-4">
-        <div className="mb-2 flex justify-between text-xs">
-          <span className="text-gray-500">Progress</span>
-          <span>{project.progress}%</span>
-        </div>
-
-        <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
-          <div
-            className="h-full rounded-full bg-blue-600 transition-all"
-            style={{ width: `${project.progress}%` }}
-          />
-        </div>
-      </div>
-
       <div className="mt-4 flex items-center justify-between">
         <div className="flex -space-x-2">
           {project.members.slice(0, 3).map((member, index) => (
@@ -66,13 +52,17 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
             </div>
           )}
         </div>
+        <div className="flex items-center justify-between pt-4 border-gray-100">
+          <div className="flex-1 text-center">
+            <p className="text-xs text-gray-500 mr-2">Sprints</p>
+            <p className="mt-1 text-xs text-gray-500 mr-2">{project.tasks}</p>
+          </div>
 
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span>{project.tasks}</span>
+          <div className="" />
 
-          <div className="flex items-center gap-1">
-            <Calendar size={10} strokeWidth={2} />
-            <span>{project.date}</span>
+          <div className="flex-2 text-center">
+            <p className="text-xs text-gray-500">Created</p>
+            <p className="mt-1 text-xs text-gray-500">{project.date}</p>
           </div>
         </div>
       </div>
