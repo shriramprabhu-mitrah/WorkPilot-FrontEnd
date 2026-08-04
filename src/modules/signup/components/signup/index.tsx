@@ -138,6 +138,7 @@ export const SignUp = () => {
         timezone,
       });
       setIsSuccess(true);
+      // router.push('/setup')
     } catch {
       // Error handled by React Query and toast
     }
@@ -149,7 +150,9 @@ export const SignUp = () => {
         <VerifyEmailModal
           email={email}
           onBack={() => setIsSuccess(false)}
-          onVerified={() => setOnboardingStep('org')}
+          onVerified={() => {
+            router.push('/setup');
+          }}
         />
       )}
 
