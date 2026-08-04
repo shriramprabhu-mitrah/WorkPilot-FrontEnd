@@ -19,4 +19,9 @@ export const filters = [
     label: 'All Sprints',
     options: ['All Sprints', 'Sprint 12', 'Sprint 13', 'Sprint 3'],
   },
+  {
+    key: 'project',
+    label: 'All Projects',
+    options: ['All Projects', 'Project 1', 'Project 2', 'Project 3', 'Project 4', 'Project 5'],
+  },
 ];

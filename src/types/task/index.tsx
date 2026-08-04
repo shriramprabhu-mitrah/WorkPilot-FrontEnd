@@ -6,6 +6,7 @@ export type Task = {
   title: string;
   priority: Priority;
   status: TaskStatus;
+  project: string;
   assignee: {
     name: string;
     initials: string;

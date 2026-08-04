@@ -189,3 +189,13 @@ export const statusOptions = [
   { label: 'Backlog', value: 'Backlog' },
   { label: 'Testing', value: 'Testing' },
 ];
+
+export const Sprints = [
+  { id: 1, name: 'Sprint 1' },
+  { id: 2, name: 'Sprint 2' },
+  { id: 3, name: 'Sprint 3' },
+  { id: 4, name: 'Sprint 4' },
+  { id: 5, name: 'Sprint 5' },
+  { id: 6, name: 'Sprint 12' },
+  { id: 7, name: 'Sprint 13' },
+];

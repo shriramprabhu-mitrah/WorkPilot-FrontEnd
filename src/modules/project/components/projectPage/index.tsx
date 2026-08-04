@@ -224,14 +224,25 @@ const ProjectPage = () => {
       </div>
 
       {displayedProjects.length === 0 ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <p className="text-gray-500">
-              {searchTerm || selectedFilter !== ProjectFilter.ALL
-                ? 'No projects found matching your criteria'
-                : 'No projects yet. Create your first project to get started!'}
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-20">
+          {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
+            <p className="text-gray-500">No projects found matching your criteria.</p>
+          ) : (
+            <>
+              <img src="/images/Empty-rafiki.svg" alt="No Projects" className="mb-8 h-64 w-64" />
+
+              <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
+
+              <p className="mt-3 max-w-md text-center text-gray-500">
+                Projects help organize boards, sprints, tasks, and reports. Create your first
+                project to get started.
+              </p>
+
+              <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
+                + Create Project
+              </WpButton>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">

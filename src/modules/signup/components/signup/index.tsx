@@ -8,8 +8,6 @@ import { signupService } from '@/src/services/signup';
 import Link from 'next/link';
 import { useSignup } from '../../hooks/useSignup';
 import { useRouter } from 'next/navigation';
-import { TermsConditions } from '../../../../app/components/common/terms-coditions';
-import { PrivacyPolicy } from '../../../../app/components/common/privacy';
 import {
   TrackrLogoSvg,
   EmailIconSvg,
@@ -18,10 +16,13 @@ import {
   CloseIconSvg,
 } from '@/src/assets/svgs';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { VerifyEmailModal } from '../verify-email';
 import { OrganizationSetupModal } from '../../../organization/components/organization-setup';
 import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
+import { useAppDispatch, useAppSelector } from '@/src/store';
+import { setTermsAccepted, setPrivacyAccepted } from '@/src/store/slices/agreement';
+import { TermsConditions } from '@/src/app/components/common/terms-coditions';
+import { PrivacyPolicy } from '@/src/app/components/common/privacy';
 import { WpInput } from '@/src/app/components/common/input';
 const signupSchema = z
   .object({
@@ -41,10 +42,6 @@ const signupSchema = z
       .min(8, 'Password must be at least 8 characters'),
 
     confirmPwd: z.string().min(1, 'Please confirm your password'),
-
-    agreedToTerms: z.boolean().refine((value) => value === true, {
-      message: 'Please agree to the Terms and Privacy Policy',
-    }),
   })
   .refine((data) => data.password === data.confirmPwd, {
     message: 'Passwords do not match',
@@ -54,10 +51,11 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export const SignUp = () => {
-  const { handleSignUpAsync, signUp } = useSignup();
   const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
+  const { handleSignUpAsync, signUp } = useSignup();
   const [isSuccess, setIsSuccess] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
+
   const {
     register,
     handleSubmit,
@@ -126,6 +124,8 @@ export const SignUp = () => {
   }, [email, setError, clearErrors, errors.email?.type]);
 
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { termsAccepted, privacyAccepted } = useAppSelector((state) => state.agreement);
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -137,6 +137,8 @@ export const SignUp = () => {
         password: data.password,
         timezone,
       });
+      dispatch(setTermsAccepted(false));
+      dispatch(setPrivacyAccepted(false));
       setIsSuccess(true);
       // router.push('/setup')
     } catch {
@@ -252,43 +254,50 @@ export const SignUp = () => {
               <ErrorMessage message={errors.confirmPwd?.message} />
             )}
 
-            <div className="mb-6">
-              <WpCheckbox
-                id="terms"
-                {...register('agreedToTerms')}
-                label={
-                  <span className="text-xs text-gray-500">
-                    By continuing you agree to our{' '}
-                    <WpButton
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="!p-0 !text-xs text-blue-600"
-                      onClick={() => setSidebarContent('terms')}
-                    >
-                      Terms
-                    </WpButton>{' '}
-                    and{' '}
-                    <WpButton
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="!p-0 !text-xs text-blue-600"
-                      onClick={() => setSidebarContent('privacy')}
-                    >
-                      Privacy Policy
-                    </WpButton>
-                  </span>
-                }
-              />
-              {firstErrorField === 'agreedToTerms' && (
-                <ErrorMessage message={errors.agreedToTerms?.message} />
-              )}
+            <div className="mb-6 text-xs text-gray-500">
+              By creating an account, please review our{' '}
+              <button
+                type="button"
+                onClick={() => setSidebarContent('terms')}
+                className="font-medium text-blue-600 hover:underline"
+              >
+                Terms & Conditions
+              </button>{' '}
+              and{' '}
+              <button
+                type="button"
+                onClick={() => setSidebarContent('privacy')}
+                className="font-medium text-blue-600 hover:underline"
+              >
+                Privacy Policy
+              </button>
+              .
             </div>
+            {sidebarContent && (
+              <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
+                <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
+                  <WpButton
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="sidebarCloseBtn"
+                    onClick={() => setSidebarContent(null)}
+                  >
+                    <CloseIconSvg />
+                  </WpButton>
 
+                  {sidebarContent === 'terms' ? (
+                    <TermsConditions onContinue={() => setSidebarContent(null)} />
+                  ) : (
+                    <PrivacyPolicy onContinue={() => setSidebarContent(null)} />
+                  )}
+                </div>
+              </div>
+            )}
             <WpButton
               type="submit"
               fullWidth
+              disabled={!termsAccepted || !privacyAccepted}
               isLoading={signUp.isLoading}
               loadingText="Creating account..."
             >
@@ -302,23 +311,6 @@ export const SignUp = () => {
               Sign in
             </Link>
           </div>
-
-          {sidebarContent && (
-            <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
-              <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
-                <WpButton
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="sidebarCloseBtn"
-                  onClick={() => setSidebarContent(null)}
-                >
-                  <CloseIconSvg />
-                </WpButton>
-                {sidebarContent === 'terms' ? <TermsConditions /> : <PrivacyPolicy />}
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

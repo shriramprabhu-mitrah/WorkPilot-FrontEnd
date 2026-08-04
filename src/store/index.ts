@@ -5,11 +5,12 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import userReducer from './slices/users';
 import organizationReducer from './slices/organization';
 import projectReducer from './slices/project';
-
+import agreementReducer from './slices/agreement';
 const rootReducer = combineReducers({
   user: userReducer,
   organization: organizationReducer,
   project: projectReducer,
+  agreement: agreementReducer,
 });
 
 const persitConfig = {
