@@ -72,7 +72,14 @@ export const TaskTable = ({
       selectedFilters.sprint === 'All Sprints' || task.sprint === selectedFilters.sprint;
     const matchesProject =
       selectedFilters.project === 'All Projects' || task.project === selectedFilters.project;
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesSprint && matchesProject;
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesAssignee &&
+      matchesSprint &&
+      matchesProject
+    );
   });
 
   const toKanbanTask = (task: Task): KanbanTask => ({
@@ -109,7 +116,6 @@ export const TaskTable = ({
     <div className="w-full overflow-hidden rounded-xl border border-gray-200">
       {filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-
           <Image
             src="/images/Empty-rafiki.svg"
             alt="No Tasks"
@@ -118,14 +124,11 @@ export const TaskTable = ({
             className="h-72 w-72"
           />
 
-          <h2 className="mt-6 text-2xl font-bold text-gray-900">
-            No Tasks Yet
-          </h2>
+          <h2 className="mt-6 text-2xl font-bold text-gray-900">No Tasks Yet</h2>
 
           <p className="mt-2 max-w-md text-center text-gray-500">
             Create your first task and track progress.
           </p>
-
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -136,7 +139,7 @@ export const TaskTable = ({
                   <TableCheckbox
                     checked={
                       filteredTasks.length > 0 &&
-                      filteredTasks.every(task => selectedRows.includes(task.id))
+                      filteredTasks.every((task) => selectedRows.includes(task.id))
                     }
                     onChange={handleSelectAll}
                   />
@@ -230,7 +233,6 @@ export const TaskTable = ({
 
       {filteredTasks.length > 0 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-200 px-4 py-4">
-
           <p className="text-sm text-gray-500">
             Showing {startIndex + 1}-{Math.min(endIndex, filteredTasks.length)} of{' '}
             {filteredTasks.length} tasks

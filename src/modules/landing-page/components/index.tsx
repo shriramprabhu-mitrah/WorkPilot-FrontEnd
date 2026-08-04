@@ -576,7 +576,7 @@ export const LandingPage = () => {
             >
               <CloseIconSvg />
             </WpButton>
-            <PrivacyPolicy />
+            <PrivacyPolicy showActions={false} />
           </div>
         </div>
       )}
