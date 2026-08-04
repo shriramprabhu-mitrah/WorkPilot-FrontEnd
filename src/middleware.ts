@@ -11,12 +11,14 @@ export function middleware(req: NextRequest) {
   const isPublicRoute =
     pathname === '/' || pathname.startsWith('/signin') || pathname.startsWith('/signup');
 
-  // Not authenticated
-  if (!token && !isPublicRoute) {
+  const isSetupRoute = pathname.startsWith('/setup');
+
+  // User is not authenticated
+  if (!token && !isPublicRoute && !isSetupRoute) {
     return NextResponse.redirect(new URL(DEFAULT_PUBLIC, req.url));
   }
 
-  // Already authenticated
+  // Authenticated users should not access auth pages
   if (token && isPublicRoute) {
     return NextResponse.redirect(new URL(DEFAULT_PRIVATE, req.url));
   }
