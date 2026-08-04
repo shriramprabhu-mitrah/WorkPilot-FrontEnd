@@ -35,7 +35,13 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b p-5">
           <h2 className="text-xl font-bold">Edit Sprint</h2>
-          <WpButton variant="ghost" size="sm" onClick={onClose} className="p-2" leftIcon={<X size={18} />} />
+          <WpButton
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="p-2"
+            leftIcon={<X size={18} />}
+          />
         </div>
         <div className="space-y-4 p-5">
           <WpInput
@@ -68,7 +74,9 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t p-5">
-          <WpButton variant="ghost" size="sm" onClick={onClose}>Cancel</WpButton>
+          <WpButton variant="ghost" size="sm" onClick={onClose}>
+            Cancel
+          </WpButton>
           <WpButton variant="primary" size="md" onClick={handleSubmit} disabled={isUpdatingSprint}>
             {isUpdatingSprint ? 'Saving...' : 'Save Changes'}
           </WpButton>

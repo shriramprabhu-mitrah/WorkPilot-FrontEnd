@@ -9,7 +9,10 @@ class SprintService {
     return apiService.get<SprintDetail[]>(url);
   }
 
-  async createSprint(projectId: string, payload: SprintPayload): Promise<ApiResponse<SprintDetail[]>> {
+  async createSprint(
+    projectId: string,
+    payload: SprintPayload
+  ): Promise<ApiResponse<SprintDetail[]>> {
     const url = ApiEndpoints.Sprint.createSprint.withParams({ projectId });
     return apiService.post<SprintDetail[]>(url, payload, {
       showSuccessToast: true,
