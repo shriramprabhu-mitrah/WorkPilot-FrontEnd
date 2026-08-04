@@ -2,53 +2,64 @@
 
 import { useState } from 'react';
 import { Minus, Plus, X, ChevronUp, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Sprint } from '../types/project';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
-import { WpDropdown } from '@/src/app/components/common/dropdown';
-import { statusOptionss } from '../data/project';
-interface AddSprintModalProps {
-  onClose: () => void;
-  onCreate: (sprints: Sprint[]) => void;
+import { useCreateSprint } from '../hooks/useSprint';
+import { SprintPayload } from '@/src/types/project';
+
+interface SprintForm {
+  name: string;
+  goal: string;
+  start_date: string;
+  end_date: string;
 }
-const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
+
+interface AddSprintModalProps {
+  projectId: string;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [sprintCount, setSprintCount] = useState(1);
-  const [sprintForms, setSprintForms] = useState<Sprint[]>([]);
+  const [sprintForms, setSprintForms] = useState<SprintForm[]>([]);
   const [openSprint, setOpenSprint] = useState(0);
+
+  const { createSprint, isCreatingSprint } = useCreateSprint(projectId);
+
   const handleNext = () => {
-    const newSprintForms: Sprint[] = Array.from({ length: sprintCount }, (_, index) => ({
-      id: `${Date.now()}-${index}`,
+    const newSprintForms: SprintForm[] = Array.from({ length: sprintCount }, (_, index) => ({
       name: `Sprint ${index + 1}`,
-      startDate: '',
-      endDate: '',
-      status: 'Planned',
-      tasks: 0,
+      goal: '',
+      start_date: '',
+      end_date: '',
     }));
     setSprintForms(newSprintForms);
     setOpenSprint(0);
     setStep(2);
   };
 
-  const updateSprint = (index: number, field: keyof Sprint, value: string) => {
+  const updateSprint = (index: number, field: keyof SprintForm, value: string) => {
     setSprintForms((prev) =>
-      prev.map((sprint, i) =>
-        i === index
-          ? {
-              ...sprint,
-              [field]: value,
-            }
-          : sprint
-      )
+      prev.map((sprint, i) => (i === index ? { ...sprint, [field]: value } : sprint))
     );
   };
 
-  const handleCreateSprints = () => {
-    onCreate(sprintForms);
-    setSprintForms([]);
-    setSprintCount(1);
-    setOpenSprint(0);
-    setStep(1);
+  const handleCreateSprints = async () => {
+    try {
+      const payload: SprintPayload = {
+        sprints: sprintForms.map((form) => ({
+          name: form.name,
+          goal: form.goal || undefined,
+          start_date: form.start_date,
+          end_date: form.end_date,
+        })),
+      };
+      await createSprint(payload);
+      onSuccess?.();
+      onClose();
+    } catch {}
   };
 
   return (
@@ -89,11 +100,9 @@ const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
                 />
               </div>
               <p className="mt-4 text-xs text-gray-400">
-                {sprintCount} sprint
-                {sprintCount > 1 ? 's' : ''} will be created.
+                {sprintCount} sprint{sprintCount > 1 ? 's' : ''} will be created.
               </p>
             </div>
-
             <div className="flex justify-between border-t p-5">
               <WpButton variant="ghost" size="sm" onClick={onClose}>
                 Cancel
@@ -127,10 +136,7 @@ const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
                 {sprintForms.map((sprint, index) => {
                   const isOpen = openSprint === index;
                   return (
-                    <div
-                      key={sprint.id}
-                      className="overflow-hidden rounded-xl border border-gray-200"
-                    >
+                    <div key={index} className="overflow-hidden rounded-xl border border-gray-200">
                       <WpButton
                         variant="ghost"
                         size="md"
@@ -144,38 +150,37 @@ const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
                             {index + 1}
                           </span>
                           <span className="text-sm font-medium">{sprint.name}</span>
-                          <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">
-                            {sprint.status}
-                          </span>
                         </div>
                       </WpButton>
                       {isOpen && (
-                        <div className="p-4">
+                        <div className="p-4 space-y-3">
                           <WpInput
-                            id={`sprint-name-${sprint.id}`}
+                            id={`sprint-name-${index}`}
                             label="Sprint name"
                             value={sprint.name}
                             onChange={(e) => updateSprint(index, 'name', e.target.value)}
                           />
-                          <div className="mt-4 grid grid-cols-2 gap-3">
-                            <div>
-                              <WpInput
-                                id={`start-date-${sprint.id}`}
-                                type="date"
-                                label="Start date"
-                                value={sprint.startDate}
-                                onChange={(e) => updateSprint(index, 'startDate', e.target.value)}
-                              />
-                            </div>
-                            <div>
-                              <WpInput
-                                id={`end-date-${sprint.id}`}
-                                type="date"
-                                label="Due date"
-                                value={sprint.endDate}
-                                onChange={(e) => updateSprint(index, 'endDate', e.target.value)}
-                              />
-                            </div>
+                          <WpInput
+                            id={`sprint-goal-${index}`}
+                            label="Goal"
+                            value={sprint.goal}
+                            onChange={(e) => updateSprint(index, 'goal', e.target.value)}
+                          />
+                          <div className="grid grid-cols-2 gap-3">
+                            <WpInput
+                              id={`start-date-${index}`}
+                              type="date"
+                              label="Start date"
+                              value={sprint.start_date}
+                              onChange={(e) => updateSprint(index, 'start_date', e.target.value)}
+                            />
+                            <WpInput
+                              id={`end-date-${index}`}
+                              type="date"
+                              label="Due date"
+                              value={sprint.end_date}
+                              onChange={(e) => updateSprint(index, 'end_date', e.target.value)}
+                            />
                           </div>
                         </div>
                       )}
@@ -192,8 +197,13 @@ const AddSprintModal = ({ onClose, onCreate }: AddSprintModalProps) => {
                 >
                   Back
                 </WpButton>
-                <WpButton variant="primary" size="md" onClick={handleCreateSprints}>
-                  Create Sprints
+                <WpButton
+                  variant="primary"
+                  size="md"
+                  onClick={handleCreateSprints}
+                  disabled={isCreatingSprint}
+                >
+                  {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
                 </WpButton>
               </div>
             </>

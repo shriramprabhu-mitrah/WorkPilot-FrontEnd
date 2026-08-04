@@ -5,16 +5,19 @@ import ProjectDetail from '../components/projectDetail';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 import { Project } from '../types/project';
+import ProjectSkeleton from '../components/projectDetailSkeleton';
 
 const ProjectSprintTemplate = () => {
   const router = useRouter();
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
 
+  const isLoading = useAppSelector((state) => state.project.isLoading);
+
   const selectedProject = useMemo((): (Project & { id?: string }) | null => {
     if (!selectedApiProject) return null;
 
     return {
-      id: selectedApiProject.id, // Pass the project ID
+      id: selectedApiProject.id,
       name: selectedApiProject.name,
       description: selectedApiProject.description || 'No description added.',
       initials: selectedApiProject?.name
@@ -24,7 +27,7 @@ const ProjectSprintTemplate = () => {
         .join('')
         .slice(0, 2)
         .toUpperCase(),
-      code: selectedApiProject.key,
+      code: String(selectedApiProject.key),
       status:
         selectedApiProject.status === 'active'
           ? 'Active'
@@ -34,7 +37,11 @@ const ProjectSprintTemplate = () => {
               ? 'Completed'
               : selectedApiProject.status === 'archived'
                 ? 'Archived'
-                : 'Active',
+                : selectedApiProject.status === 'cancelled'
+                  ? 'Cancelled'
+                  : selectedApiProject.status === 'planning'
+                    ? 'Planning'
+                    : 'Active',
       progress: 0,
       members: [],
       tasks: '0',
@@ -54,6 +61,10 @@ const ProjectSprintTemplate = () => {
       router.push('/projects');
     }
   }, [selectedApiProject, router]);
+
+  if (isLoading) {
+    return <ProjectSkeleton />;
+  }
 
   if (!selectedProject) {
     return (

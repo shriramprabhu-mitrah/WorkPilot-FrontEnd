@@ -8,9 +8,11 @@ import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
 import { useRouter } from 'next/navigation';
 import { useCreateProject, useGetProjects } from '../../hooks/useProject';
+import { useQueryClient } from '@tanstack/react-query';
+import { projectService } from '@/src/services/project';
 import { CreateProjectPayload, Project as ApiProject } from '@/src/types/project';
 import { useAppDispatch } from '@/src/store';
-import { setSelectedProject } from '@/src/store/slices/project';
+import { setSelectedProject, setProjectLoading } from '@/src/store/slices/project';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import ProjectSkeleton from '../projectSkeleton';
 
@@ -27,7 +29,7 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
       .join('')
       .slice(0, 2)
       .toUpperCase(),
-    code: apiProject.key,
+    code: String(apiProject.key),
     status:
       apiProject.status === 'active'
         ? 'Active'
@@ -39,7 +41,9 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
               ? 'Archived'
               : apiProject.status === 'planning'
                 ? 'Planning'
-                : 'Active',
+                : apiProject.status === 'cancelled'
+                  ? 'Cancelled'
+                  : 'Active',
     progress: 0,
     members: [],
     tasks: '0',
@@ -73,6 +77,7 @@ const ProjectPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { createProjectAsync, isCreatingProject } = useCreateProject();
+  const queryClient = useQueryClient();
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const {
@@ -121,27 +126,48 @@ const ProjectPage = () => {
     } catch (error) {}
   };
 
-  const handleProjectClick = (project: Project, apiProject: ApiProject) => {
-    dispatch(
-      setSelectedProject({
-        id: apiProject.id,
-        organization_id: apiProject.organization_id || '',
-        name: apiProject.name,
-        description: apiProject.description,
-        status: apiProject.status || 'active',
-        created_at: apiProject.created_at || '',
-        key: apiProject.key,
-        start_date: apiProject.start_date,
-        end_date: apiProject.end_date,
-        owner_id: apiProject.owner_id,
-        owner: String(apiProject.creator) || 'Unassigned',
-        created_by: '',
-        members: [],
-        sprints: [],
-      })
-    );
-
+  const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
+    if (!apiProject.id) return;
+    dispatch(setProjectLoading(true));
     router.push('/projects/sprints');
+    try {
+      const res = await queryClient.fetchQuery({
+        queryKey: ['projectDetail', apiProject.id],
+        queryFn: () => projectService.getProjectDetail(String(apiProject?.id)),
+      });
+      const detail = res.data;
+      if (!detail) throw new Error('No detail');
+      const { creator, ...detailRest } = detail;
+      dispatch(
+        setSelectedProject({
+          ...detailRest,
+          key: detailRest.key ?? apiProject.key,
+          owner: creator ?? 'Unassigned',
+          start_date: apiProject.start_date,
+        })
+      );
+    } catch {
+      dispatch(
+        setSelectedProject({
+          id: apiProject.id,
+          organization_id: apiProject.organization_id || '',
+          name: apiProject.name,
+          description: apiProject.description,
+          status: apiProject.status || 'active',
+          created_at: apiProject.created_at || '',
+          key: apiProject.key,
+          start_date: apiProject.start_date,
+          end_date: apiProject.end_date,
+          owner_id: apiProject.owner_id,
+          owner: String(apiProject.creator) || 'Unassigned',
+          created_by: '',
+          members: [],
+          sprints: [],
+        })
+      );
+    } finally {
+      dispatch(setProjectLoading(false));
+    }
   };
   if (isLoadingProjects) {
     return (

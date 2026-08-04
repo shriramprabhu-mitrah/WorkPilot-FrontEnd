@@ -9,10 +9,14 @@ import { WpDropdown, WpDropdownOption } from '@/src/app/components/common/dropdo
 import { useUpdateProject } from '../hooks/useProject';
 import { Project } from '../types/project';
 import { UpdateProjectPayload, ProjectStatus } from '@/src/types/project';
+import { projectService } from '@/src/services/project';
+import { setSelectedProject } from '@/src/store/slices/project';
+import { useAppDispatch } from '@/src/store';
 
 interface EditProjectModalProps {
   project: Project & { id?: string };
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const statusOptions: WpDropdownOption[] = [
@@ -20,18 +24,22 @@ const statusOptions: WpDropdownOption[] = [
   { label: 'On Hold', value: 'on_hold' },
   { label: 'Completed', value: 'completed' },
   { label: 'Archived', value: 'archived' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Planning', value: 'planning' },
 ];
 
-const EditProjectModal = ({ project, onClose }: EditProjectModalProps) => {
+const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps) => {
   // Normalize status to lowercase for API compatibility
   const normalizeStatus = (status: string | undefined): ProjectStatus => {
     if (!status) return 'active';
     const normalized = status.toLowerCase().replace(/\s+/g, '_') as ProjectStatus;
-    return ['active', 'on_hold', 'completed', 'archived'].includes(normalized)
+    return ['active', 'on_hold', 'completed', 'archived', 'cancelled', 'planning'].includes(
+      normalized
+    )
       ? normalized
       : 'active';
   };
-
+  const dispatch = useAppDispatch();
   const [formData, setFormData] = useState<UpdateProjectPayload>({
     name: project.name || '',
     description: project.description || '',
@@ -56,8 +64,17 @@ const EditProjectModal = ({ project, onClose }: EditProjectModalProps) => {
         projectId: project.id,
         payload: formData,
       });
-
       onClose();
+      const res = await projectService.getProjectDetail(project.id);
+      if (res?.data) {
+        const { creator, ...rest } = res.data;
+        dispatch(
+          setSelectedProject({
+            ...rest,
+            owner: creator ?? rest.owner ?? 'Unassigned',
+          })
+        );
+      }
     } catch (error) {
       // Error is already handled by the mutation
     }

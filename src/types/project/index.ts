@@ -4,9 +4,9 @@ export type ProjectStatus = 'active' | 'on_hold' | 'completed' | 'archived';
 export interface Project {
   id?: string;
   name: string;
-  key: string;
+  key?: string;
   description?: string;
-  start_date: string;
+  start_date?: string;
   end_date?: string;
   status?: ProjectStatus;
   created_at?: string;
@@ -86,6 +86,20 @@ export interface SprintDetail {
   start_date: string;
   end_date: string;
 }
+
+// Sprint API Types
+export interface SprintItem {
+  name: string;
+  goal?: string;
+  start_date: string;
+  end_date: string;
+}
+
+export interface SprintPayload {
+  sprints: SprintItem[];
+}
+
+export type UpdateSprintPayload = Partial<SprintItem>;
 
 // Project Member for Project Detail
 export interface ProjectDetailMember {
