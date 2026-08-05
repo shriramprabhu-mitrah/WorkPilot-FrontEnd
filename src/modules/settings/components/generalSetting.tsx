@@ -15,6 +15,7 @@ import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { INDUSTRY_TYPE } from '@/src/app/components/common/enum';
 import { ImagePlus, Upload } from 'lucide-react';
+import Image from 'next/image';
 
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
@@ -219,16 +220,22 @@ export default function GeneralSettings() {
               {/* Avatar Preview */}
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white">
                 {logo ? (
-                  <img
+                  <Image
                     src={URL.createObjectURL(logo)}
                     alt="Organization Logo"
+                    width={96}
+                    height={96}
                     className="h-full w-full object-cover"
+                    unoptimized
                   />
                 ) : organization?.logo_url ? (
-                  <img
+                  <Image
                     src={organization.logo_url}
                     alt="Organization Logo"
+                    width={96}
+                    height={96}
                     className="h-full w-full object-cover"
+                    unoptimized
                   />
                 ) : (
                   <ImagePlus className="h-8 w-8 text-gray-400" />
@@ -250,15 +257,13 @@ export default function GeneralSettings() {
               </div>
             </div>
           </div>
-
-          <input
+          <WpInput
             ref={fileInputRef}
             type="file"
             accept="image/*"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-
               if (file) {
                 setValue('logo', file, {
                   shouldValidate: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface WpInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -12,7 +12,7 @@ interface WpInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   wrapperClassName?: string;
 }
 
-export const WpInput = ({
+export const WpInput = forwardRef<HTMLInputElement, WpInputProps>(({
   label,
   icon,
   error,
@@ -23,7 +23,7 @@ export const WpInput = ({
   className = '',
   wrapperClassName = '',
   ...props
-}: WpInputProps) => {
+}: WpInputProps,ref) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
@@ -44,6 +44,7 @@ export const WpInput = ({
         )}
         <input
           id={id}
+          ref={ref}
           type={inputType}
           className={[
             'w-full border rounded-lg text-sm outline-none transition-all box-border',
@@ -84,4 +85,7 @@ export const WpInput = ({
       {hint && !error && <p className="mt-1 text-xs text-[var(--color-gray-400)]">{hint}</p>}
     </div>
   );
-};
+}
+);
+WpInput.displayName = 'WpInput';
+

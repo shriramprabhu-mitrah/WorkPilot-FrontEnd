@@ -13,6 +13,7 @@ import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { rolesData } from '@/src/modules/settings/data/rolesJson';
 import ProfileSkeleton from './profileSkeleton';
 import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
+import Image from 'next/image';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
@@ -109,7 +110,7 @@ export default function Profile() {
           {/* Profile Card */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
             <div className="relative mb-4 group">
-              <input
+              <WpInput
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
@@ -117,13 +118,16 @@ export default function Profile() {
                 onChange={handleAvatarChange}
               />
               {avatarPreview || user?.avatar_url ? (
-                <img
-                  src={avatarPreview || user?.avatar_url}
+                <Image
+                  src={avatarPreview || user?.avatar_url || ''}
                   alt="Profile"
-                  className="w-24 h-24 rounded-2xl object-cover shadow-sm"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-2xl object-cover shadow-sm"
+                  unoptimized
                 />
               ) : (
-                <div className="w-24 h-24 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-sm">
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-500 text-3xl font-bold text-white shadow-sm">
                   {getInitials(displayName)}
                 </div>
               )}

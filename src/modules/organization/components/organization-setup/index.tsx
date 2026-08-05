@@ -36,7 +36,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
-  const [teamMembers, setTeamMembers] = useState([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+ const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
 
   const { countries, isCountriesLoading } = useGetCountries();
 
@@ -137,7 +137,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   };
 
   const addTeamMember = () => {
-    setTeamMembers([...teamMembers, { email: '', role: ROLE_TYPE.DEVELOPER }]);
+    setTeamMembers([...teamMembers, { email: '' }]);
   };
 
   useEffect(() => {
@@ -150,11 +150,11 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const updateTeamMember = (index: number, field: string, value: string) => {
-    const updated = [...teamMembers];
-    updated[index] = { ...updated[index], [field]: value };
-    setTeamMembers(updated);
-  };
+ const updateTeamMember = (index: number, value: string) => {
+   const updated = [...teamMembers];
+   updated[index].email = value;
+   setTeamMembers(updated);
+ };
 
   const removeTeamMember = (index: number) => {
     if (teamMembers.length > 1) {
@@ -419,7 +419,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                         type="email"
                         placeholder="teammate@company.com"
                         value={member.email}
-                        onChange={(e) => updateTeamMember(index, 'email', e.target.value)}
+                        onChange={(e) => updateTeamMember(index, e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
