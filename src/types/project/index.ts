@@ -51,7 +51,10 @@ export interface ProjectMember {
 // Add Members Payload
 export interface AddProjectMembersPayload {
   project_id: string;
-  user_id: string[];
+  members: {
+    user_id: string;
+    project_role: string;
+  }[];
 }
 
 // Get Project Query Params

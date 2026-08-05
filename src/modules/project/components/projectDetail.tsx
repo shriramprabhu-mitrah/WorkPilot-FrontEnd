@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, X, Pencil, Trash2 } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
@@ -18,9 +18,11 @@ import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { showToast } from '@/src/utils/toast';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector, useAppDispatch } from '@/src/store';
-import { SprintDetail } from '@/src/types/project';
+import { AddProjectMembersPayload, SprintDetail } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
-import { ROLE_TYPE } from '@/src/app/components/common/enum';
+import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
+import { WpDropdown } from '@/src/app/components/common/dropdown';
+import { projectService } from '@/src/services/project';
 
 interface ProjectDetailProps {
   project: Project & { id?: string };
@@ -36,11 +38,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [memberRoles, setMemberRoles] = useState<Record<string, ROLE_TYPE>>({});
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(
     null
   );
   const { hasPermission, isAdmin, isProjectManager } = usePermissions();
-
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50);
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
@@ -110,9 +112,27 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       return;
     }
     try {
-      await addMembersAsync({ project_id: project.id, user_id: selectedMembers });
+      const payload: AddProjectMembersPayload = {
+        project_id: project.id,
+        members: selectedMembers.map((memberId) => ({
+          user_id: memberId,
+          project_role: memberRoles[memberId],
+        })),
+      };
+      await addMembersAsync(payload);
       setShowAddMemberModal(false);
+      const res = await projectService.getProjectDetail(project.id);
+      if (res.data) {
+        const { creator, ...rest } = res.data;
+        dispatch(
+          setSelectedProject({
+            ...rest,
+            owner: creator ?? rest.owner ?? 'Unassigned',
+          })
+        );
+      }
       setSelectedMembers([]);
+      setMemberRoles({});
     } catch (error) {}
   };
 
@@ -140,9 +160,22 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       return;
     }
     try {
-      await removeMemberAsync({ projectId: project.id, userId: memberToRemove.userId });
-      showToast.success('Member removed successfully');
+      await removeMemberAsync({
+        projectId: project.id,
+        userId: memberToRemove.userId,
+      });
       setMemberToRemove(null);
+      const res = await projectService.getProjectDetail(project.id);
+      if (res.data) {
+        const { creator, ...rest } = res.data;
+        dispatch(
+          setSelectedProject({
+            ...rest,
+            owner: creator ?? rest.owner ?? 'Unassigned',
+          })
+        );
+      }
+      showToast.success('Member removed successfully');
     } catch (error) {}
   };
 
@@ -177,6 +210,34 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     return false;
   };
 
+  const roleOptions = Object.values(ROLE_TYPE)
+    .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)
+    .map((role) => ({
+      value: role,
+      label: ROLE_LABELS[role],
+    }));
+
+  const handleMemberChange = (members: string[]) => {
+    setSelectedMembers(members);
+
+    setMemberRoles((prev) => {
+      const updated = { ...prev };
+
+      members.forEach((id) => {
+        if (!updated[id]) {
+          updated[id] = ROLE_TYPE.DEVELOPER;
+        }
+      });
+
+      Object.keys(updated).forEach((id) => {
+        if (!members.includes(id)) {
+          delete updated[id];
+        }
+      });
+
+      return updated;
+    });
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">
@@ -405,7 +466,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
       {showAddMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+          <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-gray-100 p-5">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Add Members</h2>
@@ -421,16 +482,62 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 <X size={17} />
               </WpButton>
             </div>
-            <div className="p-5">
+
+            <div className="flex-1 overflow-y-auto p-5">
               <WpMultiSelect
                 label="Members"
                 options={memberOptions}
                 value={selectedMembers}
-                onChange={setSelectedMembers}
+                onChange={handleMemberChange}
                 placeholder={isUsersLoading ? 'Loading members...' : 'Select members'}
                 disabled={isUsersLoading}
                 hint="You can select multiple members to add to this project"
               />
+              <div className="mt-5 flex-1">
+                {selectedMembers.length > 0 ? (
+                  <>
+                    <p className="mb-3 text-sm font-medium text-gray-700">Member Roles</p>
+
+                    <div className="space-y-3 pr-2">
+                      {selectedMembers.map((memberId) => {
+                        const member = memberOptions.find((m) => m.value === memberId);
+                        return (
+                          <div
+                            key={memberId}
+                            className="flex items-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                          >
+                            <div className="w-40 text-sm font-medium text-gray-700">
+                              {member?.label}
+                            </div>
+
+                            <div className="flex-1 -mb-5">
+                              <WpDropdown
+                                options={roleOptions}
+                                value={memberRoles[memberId]}
+                                onChange={(value) =>
+                                  setMemberRoles((prev) => ({
+                                    ...prev,
+                                    [memberId]: value as ROLE_TYPE,
+                                  }))
+                                }
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex h-full min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50">
+                    <div className="text-center">
+                      <p className="text-base font-medium text-gray-700">No members selected</p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Select members above to assign project roles.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-100 p-5">
               <WpButton
