@@ -32,9 +32,7 @@ export const TaskTemplate = () => {
     return <TaskSkeleton />;
   }
   const handleBulkDelete = () => {
-    setTasks((prev) =>
-      prev.filter((task) => !selectedRows.includes(task.id))
-    );
+    setTasks((prev) => prev.filter((task) => !selectedRows.includes(task.id)));
 
     setSelectedRows([]);
     setShowBulkDeleteModal(false);
@@ -66,9 +64,7 @@ export const TaskTemplate = () => {
       {showBulkDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Delete Tasks
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Delete Tasks</h2>
 
             <p className="mt-2 text-sm text-gray-500">
               Are you sure you want to delete {selectedRows.length} selected
@@ -76,17 +72,11 @@ export const TaskTemplate = () => {
             </p>
 
             <div className="mt-6 flex justify-end gap-3">
-              <WpButton
-                variant="secondary"
-                onClick={() => setShowBulkDeleteModal(false)}
-              >
+              <WpButton variant="secondary" onClick={() => setShowBulkDeleteModal(false)}>
                 Cancel
               </WpButton>
 
-              <WpButton
-                variant="danger"
-                onClick={handleBulkDelete}
-              >
+              <WpButton variant="danger" onClick={handleBulkDelete}>
                 Delete
               </WpButton>
             </div>

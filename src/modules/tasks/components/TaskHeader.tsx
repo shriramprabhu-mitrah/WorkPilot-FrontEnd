@@ -62,7 +62,6 @@ export const TaskHeader = ({
             Delete {selectedRows.length > 0 && `(${selectedRows.length})`}
           </WpButton>
 
-
           <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>
             Export
           </WpButton>
@@ -98,7 +97,6 @@ export const TaskHeader = ({
           More Filters
         </WpButton>
       </div>
-
     </div>
   );
 };
