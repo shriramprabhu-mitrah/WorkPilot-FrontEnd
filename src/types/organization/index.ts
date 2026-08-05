@@ -37,7 +37,7 @@ export interface InviteUsersPayload {
 
 export interface Members {
   email: string;
-  role: string;
+  role?: string;
 }
 
 export interface Country {

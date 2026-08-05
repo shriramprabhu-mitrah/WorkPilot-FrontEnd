@@ -175,7 +175,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           })
         );
       }
-      showToast.success('Member removed successfully');
     } catch (error) {}
   };
 
