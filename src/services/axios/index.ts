@@ -38,6 +38,7 @@ export interface ApiRequestOptions {
   successMessage?: string;
   showErrorToast?: boolean;
   errorMessage?: string;
+  headers?: Record<string, string>;
 }
 
 // Centralized error handling function
@@ -149,7 +150,9 @@ class AxiosApiService {
     options?: ApiRequestOptions
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.post(endpoint, payload);
+      const response = await axiosInstance.post(endpoint, payload, {
+        headers: options?.headers,
+      });
       return processResponse<T>(response, options);
     } catch (error) {
       return handleApiError(error, 'POST', options);

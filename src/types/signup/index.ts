@@ -3,7 +3,7 @@ export interface SignupPayload {
   username: string;
   email: string;
   password: string;
-  avatar_url?: string;
+  avatar?: File;
   timezone?: string;
   confirmPwd?: string;
 }

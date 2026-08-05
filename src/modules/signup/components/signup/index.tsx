@@ -54,6 +54,7 @@ export const SignUp = () => {
   const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
   const { handleSignUpAsync, signUp } = useSignup();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
 
   const {
@@ -136,11 +137,11 @@ export const SignUp = () => {
         email: data.email,
         password: data.password,
         timezone,
+        avatar,
       });
       dispatch(setTermsAccepted(false));
       dispatch(setPrivacyAccepted(false));
       setIsSuccess(true);
-      // router.push('/setup')
     } catch {
       // Error handled by React Query and toast
     }

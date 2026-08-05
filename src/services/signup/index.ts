@@ -12,9 +12,17 @@ import {
 class SignupService {
   async signUp(payload: SignupPayload): Promise<ApiResponse<SignupResponse>> {
     const url = ApiEndpoints.Sign.signUp.url;
-    return apiService.post<SignupResponse>(url, payload, {
+    const formData = new FormData();
+    formData.append('email', payload.email);
+    formData.append('password', payload.password);
+    formData.append('full_name', payload.full_name);
+    formData.append('username', payload.username);
+    formData.append('timezone', payload.timezone ?? '');
+    if (payload.avatar) formData.append('avatar', payload.avatar);
+    return apiService.post<SignupResponse>(url, formData, {
       showSuccessToast: true,
       showErrorToast: true,
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   }
 
