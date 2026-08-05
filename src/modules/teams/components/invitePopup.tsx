@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { X, Mail, Plus } from 'lucide-react';
-import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { useInviteUsers } from '../../organization/hooks/useOrganization';
 
 interface Member {
   email: string;
-  role: ROLE_TYPE;
 }
 
 interface InviteTeamModalProps {
@@ -15,18 +13,11 @@ interface InviteTeamModalProps {
   onClose: () => void;
 }
 
-const ROLES: ROLE_TYPE[] = [
-  ROLE_TYPE.DEVELOPER,
-  ROLE_TYPE.PROJECT_MANAGER,
-  ROLE_TYPE.VIEWER,
-  ROLE_TYPE.GUEST,
-];
-
 export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
-  const [members, setMembers] = useState<Member[]>([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+  const [members, setMembers] = useState<Member[]>([{ email: '' }]);
   const { inviteOrgUsers, isInvitingUsers } = useInviteUsers();
   const addMember = () => {
-    setMembers([...members, { email: '', role: ROLE_TYPE.DEVELOPER }]);
+    setMembers([...members, { email: '' }]);
   };
 
   const removeMember = (index: number) => {
@@ -47,7 +38,7 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
 
   const handleCancel = () => {
     onClose();
-    setMembers([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+    setMembers([{ email: '' }]);
   };
 
   if (!open) return null;
@@ -87,32 +78,18 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
                 )}
               </div>
 
-              <div className="flex gap-2.5">
-                <div className="relative flex-1">
-                  <Mail
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                  />
-                  <input
-                    type="email"
-                    placeholder="email@company.com"
-                    value={member.email}
-                    onChange={(e) => updateMember(index, 'email', e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-
-                <select
-                  value={member.role}
-                  onChange={(e) => updateMember(index, 'role', e.target.value as ROLE_TYPE)}
-                  className="min-w-[130px] px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white outline-none cursor-pointer focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {ROLE_LABELS[r]}
-                    </option>
-                  ))}
-                </select>
+              <div className="relative">
+                <Mail
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
+                <input
+                  type="email"
+                  placeholder="email@company.com"
+                  value={member.email}
+                  onChange={(e) => updateMember(index, 'email', e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
               </div>
             </div>
           ))}
