@@ -24,6 +24,8 @@ import { setTermsAccepted, setPrivacyAccepted } from '@/src/store/slices/agreeme
 import { TermsConditions } from '@/src/app/components/common/terms-coditions';
 import { PrivacyPolicy } from '@/src/app/components/common/privacy';
 import { WpInput } from '@/src/app/components/common/input';
+import { ArrowRight, CheckCircle2, Circle, ShieldCheck } from 'lucide-react';
+import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
 const signupSchema = z
   .object({
     full_name: z.string().trim().min(1, 'Full name is required'),
@@ -54,6 +56,7 @@ export const SignUp = () => {
   const [sidebarContent, setSidebarContent] = useState<'terms' | 'privacy' | null>(null);
   const { handleSignUpAsync, signUp } = useSignup();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
 
@@ -71,6 +74,7 @@ export const SignUp = () => {
   const firstErrorField = Object.keys(errors)[0];
   const email = watch('email');
   const username = watch('username');
+  const password = watch('password');
 
   // Debounced Username Validation
   useEffect(() => {
@@ -228,19 +232,21 @@ export const SignUp = () => {
               showRequired
             />
             {firstErrorField === 'email' && <ErrorMessage message={errors.email?.message} />}
-
-            <WpInput
-              id="password"
-              type="password"
-              label="Password"
-              placeholder="8+ characters"
-              icon={<LockIconSvg />}
-              {...register('password')}
-              className={firstErrorField === 'password' ? inputErrorClass : ''}
-              showRequired
-            />
+            <div className="relative mb-2">
+              <WpInput
+                id="password"
+                type="password"
+                label="Password"
+                placeholder="8+ characters"
+                icon={<LockIconSvg />}
+                {...register('password')}
+                onFocus={() => setShowPasswordStrength(true)}
+                className={firstErrorField === 'password' ? inputErrorClass : ''}
+                showRequired
+              />
+              <PasswordStrength password={password} show={showPasswordStrength} />
+            </div>
             {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
-
             <WpInput
               id="confirmPwd"
               type="password"
@@ -248,6 +254,7 @@ export const SignUp = () => {
               placeholder="Re-enter your password"
               icon={<LockIconSvg />}
               {...register('confirmPwd')}
+              onFocus={() => setShowPasswordStrength(false)}
               className={firstErrorField === 'confirmPwd' ? inputErrorClass : ''}
               showRequired
             />

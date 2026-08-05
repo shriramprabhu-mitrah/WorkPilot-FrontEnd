@@ -1,7 +1,7 @@
 export interface OrganizationPaylaod {
   name?: string;
   domain?: string;
-  logo_url?: string;
+  logo?: File;
   industry?: string;
   team_size?: string;
   country_id?: string;
@@ -25,7 +25,7 @@ export interface OrganizationResponse {
 export interface OrganizationUpdatePaylaod {
   name?: string;
   domain?: string;
-  logo_url?: string;
+  logo?: File;
   industry?: string;
   team_size?: string;
   country_id?: string;

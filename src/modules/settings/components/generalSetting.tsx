@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import { WpDropdown, WpDropdownOption } from '@/src/app/components/common/dropdo
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { INDUSTRY_TYPE } from '@/src/app/components/common/enum';
+import { ImagePlus, Upload } from 'lucide-react';
 
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
@@ -28,11 +29,7 @@ const organizationSchema = z.object({
   industry: z.string().optional().or(z.literal('')),
   team_size: z.string().optional().or(z.literal('')),
   country: z.string().optional().or(z.literal('')),
-  logo_url: z
-    .string()
-    .optional()
-    .or(z.literal(''))
-    .refine((val) => !val || z.string().url().safeParse(val).success, 'Enter a valid URL'),
+  logo: z.instanceof(File).optional(),
 });
 
 type OrganizationFormData = z.infer<typeof organizationSchema>;
@@ -84,11 +81,11 @@ export default function GeneralSettings() {
       industry: '',
       team_size: '',
       country: '',
-      logo_url: '',
     },
   });
 
-  const logoUrl = watch('logo_url');
+  const logo = watch('logo');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (organization) {
@@ -100,7 +97,7 @@ export default function GeneralSettings() {
         'country',
         countryOptions.find((a) => a.label === organization.country)?.value || ''
       );
-      setValue('logo_url', organization?.logo_url ?? '');
+      // setValue('logo_url', organization?.logo_url ?? '');
     }
   }, [organization, reset]);
 
@@ -109,7 +106,7 @@ export default function GeneralSettings() {
       await updateOrg({
         name: data.name,
         domain: data.domain,
-        logo_url: data.logo_url,
+        logo: data.logo,
         industry: data.industry,
         team_size: data.team_size,
         country_id: data.country,
@@ -202,27 +199,74 @@ export default function GeneralSettings() {
           )}
         />
 
-        <WpInput
-          id="logo_url"
-          type="url"
-          label="Organization Logo URL"
-          placeholder="https://example.com/logo.png"
-          error={errors.logo_url?.message}
-          {...register('logo_url')}
-        />
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-bold text-gray-700">Organization Logo</label>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const file = e.dataTransfer.files?.[0];
+              if (file) {
+                setValue('logo', file, {
+                  shouldValidate: true,
+                });
+              }
+            }}
+            className="cursor-pointer rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 transition hover:border-blue-500 hover:bg-blue-50"
+          >
+            <div className="flex items-center gap-5">
+              {/* Avatar Preview */}
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white">
+                {logo ? (
+                  <img
+                    src={URL.createObjectURL(logo)}
+                    alt="Organization Logo"
+                    className="h-full w-full object-cover"
+                  />
+                ) : organization?.logo_url ? (
+                  <img
+                    src={organization.logo_url}
+                    alt="Organization Logo"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImagePlus className="h-8 w-8 text-gray-400" />
+                )}
+              </div>
 
-        {logoUrl && (
-          <div className="mb-5 flex items-center gap-4">
-            <img
-              src={logoUrl}
-              alt="Organization Logo Preview"
-              className="h-16 w-16 rounded-lg border border-[var(--color-gray-200)] object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
+              {/* Upload Content */}
+              <div className="flex-1">
+                <h3 className="font-semibold text-xs text-gray-900">Change Logo</h3>
+
+                <p className="mt-1 text-xs text-gray-500">PNG, JPG or JPEG • Max 5 MB</p>
+
+                <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white">
+                  <Upload size={18} />
+                  Choose File
+                </div>
+
+                <p className="mt-3 text-xs text-gray-400">or drag & drop your image here</p>
+              </div>
+            </div>
           </div>
-        )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+
+              if (file) {
+                setValue('logo', file, {
+                  shouldValidate: true,
+                });
+              }
+            }}
+          />
+        </div>
 
         <div className="border-t border-[var(--color-gray-200)] pt-5">
           <div className="flex justify-end">
