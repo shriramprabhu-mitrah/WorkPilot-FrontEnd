@@ -29,7 +29,7 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
       .join('')
       .slice(0, 2)
       .toUpperCase(),
-    code: String(apiProject.key),
+    code: String(apiProject.key ?? ''),
     status:
       apiProject.status === 'active'
         ? 'Active'
