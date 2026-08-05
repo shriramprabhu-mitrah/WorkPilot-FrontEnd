@@ -49,10 +49,10 @@ const SprintDetail = () => {
   const formatDate = (dateStr: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '-';
   const handleCreateTask = (newTask: Task) => {
     setTasks((prev) => [...prev, newTask]);
@@ -162,40 +162,48 @@ const SprintDetail = () => {
         </WpButton>
       </div>
       {tasks.length === 0 ? (
-        <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
+        <div className="rounded-2xl border border-gray-200 bg-white py-16">
+          <div className="flex flex-col items-center justify-center">
+            <img
+              src="/images/Empty-rafiki.svg"
+              alt="No Tasks"
+              className="h-72 w-72"
+            />
+
+            <p className="text-sm font-medium text-gray-400">
               No tasks have been created for this sprint.
             </p>
             <p className="mt-1 text-xs text-gray-400">
               Add your first task to start tracking work.
             </p>
+
           </div>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">{task.name}</h3>
+      )
+        : (
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900">{task.name}</h3>
 
-                  {task.description && (
-                    <p className="mt-1 text-xs text-gray-500">{task.description}</p>
-                  )}
+                    {task.description && (
+                      <p className="mt-1 text-xs text-gray-500">{task.description}</p>
+                    )}
 
-                  {task.assignee && (
-                    <p className="mt-2 text-xs text-gray-400">Assigned to: {task.assignee}</p>
-                  )}
+                    {task.assignee && (
+                      <p className="mt-2 text-xs text-gray-400">Assigned to: {task.assignee}</p>
+                    )}
+                  </div>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+                    {task.status}
+                  </span>
                 </div>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                  {task.status}
-                </span>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
       {showAddTaskModal && (
         <AddTaskModal onClose={() => setShowAddTaskModal(false)} onCreate={handleCreateTask} />
       )}
