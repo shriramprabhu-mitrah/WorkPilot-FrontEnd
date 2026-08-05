@@ -22,14 +22,15 @@ export interface GetUsersParams {
 }
 
 class OrganizationService {
-  async createOrganization(
-    payload: OrganizationPaylaod
-  ): Promise<ApiResponse<OrganizationResponse>> {
+  async createOrganization(payload: FormData): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.createOrganization.url;
 
     return apiService.post<OrganizationResponse>(url, payload, {
       showSuccessToast: true,
       showErrorToast: true,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
   }
 
@@ -54,10 +55,19 @@ class OrganizationService {
     payload: OrganizationUpdatePaylaod
   ): Promise<ApiResponse<OrganizationResponse>> {
     const url = ApiEndpoints.Organization.updateOrganization.url;
-
+    const formData = new FormData();
+    if (payload.name) formData.append('name', payload.name);
+    if (payload.domain) formData.append('domain', payload.domain);
+    if (payload.industry) formData.append('industry', payload.industry);
+    if (payload.team_size) formData.append('team_size', payload.team_size);
+    if (payload.country_id) formData.append('country_id', payload.country_id);
+    if (payload.logo) formData.append('logo', payload.logo);
     return apiService.patch<OrganizationResponse>(url, payload, {
       showSuccessToast: true,
       showErrorToast: true,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
   }
 

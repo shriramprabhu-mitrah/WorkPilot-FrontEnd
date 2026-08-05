@@ -1,61 +1,36 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../../hooks/useUser';
 import StatCard from '@/src/app/components/common/statcard/statcard';
-import { Briefcase, CheckCircle2, Ban, Mail } from 'lucide-react';
+import { Briefcase, CheckCircle2, Ban, Pencil, X, Check } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
 import { formatMonthYear } from '@/src/app/components/common/format';
-import { UserUpdatePayload } from '@/src/types/user';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { rolesData } from '@/src/modules/settings/data/rolesJson';
 import ProfileSkeleton from './profileSkeleton';
+import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
+import Image from 'next/image';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
-  const [isEditing, setIsEditing] = useState(false);
   const [isChangingPwd, setIsChangingPwd] = useState(false);
-  const [formData, setFormData] = useState<UserUpdatePayload>({
-    full_name: '',
-    department: '',
-    location: '',
-    timezone: '',
-  });
+  const [showPasswordStrength, setShowPasswordStrength] = useState(false);
+
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
   });
   const [pwdError, setPwdError] = useState<string | null>(null);
   const [pwdSuccess, setPwdSuccess] = useState(false);
-
-  const handleEditToggle = () => {
-    if (!isEditing && user) {
-      setFormData({
-        full_name: user.name || user.full_name || '',
-        department: user.department || '',
-        location: user.location || '',
-        timezone: user.timezone || 'UTC-8 (PST)',
-      });
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateUser(formData);
-      setIsEditing(false);
-    } catch (err) {
-      // Error handled in hook
-    }
-  };
+  const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [avatarPreview, setAvatarPreview] = useState('');
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +64,7 @@ export default function Profile() {
     return <div className="text-red-500 p-8">{error}</div>;
   }
 
-  const displayName = user?.name || user?.full_name || '-';
+  const displayName = user?.name || 'User';
   const STATS = [
     { label: 'Total Assigned', value: 0, color: colors.primary },
     { label: 'In Progress', value: 0, color: colors.orange500 },
@@ -97,6 +72,35 @@ export default function Profile() {
   ];
   const createdAt = formatMonthYear(user?.created_at || '-');
   const roleDetails = rolesData.find((role) => role.role === user?.role);
+
+  const handleSave = async () => {
+    try {
+      await updateUser({
+        full_name: fullName,
+        avatar: selectedAvatar ?? undefined,
+      });
+
+      setSelectedAvatar(null);
+      setAvatarPreview('');
+      setIsEditing(false);
+    } catch (error) {}
+  };
+
+  const handleCancel = () => {
+    setFullName(user?.name || '');
+    setAvatarPreview(user?.avatar_url || '');
+    setSelectedAvatar(null);
+    setIsEditing(false);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
   return (
     <div className="w-full px-3 sm:px-0">
       <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900">My Profile</h1>
@@ -105,14 +109,70 @@ export default function Profile() {
         <div className="w-full md:w-[320px] shrink-0 space-y-6">
           {/* Profile Card */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
-            <div className="relative mb-4">
-              <div className="w-24 h-24 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-sm">
-                {getInitials(displayName)}
-              </div>
+            <div className="relative mb-4 group">
+              <WpInput
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+              {avatarPreview || user?.avatar_url ? (
+                <Image
+                  src={avatarPreview || user?.avatar_url || ''}
+                  alt="Profile"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-2xl object-cover shadow-sm"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-500 text-3xl font-bold text-white shadow-sm">
+                  {getInitials(displayName)}
+                </div>
+              )}
+              {isEditing && (
+                <WpButton
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute -top-1 -right-1 !w-8 !h-8 !min-w-0 !p-0 rounded-full !bg-blue-600 !text-white shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200"
+                >
+                  <Pencil size={14} />
+                </WpButton>
+              )}
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
+            <div className="mb-1 flex items-center justify-center gap-2">
+              {isEditing ? (
+                <>
+                  <WpInput
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-52 text-center font-bold"
+                    autoFocus
+                  />
 
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{displayName}</h2>
+                  <WpButton
+                    type="button"
+                    onClick={handleSave}
+                    disabled={isUpdating || !isEditing}
+                    className="!min-w-0 !w-8 !h-8 !p-0 !bg-transparent !shadow-none !text-green-600 hover:!bg-green-50"
+                  >
+                    <Check size={18} />
+                  </WpButton>
+
+                  <WpButton
+                    type="button"
+                    onClick={handleCancel}
+                    className="!min-w-0 !w-8 !h-8 !p-0 !bg-transparent !shadow-none !text-red-600 hover:!bg-red-50"
+                  >
+                    <X size={18} />
+                  </WpButton>
+                </>
+              ) : (
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{displayName}</h2>
+              )}
+            </div>
 
             <div className="mt-2 mb-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-medium">
               <Briefcase size={14} />
@@ -136,15 +196,19 @@ export default function Profile() {
                 <span className="font-medium">{createdAt}</span>
               </div>
             </div>
-
             <WpButton
               type="button"
-              onClick={handleEditToggle}
-              className="w-full border border-gray-200 !bg-white !text-gray-700"
+              disabled={isEditing}
+              onClick={() => {
+                setFullName(user?.name || '');
+                setAvatarPreview(user?.avatar_url || '');
+                setSelectedAvatar(null);
+                setIsEditing(true);
+              }}
+              className="mt-2 w-full border border-gray-200 !bg-white !text-gray-700"
             >
-              {isEditing ? 'Cancel editing' : 'Edit profile'}
+              Edit Profile
             </WpButton>
-
             <WpButton
               type="button"
               onClick={() => setIsChangingPwd(!isChangingPwd)}
@@ -226,89 +290,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Edit Profile Form */}
-          {isEditing && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Edit Profile</h3>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Full Name
-                    </label>
-                    <WpInput
-                      type="text"
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      />
-                      <WpInput type="email" disabled value={user?.email} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Department
-                    </label>
-                    <WpInput
-                      type="text"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Location
-                    </label>
-                    <WpInput
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Timezone
-                    </label>
-                    <select
-                      name="timezone"
-                      value={formData.timezone}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
-                    >
-                      <option value="UTC-8 (PST)">UTC-8 (PST)</option>
-                      <option value="UTC-5 (EST)">UTC-5 (EST)</option>
-                      <option value="UTC+0 (GMT)">UTC+0 (GMT)</option>
-                      <option value="UTC+5:30 (IST)">UTC+5:30 (IST)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <WpButton type="button" variant="danger" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </WpButton>
-
-                  <WpButton type="submit" disabled={isUpdating}>
-                    {isUpdating ? 'Saving...' : 'Save Changes'}
-                  </WpButton>
-                </div>
-              </form>
-            </div>
-          )}
-
           {/* Change Password Form */}
           {isChangingPwd && (
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
@@ -334,6 +315,7 @@ export default function Profile() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                       Old Password
                     </label>
+
                     <WpInput
                       type="password"
                       value={pwdData.old_password}
@@ -341,7 +323,7 @@ export default function Profile() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                       New Password
                     </label>
@@ -349,8 +331,10 @@ export default function Profile() {
                       type="password"
                       value={pwdData.new_password}
                       onChange={(e) => setPwdData({ ...pwdData, new_password: e.target.value })}
+                      onFocus={() => setShowPasswordStrength(true)}
                       required
                     />
+                    <PasswordStrength password={pwdData.new_password} show={showPasswordStrength} />
                   </div>
                 </div>
 

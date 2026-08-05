@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: 'Sign in to your WorkPilot workspace',
 };
 
-export default function SignInPage() {
+export default function Page() {
   return <SignInTemplate />;
 }

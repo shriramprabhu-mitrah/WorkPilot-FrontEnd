@@ -36,7 +36,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
-  const [teamMembers, setTeamMembers] = useState([{ email: '', role: ROLE_TYPE.DEVELOPER }]);
+ const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
 
   const { countries, isCountriesLoading } = useGetCountries();
 
@@ -53,6 +53,45 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
 
   const isLoading = isCreatingOrg || isInvitingUsers || isUpdatingOrg;
   const countryRef = useRef<HTMLDivElement>(null);
+
+  const completeSetup = async (uploadLogo: boolean) => {
+    const formData = new FormData();
+
+    formData.append('name', orgName);
+    formData.append('domain', orgSlug);
+    formData.append('industry', industry);
+    formData.append('team_size', orgSize);
+    formData.append('country_id', String(countryId));
+
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+
+    await createOrg(formData);
+    const validMembers = teamMembers.filter((m) => m.email.trim() !== '');
+    if (validMembers.length > 0) {
+      await inviteOrgUsers({ members: validMembers });
+    }
+    if (uploadLogo && logoFile) {
+      await updateOrg({
+        logo: logoFile || '',
+      });
+    }
+    const userProfile = await userService.getUserProfile();
+    dispatch(
+      setUser({
+        name: userProfile.name || userProfile.full_name,
+        username: userProfile.username,
+        email: userProfile.email,
+        role: userProfile.role,
+        avatar_url: userProfile.avatar_url,
+        is_active: userProfile.is_active,
+      })
+    );
+
+    router.push('/dashboard');
+  };
+
   const filteredCountries =
     countries?.data?.filter((country) =>
       country.name.toLowerCase().includes(countrySearch.toLowerCase())
@@ -72,56 +111,24 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
         return;
       }
 
-      // Step 3 - Finish Setup
-      await createOrg({
-        name: orgName,
-        domain: orgSlug,
-        industry,
-        team_size: orgSize,
-        country_id: countryId,
-      });
-
-      const validMembers = teamMembers.filter((m) => m.email.trim() !== '');
-
-      if (validMembers.length > 0) {
-        await inviteOrgUsers({
-          members: validMembers,
-        });
-      }
-
-      if (logoFile) {
-        await updateOrg({
-          logo_url: logoPreview || '',
-        });
-      }
-
-      const userProfile = await userService.getUserProfile();
-
-      dispatch(
-        setUser({
-          name: userProfile.name || userProfile.full_name,
-          username: userProfile.username,
-          email: userProfile.email,
-          role: userProfile.role,
-          avatar_url: userProfile.avatar_url,
-          is_active: userProfile.is_active,
-        })
-      );
-
-      router.push('/dashboard');
+      await completeSetup(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred during setup');
     }
   };
 
-  const handleSkipStep = () => {
-    if (step === 2) {
-      setStep(3);
-    } else if (step === 3) {
-      router.push('/dashboard');
+  const handleSkipStep = async () => {
+    setError(null);
+    try {
+      if (step === 2) {
+        setStep(3);
+        return;
+      }
+      await completeSetup(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred during setup');
     }
   };
-
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -130,7 +137,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   };
 
   const addTeamMember = () => {
-    setTeamMembers([...teamMembers, { email: '', role: ROLE_TYPE.DEVELOPER }]);
+    setTeamMembers([...teamMembers, { email: '' }]);
   };
 
   useEffect(() => {
@@ -143,11 +150,11 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const updateTeamMember = (index: number, field: string, value: string) => {
-    const updated = [...teamMembers];
-    updated[index] = { ...updated[index], [field]: value };
-    setTeamMembers(updated);
-  };
+ const updateTeamMember = (index: number, value: string) => {
+   const updated = [...teamMembers];
+   updated[index].email = value;
+   setTeamMembers(updated);
+ };
 
   const removeTeamMember = (index: number) => {
     if (teamMembers.length > 1) {
@@ -412,7 +419,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
                         type="email"
                         placeholder="teammate@company.com"
                         value={member.email}
-                        onChange={(e) => updateTeamMember(index, 'email', e.target.value)}
+                        onChange={(e) => updateTeamMember(index, e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>

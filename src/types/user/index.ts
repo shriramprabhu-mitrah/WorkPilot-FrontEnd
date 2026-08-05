@@ -14,8 +14,6 @@ export interface UserProfile {
 }
 
 export interface UserUpdatePayload {
-  full_name?: string;
-  department?: string;
-  location?: string;
-  timezone?: string;
+  full_name: string;
+  avatar?: File;
 }

@@ -14,12 +14,20 @@ class UserService {
   }
 
   async updateUserProfile(payload: UserUpdatePayload): Promise<UserProfile> {
+    const formData = new FormData();
+    formData.append('full_name', payload.full_name);
+    if (payload.avatar) {
+      formData.append('avatar', payload.avatar);
+    }
     const response = await apiService.patch<UserProfile>(
       ApiEndpoints.User.userUpdate.url,
-      payload,
+      formData,
       {
         showSuccessToast: true,
         showErrorToast: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
     );
     if (!response.data) {

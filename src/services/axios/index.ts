@@ -180,7 +180,9 @@ class AxiosApiService {
     options?: ApiRequestOptions
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axiosInstance.patch(endpoint, payload);
+      const response = await axiosInstance.patch(endpoint, payload, {
+        headers: options?.headers,
+      });
       return processResponse<T>(response, options);
     } catch (error) {
       return handleApiError(error, 'PATCH', options);

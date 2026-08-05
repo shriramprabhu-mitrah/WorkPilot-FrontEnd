@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { useSignup } from '../../hooks/useSignup';
 import { formatTime } from '@/src/app/components/common/format';
@@ -129,7 +129,6 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
             >
               Verify Email
             </WpButton>
-
             <div className="text-center mt-6">
               <p className="text-sm text-gray-500 mb-4">
                 {timer > 0 ? (
@@ -138,21 +137,29 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                     <span className="font-semibold text-gray-900">{formatTime(timer)}</span>
                   </>
                 ) : (
-                  <button
+                  <WpButton
+                    variant="ghost"
+                    size="sm"
                     onClick={handleResend}
-                    className="font-semibold text-blue-600 hover:text-blue-700 underline"
                     disabled={resendOtp.isLoading}
+                    isLoading={resendOtp.isLoading}
+                    className="!p-0 !text-blue-600 hover:!text-blue-700 underline"
                   >
-                    Resend code
-                  </button>
+                    Resend Code
+                  </WpButton>
                 )}
               </p>
-              <button
+
+              <WpButton
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={onBack}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                leftIcon={<ArrowLeft size={16} />}
+                className="!text-gray-600 hover:!text-gray-900"
               >
-                &lt; Back to Sign Up
-              </button>
+                Back to Sign Up
+              </WpButton>
             </div>
           </div>
         </div>
