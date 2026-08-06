@@ -11,7 +11,7 @@ interface PanelProps {
 export default function Panel({ title, subtitle, className = '', children }: PanelProps) {
   return (
     <div
-      className={`bg-white rounded-xl border p-4 sm:p-5 flex flex-col gap-1 ${className}`}
+      className={`w-full min-w-0 overflow-hidden bg-white rounded-xl border p-4 sm:p-5 flex flex-col gap-1 ${className}`}
       style={{ borderColor: colors.gray200 }}
     >
       <p className="font-semibold text-sm" style={{ color: colors.gray900 }}>

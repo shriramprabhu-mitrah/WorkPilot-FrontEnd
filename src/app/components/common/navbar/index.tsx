@@ -42,7 +42,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-[13px] shrink-0">
-          <span className="text-gray-500 font-medium hidden sm:inline">Workspace</span>
+          <span className="text-gray-500 font-medium hidden sm:inline">Organization</span>
           <ChevronRight size={13} className="text-gray-400 hidden sm:inline" />
           <span className="text-gray-800 font-semibold">{title}</span>
         </div>

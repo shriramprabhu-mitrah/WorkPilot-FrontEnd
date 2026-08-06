@@ -81,12 +81,12 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
               </div>
 
               <WpInput
-                  type="email"
-                  placeholder="email@company.com"
-                  value={member.email}
-                  onChange={(e) => updateMember(index, 'email', e.target.value)}
-                  icon={<Mail size={16} />}
-                />
+                type="email"
+                placeholder="email@company.com"
+                value={member.email}
+                onChange={(e) => updateMember(index, 'email', e.target.value)}
+                icon={<Mail size={16} />}
+              />
             </div>
           ))}
 
@@ -103,7 +103,11 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-          <WpButton variant="ghost" onClick={handleCancel} className="text-gray-600 hover:text-gray-900">
+          <WpButton
+            variant="ghost"
+            onClick={handleCancel}
+            className="text-gray-600 hover:text-gray-900"
+          >
             Cancel
           </WpButton>
           <div className="flex items-center gap-4">

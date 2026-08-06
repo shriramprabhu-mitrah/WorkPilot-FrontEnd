@@ -36,7 +36,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
- const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
+  const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
 
   const { countries, isCountriesLoading } = useGetCountries();
 
@@ -150,11 +150,11 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
- const updateTeamMember = (index: number, value: string) => {
-   const updated = [...teamMembers];
-   updated[index].email = value;
-   setTeamMembers(updated);
- };
+  const updateTeamMember = (index: number, value: string) => {
+    const updated = [...teamMembers];
+    updated[index].email = value;
+    setTeamMembers(updated);
+  };
 
   const removeTeamMember = (index: number) => {
     if (teamMembers.length > 1) {

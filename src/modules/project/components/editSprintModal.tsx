@@ -55,7 +55,7 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
     try {
       await updateSprintAsync({ sprintId: sprint.id, payload: data });
       onClose();
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -80,11 +80,7 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
               error={errors.name?.message}
               {...register('name')}
             />
-            <WpInput
-              id="edit-sprint-goal"
-              label="Goal"
-              {...register('goal')}
-            />
+            <WpInput id="edit-sprint-goal" label="Goal" {...register('goal')} />
             <div className="grid grid-cols-2 gap-3">
               <WpInput
                 id="edit-start-date"
