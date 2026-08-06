@@ -1,5 +1,5 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
-import { apiService } from '../axios';
+import { apiService, PaginatedApiResponse } from '../axios';
 import { ApiResponse } from '@/src/types/core';
 import {
   Project,
@@ -21,17 +21,26 @@ class ProjectService {
     });
   }
 
-  async getProject(params?: GetProjectQueryParams): Promise<ApiResponse<Project>> {
+  async getProject(params?: GetProjectQueryParams): Promise<PaginatedApiResponse<Project[]>> {
     const searchParams = new URLSearchParams();
+    if (params?.page) {
+      searchParams.append('page', String(params.page));
+    }
+
+    if (params?.page_size) {
+      searchParams.append('page_size', String(params.page_size));
+    }
     if (params?.name) {
       searchParams.append('name', params.name);
     }
+
     if (params?.status) {
       searchParams.append('status', params.status);
     }
+
     const query = searchParams.toString();
     const url = `${ApiEndpoints.Project.getProject.url}${query ? `?${query}` : ''}`;
-    return apiService.get<Project>(url);
+    return apiService.getPaginated<Project[]>(url);
   }
 
   async getProjectDetail(projectId: string): Promise<ApiResponse<ProjectDetail>> {

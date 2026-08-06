@@ -1,8 +1,8 @@
 'use client';
 import ProjectCard from '../projectCard';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
@@ -51,10 +51,10 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     tasks: '0',
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -82,16 +82,29 @@ const ProjectPage = () => {
   const queryClient = useQueryClient();
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [view, setView] = useState<ViewType>('grid');
-
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const {
     projects: apiProjects,
+    meta,
     isLoadingProjects,
-    refetchProjects,
   } = useGetProjects({
+    page,
+    page_size: pageSize,
     name: debouncedSearch,
     status:
       selectedFilter === ProjectFilter.ALL ? undefined : PROJECT_STATUS_API_MAP[selectedFilter],
   });
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
+
+  const handleFilterChange = (value: ProjectFilter) => {
+    setSelectedFilter(value);
+    setPage(1);
+  };
   const allProjects = useMemo((): Project[] => {
     if (!apiProjects || !Array.isArray(apiProjects)) return [];
     return apiProjects.map(mapApiProjectToUiProject);
@@ -109,7 +122,7 @@ const ProjectPage = () => {
     );
 
     return sorted;
-  }, [allProjects, selectedFilter, searchTerm, sortOrder]);
+  }, [allProjects, sortOrder]);
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) return;
@@ -125,7 +138,7 @@ const ProjectPage = () => {
 
       setProjectName('');
       setDescription('');
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
@@ -181,9 +194,12 @@ const ProjectPage = () => {
               {displayedProjects.length} projects across your workspace
             </p>
           </div>
-          <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
-            + New Project
-          </WpButton>
+
+          <div className="self-start mr-12 flex items-center gap-2">
+            <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
+              + New Project
+            </WpButton>
+          </div>
         </div>
 
         <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -192,7 +208,7 @@ const ProjectPage = () => {
             placeholder="Search projects..."
             icon={<Search size={15} />}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm outline-none"
           />
 
@@ -205,7 +221,7 @@ const ProjectPage = () => {
                 className={
                   selectedFilter === statusFilter ? '' : 'text-gray-600 hover:text-gray-700'
                 }
-                onClick={() => setSelectedFilter(statusFilter)}
+                onClick={() => handleFilterChange(statusFilter)}
               >
                 {statusFilter}
               </WpButton>
@@ -226,132 +242,170 @@ const ProjectPage = () => {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8">
-        {displayedProjects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
-              <p className="text-gray-500">No projects found matching your criteria.</p>
-            ) : (
-              <>
-                <div className="relative mb-8 h-64 w-64">
-                  <Image
-                    src="/images/Empty-rafiki.svg"
-                    alt="No Projects"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
+        {isLoadingProjects ? (
+          <ProjectSkeleton />
+        ) :
+          displayedProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
+                <p className="text-gray-500">No projects found matching your criteria.</p>
+              ) : (
+                <>
+                  <div className="relative mb-8 h-64 w-64">
+                    <Image
+                      src="/images/Empty-rafiki.svg"
+                      alt="No Projects"
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
+                  <p className="mt-3 max-w-md text-center text-gray-500">
+                    Projects help organize boards, sprints, tasks, and reports. Create your first
+                    project to get started.
+                  </p>
+
+                  <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
+                    + Create Project
+                  </WpButton>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              <div
+                className={
+                  view === 'grid'
+                    ? 'grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3'
+                    : 'flex flex-col gap-4'
+                }
+              >
+                {displayedProjects.map((project) => {
+                  const apiProject = apiProjectsMap.get(project?.id);
+                  return (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      view={view}
+                      onClick={() => apiProject && handleProjectClick(project, apiProject)}
+                    />
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 mr-2 flex justify-end">
+                <div className="flex items-center gap-2">
+                  <WpButton
+                    variant="secondary"
+                    size="sm"
+                    disabled={!meta?.has_previous}
+                    onClick={() => setPage((prev) => prev - 1)}
+                  >
+                    <ChevronLeft size={16} />
+                  </WpButton>
+
+                  {Array.from({ length: meta?.total_pages ?? 1 }, (_, i) => (
+                    <WpButton
+                      key={i + 1}
+                      size="sm"
+                      variant={page === i + 1 ? 'primary' : 'secondary'}
+                      onClick={() => setPage(i + 1)}
+                    >
+                      {i + 1}
+                    </WpButton>
+                  ))}
+
+                  <WpButton
+                    variant="secondary"
+                    size="sm"
+                    disabled={!meta?.has_next}
+                    onClick={() => setPage((prev) => prev + 1)}
+                  >
+                    <ChevronRight size={16} />
+                  </WpButton>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
-                <p className="mt-3 max-w-md text-center text-gray-500">
-                  Projects help organize boards, sprints, tasks, and reports. Create your first
-                  project to get started.
-                </p>
-
-                <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
-                  + Create Project
-                </WpButton>
-              </>
-            )}
-          </div>
-        ) : (
-          <div
-            className={
-              view === 'grid'
-                ? 'grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3'
-                : 'flex flex-col gap-4'
-            }
-          >
-            {displayedProjects.map((project) => {
-              const apiProject = apiProjectsMap.get(project?.id);
-              return (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  view={view}
-                  onClick={() => apiProject && handleProjectClick(project, apiProject)}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {isModalOpen && (
+              </div>
+            </>
+          )}
+        {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white shadow-xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-              <h2 className="text-[25px] font-bold text-gray-900">New Project</h2>
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+                <h2 className="text-[25px] font-bold text-gray-900">New Project</h2>
 
-              <WpButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setProjectName('');
-                  setDescription('');
-                  setIsModalOpen(false);
-                }}
-                aria-label="Close modal"
-                className="!p-2 text-gray-400 hover:text-gray-600"
-                leftIcon={<X size={18} />}
-              />
-            </div>
-
-            {/* Modal Body */}
-            <div className="space-y-5 px-6 py-6">
-              <div>
-                <WpInput
-                  id="project-name"
-                  label="Project name"
-                  placeholder="e.g. WorkPilot Mobile App"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  showRequired
+                <WpButton
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setProjectName('');
+                    setDescription('');
+                    setIsModalOpen(false);
+                  }}
+                  aria-label="Close modal"
+                  className="!p-2 text-gray-400 hover:text-gray-600"
+                  leftIcon={<X size={18} />}
                 />
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Description
-                </label>
+              {/* Modal Body */}
+              <div className="space-y-5 px-6 py-6">
+                <div>
+                  <WpInput
+                    id="project-name"
+                    label="Project name"
+                    placeholder="e.g. WorkPilot Mobile App"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    showRequired
+                  />
+                </div>
 
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Briefly describe the project goal and scope..."
-                  rows={4}
-                  className="w-full resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                />
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Briefly describe the project goal and scope..."
+                    rows={4}
+                    className="w-full resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
-              <WpButton
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setProjectName('');
-                  setDescription('');
-                  setIsModalOpen(false);
-                }}
-                disabled={isCreatingProject}
-              >
-                Cancel
-              </WpButton>
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+                <WpButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setProjectName('');
+                    setDescription('');
+                    setIsModalOpen(false);
+                  }}
+                  disabled={isCreatingProject}
+                >
+                  Cancel
+                </WpButton>
 
-              <WpButton
-                size="sm"
-                disabled={!projectName.trim() || isCreatingProject}
-                onClick={handleCreateProject}
-              >
-                {isCreatingProject ? 'Creating...' : 'Create Project'}
-              </WpButton>
+                <WpButton
+                  size="sm"
+                  disabled={!projectName.trim() || isCreatingProject}
+                  onClick={handleCreateProject}
+                >
+                  {isCreatingProject ? 'Creating...' : 'Create Project'}
+                </WpButton>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      
+      </div>
     </div>
   );
 };

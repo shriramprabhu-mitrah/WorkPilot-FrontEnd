@@ -127,7 +127,7 @@ export const useGetOrganizationUsers = (page = 1, pageSize = 10) => {
 
   return {
     users: users?.data ?? [],
-    pagination: users?.pagination,
+    meta: users?.meta,
     isUsersLoading,
     refetchUsers,
     error,
