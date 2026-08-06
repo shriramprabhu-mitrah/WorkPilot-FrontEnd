@@ -244,93 +244,92 @@ const ProjectPage = () => {
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8">
         {isLoadingProjects ? (
           <ProjectSkeleton />
-        ) :
-          displayedProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
-                <p className="text-gray-500">No projects found matching your criteria.</p>
-              ) : (
-                <>
-                  <div className="relative mb-8 h-64 w-64">
-                    <Image
-                      src="/images/Empty-rafiki.svg"
-                      alt="No Projects"
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
-                  <p className="mt-3 max-w-md text-center text-gray-500">
-                    Projects help organize boards, sprints, tasks, and reports. Create your first
-                    project to get started.
-                  </p>
-
-                  <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
-                    + Create Project
-                  </WpButton>
-                </>
-              )}
-            </div>
-          ) : (
-            <>
-              <div
-                className={
-                  view === 'grid'
-                    ? 'grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3'
-                    : 'flex flex-col gap-4'
-                }
-              >
-                {displayedProjects.map((project) => {
-                  const apiProject = apiProjectsMap.get(project?.id);
-                  return (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      view={view}
-                      onClick={() => apiProject && handleProjectClick(project, apiProject)}
-                    />
-                  );
-                })}
-              </div>
-
-              <div className="mt-6 mr-2 flex justify-end">
-                <div className="flex items-center gap-2">
-                  <WpButton
-                    variant="secondary"
-                    size="sm"
-                    disabled={!meta?.has_previous}
-                    onClick={() => setPage((prev) => prev - 1)}
-                  >
-                    <ChevronLeft size={16} />
-                  </WpButton>
-
-                  {Array.from({ length: meta?.total_pages ?? 1 }, (_, i) => (
-                    <WpButton
-                      key={i + 1}
-                      size="sm"
-                      variant={page === i + 1 ? 'primary' : 'secondary'}
-                      onClick={() => setPage(i + 1)}
-                    >
-                      {i + 1}
-                    </WpButton>
-                  ))}
-
-                  <WpButton
-                    variant="secondary"
-                    size="sm"
-                    disabled={!meta?.has_next}
-                    onClick={() => setPage((prev) => prev + 1)}
-                  >
-                    <ChevronRight size={16} />
-                  </WpButton>
+        ) : displayedProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
+              <p className="text-gray-500">No projects found matching your criteria.</p>
+            ) : (
+              <>
+                <div className="relative mb-8 h-64 w-64">
+                  <Image
+                    src="/images/Empty-rafiki.svg"
+                    alt="No Projects"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
                 </div>
+                <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
+                <p className="mt-3 max-w-md text-center text-gray-500">
+                  Projects help organize boards, sprints, tasks, and reports. Create your first
+                  project to get started.
+                </p>
+
+                <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
+                  + Create Project
+                </WpButton>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            <div
+              className={
+                view === 'grid'
+                  ? 'grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3'
+                  : 'flex flex-col gap-4'
+              }
+            >
+              {displayedProjects.map((project) => {
+                const apiProject = apiProjectsMap.get(project?.id);
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    view={view}
+                    onClick={() => apiProject && handleProjectClick(project, apiProject)}
+                  />
+                );
+              })}
+            </div>
+
+            <div className="mt-6 mr-2 flex justify-end">
+              <div className="flex items-center gap-2">
+                <WpButton
+                  variant="secondary"
+                  size="sm"
+                  disabled={!meta?.has_previous}
+                  onClick={() => setPage((prev) => prev - 1)}
+                >
+                  <ChevronLeft size={16} />
+                </WpButton>
+
+                {Array.from({ length: meta?.total_pages ?? 1 }, (_, i) => (
+                  <WpButton
+                    key={i + 1}
+                    size="sm"
+                    variant={page === i + 1 ? 'primary' : 'secondary'}
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </WpButton>
+                ))}
+
+                <WpButton
+                  variant="secondary"
+                  size="sm"
+                  disabled={!meta?.has_next}
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  <ChevronRight size={16} />
+                </WpButton>
               </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
         {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white shadow-xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white shadow-xl">
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
                 <h2 className="text-[25px] font-bold text-gray-900">New Project</h2>
@@ -404,7 +403,6 @@ const ProjectPage = () => {
             </div>
           </div>
         )}
-      
       </div>
     </div>
   );

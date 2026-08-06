@@ -42,7 +42,10 @@ const SprintAccordionItem = ({
         : null;
 
   return (
-    <div key={fieldId} className={`overflow-hidden rounded-xl border ${hasError ? 'border-red-300' : 'border-gray-200'}`}>
+    <div
+      key={fieldId}
+      className={`overflow-hidden rounded-xl border ${hasError ? 'border-red-300' : 'border-gray-200'}`}
+    >
       <WpButton
         variant="ghost"
         size="md"
@@ -52,13 +55,13 @@ const SprintAccordionItem = ({
         rightIcon={isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
       >
         <div className="flex items-center gap-3">
-          <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${hasError ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+          <span
+            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${hasError ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}
+          >
             {index + 1}
           </span>
           <span className="text-sm font-medium">{watched?.name || `Sprint ${index + 1}`}</span>
-          {!isOpen && datePreview && (
-            <span className="text-xs text-gray-400">{datePreview}</span>
-          )}
+          {!isOpen && datePreview && <span className="text-xs text-gray-400">{datePreview}</span>}
           {!isOpen && hasError && (
             <span className="flex items-center gap-1 text-xs text-red-500">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />

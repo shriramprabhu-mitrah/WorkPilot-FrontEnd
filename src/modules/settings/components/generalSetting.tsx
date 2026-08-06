@@ -109,7 +109,7 @@ export default function GeneralSettings() {
         country_id: data.country,
       });
       await refetchOrganization();
-    } catch (error) {}
+    } catch (error) { }
   };
 
   return (

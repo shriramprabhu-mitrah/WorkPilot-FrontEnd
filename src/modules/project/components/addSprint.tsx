@@ -80,7 +80,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
       await createSprint(payload);
       onSuccess?.();
       onClose();
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -177,12 +177,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                 >
                   Back
                 </WpButton>
-                <WpButton
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  disabled={isCreatingSprint}
-                >
+                <WpButton type="submit" variant="primary" size="md" disabled={isCreatingSprint}>
                   {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
                 </WpButton>
               </div>

@@ -27,7 +27,7 @@ import { colors } from '@/src/styles/colors';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -53,7 +53,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const user = useAppSelector((state) => state.user);
   const organization = useAppSelector((state) => state.organization);
   const { handleLogOut } = useSignin();
-
+  const [isExpanded, setIsExpanded] = useState(false);
   const handleLogoutClick = () => {
     removeTokens();
     handleLogOut();
@@ -101,15 +101,20 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
       {/* Sidebar */}
       <div
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
         className={`
           fixed lg:static inset-y-0 left-0 z-50
           transform transition-transform duration-300 ease-in-out
           ${onClose ? (isOpen ? 'translate-x-0' : '-translate-x-full') : ''}
           lg:translate-x-0
-          h-screen overflow-auto
+         h-screen overflow-y-auto overflow-x-hidden
         `}
       >
-        <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0">
+        <aside
+          className={`flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-all duration-300 ${isExpanded ? 'w-[220px]' : 'w-[72px]'
+            }`}
+        >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
             <div
@@ -118,7 +123,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             >
               <TrackrLogoSvg />
             </div>
-            <span className="font-bold text-[15px] text-gray-900">WorkPilot</span>
+            {isExpanded && (
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
+                  }`}
+              >
+                WorkPilot
+              </span>
+            )}
             {/* Close button for mobile */}
             {onClose && (
               <button
@@ -144,26 +156,36 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 >
                   {getOrgInitials(organization?.name)}
                 </div>
-                <span className="text-[13px] font-medium text-gray-700">
-                  {organization?.name || 'My Workspace'}
-                </span>
+                {isExpanded && (
+                  <span
+                    className={`text-[13px] font-medium text-gray-700 overflow-hidden whitespace-nowrap text-ellipsis transition-all duration-300 ${isExpanded ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
+                      }`}
+                  >
+                    {organization?.name || 'My Workspace'}
+                  </span>
+                )}
               </div>
-              <ChevronDown size={13} className="text-gray-400" />
+              {isExpanded && <ChevronDown size={13} className="text-gray-400" />}
             </div>
           </div>
 
           {/* Search */}
-          <div className="px-3 pb-2">
-            <WpInput
-              type="text"
-              placeholder="Search..."
-              icon={<Search size={13} />}
-              className="bg-gray-100 border-1 text-[12px] !h-8"
-            />
+          <div className="px-3 pb-2 h-10 flex items-center">
+            {isExpanded && (
+              <WpInput
+                type="text"
+                placeholder="Search..."
+                icon={<Search size={13} />}
+                className="bg-gray-100 border-1 text-[12px] !h-8"
+              />
+            )}
           </div>
 
           {/* Nav label */}
-          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          <p
+            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'
+              }`}
+          >
             Menu
           </p>
 
@@ -175,37 +197,43 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors"
+                  className="flex items-center px-3 py-2 rounded-lg text-[13px] font-medium transition-colors"
                   style={{
                     backgroundColor: active ? colors.primaryLight : undefined,
                     color: active ? colors.primary : colors.gray700,
                   }}
                 >
-                  <Icon size={15} style={{ color: active ? colors.primary : colors.gray700 }} />
-                  {label}
+                  {/* Fixed icon container */}
+                  <div className="w-6 flex items-center justify-center shrink-0">
+                    <Icon
+                      size={15}
+                      style={{
+                        color: active ? colors.primary : colors.gray700,
+                      }}
+                    />
+                  </div>
+
+                  {/* Animated label */}
+                  <span
+                    className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${isExpanded ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'
+                      }`}
+                  >
+                    {label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* New Project */}
-          <div className="px-3 py-2">
-            <WpButton
-              variant="secondary"
-              size="sm"
-              fullWidth
-              leftIcon={<Plus size={14} />}
-              className="border-dashed text-gray-400 justify-start"
-            >
-              New Project
-            </WpButton>
-          </div>
-
           {/* Divider */}
           <div className="mx-3 border-t border-gray-100" />
 
           {/* User */}
-          <div className="flex items-center gap-2.5 px-4 py-3.5">
+          {/* User */}
+          <div
+            className={`flex items-center ${isExpanded ? 'gap-2.5 px-4' : 'justify-center px-0'
+              } py-3.5`}
+          >
             <Link
               href="/profile"
               className="flex items-center gap-2.5 flex-1 min-w-0 group cursor-pointer"
@@ -216,24 +244,28 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               >
                 {getInitials(user.name)}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">
-                  {user.name || 'User Name'}
-                </p>
-                <p className="text-[11px] text-gray-400 truncate">
-                  {user.email || 'user@email.com'}
-                </p>
-              </div>
+              {isExpanded && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-gray-800 truncate">
+                    {user.name || 'User Name'}
+                  </p>
+                  <p className="text-[11px] text-gray-400 truncate">
+                    {user.email || 'user@email.com'}
+                  </p>
+                </div>
+              )}
             </Link>
-            <WpButton
-              variant="ghost"
-              size="sm"
-              onClick={handleLogoutClick}
-              className="!p-1.5 text-gray-400 hover:bg-red-50 hover:!text-red-500"
-              title="Logout"
-            >
-              <LogOut size={15} />
-            </WpButton>
+            {isExpanded && (
+              <WpButton
+                variant="ghost"
+                size="sm"
+                onClick={handleLogoutClick}
+                className="!p-1.5 text-gray-400 hover:bg-red-50 hover:!text-red-500"
+                title="Logout"
+              >
+                <LogOut size={15} />
+              </WpButton>
+            )}
           </div>
         </aside>
       </div>
