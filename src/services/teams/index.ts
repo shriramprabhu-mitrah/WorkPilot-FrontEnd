@@ -12,11 +12,8 @@ class TeamService {
   }
 
   async removeUser(payload: RemoveUserPayload) {
-    const url = ApiEndpoints.Team.removeUser.url;
-
-    return apiService.delete(url, {
-      data: payload,
-    });
+    const url = `${ApiEndpoints.Team.removeUser.url}?user_id=${payload.user_id}`;
+    return apiService.delete(url);
   }
 
   async updateRole(payload: UpdateRolePayload) {
