@@ -457,11 +457,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       </div>
 
       {showAddSprintModal && (
-        <AddSprintModal
-          projectId={project.id || ''}
-          onClose={() => setShowAddSprintModal(false)}
-          onSuccess={() => refetchSprints()}
-        />
+        <AddSprintModal projectId={project.id || ''} onClose={() => setShowAddSprintModal(false)} />
       )}
 
       {showEditModal && (

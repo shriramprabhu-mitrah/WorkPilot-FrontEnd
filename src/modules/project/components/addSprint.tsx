@@ -1,18 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { Minus, Plus, X, ChevronUp, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Minus, Plus, X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpInput } from '@/src/app/components/common/input';
 import { useCreateSprint } from '../hooks/useSprint';
 import { SprintPayload } from '@/src/types/project';
+import SprintAccordionItem from './sprintAccordionItem';
 
-interface SprintForm {
-  name: string;
-  goal: string;
-  start_date: string;
-  end_date: string;
-}
+const today = new Date().toISOString().split('T')[0];
+
+const sprintItemSchema = z
+  .object({
+    name: z.string().min(1, 'Sprint name is required'),
+    goal: z.string().optional(),
+    start_date: z
+      .string()
+      .min(1, 'Start date is required')
+      .refine((d) => d >= today, { message: 'Start date cannot be in the past' }),
+    end_date: z.string().min(1, 'Due date is required'),
+  })
+  .refine((d) => d.end_date >= d.start_date, {
+    message: 'Due date must be after start date',
+    path: ['end_date'],
+  });
+
+const addSprintSchema = z.object({ sprints: z.array(sprintItemSchema) });
+export type AddSprintFormValues = z.infer<typeof addSprintSchema>;
 
 interface AddSprintModalProps {
   projectId: string;
@@ -23,37 +39,42 @@ interface AddSprintModalProps {
 const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [sprintCount, setSprintCount] = useState(1);
-  const [sprintForms, setSprintForms] = useState<SprintForm[]>([]);
   const [openSprint, setOpenSprint] = useState(0);
 
   const { createSprint, isCreatingSprint } = useCreateSprint(projectId);
 
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AddSprintFormValues>({
+    resolver: zodResolver(addSprintSchema),
+    defaultValues: { sprints: [] },
+  });
+
+  const { fields, replace } = useFieldArray({ control, name: 'sprints' });
+
   const handleNext = () => {
-    const newSprintForms: SprintForm[] = Array.from({ length: sprintCount }, (_, index) => ({
-      name: `Sprint ${index + 1}`,
+    const newSprints = Array.from({ length: sprintCount }, (_, i) => ({
+      name: `Sprint ${i + 1}`,
       goal: '',
       start_date: '',
       end_date: '',
     }));
-    setSprintForms(newSprintForms);
+    replace(newSprints);
     setOpenSprint(0);
     setStep(2);
   };
 
-  const updateSprint = (index: number, field: keyof SprintForm, value: string) => {
-    setSprintForms((prev) =>
-      prev.map((sprint, i) => (i === index ? { ...sprint, [field]: value } : sprint))
-    );
-  };
-
-  const handleCreateSprints = async () => {
+  const onSubmit = async (data: AddSprintFormValues) => {
     try {
       const payload: SprintPayload = {
-        sprints: sprintForms.map((form) => ({
-          name: form.name,
-          goal: form.goal || undefined,
-          start_date: form.start_date,
-          end_date: form.end_date,
+        sprints: data.sprints.map((s) => ({
+          name: s.name,
+          goal: s.goal || undefined,
+          start_date: s.start_date,
+          end_date: s.end_date,
         })),
       };
       await createSprint(payload);
@@ -120,9 +141,9 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
         )}
         <div className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl bg-white">
           {step === 2 && (
-            <>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
               <div className="flex items-center justify-between border-b p-5">
-                <h2 className="text-xl font-bold">Configure {sprintForms.length} Sprints</h2>
+                <h2 className="text-xl font-bold">Configure {fields.length} Sprints</h2>
                 <WpButton
                   variant="ghost"
                   size="sm"
@@ -133,80 +154,39 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                 />
               </div>
               <div className="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-4">
-                {sprintForms.map((sprint, index) => {
-                  const isOpen = openSprint === index;
-                  return (
-                    <div key={index} className="overflow-hidden rounded-xl border border-gray-200">
-                      <WpButton
-                        variant="ghost"
-                        size="md"
-                        type="button"
-                        onClick={() => setOpenSprint(isOpen ? -1 : index)}
-                        className="w-full justify-between rounded-none p-4 text-gray-900 hover:bg-gray-50"
-                        rightIcon={isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-600">
-                            {index + 1}
-                          </span>
-                          <span className="text-sm font-medium">{sprint.name}</span>
-                        </div>
-                      </WpButton>
-                      {isOpen && (
-                        <div className="p-4 space-y-3">
-                          <WpInput
-                            id={`sprint-name-${index}`}
-                            label="Sprint name"
-                            value={sprint.name}
-                            onChange={(e) => updateSprint(index, 'name', e.target.value)}
-                          />
-                          <WpInput
-                            id={`sprint-goal-${index}`}
-                            label="Goal"
-                            value={sprint.goal}
-                            onChange={(e) => updateSprint(index, 'goal', e.target.value)}
-                          />
-                          <div className="grid grid-cols-2 gap-3">
-                            <WpInput
-                              id={`start-date-${index}`}
-                              type="date"
-                              label="Start date"
-                              value={sprint.start_date}
-                              onChange={(e) => updateSprint(index, 'start_date', e.target.value)}
-                            />
-                            <WpInput
-                              id={`end-date-${index}`}
-                              type="date"
-                              label="Due date"
-                              value={sprint.end_date}
-                              onChange={(e) => updateSprint(index, 'end_date', e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {fields.map((field, index) => (
+                  <SprintAccordionItem
+                    key={field.id}
+                    index={index}
+                    fieldId={field.id}
+                    isOpen={openSprint === index}
+                    onToggle={() => setOpenSprint(openSprint === index ? -1 : index)}
+                    control={control}
+                    register={register}
+                    errors={errors}
+                  />
+                ))}
               </div>
               <div className="flex justify-between p-5">
                 <WpButton
                   variant="ghost"
                   size="sm"
+                  type="button"
                   onClick={() => setStep(1)}
                   leftIcon={<ArrowLeft size={16} />}
                 >
                   Back
                 </WpButton>
                 <WpButton
+                  type="submit"
                   variant="primary"
                   size="md"
-                  onClick={handleCreateSprints}
                   disabled={isCreatingSprint}
                 >
                   {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
                 </WpButton>
               </div>
-            </>
+            </form>
           )}
         </div>
       </div>
