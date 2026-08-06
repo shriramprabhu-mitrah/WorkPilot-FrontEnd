@@ -13,6 +13,7 @@ import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '../components/TeamSkeleton';
+import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
 
 export const TeamTemplate = () => {
   const [page] = useState(1);
@@ -30,12 +31,18 @@ export const TeamTemplate = () => {
   const { mutate: updateRole } = useUpdateRole();
   const { hasPermission } = usePermissions();
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
-  const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 2);
+  const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 4);
   const { user, isUserLoading } = useGetUserById(selectedUserId);
-
+  const roleOptions = Object.values(ROLE_TYPE)
+    .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)
+    .map((role) => ({
+      value: role,
+      label: ROLE_LABELS[role],
+    }));
   if (isTeamMembersLoading) {
     return <TeamMemberCardSkeleton page />;
   }
+
   return (
     <div className="flex flex-col gap-8 h-full overflow-y-auto [scrollbar-width:thin]">
       {/* Header */}
@@ -68,7 +75,7 @@ export const TeamTemplate = () => {
               .map((word) => word[0])
               .join('')
               .toUpperCase()
-              .slice(0, 2),
+              .slice(0, 4),
             avatarColor: colors.primary,
             tasks: 0,
             done: 0,
@@ -98,7 +105,7 @@ export const TeamTemplate = () => {
           );
         })}
       </div>
-      {!showAll && teamMembers?.data && teamMembers.data.length > 2 && (
+      {!showAll && teamMembers?.data && teamMembers.data.length > 4 && (
         <div className="mt-2 flex justify-center">
           <WpButton
             variant="ghost"

@@ -59,6 +59,8 @@ export interface AddProjectMembersPayload {
 
 // Get Project Query Params
 export interface GetProjectQueryParams {
+  page?: number;
+  page_size?: number;
   name?: string;
   status?: string;
 }

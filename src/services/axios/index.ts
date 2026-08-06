@@ -13,6 +13,8 @@ export interface PaginationInfo {
   totalItems?: number | string;
   total_pages?: number;
   totalPages?: number;
+  has_next?: boolean;
+  has_previous?: boolean;
   hasNextPage?: boolean;
   has_next_page?: boolean;
   hasPrevPage?: boolean;
@@ -21,7 +23,7 @@ export interface PaginationInfo {
 
 // Generic paginated response interface
 export interface PaginatedApiResponse<T> extends ApiResponse<T> {
-  pagination?: PaginationInfo;
+  meta?: PaginationInfo;
 }
 interface ErrorResponseData {
   error?: {
@@ -128,7 +130,7 @@ const processPaginatedResponse = <T>(
     data,
     message: response?.data?.message,
     status: response.status,
-    pagination: response?.data?.pagination ?? response?.data?.data?.pagination ?? undefined,
+    meta: response?.data?.meta ?? response?.data?.data?.meta ?? undefined,
   };
 };
 
@@ -215,6 +217,18 @@ class AxiosApiService {
       return processPaginatedResponse<T>(response, options);
     } catch (error) {
       return handleApiError(error, 'POST', options);
+    }
+  }
+
+  async getPaginated<T>(
+    endpoint: string,
+    options?: ApiRequestOptions
+  ): Promise<PaginatedApiResponse<T>> {
+    try {
+      const response = await axiosInstance.get(endpoint);
+      return processPaginatedResponse<T>(response, options);
+    } catch (error) {
+      return handleApiError(error, 'GET', options);
     }
   }
 }
