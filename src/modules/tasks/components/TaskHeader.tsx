@@ -26,6 +26,8 @@ type TaskHeaderProps = {
       sprint: string;
     }>
   >;
+  selectedRows: string[];
+  setShowBulkDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 export const TaskHeader = ({
   selectedFilters,
@@ -34,6 +36,8 @@ export const TaskHeader = ({
   setSearchTerm,
   currentPage,
   setCurrentPage,
+  selectedRows,
+  setShowBulkDeleteModal,
 }: TaskHeaderProps) => {
   const handleFilterChange = (key: string, value: string) => {
     setCurrentPage(1);
@@ -48,9 +52,20 @@ export const TaskHeader = ({
         <h1 className="text-2xl font-bold text-gray-900">Task List</h1>
 
         <div className="flex gap-2">
+          <WpButton
+            variant="danger"
+            size="sm"
+            className="w-28"
+            disabled={selectedRows.length === 0}
+            onClick={() => setShowBulkDeleteModal(true)}
+          >
+            Delete {selectedRows.length > 0 && `(${selectedRows.length})`}
+          </WpButton>
+
           <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>
             Export
           </WpButton>
+
           <WpButton variant="secondary" size="sm" leftIcon={<Columns3 size={16} />}>
             Columns
           </WpButton>

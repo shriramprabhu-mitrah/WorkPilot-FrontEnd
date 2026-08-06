@@ -373,20 +373,25 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </div>
           </div>
         ) : sprints.length === 0 ? (
-          <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600">
+          <div className="rounded-2xl border border-gray-200 bg-white py-16">
+            <div className="flex flex-col items-center justify-center">
+              <img src="/images/Empty-rafiki.svg" alt="No Sprints" className="h-72 w-72" />
+
+              <h2 className="mt-6 text-2xl font-bold text-gray-900">No Sprints Found</h2>
+
+              <p className="text-sm font-medium text-gray-400">
                 No sprints have been created for this project.
               </p>
               <p className="mt-1 text-xs text-gray-400">
                 Create your first sprint to start planning work.
               </p>
+
               {hasPermission('SPRINT_CREATE') && (
                 <WpButton
                   variant="primary"
                   size="md"
                   onClick={() => setShowAddSprintModal(true)}
-                  className="mt-5"
+                  className="mt-8"
                 >
                   + Add Sprint
                 </WpButton>

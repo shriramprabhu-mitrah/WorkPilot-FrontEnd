@@ -162,9 +162,11 @@ const SprintDetail = () => {
         </WpButton>
       </div>
       {tasks.length === 0 ? (
-        <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
+        <div className="rounded-2xl border border-gray-200 bg-white py-16">
+          <div className="flex flex-col items-center justify-center">
+            <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-72 w-72" />
+
+            <p className="text-sm font-medium text-gray-400">
               No tasks have been created for this sprint.
             </p>
             <p className="mt-1 text-xs text-gray-400">

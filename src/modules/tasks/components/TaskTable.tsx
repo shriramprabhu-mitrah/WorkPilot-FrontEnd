@@ -10,10 +10,13 @@ import { WpButton } from '@/src/app/components/common/button';
 import { Task } from '@/src/types/task';
 import { KanbanTask, ColumnId } from '@/src/types/board';
 import { logger } from '@/src/lib/utils/logger';
-import { tasksData } from '../data/tasks';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import Image from 'next/image';
+
 type TaskTableProps = {
+  tasks: Task[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+
   selectedFilters: {
     project: string;
     status: string;
@@ -24,17 +27,20 @@ type TaskTableProps = {
   searchTerm: string;
   currentPage: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  selectedRows: string[];
+  setSelectedRows: React.Dispatch<React.SetStateAction<string[]>>;
 };
-
 export const TaskTable = ({
+  tasks,
+  setTasks,
   selectedFilters,
   searchTerm,
   currentPage,
   setCurrentPage,
+  selectedRows,
+  setSelectedRows,
 }: TaskTableProps) => {
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
-  const [tasks, setTasks] = useState(tasksData);
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const rowsPerPage = 10;
   const { hasPermission } = usePermissions();
@@ -109,6 +115,7 @@ export const TaskTable = ({
   const handleDelete = () => {
     if (!deleteTaskId) return;
     setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
+    setSelectedRows((prev) => prev.filter((id) => id !== deleteTaskId));
     setDeleteTaskId(null);
   };
 
@@ -278,15 +285,17 @@ export const TaskTable = ({
       {deleteTaskId && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6">
-            <h2>Delete Task</h2>
-            <p>Are you sure you want to delete this task?</p>
+            <h2 className="text-lg font-semibold text-gray-900">Delete Task</h2>
+            <p className="mt-2 text-sm text-gray-500">Are you sure you want to delete this task?</p>
 
             <div className="mt-6 flex justify-end gap-3">
               <WpButton variant="secondary" onClick={() => setDeleteTaskId(null)}>
                 Cancel
               </WpButton>
 
-              <WpButton onClick={handleDelete}>Delete</WpButton>
+              <WpButton variant="danger" onClick={handleDelete}>
+                Delete
+              </WpButton>
             </div>
           </div>
         </div>
