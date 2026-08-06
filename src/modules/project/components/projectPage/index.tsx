@@ -122,7 +122,6 @@ const ProjectPage = () => {
 
       await createProjectAsync(payload);
       setIsModalOpen(false);
-      await refetchProjects();
 
       setProjectName('');
       setDescription('');
@@ -172,13 +171,6 @@ const ProjectPage = () => {
       dispatch(setProjectLoading(false));
     }
   };
-  if (isLoadingProjects) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-0.5">
-        <ProjectSkeleton />
-      </div>
-    );
-  }
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-gray-50">
       <div className="sticky top-0 z-20 bg-gray-50 px-1 pt-1 pb-4">
@@ -295,7 +287,11 @@ const ProjectPage = () => {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setProjectName('');
+                  setDescription('');
+                  setIsModalOpen(false);
+                }}
                 aria-label="Close modal"
                 className="!p-2 text-gray-400 hover:text-gray-600"
                 leftIcon={<X size={18} />}
@@ -335,7 +331,11 @@ const ProjectPage = () => {
               <WpButton
                 variant="secondary"
                 size="sm"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setProjectName('');
+                  setDescription('');
+                  setIsModalOpen(false);
+                }}
                 disabled={isCreatingProject}
               >
                 Cancel

@@ -87,20 +87,16 @@ export default function GeneralSettings() {
 
   const logo = watch('logo');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     if (organization) {
       setValue('name', organization?.name ?? '');
       setValue('domain', organization?.domain ?? '');
       setValue('industry', organization?.industry ?? '');
       setValue('team_size', organization?.team_size ?? '');
-      setValue(
-        'country',
-        countryOptions.find((a) => a.label === organization.country)?.value || ''
-      );
-      // setValue('logo_url', organization?.logo_url ?? '');
+      const countryId = countryOptions.find((c) => c.label === organization.country)?.value;
+      if (countryId) setValue('country', countryId);
     }
-  }, [organization, reset]);
+  }, [organization, countries, reset]);
 
   const onSubmit = async (data: OrganizationFormData) => {
     try {

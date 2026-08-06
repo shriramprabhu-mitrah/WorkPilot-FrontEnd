@@ -27,36 +27,10 @@ export default function ProjectSkeleton() {
   );
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <Skeleton className="h-9 w-36 mb-2" />
-          <Skeleton className="h-5 w-56" />
-        </div>
-
-        <Skeleton className="h-10 w-32 rounded-lg" />
-      </div>
-
-      {/* Filters */}
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Skeleton className="h-10 w-52 rounded-lg" />
-
-        <div className="flex gap-2">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-10 w-20 rounded-lg" />
-          ))}
-        </div>
-
-        <Skeleton className="h-10 w-24 rounded-lg" />
-      </div>
-
-      {/* Cards */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index}>{card}</div>
-        ))}
-      </div>
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index}>{card}</div>
+      ))}
     </div>
   );
 }
