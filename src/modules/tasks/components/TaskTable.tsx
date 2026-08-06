@@ -138,9 +138,9 @@ export const TaskTable = ({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="max-h-[600px] overflow-auto">
           <table className="w-full min-w-[900px] border-collapse text-sm">
-            <thead className="bg-gray-100">
+            <thead className="sticky top-0 z-20 bg-gray-100">
               <tr className="h-12 text-[11px] font-medium uppercase tracking-wide text-gray-500">
                 <th className="w-12 p-3">
                   <TableCheckbox

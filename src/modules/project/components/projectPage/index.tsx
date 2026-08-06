@@ -15,6 +15,8 @@ import { useAppDispatch } from '@/src/store';
 import { setSelectedProject, setProjectLoading } from '@/src/store/slices/project';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import ProjectSkeleton from '../projectSkeleton';
+import { ViewToggle, ViewType } from '../viewToggle';
+import Image from 'next/image';
 
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
@@ -79,6 +81,7 @@ const ProjectPage = () => {
   const { createProjectAsync, isCreatingProject } = useCreateProject();
   const queryClient = useQueryClient();
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [view, setView] = useState<ViewType>('grid');
 
   const {
     projects: apiProjects,
@@ -177,87 +180,109 @@ const ProjectPage = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 p-0.5">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-[25px] font-bold text-gray-900">Projects</h1>
-          <p className="mt-2 text-gray-500">
-            {displayedProjects.length} projects across your workspace
-          </p>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-gray-50">
+      <div className="sticky top-0 z-20 bg-gray-50 px-1 pt-1 pb-4">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-[25px] font-bold text-gray-900">Projects</h1>
+            <p className="mt-2 text-gray-500">
+              {displayedProjects.length} projects across your workspace
+            </p>
+          </div>
+          <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
+            + New Project
+          </WpButton>
         </div>
-        <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
-          + New Project
-        </WpButton>
-      </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <WpInput
-          type="text"
-          placeholder="Search projects..."
-          icon={<Search size={15} />}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm outline-none"
-        />
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <WpInput
+            type="text"
+            placeholder="Search projects..."
+            icon={<Search size={15} />}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm outline-none"
+          />
 
-        <div className="flex items-center gap-2">
-          {filters.map((statusFilter) => (
-            <WpButton
-              key={statusFilter}
-              size="sm"
-              variant={selectedFilter === statusFilter ? 'primary' : 'secondary'}
-              className={selectedFilter === statusFilter ? '' : 'text-gray-600 hover:text-gray-700'}
-              onClick={() => setSelectedFilter(statusFilter)}
-            >
-              {statusFilter}
-            </WpButton>
-          ))}
-        </div>
-        <WpButton
-          variant="secondary"
-          size="sm"
-          leftIcon={<SlidersHorizontal size={16} />}
-          onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-        >
-          Sort {sortOrder === 'asc' ? '↑' : '↓'}
-        </WpButton>
-      </div>
-
-      {displayedProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
-            <p className="text-gray-500">No projects found matching your criteria.</p>
-          ) : (
-            <>
-              <img src="/images/Empty-rafiki.svg" alt="No Projects" className="mb-8 h-64 w-64" />
-
-              <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
-
-              <p className="mt-3 max-w-md text-center text-gray-500">
-                Projects help organize boards, sprints, tasks, and reports. Create your first
-                project to get started.
-              </p>
-
-              <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
-                + Create Project
+          <div className="flex items-center gap-2">
+            {filters.map((statusFilter) => (
+              <WpButton
+                key={statusFilter}
+                size="sm"
+                variant={selectedFilter === statusFilter ? 'primary' : 'secondary'}
+                className={
+                  selectedFilter === statusFilter ? '' : 'text-gray-600 hover:text-gray-700'
+                }
+                onClick={() => setSelectedFilter(statusFilter)}
+              >
+                {statusFilter}
               </WpButton>
-            </>
-          )}
+            ))}
+          </div>
+          <div className="ml-auto flex items-center gap-3">
+            <ViewToggle view={view} onChange={setView} />
+
+            <WpButton
+              variant="secondary"
+              size="sm"
+              leftIcon={<SlidersHorizontal size={16} />}
+              onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+            >
+              Sort {sortOrder === 'asc' ? '↑' : '↓'}
+            </WpButton>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-          {displayedProjects.map((project) => {
-            const apiProject = apiProjectsMap.get(project?.id);
-            return (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onClick={() => apiProject && handleProjectClick(project, apiProject)}
-              />
-            );
-          })}
-        </div>
-      )}
+      </div>
+      <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8">
+        {displayedProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            {searchTerm || selectedFilter !== ProjectFilter.ALL ? (
+              <p className="text-gray-500">No projects found matching your criteria.</p>
+            ) : (
+              <>
+                <div className="relative mb-8 h-64 w-64">
+                  <Image
+                    src="/images/Empty-rafiki.svg"
+                    alt="No Projects"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Ready to build something?</h2>
+                <p className="mt-3 max-w-md text-center text-gray-500">
+                  Projects help organize boards, sprints, tasks, and reports. Create your first
+                  project to get started.
+                </p>
+
+                <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
+                  + Create Project
+                </WpButton>
+              </>
+            )}
+          </div>
+        ) : (
+          <div
+            className={
+              view === 'grid'
+                ? 'grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3'
+                : 'flex flex-col gap-4'
+            }
+          >
+            {displayedProjects.map((project) => {
+              const apiProject = apiProjectsMap.get(project?.id);
+              return (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  view={view}
+                  onClick={() => apiProject && handleProjectClick(project, apiProject)}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
