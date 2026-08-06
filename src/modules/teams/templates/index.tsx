@@ -8,7 +8,7 @@ import { RoleCardView } from '../components/rolecared';
 import { MEMBERS, roleOptions, ROLES } from '../data';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '../components/invitePopup';
-import { useGetTeamMembers, useGetUserById, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
+import { useGetProject, useGetTeamMembers, useGetUserById, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -33,6 +33,9 @@ export const TeamTemplate = () => {
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
   const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 4);
   const { user, isUserLoading } = useGetUserById(selectedUserId);
+  const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
+  
+  const projects = userProjects?.data?.project ?? [];
   const roleOptions = Object.values(ROLE_TYPE)
     .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)
     .map((role) => ({
@@ -86,16 +89,9 @@ export const TeamTemplate = () => {
               key={member.id}
               member={memberData}
               canManageUsers={hasPermission('TEAMS_DELETE')}
-              openMenu={openMenuId === member.id}
-              onToggleMenu={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
               onDelete={() => {
                 setSelectedMember(memberData);
                 setShowDeleteModal(true);
-              }}
-              onUpdateRole={() => {
-                setSelectedMember(memberData);
-                setSelectedRole(member.role);
-                setShowRoleModal(true);
               }}
               onClick={() => {
                 setSelectedUserId(member.id);
@@ -144,7 +140,7 @@ export const TeamTemplate = () => {
             {isUserLoading ? (
               <div className="py-8 text-center">Loading...</div>
             ) : (
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 space-y-5">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
                   <p className="font-medium">{user?.data?.name}</p>
@@ -154,10 +150,35 @@ export const TeamTemplate = () => {
                   <p className="text-sm text-gray-500">Email</p>
                   <p>{user?.data?.email}</p>
                 </div>
-
+                {/* Projects */}
                 <div>
-                  <p className="text-sm text-gray-500">Role</p>
-                  <p>{user?.data?.role}</p>
+                  <p className="mb-3 text-sm font-medium text-gray-700">Projects</p>
+
+                  {isProjectLoading ? (
+                    <p className="text-sm text-gray-500">Loading projects...</p>
+                  ) : projects.length > 0 ? (
+                    <div className="overflow-hidden rounded-lg border border-gray-200">
+                      <table className="w-full">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-semibold">Project</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold">Role</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {projects.map((project) => (
+                            <tr key={project.project_id} className="border-t border-gray-200">
+                              <td className="px-4 py-3 text-sm">{project.project_name}</td>
+                              <td className="px-4 py-3 text-sm capitalize">{project.role}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No projects assigned.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -198,47 +219,6 @@ export const TeamTemplate = () => {
                 }}
               >
                 Delete
-              </WpButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showRoleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6">
-            <h2 className="text-lg font-semibold">Update Role</h2>
-
-            <div className="mt-4">
-              <WpDropdown
-                label="Role"
-                options={roleOptions}
-                value={selectedRole}
-                onChange={(value) => setSelectedRole(value)}
-                placeholder="Select Role"
-              />
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <WpButton
-                onClick={() => {
-                  setShowRoleModal(false);
-                  setSelectedMember(null);
-                }}
-              >
-                Cancel
-              </WpButton>
-              <WpButton
-                onClick={() => {
-                  if (!selectedMember) return;
-                  updateRole({
-                    user_id: selectedMember.id,
-                    role: selectedRole,
-                  });
-                  setShowRoleModal(false);
-                  setSelectedMember(null);
-                }}
-              >
-                Save
               </WpButton>
             </div>
           </div>
