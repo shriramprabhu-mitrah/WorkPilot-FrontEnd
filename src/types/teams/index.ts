@@ -1,3 +1,5 @@
+import { ProjectStatus } from "../project";
+
 export interface Member {
   id: string;
   name: string;
@@ -48,4 +50,16 @@ export interface User {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserProject {
+  project_id: string;
+  project_name: string;
+  role: string;
+  status: ProjectStatus;
+}
+
+export interface GetUserProjectsResponse {
+  user_id: string;
+  project: UserProject[];
 }

@@ -8,40 +8,18 @@ import { ROLE_TYPE } from '@/src/app/components/common/enum';
 interface MemberCardProps {
   member: Member;
   canManageUsers: boolean;
-  openMenu: boolean;
-  onToggleMenu: () => void;
   onDelete: () => void;
-  onUpdateRole: () => void;
   onClick?: () => void;
 }
 
 export const MemberCard = ({
   member,
   canManageUsers,
-  openMenu,
-  onToggleMenu,
   onDelete,
-  onUpdateRole,
   onClick,
 }: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        if (openMenu) {
-          onToggleMenu();
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [openMenu, onToggleMenu]);
-  const menuRef = useRef<HTMLDivElement>(null);
   return (
     <div
       onClick={onClick}
@@ -72,42 +50,18 @@ export const MemberCard = ({
           {pct}%
         </span>
         {canManageUsers && (
-          <div className="relative" ref={menuRef}>
-            <WpButton
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleMenu();
-              }}
-            >
-              <MoreVertical size={16} />
-            </WpButton>
-
-            {openMenu && (
-              <div className="absolute right-0 top-full z-20 mt-1 flex w-12 flex-col rounded-lg border border-gray-200 bg-white shadow-lg">
-                <WpButton
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdateRole();
-                  }}
-                >
-                  <Pencil size={16} />
-                </WpButton>
-
-                <WpButton
-                  variant="ghost"
-                  className="text-red-600 hover:bg-red-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
-                >
-                  <Trash2 size={16} />
-                </WpButton>
-              </div>
-            )}
-          </div>
+          <WpButton
+            variant="ghost"
+            size="sm"
+            className="!p-2 text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            aria-label="Remove member"
+          >
+            <Trash2 size={16} />
+          </WpButton>
         )}
       </div>
 

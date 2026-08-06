@@ -1,7 +1,8 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { ApiResponse } from '@/src/types/core';
-import { RemoveUserPayload, TeamMember, UpdateRolePayload, User } from '@/src/types/teams';
+import { GetUserProjectsResponse, RemoveUserPayload, TeamMember, UpdateRolePayload, User } from '@/src/types/teams';
 import { apiService } from '../axios';
+import { Project } from '@/src/types/project';
 
 class TeamService {
   async getTeamMembers(page: number, pageSize: number): Promise<ApiResponse<TeamMember[]>> {
@@ -31,5 +32,13 @@ class TeamService {
       showErrorToast: true,
     });
   }
+
+ async getProject(userId: string): Promise<ApiResponse<GetUserProjectsResponse>> {
+  return apiService.get<GetUserProjectsResponse>(
+    ApiEndpoints.Team.getProject.url.replace('{id}', userId),{
+      showErrorToast: true,
+    }
+  );
+}
 }
 export const teamService = new TeamService();

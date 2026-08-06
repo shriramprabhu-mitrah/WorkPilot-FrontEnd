@@ -1,10 +1,11 @@
 import { teamService } from '@/src/services/teams';
 import { ApiResponse } from '@/src/types/core';
-import { RemoveUserPayload, UpdateRolePayload, User } from '@/src/types/teams';
+import { GetUserProjectsResponse, RemoveUserPayload, UpdateRolePayload, User } from '@/src/types/teams';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 export const QUERY_KEYS = {
   TEAM_MEMBERS: 'team-members',
   USER: 'user',
+  PROJECT: 'project',
 } as const;
 
 export const useGetTeamMembers = (page: number, pageSize: number) => {
@@ -66,5 +67,24 @@ export const useGetUserById = (id: string) => {
     user,
     isUserLoading,
     refetchUser,
+  };
+};
+
+
+export const useGetProject = (userId: string) => {
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    refetch: refetchProject,
+  } = useQuery<ApiResponse<GetUserProjectsResponse>>({
+    queryKey: [QUERY_KEYS.PROJECT, userId],
+    queryFn: () => teamService.getProject(userId),
+    enabled: !!userId,
+  });
+
+  return {
+    project,
+    isProjectLoading,
+    refetchProject,
   };
 };

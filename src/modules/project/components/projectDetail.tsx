@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, X, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import EditProjectModal from './editProjectModal';
@@ -47,6 +47,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50);
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
   const { removeMemberAsync, isRemovingMember } = useRemoveProjectMember();
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState('');
 
   const {
     sprints: apiSprints,
@@ -651,29 +653,98 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             <p className="text-sm font-medium text-gray-900">
                               {member.full_name || member.username}
                             </p>
-                            {member.role && (
+                            {editingMemberId === member.user_id ? (
+                              <div className="mt-1 w-50">
+                                <WpDropdown
+                                  options={roleOptions}
+                                  value={selectedRole}
+                                  onChange={(value) => setSelectedRole(value)}
+                                  placeholder="Select Role"
+                                />
+                              </div>
+                            ) : (
                               <p className="text-xs text-gray-500 capitalize">
                                 {member.role.replace('_', ' ')}
                               </p>
                             )}
                           </div>
                         </div>
-                        {hasPermission('MEMBER_REMOVE') && canDelete && (
-                          <WpButton
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setMemberToRemove({
-                                userId: member.user_id,
-                                name: member.full_name || member.username,
-                              })
-                            }
-                            className="!p-2 text-red-600 hover:bg-red-50"
-                            aria-label="Remove member"
-                          >
-                            <Trash2 size={16} />
-                          </WpButton>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {editingMemberId === member.user_id ? (
+                            <>
+                              <WpButton
+                                variant="ghost"
+                                size="sm"
+                                className="!p-2 text-green-600 hover:bg-green-50"
+                                onClick={() => {
+                                  // Call update role API here later
+                                  setEditingMemberId(null);
+                                }}
+                              >
+                                <Check size={16} />
+                              </WpButton>
+
+                              <WpButton
+                                variant="ghost"
+                                size="sm"
+                                className="!p-2 text-gray-500 hover:bg-gray-100"
+                                onClick={() => {
+                                  setEditingMemberId(null);
+                                  setSelectedRole('');
+                                }}
+                              >
+                                <X size={16} />
+                              </WpButton>
+                              {hasPermission('MEMBER_REMOVE') && canDelete && (
+                                <WpButton
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setMemberToRemove({
+                                      userId: member.user_id,
+                                      name: member.full_name || member.username,
+                                    })
+                                  }
+                                  className="!p-2 text-red-600 hover:bg-red-50"
+                                  aria-label="Remove member"
+                                >
+                                  <Trash2 size={16} />
+                                </WpButton>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <WpButton
+                                variant="ghost"
+                                size="sm"
+                                className="!p-2 text-blue-600 hover:bg-blue-50"
+                                onClick={() => {
+                                  setEditingMemberId(member.user_id);
+                                  setSelectedRole(member.role);
+                                }}
+                              >
+                                <Pencil size={16} />
+                              </WpButton>
+
+                              {hasPermission('MEMBER_REMOVE') && canDelete && (
+                                <WpButton
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setMemberToRemove({
+                                      userId: member.user_id,
+                                      name: member.full_name || member.username,
+                                    })
+                                  }
+                                  className="!p-2 text-red-600 hover:bg-red-50"
+                                  aria-label="Remove member"
+                                >
+                                  <Trash2 size={16} />
+                                </WpButton>
+                              )}
+                            </>
+                          )}
+                        </div>
                         {hasPermission('MEMBER_REMOVE') && !canDelete && (
                           <div className="px-2 py-1">
                             <span
