@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { signupService } from '../../../services/signup';
 import { useAppDispatch } from '../../../store';
@@ -8,6 +8,7 @@ import { SignInPayload } from '../../../types/signin';
 export const useSignin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const signInMutation = useMutation({
     mutationFn: async (payload: SignInPayload) => {
@@ -47,13 +48,13 @@ export const useSignin = () => {
   const logOutMutation = useMutation({
     mutationFn: () => signupService.logOut(),
     onSuccess: () => {
-      // Clear user data on successful logout
       dispatch(clearUser());
-      // Navigate to signin page
+      queryClient.clear();
       router.push('/signin');
     },
     onError: () => {
       dispatch(clearUser());
+      queryClient.clear();
       router.push('/signin');
     },
   });
