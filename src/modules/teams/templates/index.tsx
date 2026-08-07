@@ -29,7 +29,7 @@ export const TeamTemplate = () => {
   const [showAll, setShowAll] = useState(false);
   const { mutate: removeUser } = useRemoveUser();
   const { mutate: updateRole } = useUpdateRole();
-  const { hasPermission } = usePermissions();
+  const { hasPermission, isAdmin } = usePermissions();
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
   const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 4);
   const { user, isUserLoading } = useGetUserById(selectedUserId);
@@ -58,14 +58,15 @@ export const TeamTemplate = () => {
             {teamMembers?.data?.length} members · Acme Corp
           </p>
         </div>
-        <WpButton
-          size="sm"
-          leftIcon={<UserPlus size={15} />}
-          onClick={() => setIsInviteModalOpen(true)}
-        >
-          <span className="hidden sm:inline">Invite Member</span>
-          <span className="sm:hidden">Invite</span>
-        </WpButton>
+        {isAdmin() && (
+          <WpButton
+            size="sm"
+            leftIcon={<UserPlus size={16} />}
+            onClick={() => setIsInviteModalOpen(true)}
+          >
+            Invite Member
+          </WpButton>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
         {visibleMembers?.map((member) => {

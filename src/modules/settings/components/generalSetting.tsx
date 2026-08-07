@@ -19,14 +19,7 @@ import Image from 'next/image';
 
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
-  domain: z
-    .string()
-    .optional()
-    .or(z.literal(''))
-    .refine(
-      (val) => !val || /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/.test(val),
-      'Enter a valid domain (e.g. example.com)'
-    ),
+  domain: z.string().optional().or(z.literal('')),
   industry: z.string().optional().or(z.literal('')),
   team_size: z.string().optional().or(z.literal('')),
   country: z.string().optional().or(z.literal('')),

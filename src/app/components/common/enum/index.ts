@@ -46,6 +46,7 @@ export enum ROLE_TYPE {
   DEVELOPER = 'developer',
   VIEWER = 'viewer',
   GUEST = 'guest',
+  MEMBER = 'member'
 }
 
 export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
@@ -54,4 +55,5 @@ export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
   [ROLE_TYPE.DEVELOPER]: 'Developer',
   [ROLE_TYPE.VIEWER]: 'Viewer',
   [ROLE_TYPE.GUEST]: 'Guest',
+  [ROLE_TYPE.MEMBER]: 'Member',
 };
