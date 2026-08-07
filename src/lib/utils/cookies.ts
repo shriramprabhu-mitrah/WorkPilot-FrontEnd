@@ -1,14 +1,19 @@
 import Cookies from 'js-cookie';
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '@/src/lib/auth/cookie-options';
 
-const ACCESS_TOKEN_KEY = 'access_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
-
-export const setTokens = (accessToken: string, refreshToken?: string) => {
+export const setTokens = (
+  accessToken: string,
+  refreshToken?: string,
+  expiresInSeconds?: number
+) => {
   const isProduction = process.env.NODE_ENV === 'production';
+
   Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
     secure: isProduction,
     sameSite: 'strict',
+    ...(expiresInSeconds ? { expires: new Date(Date.now() + expiresInSeconds * 1000) } : {}),
   });
+
   if (refreshToken) {
     Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
       secure: isProduction,
@@ -16,10 +21,6 @@ export const setTokens = (accessToken: string, refreshToken?: string) => {
       expires: 7,
     });
   }
-};
-
-export const getAccessToken = () => {
-  return Cookies.get(ACCESS_TOKEN_KEY);
 };
 
 export const getRefreshToken = () => {
