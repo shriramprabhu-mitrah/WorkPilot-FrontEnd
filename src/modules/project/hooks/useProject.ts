@@ -6,6 +6,7 @@ import {
   AddProjectMembersPayload,
   GetProjectQueryParams,
 } from '@/src/types/project';
+import { UpdateProjectRolePayload } from '../types/project';
 
 export const useGetProjects = (params?: GetProjectQueryParams) => {
   const query = useQuery({
@@ -173,6 +174,29 @@ export const useDeleteProject = () => {
     deleteProject: mutation.mutate,
     deleteProjectAsync: mutation.mutateAsync,
     isDeletingProject: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};
+
+export const useUpdateProjectRole = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (payload: UpdateProjectRolePayload) => projectService.updateProjectRole(payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['projectMembers', variables.project_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projectDetail', variables.project_id],
+      });
+    },
+  });
+  return {
+    updateProjectRole: mutation.mutate,
+    updateProjectRoleAsync: mutation.mutateAsync,
+    isUpdatingProjectRole: mutation.isPending,
     isSuccess: mutation.isSuccess,
     isError: mutation.isError,
     error: mutation.error,

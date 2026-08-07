@@ -12,7 +12,9 @@ import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrg
 import {
   useAddProjectMembers,
   useDeleteProject,
+  useGetProjectDetail,
   useRemoveProjectMember,
+  useUpdateProjectRole,
 } from '@/src/modules/project/hooks/useProject';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { showToast } from '@/src/utils/toast';
@@ -49,7 +51,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { removeMemberAsync, isRemovingMember } = useRemoveProjectMember();
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState('');
-
+  const { updateProjectRole, isUpdatingProjectRole } = useUpdateProjectRole();
   const {
     sprints: apiSprints,
     isLoadingSprints,
@@ -203,6 +205,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
+  
 
   const canRemoveMember = (memberRole: string): boolean => {
     if (memberRole === ROLE_TYPE.ORG_ADMIN) {
@@ -682,8 +685,15 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 size="sm"
                                 className="!p-2 text-green-600 hover:bg-green-50"
                                 onClick={() => {
-                                  // Call update role API here later
+                                  if (!selectedRole) return;
+                                  if (!selectedApiProject?.id) return;
+                                  updateProjectRole({
+                                    project_id: selectedApiProject.id,
+                                    user_id: member.user_id,
+                                    project_role: selectedRole,
+                                  });
                                   setEditingMemberId(null);
+                                  setSelectedRole('');
                                 }}
                               >
                                 <Check size={16} />
@@ -719,7 +729,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             </>
                           ) : (
                             <>
-                              {isAdmin() && !isOrgAdmin &&(
+                              {isAdmin() && !isOrgAdmin && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"

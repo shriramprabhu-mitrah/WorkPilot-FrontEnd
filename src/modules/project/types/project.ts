@@ -25,6 +25,7 @@ export interface Project {
   members: Member[];
   owner?: string;
   creator?: Creator;
+  sprint_count?: number;
 }
 
 export interface Creator {
@@ -42,4 +43,10 @@ export interface Creator {
   created_at: string;
   updated_at: string;
   joined_at: string;
+}
+
+export interface UpdateProjectRolePayload {
+  project_id: string;
+  user_id: string;
+  project_role: string;
 }

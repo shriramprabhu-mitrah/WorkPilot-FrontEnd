@@ -15,6 +15,7 @@ export interface Project {
   organization_id?: string;
   creator?: Creator;
   owner?: string;
+  sprint_count?: number;
 }
 
 // Create Project Payload
