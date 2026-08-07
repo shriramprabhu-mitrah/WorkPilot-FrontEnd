@@ -10,14 +10,14 @@ import {
   progressCards,
   taskColumns,
   workload,
-  Projects,
-  Sprints,
 } from '../../data/sprint';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { projectService } from '@/src/services/project';
+import { sprintService } from '@/src/services/sprint';
 import AddTaskModal from '../AddTaskModal';
 import { Task } from '../../types/sprint';
 import SprintSkeleton from '../sprintSkeleton';
-import { useEffect } from 'react';
+import { logger } from '@/src/lib/utils/logger';
 type NewTask = Task & {
   description: string;
   assignee: string;
@@ -29,12 +29,50 @@ const SprintPage = () => {
   const [selectedSprint, setSelectedSprint] = useState('All Sprints');
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [columns, setColumns] = useState(taskColumns);
+  
+  // Real dynamic data
+  const [projectsList, setProjectsList] = useState<{ id: string; name: string }[]>([]);
+  const [sprintsList, setSprintsList] = useState<{ id: string; name: string }[]>([]);
+
   //temp loading
   const [loading, setLoading] = useState(true);
+
+  // Fetch all projects on mount
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(timer);
+    const fetchProjects = async () => {
+      try {
+        const res = await projectService.getProject({ fieldName: 'id,name' });
+        if (res.data) {
+          setProjectsList(res.data.map(p => ({ id: p.id || '', name: p.name })));
+        }
+      } catch (error) {
+        logger.log('Failed to fetch projects', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
   }, []);
+
+  // Fetch sprints when a specific project is selected
+  useEffect(() => {
+    const fetchSprints = async () => {
+      if (!selectedProject || selectedProject === 'All Projects') {
+        setSprintsList([]);
+        setSelectedSprint('All Sprints');
+        return;
+      }
+      try {
+        const res = await sprintService.getSprints(selectedProject, 'id,name');
+        if (res.data) {
+          setSprintsList(res.data.map(s => ({ id: s.id, name: s.name })));
+        }
+      } catch (error) {
+        logger.log('Failed to fetch sprints', error);
+      }
+    };
+    fetchSprints();
+  }, [selectedProject]);
 
   if (loading) {
     return <SprintSkeleton />;
@@ -78,8 +116,8 @@ const SprintPage = () => {
             >
               <option value="All Projects">All Projects</option>
 
-              {Projects.map((project) => (
-                <option key={project.id} value={project.name}>
+              {projectsList.map((project) => (
+                <option key={project.id} value={project.id}>
                   {project.name}
                 </option>
               ))}
@@ -88,12 +126,13 @@ const SprintPage = () => {
             <select
               value={selectedSprint}
               onChange={(e) => setSelectedSprint(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50"
+              disabled={selectedProject === 'All Projects'}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="All Sprints">All Sprints</option>
 
-              {Sprints.map((sprint) => (
-                <option key={sprint.id} value={sprint.name}>
+              {sprintsList.map((sprint) => (
+                <option key={sprint.id} value={sprint.id}>
                   {sprint.name}
                 </option>
               ))}

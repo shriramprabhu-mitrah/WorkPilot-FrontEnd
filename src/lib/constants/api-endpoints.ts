@@ -179,12 +179,25 @@ export const ApiEndpoints = {
     removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
   },
   Sprint: {
-    getSprints: createEndpoint('/projects/{projectId}/sprint'),
+    getSprints: createQueryEndpoint('/projects/{projectId}/sprint'),
     createSprint: createEndpoint('/projects/{projectId}/sprint'),
     getSprintById: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
     updateSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
     deleteSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
   },
+  Task: {
+    createTasks: createEndpoint('/projects/{projectId}/tasks'),
+    getallTasks: createEndpoint('/projects/{projectId}/tasks'),
+    getTasks: createQueryEndpoint('/projects/{projectId}/tasks'),
+    getTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+    updateTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+    cloneTask: createEndpoint('/projects/{projectId}/tasks/{taskId}/clone'),
+    deleteTask: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+    restoreTask: createEndpoint('/projects/{projectId}/tasks/{taskId}/restore'),
+    bulkUpdate: createEndpoint('/projects/{projectId}/tasks/bulk'),
+    getUserStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+    allUserStories: createQueryEndpoint('/projects/{projectId}/tasks'),
+  }
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

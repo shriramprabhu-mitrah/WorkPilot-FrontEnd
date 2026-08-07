@@ -63,6 +63,7 @@ export interface GetProjectQueryParams {
   page_size?: number;
   name?: string;
   status?: string;
+  fieldName?: string;
 }
 
 export interface Creator {

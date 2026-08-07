@@ -4,8 +4,9 @@ import { ApiResponse } from '@/src/types/core';
 import { SprintDetail, SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 
 class SprintService {
-  async getSprints(projectId: string): Promise<ApiResponse<SprintDetail[]>> {
-    const url = ApiEndpoints.Sprint.getSprints.withParams({ projectId });
+  async getSprints(projectId: string, fieldName?: string): Promise<ApiResponse<SprintDetail[]>> {
+    const endpoint = ApiEndpoints.Sprint.getSprints.withNamedParams({ projectId });
+    const url = fieldName ? endpoint.withQuery({ fieldName }) : endpoint.url;
     return apiService.get<SprintDetail[]>(url);
   }
 
