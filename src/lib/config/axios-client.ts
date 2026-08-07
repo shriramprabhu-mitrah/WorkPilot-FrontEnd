@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { refreshAccessToken } from '@/src/lib/auth/refresh-access-token';
+import { getRefreshToken, setTokens } from '@/src/lib/utils/cookies';
 import { showToast } from '@/src/utils/toast';
 
 export const axiosInstance = axios.create({
@@ -6,8 +8,46 @@ export const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Allows cookies to be sent and received
+  withCredentials: true,
 });
+
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown | null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve();
+    }
+  });
+  failedQueue = [];
+};
+
+const redirectToSignIn = () => {
+  if (typeof window !== 'undefined') {
+    showToast.error('Session expired. Please sign in again.');
+
+    setTimeout(() => {
+      window.location.href = '/signin';
+    }, 2000);
+  }
+};
+
+const attemptTokenRefresh = async () => {
+  const refreshToken = getRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+
+  const tokens = await refreshAccessToken(refreshToken);
+  setTokens(tokens.access_token, tokens.refresh_token, tokens.expires_in);
+};
 
 // Response Interceptor: Handle authentication errors
 axiosInstance.interceptors.response.use(
@@ -28,41 +68,37 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 errors with automatic token refresh via backend
     if (status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: () => resolve(undefined),
+            reject,
+          });
+        }).then(() => axiosInstance(originalRequest));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        // Backend handles refresh token from HTTP-only cookies
-        const baseURL = process.env.NEXT_PUBLIC_API_URL || '/api';
-        await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true });
-
-        // Retry the original request - backend will use refreshed cookie
+        await attemptTokenRefresh();
+        processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        if (typeof window !== 'undefined') {
-          showToast.error('Session expired. Please sign in again.');
-
-          setTimeout(() => {
-            window.location.href = '/signin';
-          }, 2000); // Increased delay to allow toast to show
-        }
+        processQueue(refreshError);
+        redirectToSignIn();
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
-    // If 403 or other unauthorized access not handled by refresh
     if (status === 401 || status === 403) {
-      if (typeof window !== 'undefined') {
-        showToast.error('Session expired. Please sign in again.');
-
-        setTimeout(() => {
-          window.location.href = '/signin';
-        }, 2000); // Increased delay to allow toast to show
-      }
-
+      redirectToSignIn();
       return Promise.reject(error);
     }
+
     return Promise.reject(error);
   }
 );

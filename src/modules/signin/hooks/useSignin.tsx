@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../../store';
 import { clearUser, setUser } from '../../../store/slices/users';
 import { userService } from '../../../services/user';
 import { SignInPayload } from '../../../types/signin';
+import { setTokens } from '../../../lib/utils/cookies';
 export const useSignin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -14,7 +15,14 @@ export const useSignin = () => {
     mutationFn: async (payload: SignInPayload) => {
       const response = await signupService.signIn(payload);
 
-      // Cookies are now handled by the backend
+      if (response.data?.access_token) {
+        setTokens(
+          response.data.access_token,
+          response.data.refresh_token,
+          response.data.expires_in
+        );
+      }
+
       const userProfile = await userService.getUserProfile();
 
       dispatch(

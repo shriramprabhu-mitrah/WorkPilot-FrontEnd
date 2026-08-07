@@ -34,18 +34,6 @@ class SignupService {
     });
   }
 
-  async refreshToken(refreshToken: string): Promise<ApiResponse<SignInResponse>> {
-    const url = ApiEndpoints.Sign.refresh.url;
-    return apiService.post<SignInResponse>(
-      url,
-      { refresh_token: refreshToken },
-      {
-        showSuccessToast: false,
-        showErrorToast: false,
-      }
-    );
-  }
-
   async logOut(): Promise<ApiResponse<{ message: string }>> {
     const url = ApiEndpoints.Sign.logOut.url;
     return apiService.post<{ message: string }>(
