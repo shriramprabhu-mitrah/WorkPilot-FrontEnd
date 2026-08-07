@@ -49,12 +49,13 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     progress: 0,
     members: [],
     tasks: '0',
+    sprint_count: apiProject.sprint_count ?? 0,
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -138,7 +139,7 @@ const ProjectPage = () => {
 
       setProjectName('');
       setDescription('');
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {

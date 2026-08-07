@@ -163,10 +163,10 @@ export const ApiEndpoints = {
   },
   Team: {
     getUsers: createQueryEndpoint('/organization/get-users'),
-    removeUser: createEndpoint('/organization/remove-user'),
+    removeUser: createEndpoint('/organization/remove-user/{user_id}'),
     updateRole: createEndpoint('/organization/user-role'),
     getUserById: createEndpoint('/auth/{id}'),
-    getProject: createEndpoint('/project/user/{id}')
+    getProject: createEndpoint('/project/user/{id}'),
   },
   Project: {
     createProject: createEndpoint('/project/create'),
@@ -177,6 +177,7 @@ export const ApiEndpoints = {
     addMembers: createEndpoint('/project/add-members'),
     getProjectMembers: createEndpoint('/project/members/{projectId}'),
     removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
+    updateProjectRole: createEndpoint('/project/{projectId}/member/{userId}'),
   },
   Sprint: {
     getSprints: createQueryEndpoint('/projects/{projectId}/sprint'),

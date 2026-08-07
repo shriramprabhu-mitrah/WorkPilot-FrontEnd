@@ -10,6 +10,7 @@ import {
   AddProjectMembersPayload,
   GetProjectQueryParams,
 } from '@/src/types/project';
+import { UpdateProjectRolePayload } from '@/src/modules/project/types/project';
 
 class ProjectService {
   async createProject(payload: CreateProjectPayload): Promise<ApiResponse<Project>> {
@@ -96,6 +97,22 @@ class ProjectService {
       showSuccessToast: true,
       successMessage: 'Project deleted successfully',
     });
+  }
+
+  async updateProjectRole(payload: UpdateProjectRolePayload) {
+    const url = ApiEndpoints.Project.updateProjectRole.url
+      .replace('{projectId}', payload.project_id)
+      .replace('{userId}', payload.user_id);
+    return apiService.patch(
+      url,
+      {
+        project_role: payload.project_role,
+      },
+      {
+        showSuccessToast: true,
+        showErrorToast: true,
+      }
+    );
   }
 }
 

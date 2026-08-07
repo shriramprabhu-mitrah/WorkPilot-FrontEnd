@@ -41,7 +41,7 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
 
           <div className="text-center">
             <p className="text-xs text-gray-500">Sprints</p>
-            <p className="mt-1 font-semibold">{project.tasks}</p>
+            <p className="mt-1 font-semibold">{project.sprint_count}</p>
           </div>
         </div>
 
@@ -107,7 +107,7 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
         <div className="flex items-center justify-between pt-4 border-gray-100">
           <div className="flex-1 text-center">
             <p className="text-xs text-gray-500 mr-2">Sprints</p>
-            <p className="mt-1 text-xs text-gray-500 mr-2">{project.tasks}</p>
+            <p className="mt-1 text-xs text-gray-500 mr-2">{project.sprint_count}</p>
           </div>
 
           <div className="" />
