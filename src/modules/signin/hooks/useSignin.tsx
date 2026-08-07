@@ -38,9 +38,17 @@ export const useSignin = () => {
 
       return response;
     },
-    onSuccess: () => {
-      router.refresh();
-      router.push('/dashboard');
+    onSuccess: (data) => {
+      const token = data?.data?.access_token;
+      const params = new URLSearchParams(window.location.search);
+      const isMobile = params.get('source') === 'mobile';
+
+      if (isMobile && token) {
+        window.location.href = `workpilot://auth?token=${token}`;
+      } else {
+        router.refresh();
+        router.push('/dashboard');
+      }
     },
   });
 
