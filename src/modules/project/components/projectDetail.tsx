@@ -205,10 +205,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   };
 
   const canRemoveMember = (memberRole: string): boolean => {
-    if (!isAdmin() && !isProjectManager()) return false;
-    if (isAdmin()) return true;
-    if (isProjectManager()) return memberRole !== ROLE_TYPE.ORG_ADMIN;
-    return false;
+    if (memberRole === ROLE_TYPE.ORG_ADMIN) {
+      return false;
+    }
+    if (!isAdmin() && !isProjectManager()) {
+      return false;
+    }
+    return true;
   };
 
   const roleOptions = Object.values(ROLE_TYPE)
@@ -637,7 +640,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <div className="space-y-2">
                 {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
                   selectedApiProject.members.map((member) => {
-                    const canDelete = canRemoveMember(member.role);
+                    const isOrgAdmin = member.role === ROLE_TYPE.ORG_ADMIN;
+                    const canDelete =
+                      !isOrgAdmin && hasPermission('MEMBER_REMOVE') && canRemoveMember(member.role);
                     return (
                       <div
                         key={member.user_id}
@@ -714,17 +719,19 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             </>
                           ) : (
                             <>
-                              <WpButton
-                                variant="ghost"
-                                size="sm"
-                                className="!p-2 text-blue-600 hover:bg-blue-50"
-                                onClick={() => {
-                                  setEditingMemberId(member.user_id);
-                                  setSelectedRole(member.role);
-                                }}
-                              >
-                                <Pencil size={16} />
-                              </WpButton>
+                              {isAdmin() && !isOrgAdmin &&(
+                                <WpButton
+                                  variant="ghost"
+                                  size="sm"
+                                  className="!p-2 text-blue-600 hover:bg-blue-50"
+                                  onClick={() => {
+                                    setEditingMemberId(member.user_id);
+                                    setSelectedRole(member.role);
+                                  }}
+                                >
+                                  <Pencil size={16} />
+                                </WpButton>
+                              )}
 
                               {hasPermission('MEMBER_REMOVE') && canDelete && (
                                 <WpButton
@@ -745,16 +752,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             </>
                           )}
                         </div>
-                        {hasPermission('MEMBER_REMOVE') && !canDelete && (
-                          <div className="px-2 py-1">
-                            <span
-                              className="text-xs text-gray-400"
-                              title="You don't have permission to remove this member"
-                            >
-                              No access
-                            </span>
-                          </div>
-                        )}
                       </div>
                     );
                   })

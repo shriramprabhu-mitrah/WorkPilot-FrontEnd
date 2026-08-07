@@ -51,15 +51,16 @@ export const WpDropdown = ({
           disabled={disabled}
           onClick={() => setOpen((p) => !p)}
           className={[
-            'w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white',
-            error
-              ? 'border-[var(--color-error)] focus:ring-red-100'
-              : open
-                ? 'border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]'
-                : 'border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]',
+            'w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all',
             disabled
-              ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
-              : 'cursor-pointer',
+              ? 'bg-[var(--color-gray-100)] border-[var(--color-gray-300)] text-[var(--color-gray-400)] cursor-not-allowed'
+              : error
+                ? 'bg-white border-[var(--color-error)] focus:ring-red-100'
+                : open
+                  ? 'bg-white border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]'
+                  : 'bg-white border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]',
+
+            !disabled && 'cursor-pointer',
           ]
             .filter(Boolean)
             .join(' ')}

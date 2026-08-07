@@ -28,6 +28,7 @@ export default function Profile() {
   const [pwdSuccess, setPwdSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const changePasswordRef = useRef<HTMLDivElement>(null);
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [fullName, setFullName] = useState(user?.name || '');
   const [avatarPreview, setAvatarPreview] = useState('');
@@ -181,9 +182,7 @@ export default function Profile() {
 
             <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
               <p className="mb-1">{user?.email || '-'}</p>
-              <p>
-                {user?.department || '-'} • {user?.location || '-'}
-              </p>
+              <p>{user?.username}</p>
             </div>
 
             <div className="w-full space-y-3 text-sm text-gray-600 dark:text-gray-300 mb-6 border-t border-gray-100 dark:border-gray-700 pt-6">
@@ -211,7 +210,20 @@ export default function Profile() {
             </WpButton>
             <WpButton
               type="button"
-              onClick={() => setIsChangingPwd(!isChangingPwd)}
+              onClick={() => {
+                const nextState = !isChangingPwd;
+
+                setIsChangingPwd(nextState);
+
+                if (nextState) {
+                  setTimeout(() => {
+                    changePasswordRef.current?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start',
+                    });
+                  }, 100);
+                }
+              }}
               className="mt-2 w-full border border-gray-200 !bg-white !text-gray-700"
             >
               {isChangingPwd ? 'Cancel' : 'Change password'}
@@ -292,7 +304,10 @@ export default function Profile() {
 
           {/* Change Password Form */}
           {isChangingPwd && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div
+              ref={changePasswordRef}
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+            >
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
                 Change Password
               </h3>

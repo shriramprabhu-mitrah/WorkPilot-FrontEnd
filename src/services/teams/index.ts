@@ -12,10 +12,12 @@ class TeamService {
     });
   }
 
-  async removeUser(payload: RemoveUserPayload) {
-    const url = `${ApiEndpoints.Team.removeUser.url}?user_id=${payload.user_id}`;
-    return apiService.delete(url);
-  }
+async removeUser(payload: RemoveUserPayload) {
+  return apiService.delete(
+    ApiEndpoints.Team.removeUser.url,
+    payload
+  );
+}
 
   async updateRole(payload: UpdateRolePayload) {
     return apiService.patch(ApiEndpoints.Team.updateRole.url, payload, {
