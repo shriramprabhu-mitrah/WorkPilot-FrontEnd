@@ -38,6 +38,10 @@ class ProjectService {
       searchParams.append('status', params.status);
     }
 
+    if (params?.fieldName) {
+      searchParams.append('fieldName', params.fieldName);
+    }
+
     const query = searchParams.toString();
     const url = `${ApiEndpoints.Project.getProject.url}${query ? `?${query}` : ''}`;
     return apiService.getPaginated<Project[]>(url);
