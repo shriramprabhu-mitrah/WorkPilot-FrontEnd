@@ -17,6 +17,7 @@ interface EditProjectModalProps {
   project: Project & { id?: string };
   onClose: () => void;
   onSuccess?: () => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 const statusOptions: WpDropdownOption[] = [
@@ -28,7 +29,12 @@ const statusOptions: WpDropdownOption[] = [
   { label: 'Planning', value: 'planning' },
 ];
 
-const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps) => {
+const EditProjectModal = ({
+  project,
+  onClose,
+  onSuccess,
+  onLoadingChange,
+}: EditProjectModalProps) => {
   // Normalize status to lowercase for API compatibility
   const normalizeStatus = (status: string | undefined): ProjectStatus => {
     if (!status) return 'active';
@@ -60,6 +66,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps
     }
 
     try {
+      onLoadingChange?.(true);
       await updateProjectAsync({
         projectId: project.id,
         payload: formData,
@@ -75,8 +82,11 @@ const EditProjectModal = ({ project, onClose, onSuccess }: EditProjectModalProps
           })
         );
       }
+      onSuccess?.();
     } catch (error) {
       // Error is already handled by the mutation
+    } finally {
+      onLoadingChange?.(false);
     }
   };
 

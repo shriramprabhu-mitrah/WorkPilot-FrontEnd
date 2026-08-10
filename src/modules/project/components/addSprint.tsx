@@ -41,7 +41,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
   const [sprintCount, setSprintCount] = useState(1);
   const [openSprint, setOpenSprint] = useState(0);
 
-  const { createSprint, isCreatingSprint } = useCreateSprint(projectId);
+  const { createSprintAsync, isCreatingSprint } = useCreateSprint(projectId);
 
   const {
     register,
@@ -77,7 +77,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
           end_date: s.end_date,
         })),
       };
-      await createSprint(payload);
+      await createSprintAsync(payload);
       onSuccess?.();
       onClose();
     } catch {}

@@ -201,12 +201,13 @@ export const SignIn = () => {
         />
         {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
         <div className="optionsRow">
+          {/* future purpose
           <WpCheckbox
             id="rememberMe"
             label="Remember me"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-          />
+          /> */}
           <WpButton
             type="button"
             variant="ghost"

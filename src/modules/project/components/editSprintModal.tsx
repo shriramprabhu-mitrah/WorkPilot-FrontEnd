@@ -32,9 +32,10 @@ interface EditSprintModalProps {
   projectId: string;
   sprint: SprintDetail;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) => {
+const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintModalProps) => {
   const { updateSprintAsync, isUpdatingSprint } = useUpdateSprint(projectId);
 
   const {
@@ -53,9 +54,16 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
 
   const onSubmit = async (data: EditSprintForm) => {
     try {
-      await updateSprintAsync({ sprintId: sprint.id, payload: data });
+      await updateSprintAsync({
+        sprintId: sprint.id,
+        payload: data,
+      });
+
       onClose();
-    } catch {}
+      onSuccess?.();
+    } catch {
+      // Error handled by mutation
+    }
   };
 
   return (
