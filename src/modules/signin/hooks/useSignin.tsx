@@ -44,7 +44,7 @@ export const useSignin = () => {
       const isMobile = params.get('source') === 'mobile';
 
       if (isMobile && token) {
-        window.location.href = `workpilot://auth?token=${token}`;
+        window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
       } else {
         router.refresh();
         router.push('/dashboard');
