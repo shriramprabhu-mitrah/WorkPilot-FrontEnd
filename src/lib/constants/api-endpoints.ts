@@ -198,6 +198,8 @@ export const ApiEndpoints = {
     bulkUpdate: createEndpoint('/projects/{projectId}/tasks/bulk'),
     getUserStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
     allUserStories: createQueryEndpoint('/projects/{projectId}/tasks'),
+    attachLabel: createEndpoint('/projects/{projectId}/tasks/{taskId}/labels/{labelId}'),
+    removeLabel: createEndpoint('/projects/{projectId}/tasks/{taskId}/labels/{labelId}'),
   },
 };
 
