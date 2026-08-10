@@ -55,7 +55,7 @@ const EditSprintModal = ({ projectId, sprint, onClose }: EditSprintModalProps) =
     try {
       await updateSprintAsync({ sprintId: sprint.id, payload: data });
       onClose();
-    } catch { }
+    } catch {}
   };
 
   return (

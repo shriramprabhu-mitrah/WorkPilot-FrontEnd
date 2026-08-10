@@ -1,4 +1,4 @@
-import { ProjectStatus } from "../project";
+import { ProjectStatus } from '../project';
 
 export interface Member {
   id: string;

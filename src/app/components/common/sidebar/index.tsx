@@ -112,8 +112,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         `}
       >
         <aside
-          className={`flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-all duration-300 ${isExpanded ? 'w-[220px]' : 'w-[72px]'
-            }`}
+          className={`flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-all duration-300 ${
+            isExpanded ? 'w-[220px]' : 'w-[72px]'
+          }`}
         >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
@@ -125,8 +126,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             </div>
             {isExpanded && (
               <span
-                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
-                  }`}
+                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                  isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
+                }`}
               >
                 WorkPilot
               </span>
@@ -158,8 +160,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 </div>
                 {isExpanded && (
                   <span
-                    className={`text-[13px] font-medium text-gray-700 overflow-hidden whitespace-nowrap text-ellipsis transition-all duration-300 ${isExpanded ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
-                      }`}
+                    className={`text-[13px] font-medium text-gray-700 overflow-hidden whitespace-nowrap text-ellipsis transition-all duration-300 ${
+                      isExpanded ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
+                    }`}
                   >
                     {organization?.name || 'My Workspace'}
                   </span>
@@ -183,8 +186,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
           {/* Nav label */}
           <p
-            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'
-              }`}
+            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${
+              isExpanded ? 'opacity-100' : 'opacity-0'
+            }`}
           >
             Menu
           </p>
@@ -215,8 +219,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
                   {/* Animated label */}
                   <span
-                    className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${isExpanded ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'
-                      }`}
+                    className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                      isExpanded ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'
+                    }`}
                   >
                     {label}
                   </span>
@@ -231,8 +236,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           {/* User */}
           {/* User */}
           <div
-            className={`flex items-center ${isExpanded ? 'gap-2.5 px-4' : 'justify-center px-0'
-              } py-3.5`}
+            className={`flex items-center ${
+              isExpanded ? 'gap-2.5 px-4' : 'justify-center px-0'
+            } py-3.5`}
           >
             <Link
               href="/profile"

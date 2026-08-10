@@ -80,7 +80,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
       await createSprint(payload);
       onSuccess?.();
       onClose();
-    } catch { }
+    } catch {}
   };
 
   return (

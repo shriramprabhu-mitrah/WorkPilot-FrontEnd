@@ -198,7 +198,7 @@ export const ApiEndpoints = {
     bulkUpdate: createEndpoint('/projects/{projectId}/tasks/bulk'),
     getUserStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
     allUserStories: createQueryEndpoint('/projects/{projectId}/tasks'),
-  }
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

@@ -1,6 +1,11 @@
 import { teamService } from '@/src/services/teams';
 import { ApiResponse } from '@/src/types/core';
-import { GetUserProjectsResponse, RemoveUserPayload, UpdateRolePayload, User } from '@/src/types/teams';
+import {
+  GetUserProjectsResponse,
+  RemoveUserPayload,
+  UpdateRolePayload,
+  User,
+} from '@/src/types/teams';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 export const QUERY_KEYS = {
   TEAM_MEMBERS: 'team-members',
@@ -69,7 +74,6 @@ export const useGetUserById = (id: string) => {
     refetchUser,
   };
 };
-
 
 export const useGetProject = (userId: string) => {
   const {

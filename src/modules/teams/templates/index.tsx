@@ -8,7 +8,13 @@ import { RoleCardView } from '../components/rolecared';
 import { MEMBERS, roleOptions, ROLES } from '../data';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '../components/invitePopup';
-import { useGetProject, useGetTeamMembers, useGetUserById, useRemoveUser, useUpdateRole } from '../hooks/useTeams';
+import {
+  useGetProject,
+  useGetTeamMembers,
+  useGetUserById,
+  useRemoveUser,
+  useUpdateRole,
+} from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -34,7 +40,7 @@ export const TeamTemplate = () => {
   const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 4);
   const { user, isUserLoading } = useGetUserById(selectedUserId);
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
-  
+
   const projects = userProjects?.data?.project ?? [];
   const roleOptions = Object.values(ROLE_TYPE)
     .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)

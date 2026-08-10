@@ -44,10 +44,10 @@ export interface TaskResponse {
 }
 
 export interface UpdateTaskPayload {
-  title?:string;
-  status?:string;
-  story_points:number;
-  actual_hours:number;
+  title?: string;
+  status?: string;
+  story_points: number;
+  actual_hours: number;
 }
 
 export interface ClonePaylaod {

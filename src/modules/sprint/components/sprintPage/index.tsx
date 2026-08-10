@@ -5,12 +5,7 @@ import ProgressCard from '../ProgressCard';
 import TaskColumn from '../taskColumn';
 import WorkloadItem from '../workloadItem';
 import { WpButton } from '@/src/app/components/common/button';
-import {
-  sprintStats,
-  progressCards,
-  taskColumns,
-  workload,
-} from '../../data/sprint';
+import { sprintStats, progressCards, taskColumns, workload } from '../../data/sprint';
 import { useState, useEffect } from 'react';
 import { projectService } from '@/src/services/project';
 import { sprintService } from '@/src/services/sprint';
@@ -29,7 +24,7 @@ const SprintPage = () => {
   const [selectedSprint, setSelectedSprint] = useState('All Sprints');
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [columns, setColumns] = useState(taskColumns);
-  
+
   // Real dynamic data
   const [projectsList, setProjectsList] = useState<{ id: string; name: string }[]>([]);
   const [sprintsList, setSprintsList] = useState<{ id: string; name: string }[]>([]);
@@ -43,7 +38,7 @@ const SprintPage = () => {
       try {
         const res = await projectService.getProject({ fieldName: 'id,name' });
         if (res.data) {
-          setProjectsList(res.data.map(p => ({ id: p.id || '', name: p.name })));
+          setProjectsList(res.data.map((p) => ({ id: p.id || '', name: p.name })));
         }
       } catch (error) {
         logger.log('Failed to fetch projects', error);
@@ -65,7 +60,7 @@ const SprintPage = () => {
       try {
         const res = await sprintService.getSprints(selectedProject, 'id,name');
         if (res.data) {
-          setSprintsList(res.data.map(s => ({ id: s.id, name: s.name })));
+          setSprintsList(res.data.map((s) => ({ id: s.id, name: s.name })));
         }
       } catch (error) {
         logger.log('Failed to fetch sprints', error);

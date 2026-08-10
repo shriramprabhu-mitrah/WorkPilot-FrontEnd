@@ -12,12 +12,7 @@ interface MemberCardProps {
   onClick?: () => void;
 }
 
-export const MemberCard = ({
-  member,
-  canManageUsers,
-  onDelete,
-  onClick,
-}: MemberCardProps) => {
+export const MemberCard = ({ member, canManageUsers, onDelete, onClick }: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
   return (

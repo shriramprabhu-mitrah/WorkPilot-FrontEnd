@@ -205,7 +205,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
-  
 
   const canRemoveMember = (memberRole: string): boolean => {
     if (memberRole === ROLE_TYPE.ORG_ADMIN) {
