@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { taskService } from '@/src/services/tasks';
+
 import {
   BulkUpdateTasksPayload,
   ClonePayload,
@@ -7,15 +9,17 @@ import {
   TaskPayload,
   UpdateTaskPayload,
 } from '@/src/types/task';
-import { userService } from '@/src/services/user';
+const QUERY_KEYS = {
+  tasks: 'tasks',
+  task: 'task',
+};
 
 export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, enabled = true) => {
   const query = useQuery({
-    queryKey: ['tasks', projectId, params],
+    queryKey: [QUERY_KEYS.tasks, projectId, params],
     queryFn: () => taskService.getTasks(projectId, params),
     enabled: enabled && !!projectId,
   });
-
   return {
     tasksList: query.data?.data || [],
     // pagination: query.data?.pagination,
@@ -28,14 +32,14 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
 
 export const useCreateTask = (projectId: string) => {
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: (payload: TaskPayload) => taskService.createTask(projectId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.tasks, projectId],
+      });
     },
   });
-
   return {
     createTask: mutation.mutate,
     createTaskAsync: mutation.mutateAsync,
@@ -48,7 +52,7 @@ export const useCreateTask = (projectId: string) => {
 
 export const useGetTaskById = (projectId?: string, taskId?: string) => {
   const query = useQuery({
-    queryKey: ['task', projectId, taskId],
+    queryKey: [QUERY_KEYS.task, projectId, taskId],
     queryFn: () => taskService.getTaskById(projectId!, taskId!),
     enabled: !!projectId && !!taskId,
   });
@@ -68,10 +72,10 @@ export const useDeleteTask = () => {
       taskService.deleteTask(projectId, taskId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
       queryClient.removeQueries({
-        queryKey: ['task', variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });
@@ -87,7 +91,6 @@ export const useDeleteTask = () => {
 
 export const useUpdateTask = () => {
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: ({
       projectId,
@@ -100,10 +103,10 @@ export const useUpdateTask = () => {
     }) => taskService.updateTask(projectId, taskId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
       queryClient.invalidateQueries({
-        queryKey: ['task', variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });
@@ -131,7 +134,7 @@ export const useCloneTask = () => {
     }) => taskService.cloneTask(projectId, taskId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
     },
   });
@@ -147,7 +150,6 @@ export const useCloneTask = () => {
 
 export const useAttachLabel = () => {
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: ({
       projectId,
@@ -160,10 +162,10 @@ export const useAttachLabel = () => {
     }) => taskService.attachLabel(projectId, taskId, labelId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
       queryClient.invalidateQueries({
-        queryKey: ['task', variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });
@@ -188,10 +190,10 @@ export const useRemoveLabel = () => {
     }) => taskService.removeLabel(projectId, taskId, labelId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
       queryClient.invalidateQueries({
-        queryKey: ['task', variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });
@@ -212,10 +214,10 @@ export const useRestoreTask = () => {
       taskService.restoreTask(projectId, taskId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
       queryClient.invalidateQueries({
-        queryKey: ['task', variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });
@@ -236,7 +238,7 @@ export const useBulkUpdateTasks = () => {
       taskService.bulkUpdateTasks(projectId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
     },
   });
