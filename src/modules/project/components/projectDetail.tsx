@@ -50,7 +50,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { hasPermission, isAdmin, isProjectManager } = usePermissions();
 
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
-  const { users, isUsersLoading } = useGetOrganizationUsers(1, 50);
+  const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
   const { removeMemberAsync, isRemovingMember } = useRemoveProjectMember();
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
@@ -205,7 +205,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           })
         );
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const getInitials = (name: string) => {

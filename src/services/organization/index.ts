@@ -19,6 +19,7 @@ export interface OrganizationUser {
 export interface GetUsersParams {
   page?: number;
   page_size?: number;
+  is_active?: boolean;
 }
 
 class OrganizationService {
@@ -80,14 +81,31 @@ class OrganizationService {
     });
   }
 
-  async getUsers(params: GetUsersParams = {}): Promise<PaginatedApiResponse<OrganizationUser[]>> {
-    const { page = 1, page_size = 10 } = params;
-    const url = ApiEndpoints.Organization.getUsers.withQuery({ page, page_size });
+  async getUsers(
+    params: GetUsersParams = {}
+  ): Promise<PaginatedApiResponse<OrganizationUser[]>> {
+    const {
+      page = 1,
+      page_size = 10,
+      is_active,
+    } = params;
+
+    const queryParams: Record<string, string | number | boolean> = {
+      page,
+      page_size,
+    };
+
+    if (is_active !== undefined) {
+      queryParams.is_active = is_active;
+    }
+
+    const url = ApiEndpoints.Organization.getUsers.withQuery(queryParams);
 
     return apiService.get<OrganizationUser[]>(url, {
       showErrorToast: true,
     });
   }
+
 }
 
 export const organizationService = new OrganizationService();
