@@ -188,7 +188,7 @@ export const ApiEndpoints = {
   },
   Task: {
     createTasks: createEndpoint('/projects/{projectId}/tasks'),
-    getallTasks: createEndpoint('/projects/{projectId}/tasks'),
+    getallTasks: createQueryEndpoint('/projects/{projectId}/tasks'),
     getTasks: createQueryEndpoint('/projects/{projectId}/tasks'),
     getTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
     updateTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
