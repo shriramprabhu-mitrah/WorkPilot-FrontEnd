@@ -19,7 +19,7 @@ import { Member } from '@/src/types/teams';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '../components/TeamSkeleton';
-import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
+import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 
 export const TeamTemplate = () => {
   const [page] = useState(1);
@@ -42,12 +42,10 @@ export const TeamTemplate = () => {
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
 
   const projects = userProjects?.data?.project ?? [];
-  const roleOptions = Object.values(ROLE_TYPE)
-    .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)
-    .map((role) => ({
-      value: role,
-      label: ROLE_LABELS[role],
-    }));
+  const roleOptions = PROJECT_ROLES.map((role) => ({
+    value: role,
+    label: ROLE_LABELS[role],
+  }));
   if (isTeamMembersLoading) {
     return <TeamMemberCardSkeleton page />;
   }

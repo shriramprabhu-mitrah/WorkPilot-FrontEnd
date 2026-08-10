@@ -14,6 +14,7 @@ import { CreateProjectPayload, Project as ApiProject } from '@/src/types/project
 import { useAppDispatch } from '@/src/store';
 import { setSelectedProject, setProjectLoading } from '@/src/store/slices/project';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { usePermissions } from '@/src/hooks/usePermissions';
 import ProjectSkeleton from '../projectSkeleton';
 import { ViewToggle, ViewType } from '../viewToggle';
 import Image from 'next/image';
@@ -80,6 +81,7 @@ const ProjectPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { createProjectAsync, isCreatingProject } = useCreateProject();
+  const { hasPermission } = usePermissions();
   const queryClient = useQueryClient();
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [view, setView] = useState<ViewType>('grid');
@@ -197,9 +199,11 @@ const ProjectPage = () => {
           </div>
 
           <div className="self-start mr-12 flex items-center gap-2">
-            <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
-              + New Project
-            </WpButton>
+            {hasPermission('PROJECT_CREATE') && (
+              <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
+                + New Project
+              </WpButton>
+            )}
           </div>
         </div>
 
@@ -266,9 +270,11 @@ const ProjectPage = () => {
                   project to get started.
                 </p>
 
-                <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
-                  + Create Project
-                </WpButton>
+                {hasPermission('PROJECT_CREATE') && (
+                  <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
+                    + Create Project
+                  </WpButton>
+                )}
               </>
             )}
           </div>
