@@ -13,7 +13,6 @@ import {
   Calendar,
   BarChart2,
   ChevronDown,
-  Plus,
   Search,
   LogOut,
   Flag,
@@ -48,20 +47,27 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
+export const Sidebar = ({
+  isOpen = true,
+  onClose,
+}: SidebarProps) => {
   const pathname = usePathname();
+
   const user = useAppSelector((state) => state.user);
   const organization = useAppSelector((state) => state.organization);
+
   const { handleLogOut } = useSignin();
+
   const [isExpanded, setIsExpanded] = useState(false);
+
   const handleLogoutClick = () => {
     removeTokens();
     handleLogOut();
   };
 
-  // Get organization name initials
   const getOrgInitials = (orgName?: string) => {
     if (!orgName) return 'W';
+
     return orgName
       .split(' ')
       .map((word) => word.charAt(0).toUpperCase())
@@ -69,78 +75,123 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       .join('');
   };
 
-  // Close sidebar when route changes on mobile
+  // Close mobile sidebar when route changes
   useEffect(() => {
     if (onClose) {
       onClose();
     }
-  }, [pathname]);
+  }, [pathname, onClose]);
 
-  // Prevent body scroll when mobile sidebar is open
+  // Prevent background scrolling when mobile sidebar is open
   useEffect(() => {
-    if (isOpen && onClose) {
+    if (onClose && isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
+
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
+
+  const showLabels = isExpanded || !!onClose;
 
   return (
     <>
       {/* Mobile overlay */}
       {onClose && isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 xl:hidden"
           onClick={onClose}
-          aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar wrapper */}
       <div
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
         className={`
-          fixed lg:static inset-y-0 left-0 z-50
-          transform transition-transform duration-300 ease-in-out
-          ${onClose ? (isOpen ? 'translate-x-0' : '-translate-x-full') : ''}
-          lg:translate-x-0
-         h-screen overflow-y-auto overflow-x-hidden
+          fixed xl:static
+          inset-y-0 left-0
+          z-50
+          h-screen
+          overflow-y-auto
+          overflow-x-hidden
+          transform
+          transition-transform
+          duration-300
+          ease-in-out
+
+          ${onClose
+            ? isOpen
+              ? 'translate-x-0'
+              : '-translate-x-full'
+            : 'translate-x-0'
+          }
+
+          xl:translate-x-0
         `}
       >
         <aside
-          className={`flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-all duration-300 ${
-            isExpanded ? 'w-[220px]' : 'w-[72px]'
-          }`}
+          className={`
+            flex
+            flex-col
+            min-h-screen
+            bg-white
+            border-r
+            border-gray-200
+            shrink-0
+            transition-all
+            duration-300
+
+            w-[72px]
+
+            ${isExpanded ? 'xl:w-[220px]' : 'xl:w-[72px]'}
+          `}
         >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ backgroundColor: colors.primary }}
+              style={{
+                backgroundColor: colors.primary,
+              }}
             >
               <TrackrLogoSvg />
             </div>
-            {isExpanded && (
+
+            {showLabels && (
               <span
-                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                  isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'
-                }`}
+                className="
+                  overflow-hidden
+                  whitespace-nowrap
+                  text-sm
+                  font-semibold
+                  text-gray-800
+                "
               >
                 WorkPilot
               </span>
             )}
-            {/* Close button for mobile */}
+
+            {/* Mobile close button */}
             {onClose && (
               <button
                 onClick={onClose}
-                className="ml-auto lg:hidden p-1 hover:bg-gray-100 rounded transition-colors"
+                className="
+                  ml-auto
+                  xl:hidden
+                  p-1
+                  rounded
+                  hover:bg-gray-100
+                "
                 aria-label="Close sidebar"
               >
-                <X size={20} className="text-gray-500" />
+                <X
+                  size={20}
+                  className="text-gray-500"
+                />
               </button>
             )}
           </div>
@@ -148,125 +199,255 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           {/* Workspace selector */}
           <div className="px-3 py-3">
             <div
-              className="flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors"
-              style={{ backgroundColor: colors.workspaceBg }}
+              className="
+                flex
+                items-center
+                justify-between
+                px-2.5
+                py-2
+                rounded-lg
+                cursor-pointer
+                hover:bg-gray-200
+                transition-colors
+              "
+              style={{
+                backgroundColor: colors.workspaceBg,
+              }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <div
-                  className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ backgroundColor: colors.accent }}
+                  className="
+                    w-5
+                    h-5
+                    rounded
+                    flex
+                    items-center
+                    justify-center
+                    text-[10px]
+                    font-bold
+                    text-white
+                    shrink-0
+                  "
+                  style={{
+                    backgroundColor: colors.accent,
+                  }}
                 >
                   {getOrgInitials(organization?.name)}
                 </div>
-                {isExpanded && (
+
+                {showLabels && (
                   <span
-                    className={`text-[13px] font-medium text-gray-700 overflow-hidden whitespace-nowrap text-ellipsis transition-all duration-300 ${
-                      isExpanded ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
-                    }`}
+                    className="
+                      text-[13px]
+                      font-medium
+                      text-gray-700
+                      truncate
+                    "
                   >
                     {organization?.name || 'My Workspace'}
                   </span>
                 )}
               </div>
-              {isExpanded && <ChevronDown size={13} className="text-gray-400" />}
+
+              {showLabels && (
+                <ChevronDown
+                  size={13}
+                  className="text-gray-400 shrink-0"
+                />
+              )}
             </div>
           </div>
 
           {/* Search */}
           <div className="px-3 pb-2 h-10 flex items-center">
-            {isExpanded && (
+            {showLabels && (
               <WpInput
                 type="text"
                 placeholder="Search..."
                 icon={<Search size={13} />}
-                className="bg-gray-100 border-1 text-[12px] !h-8"
+                className="
+                  bg-gray-100
+                  border-1
+                  text-[12px]
+                  !h-8
+                  w-full
+                "
               />
             )}
           </div>
 
-          {/* Nav label */}
+          {/* Menu label */}
           <p
-            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${
-              isExpanded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`
+              px-4
+              pt-2
+              pb-1
+              text-[11px]
+              font-semibold
+              uppercase
+              tracking-wider
+              transition-opacity
+              duration-300
+
+              ${showLabels ? 'opacity-100' : 'opacity-0'}
+            `}
           >
             Menu
           </p>
 
-          {/* Nav */}
+          {/* Navigation */}
           <nav className="flex-1 px-3 space-y-0.5">
-            {navItems.map(({ label, href, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center px-3 py-2 rounded-lg text-[13px] font-medium transition-colors"
-                  style={{
-                    backgroundColor: active ? colors.primaryLight : undefined,
-                    color: active ? colors.primary : colors.gray700,
-                  }}
-                >
-                  {/* Fixed icon container */}
-                  <div className="w-6 flex items-center justify-center shrink-0">
-                    <Icon
-                      size={15}
-                      style={{
-                        color: active ? colors.primary : colors.gray700,
-                      }}
-                    />
-                  </div>
+            {navItems.map(
+              ({ label, href, icon: Icon }) => {
+                const active =
+                  pathname === href ||
+                  pathname.startsWith(`${href}/`);
 
-                  {/* Animated label */}
-                  <span
-                    className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                      isExpanded ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'
-                    }`}
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="
+                      flex
+                      items-center
+                      px-3
+                      py-2
+                      rounded-lg
+                      text-[13px]
+                      font-medium
+                      transition-colors
+                      min-w-0
+                    "
+                    style={{
+                      backgroundColor: active
+                        ? colors.primaryLight
+                        : undefined,
+
+                      color: active
+                        ? colors.primary
+                        : colors.gray700,
+                    }}
                   >
-                    {label}
-                  </span>
-                </Link>
-              );
-            })}
+                    {/* Icon */}
+                    <div
+                      className="
+                        w-6
+                        flex
+                        items-center
+                        justify-center
+                        shrink-0
+                      "
+                    >
+                      <Icon
+                        size={15}
+                        style={{
+                          color: active
+                            ? colors.primary
+                            : colors.gray700,
+                        }}
+                      />
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={`
+                        ml-3
+                        overflow-hidden
+                        whitespace-nowrap
+                        transition-all
+                        duration-300
+
+                        ${showLabels
+                          ? 'max-w-[140px] opacity-100'
+                          : 'max-w-0 opacity-0'
+                        }
+                      `}
+                    >
+                      {label}
+                    </span>
+                  </Link>
+                );
+              }
+            )}
           </nav>
 
           {/* Divider */}
           <div className="mx-3 border-t border-gray-100" />
 
           {/* User */}
-          {/* User */}
           <div
-            className={`flex items-center ${
-              isExpanded ? 'gap-2.5 px-4' : 'justify-center px-0'
-            } py-3.5`}
+            className={`
+              flex
+              items-center
+              py-3.5
+
+              ${showLabels
+                ? 'gap-2.5 px-4'
+                : 'justify-center px-0'
+              }
+            `}
           >
             <Link
               href="/profile"
-              className="flex items-center gap-2.5 flex-1 min-w-0 group cursor-pointer"
+              className="
+                flex
+                items-center
+                gap-2.5
+                flex-1
+                min-w-0
+                group
+                cursor-pointer
+              "
             >
+              {/* Avatar */}
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 group-hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: colors.accent }}
+                className="
+                  w-7
+                  h-7
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  text-[11px]
+                  font-bold
+                  text-white
+                  shrink-0
+                  group-hover:opacity-90
+                  transition-opacity
+                "
+                style={{
+                  backgroundColor: colors.accent,
+                }}
               >
                 {getInitials(user.name)}
               </div>
-              {isExpanded && (
+
+              {/* User details */}
+              {showLabels && (
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-gray-800 truncate">
                     {user.name || 'User Name'}
                   </p>
+
                   <p className="text-[11px] text-gray-400 truncate">
                     {user.email || 'user@email.com'}
                   </p>
                 </div>
               )}
             </Link>
-            {isExpanded && (
+
+            {/* Logout */}
+            {showLabels && (
               <WpButton
                 variant="ghost"
                 size="sm"
                 onClick={handleLogoutClick}
-                className="!p-1.5 text-gray-400 hover:bg-red-50 hover:!text-red-500"
+                className="
+                  !p-1.5
+                  text-gray-400
+                  hover:bg-red-50
+                  hover:!text-red-500
+                "
                 title="Logout"
               >
                 <LogOut size={15} />
