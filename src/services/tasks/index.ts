@@ -37,8 +37,18 @@ class TaskService {
   }
 
   async getTaskById(projectId: string, sprintId: string): Promise<ApiResponse<TaskResponse>> {
-    const url = ApiEndpoints.Task.createTasks.withParams({ projectId, sprintId });
+    const url = ApiEndpoints.Task.getTaskbyId.withParams({ projectId, sprintId });
     return apiService.get<TaskResponse>(url);
+  }
+
+  async updateTasks(projectId: string): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.updateTaskbyId.withParams({ projectId })
+    return apiService.put<TaskResponse>(url, projectId)
+  }
+
+  async deleteTaskbyId(projectId: string): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.deleteTask.withParams({ projectId })
+    return apiService.delete<TaskResponse>(url, projectId)
   }
 }
 

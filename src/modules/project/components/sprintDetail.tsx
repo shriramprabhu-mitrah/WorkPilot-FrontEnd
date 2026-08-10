@@ -57,7 +57,7 @@ const SprintDetail = () => {
           year: 'numeric',
         })
       : '-';
-  const handleCreateTask = (newTask: Task) => {
+  const handleCreateTask = () => {
     refetchTasks();
     setShowAddTaskModal(false);
   };
@@ -200,7 +200,12 @@ const SprintDetail = () => {
         </div>
       )}
       {showAddTaskModal && (
-        <AddTaskModal onClose={() => setShowAddTaskModal(false)} onCreate={handleCreateTask} />
+        <AddTaskModal 
+          onClose={() => setShowAddTaskModal(false)} 
+          onCreate={handleCreateTask} 
+          projectId={projectId}
+          sprintId={sprintId}
+        />
       )}
       {showEditModal && (
         <EditSprintModal projectId={projectId} sprint={sprint} onClose={() => closeModal()} />

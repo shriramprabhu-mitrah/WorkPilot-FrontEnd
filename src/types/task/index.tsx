@@ -25,7 +25,12 @@ export interface TaskPayload {
   priority?: string;
   story_points?: number;
   estimated_hours: number;
-  status: string;
+  status?: string;
+  sprint_id?: string;
+  assignee_id?: string;
+  due_date?: string;
+  actual_hours?: number;
+  label_ids?: string[];
 }
 
 export interface TaskResponse {
