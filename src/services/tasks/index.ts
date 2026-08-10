@@ -1,6 +1,13 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { ApiResponse } from '@/src/types/core';
-import { TaskPayload, TaskResponse, GetTasksQueryParams } from '@/src/types/task';
+import {
+  TaskPayload,
+  TaskResponse,
+  GetTasksQueryParams,
+  UpdateTaskPayload,
+  BulkUpdateTasksPayload,
+  ClonePayload,
+} from '@/src/types/task';
 import { apiService, PaginatedApiResponse } from '../axios';
 
 class TaskService {
@@ -21,7 +28,6 @@ class TaskService {
     if (params?.fieldName) {
       searchParams.append('fieldName', params.fieldName);
     }
-
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.Task.getTasks.withNamedParams({ projectId });
     const url = `${endpoint.url}${query ? `?${query}` : ''}`;
@@ -39,6 +45,88 @@ class TaskService {
   async getTaskById(projectId: string, sprintId: string): Promise<ApiResponse<TaskResponse>> {
     const url = ApiEndpoints.Task.createTasks.withParams({ projectId, sprintId });
     return apiService.get<TaskResponse>(url);
+  }
+
+  async deleteTask(projectId: string, taskId: string): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Task.deleteTask.withParams({
+      projectId,
+      taskId,
+    });
+    return apiService.delete<unknown>(url, {
+      showSuccessToast: true,
+      successMessage: 'Task deleted successfully',
+    });
+  }
+
+  async updateTask(projectId: string,taskId: string,payload: UpdateTaskPayload): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.updateTaskbyId.withParams({
+      projectId,
+      taskId,
+    });
+    return apiService.patch<TaskResponse>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Task updated successfully',
+    });
+  }
+
+  async bulkUpdateTasks(projectId: string,payload: BulkUpdateTasksPayload): Promise<ApiResponse<TaskResponse[]>> {
+    const url = ApiEndpoints.Task.bulkUpdate.withParams({
+      projectId,
+    });
+    return apiService.patch<TaskResponse[]>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Tasks updated successfully',
+    });
+  }
+
+  async cloneTask( projectId: string,taskId: string,payload: ClonePayload): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.cloneTask.withParams({
+      projectId,
+      taskId,
+    });
+    return apiService.post<TaskResponse>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Task cloned successfully',
+    });
+  }
+
+  async attachLabel( projectId: string,taskId: string,labelId: string): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Task.attachLabel.withParams({
+      projectId,
+      taskId,
+      labelId,
+    });
+    return apiService.post<unknown>(url, undefined, {
+      showSuccessToast: true,
+      successMessage: 'Label attached successfully',
+    });
+  }
+
+  async removeLabel(projectId: string, taskId: string,labelId: string): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Task.removeLabel.withParams({
+      projectId,
+      taskId,
+      labelId,
+    });
+    return apiService.delete<unknown>(url, {
+      showSuccessToast: true,
+      successMessage: 'Label removed successfully',
+    });
+  }
+
+  async restoreTask(projectId: string, taskId: string): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.restoreTask.withParams({
+      projectId,
+      taskId,
+    });
+    return apiService.post<TaskResponse>(
+      url,
+      {},
+      {
+        showSuccessToast: true,
+        successMessage: 'Task restored successfully',
+      }
+    );
   }
 }
 

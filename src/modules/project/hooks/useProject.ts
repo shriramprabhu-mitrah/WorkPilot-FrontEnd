@@ -189,7 +189,7 @@ export const useUpdateProjectRole = () => {
         queryKey: ['projectMembers', variables.project_id],
       });
       queryClient.invalidateQueries({
-        queryKey: ['projectDetail', variables.project_id],
+        queryKey: ['projectDetail'],
       });
     },
   });

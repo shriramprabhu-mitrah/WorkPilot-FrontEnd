@@ -28,6 +28,8 @@ export interface TaskPayload {
   status: string;
 }
 
+
+
 export interface TaskResponse {
   id?: string;
   project_id?: string;
@@ -44,13 +46,34 @@ export interface TaskResponse {
 }
 
 export interface UpdateTaskPayload {
-  title?: string;
+  actual_hours?: number;
+  assignee_id?: string;
+  blocked_reason?: string;
+  description?: string;
+  due_date?: string;
+  estimated_hours?: number;
+  label_ids?: string[];
+  priority?: string;
+  sprint_id?: string;
   status?: string;
-  story_points: number;
-  actual_hours: number;
+  story_points?: number;
+  title?: string;
+  type?: string;
 }
 
-export interface ClonePaylaod {
+export interface BulkUpdateTaskItem {
+  task_id: string;
+  assignee_id?: string;
+  blocked_reason?: string;
+  sprint_id?: string;
+  status?: string;
+}
+
+export interface BulkUpdateTasksPayload {
+  tasks: BulkUpdateTaskItem[];
+}
+
+export interface ClonePayload {
   keep_assignee: boolean;
 }
 
@@ -60,3 +83,5 @@ export interface GetTasksQueryParams {
   sprint_id?: string;
   fieldName?: string;
 }
+
+

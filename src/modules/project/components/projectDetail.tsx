@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check, Loader2 } from 'lucide-react';
-import { Project, Sprint } from '../types/project';
+import { Member, Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import EditProjectModal from './editProjectModal';
 import { useRouter } from 'next/navigation';
@@ -20,11 +20,17 @@ import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { showToast } from '@/src/utils/toast';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector, useAppDispatch } from '@/src/store';
-import { AddProjectMembersPayload, SprintDetail } from '@/src/types/project';
+import {
+  AddProjectMembersPayload,
+  ProjectDetailMember,
+  ProjectMember,
+  SprintDetail,
+} from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
+import { Members } from '@/src/types/organization';
 
 interface ProjectDetailProps {
   project: Project & { id?: string };
@@ -55,8 +61,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { removeMemberAsync, isRemovingMember } = useRemoveProjectMember();
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState('');
-  const { updateProjectRole, isUpdatingProjectRole } = useUpdateProjectRole();
-
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const { updateProjectRole, isUpdatingProjectRole, updateProjectRoleAsync } =
+    useUpdateProjectRole();
   const {
     sprints: apiSprints,
     isLoadingSprints,
@@ -241,6 +248,37 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     }
     return true;
   };
+
+  const updateMember = async (member: ProjectDetailMember) => {
+    if (!selectedRole) return;
+    if (!selectedApiProject?.id) return;
+    try {
+      setUpdatingMemberId(member.user_id);
+      await updateProjectRoleAsync({
+        project_id: selectedApiProject.id,
+        user_id: member.user_id,
+        project_role: selectedRole,
+      });
+      setEditingMemberId(null);
+      setSelectedRole('');
+      const res = await projectService.getProjectDetail(selectedApiProject.id);
+      if (res?.data) {
+        const { creator, ...rest } = res.data;
+        dispatch(
+          setSelectedProject({
+            ...rest,
+            owner: creator ?? rest.owner ?? 'Unassigned',
+          })
+        );
+      }
+    } catch (error) {
+      showToast.error('Failed to update member role');
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
+  
 
   // Only project-level roles are assignable within a project
   const roleOptions = PROJECT_ROLES.map((role) => ({
@@ -731,8 +769,15 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 />
                               </div>
                             ) : (
-                              <p className="text-xs text-gray-500 capitalize">
-                                {member.role.replace('_', ' ')}
+                              <p className="text-xs text-gray-500 capitalize flex items-center gap-2">
+                                {updatingMemberId === member.user_id ? (
+                                  <>
+                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  member.role.replace('_', ' ')
+                                )}
                               </p>
                             )}
                           </div>
@@ -745,16 +790,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 size="sm"
                                 className="!p-2 text-green-600 hover:bg-green-50"
                                 onClick={() => {
-                                  if (!selectedRole) return;
-                                  if (!selectedApiProject?.id) return;
-                                  updateProjectRole({
-                                    project_id: selectedApiProject.id,
-                                    user_id: member.user_id,
-                                    project_role: selectedRole,
-                                  });
-                                  setEditingMemberId(null);
-                                  setSelectedRole('');
+                                  updateMember(member);
                                 }}
+                                disabled={isUpdatingProjectRole}
                               >
                                 <Check size={16} />
                               </WpButton>
@@ -767,6 +805,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                   setEditingMemberId(null);
                                   setSelectedRole('');
                                 }}
+                                disabled={isUpdatingProjectRole}
                               >
                                 <X size={16} />
                               </WpButton>
