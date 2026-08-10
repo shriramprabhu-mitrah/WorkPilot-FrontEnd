@@ -53,3 +53,10 @@ export interface UpdateTaskPayload {
 export interface ClonePaylaod {
   keep_assignee: boolean;
 }
+
+export interface GetTasksQueryParams {
+  page?: number;
+  page_size?: number;
+  sprint_id?: string;
+  fieldName?: string;
+}

@@ -9,6 +9,7 @@ import { useGetSprintById, useDeleteSprint } from '@/src/modules/project/hooks/u
 import SprintDetailSkeleton from './sprintDetailSkeleton';
 import EditSprintModal from './editSprintModal';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
 
 const SprintDetail = () => {
   const router = useRouter();
@@ -18,14 +19,14 @@ const SprintDetail = () => {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
 
   const { hasPermission } = usePermissions();
 
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
   const { deleteSprintAsync, isDeletingSprint } = useDeleteSprint(projectId);
+  const { tasksList, isLoadingTasks, refetchTasks } = useGetTasks(projectId, { sprint_id: sprintId });
 
-  if (isLoadingSprint) return <SprintDetailSkeleton />;
+  if (isLoadingSprint || isLoadingTasks) return <SprintDetailSkeleton />;
 
   if (!sprint || isError) {
     return (
@@ -55,7 +56,7 @@ const SprintDetail = () => {
         })
       : '-';
   const handleCreateTask = (newTask: Task) => {
-    setTasks((prev) => [...prev, newTask]);
+    refetchTasks();
     setShowAddTaskModal(false);
   };
   const closeModal = () => {
@@ -161,7 +162,7 @@ const SprintDetail = () => {
           Add Task
         </WpButton>
       </div>
-      {tasks.length === 0 ? (
+      {(!tasksList || tasksList.length === 0) ? (
         <div className="rounded-2xl border border-gray-200 bg-white py-16">
           <div className="flex flex-col items-center justify-center">
             <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-72 w-72" />
@@ -176,19 +177,17 @@ const SprintDetail = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => (
+          {tasksList.map((task) => (
             <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">{task.name}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">{task.title}</h3>
 
                   {task.description && (
                     <p className="mt-1 text-xs text-gray-500">{task.description}</p>
                   )}
 
-                  {task.assignee && (
-                    <p className="mt-2 text-xs text-gray-400">Assigned to: {task.assignee}</p>
-                  )}
+                  {/* Assuming assignee info isn't directly returned by TaskResponse yet */}
                 </div>
                 <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
                   {task.status}
