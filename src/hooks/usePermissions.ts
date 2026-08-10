@@ -21,6 +21,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
+      ROLE_TYPE.TESTER,
       ROLE_TYPE.VIEWER,
     ],
   },
@@ -44,7 +45,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
   },
 
-  // Organization permissions
+  // Organization permissions — org_admin only
   ORG_SETTINGS: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN],
   },
@@ -54,68 +55,79 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
 
   // Task permissions
   TASK_CREATE: {
-    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER, ROLE_TYPE.DEVELOPER],
+    allowedRoles: [
+      ROLE_TYPE.ORG_ADMIN,
+      ROLE_TYPE.PROJECT_MANAGER,
+      ROLE_TYPE.DEVELOPER,
+      ROLE_TYPE.TESTER,
+    ],
   },
   TASK_EDIT: {
-    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER, ROLE_TYPE.DEVELOPER],
+    allowedRoles: [
+      ROLE_TYPE.ORG_ADMIN,
+      ROLE_TYPE.PROJECT_MANAGER,
+      ROLE_TYPE.DEVELOPER,
+      ROLE_TYPE.TESTER,
+    ],
   },
   TASK_DELETE: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
   },
 
-  //Team permissions
+  // Team permissions
   TEAMS_EDIT: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
   },
   TEAMS_DELETE: {
-    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
+    allowedRoles: [ROLE_TYPE.ORG_ADMIN],
   },
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
 
 export const usePermissions = () => {
-  const userRole = useAppSelector((state) => state.user.role);
+  const orgRole = useAppSelector((state) => state.user.role) as ROLE_TYPE | null;
+  const currentUsername = useAppSelector((state) => state.user.username);
+  const projectMembers = useAppSelector((state) => state.project.selectedProject?.members);
 
-  const hasPermission = (permission: Permission): boolean => {
-    if (!userRole) return false;
+  const effectiveRole: ROLE_TYPE | null = (() => {
+    if (orgRole === ROLE_TYPE.ORG_ADMIN) return ROLE_TYPE.ORG_ADMIN;
 
-    const permissionConfig = PERMISSIONS[permission];
-    return permissionConfig.allowedRoles.includes(userRole as unknown as ROLE_TYPE);
-  };
-
-  const hasAnyPermission = (permissions: Permission[]): boolean => {
-    return permissions.some((permission) => hasPermission(permission));
-  };
-
-  const hasAllPermissions = (permissions: Permission[]): boolean => {
-    return permissions.every((permission) => hasPermission(permission));
-  };
-
-  const hasRole = (role: string | string[]): boolean => {
-    if (!userRole) return false;
-
-    if (Array.isArray(role)) {
-      return role.includes(userRole);
+    if (projectMembers && currentUsername) {
+      const self = projectMembers.find((m) => m.username === currentUsername);
+      if (self?.role) return self.role as ROLE_TYPE;
     }
 
-    return userRole === role;
+    return orgRole;
+  })();
+
+  const hasPermission = (permission: Permission): boolean => {
+    if (!effectiveRole) return false;
+    return PERMISSIONS[permission].allowedRoles.includes(effectiveRole);
   };
 
-  const isAdmin = (): boolean => {
-    return userRole === ROLE_TYPE.ORG_ADMIN;
+  const hasAnyPermission = (permissions: Permission[]): boolean =>
+    permissions.some((p) => hasPermission(p));
+
+  const hasAllPermissions = (permissions: Permission[]): boolean =>
+    permissions.every((p) => hasPermission(p));
+
+  const hasRole = (role: ROLE_TYPE | ROLE_TYPE[]): boolean => {
+    if (!effectiveRole) return false;
+    return Array.isArray(role) ? role.includes(effectiveRole) : effectiveRole === role;
   };
 
-  const isProjectManager = (): boolean => {
-    return userRole === ROLE_TYPE.PROJECT_MANAGER;
-  };
+  const isAdmin = (): boolean => orgRole === ROLE_TYPE.ORG_ADMIN;
 
-  const canManageProjects = (): boolean => {
-    return hasRole([ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER]);
-  };
+  const isProjectManager = (): boolean =>
+    effectiveRole === ROLE_TYPE.PROJECT_MANAGER || orgRole === ROLE_TYPE.ORG_ADMIN;
+
+  const canManageProjects = (): boolean =>
+    hasRole([ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER]);
 
   return {
-    userRole,
+    orgRole,
+    effectiveRole,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,

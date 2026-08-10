@@ -22,7 +22,7 @@ import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { AddProjectMembersPayload, SprintDetail } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
-import { ROLE_LABELS, ROLE_TYPE } from '@/src/app/components/common/enum';
+import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
 
@@ -48,6 +48,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     null
   );
   const { hasPermission, isAdmin, isProjectManager } = usePermissions();
+
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50);
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
@@ -241,12 +242,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     return true;
   };
 
-  const roleOptions = Object.values(ROLE_TYPE)
-    .filter((role) => role !== ROLE_TYPE.ORG_ADMIN)
-    .map((role) => ({
-      value: role,
-      label: ROLE_LABELS[role],
-    }));
+  // Only project-level roles are assignable within a project
+  const roleOptions = PROJECT_ROLES.map((role) => ({
+    value: role,
+    label: ROLE_LABELS[role],
+  }));
 
   const handleMemberChange = (members: string[]) => {
     setSelectedMembers(members);
@@ -789,7 +789,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             </>
                           ) : (
                             <>
-                              {isAdmin() && !isOrgAdmin && (
+                              {(isAdmin() || isProjectManager()) && !isOrgAdmin && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"

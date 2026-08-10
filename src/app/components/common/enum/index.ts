@@ -42,14 +42,27 @@ export enum COMPANY_SIZE {
 
 export enum ROLE_TYPE {
   ORG_ADMIN = 'org_admin',
+  MEMBER = 'member',
   PROJECT_MANAGER = 'project_manager',
   DEVELOPER = 'developer',
   VIEWER = 'viewer',
   TESTER = 'tester',
 }
 
+/** Org-level roles stored in state.user.role */
+export const ORG_ROLES = [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.MEMBER] as const;
+
+/** Project-level roles stored in selectedProject.members[].role */
+export const PROJECT_ROLES = [
+  ROLE_TYPE.PROJECT_MANAGER,
+  ROLE_TYPE.DEVELOPER,
+  ROLE_TYPE.VIEWER,
+  ROLE_TYPE.TESTER,
+] as const;
+
 export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
   [ROLE_TYPE.ORG_ADMIN]: 'Organization Admin',
+  [ROLE_TYPE.MEMBER]: 'Member',
   [ROLE_TYPE.PROJECT_MANAGER]: 'Project Manager',
   [ROLE_TYPE.DEVELOPER]: 'Developer',
   [ROLE_TYPE.VIEWER]: 'Viewer',
