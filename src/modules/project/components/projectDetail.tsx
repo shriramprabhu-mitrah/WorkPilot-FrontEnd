@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check, Loader2 } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import EditProjectModal from './editProjectModal';
@@ -40,6 +40,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+  const [isRefreshingMembers, setIsRefreshingMembers] = useState(false);
+  const [isRefreshingSprints, setIsRefreshingSprints] = useState(false);
   const [memberRoles, setMemberRoles] = useState<Record<string, ROLE_TYPE>>({});
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(
     null
@@ -52,6 +55,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState('');
   const { updateProjectRole, isUpdatingProjectRole } = useUpdateProjectRole();
+
   const {
     sprints: apiSprints,
     isLoadingSprints,
@@ -72,11 +76,25 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
     const mapStatus = (status: string): 'Planned' | 'Active' | 'Completed' => {
       const normalized = status.toLowerCase();
-      if (normalized === 'active' || normalized === 'in_progress') return 'Active';
-      if (normalized === 'completed' || normalized === 'done') return 'Completed';
+
+      if (normalized === 'active' || normalized === 'in_progress') {
+        return 'Active';
+      }
+
+      if (normalized === 'completed' || normalized === 'done') {
+        return 'Completed';
+      }
+
       return 'Planned';
     };
-
+    const refreshSprints = async () => {
+      try {
+        setIsRefreshingSprints(true);
+        await refetchSprints();
+      } finally {
+        setIsRefreshingSprints(false);
+      }
+    };
     return {
       id: apiSprint.id,
       name: apiSprint.name,
@@ -123,8 +141,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           project_role: memberRoles[memberId],
         })),
       };
+
       await addMembersAsync(payload);
       setShowAddMemberModal(false);
+      setIsRefreshingMembers(true);
+
       const res = await projectService.getProjectDetail(project.id);
       if (res.data) {
         const { creator, ...rest } = res.data;
@@ -137,7 +158,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       }
       setSelectedMembers([]);
       setMemberRoles({});
-    } catch (error) {}
+    } catch (error) {
+      // Error is already handled by the mutation
+    } finally {
+      setIsRefreshingMembers(false);
+    }
   };
 
   const handleSprintClick = (sprint: Sprint) => {
@@ -244,6 +269,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       return updated;
     });
   };
+  const handleSprintSuccess = async () => {
+    try {
+      setIsRefreshingSprints(true);
+      await refetchSprints();
+    } finally {
+      setIsRefreshingSprints(false);
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">
@@ -254,7 +287,17 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         <span className="font-medium text-gray-900">{project?.name}</span>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        {isUpdatingProject && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
+
+              <p className="text-sm font-medium text-gray-600">Updating project...</p>
+            </div>
+          </div>
+        )}
+        {/* existing content */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white">
@@ -319,7 +362,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           </div>
           <div>
             <p className="text-[10px] font-medium text-gray-400 mb-2">TEAM MEMBERS</p>
-            {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
+            {isRefreshingMembers ? (
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
+                <span className="text-xs font-medium text-gray-500">Adding members...</span>
+              </div>
+            ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-2">
                   {selectedApiProject.members.slice(0, 5).map((member, index) => (
@@ -332,6 +380,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                       {getInitials(member.full_name || member.username)}
                     </div>
                   ))}
+
                   {selectedApiProject.members.length > 5 && (
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-semibold text-gray-700"
@@ -341,9 +390,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     </div>
                   )}
                 </div>
+
                 <button
                   onClick={() => setShowViewMembersModal(true)}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+                  className="whitespace-nowrap text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
                 >
                   View
                 </button>
@@ -372,11 +422,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       </div>
 
       <div className="space-y-3">
-        {isLoadingSprints ? (
+        {isLoadingSprints || isRefreshingSprints ? (
           <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
             <div className="text-center">
               <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-              <p className="text-sm font-medium text-gray-600">Loading sprint details...</p>
+
+              <p className="text-sm font-medium text-gray-600">
+                {isRefreshingSprints ? 'Loading updated sprints...' : 'Loading sprint details...'}
+              </p>
             </div>
           </div>
         ) : sprints.length === 0 ? (
@@ -464,11 +517,19 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       </div>
 
       {showAddSprintModal && (
-        <AddSprintModal projectId={project.id || ''} onClose={() => setShowAddSprintModal(false)} />
+        <AddSprintModal
+          projectId={project.id || ''}
+          onClose={() => setShowAddSprintModal(false)}
+          onSuccess={handleSprintSuccess}
+        />
       )}
 
       {showEditModal && (
-        <EditProjectModal project={project} onClose={() => setShowEditModal(false)} />
+        <EditProjectModal
+          project={project}
+          onClose={() => setShowEditModal(false)}
+          onLoadingChange={setIsUpdatingProject}
+        />
       )}
 
       {showAddMemberModal && (

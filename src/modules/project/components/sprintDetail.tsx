@@ -19,10 +19,19 @@ const SprintDetail = () => {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isRefreshingSprint, setIsRefreshingSprint] = useState(false);
   const { hasPermission } = usePermissions();
 
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
+  const handleSprintSuccess = async () => {
+    try {
+      setIsRefreshingSprint(true);
+      await refetch();
+    } finally {
+      setIsRefreshingSprint(false);
+    }
+  };
   const { deleteSprintAsync, isDeletingSprint } = useDeleteSprint(projectId);
   const { tasksList, isLoadingTasks, refetchTasks } = useGetTasks(projectId, {
     sprint_id: sprintId,
@@ -98,7 +107,16 @@ const SprintDetail = () => {
         Sprints
       </WpButton>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="relative rounded-2xl border border-gray-200 bg-white p-6">
+        {isRefreshingSprint && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
+
+              <p className="text-sm font-medium text-gray-600">Updating sprint...</p>
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">{sprint.name}</h1>
@@ -203,7 +221,12 @@ const SprintDetail = () => {
         <AddTaskModal onClose={() => setShowAddTaskModal(false)} onCreate={handleCreateTask} />
       )}
       {showEditModal && (
-        <EditSprintModal projectId={projectId} sprint={sprint} onClose={() => closeModal()} />
+        <EditSprintModal
+          projectId={projectId}
+          sprint={sprint}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleSprintSuccess}
+        />
       )}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
