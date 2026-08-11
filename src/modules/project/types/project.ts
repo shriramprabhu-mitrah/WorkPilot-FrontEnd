@@ -50,3 +50,18 @@ export interface UpdateProjectRolePayload {
   user_id: string;
   project_role: string;
 }
+
+export interface CreateTaskPayload {
+  title: string;
+  description?: string;
+  assignee_id?: string;
+  due_date?: string;
+  label_ids?: string[];
+  priority?: string;
+  sprint_id?: string;
+  status?: string;
+  story_points?: number;
+  estimated_hours?: number;
+  actual_hours?: number;
+  type?: string;
+}

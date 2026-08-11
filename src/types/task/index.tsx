@@ -21,11 +21,16 @@ export type Task = {
 export interface TaskPayload {
   title?: string;
   description?: string;
-  type?: string;
+  assignee_id?: string;
+  due_date?: string;
+  label_ids?: string[];
   priority?: string;
-  story_points?: number;
-  estimated_hours: number;
+  sprint_id?: string;
   status: string;
+  story_points?: number;
+  estimated_hours?: number;
+  actual_hours?: number;
+  type?: string;
 }
 
 export interface TaskResponse {
@@ -41,6 +46,8 @@ export interface TaskResponse {
   estimated_hours: number;
   created_at?: string;
   updated_at?: string;
+  due_date?: string;
+  start_date?: string;
 }
 
 export interface UpdateTaskPayload {
