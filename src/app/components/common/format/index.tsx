@@ -23,3 +23,7 @@ export const formatTime = (seconds: number) => {
 
   return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 };
+
+export const formatISODateTime = (dateString: string): string => {
+  return new Date(dateString).toISOString().slice(0, 19) + 'Z';
+};

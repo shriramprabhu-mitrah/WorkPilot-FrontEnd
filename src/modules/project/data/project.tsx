@@ -101,23 +101,27 @@ export const assigneeOptions = [
 export const statusOptions = [
   {
     label: 'To Do',
-    value: 'To Do',
+    value: 'todo',
   },
   {
     label: 'In Progress',
-    value: 'In Progress',
+    value: 'in_progress',
   },
   {
     label: 'Review',
-    value: 'Review',
+    value: 'in_review',
   },
   {
-    label: 'Done',
-    value: 'Done',
+    label: 'Testing',
+    value: 'testing',
+  },
+  {
+    label: 'Completed',
+    value: 'completed',
   },
   {
     label: 'Blocked',
-    value: 'Blocked',
+    value: 'blocked',
   },
 ];
 

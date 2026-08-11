@@ -68,3 +68,33 @@ export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
   [ROLE_TYPE.VIEWER]: 'Viewer',
   [ROLE_TYPE.TESTER]: 'Tester',
 };
+
+export enum TASK_TYPE {
+  BUG = 'bug',
+  FEATURE = 'feature',
+  TASK = 'task',
+  CHORE = 'chore',
+  STORY = 'story',
+}
+
+export const taskTypeOptions = [
+  { label: 'Bug', value: TASK_TYPE.BUG },
+  { label: 'Feature', value: TASK_TYPE.FEATURE },
+  { label: 'Task', value: TASK_TYPE.TASK },
+  { label: 'Chore', value: TASK_TYPE.CHORE },
+  { label: 'Story', value: TASK_TYPE.STORY },
+];
+
+export enum PRIORITY_TYPE {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical',
+}
+
+export const priorityOptions = [
+  { label: 'Low', value: PRIORITY_TYPE.LOW },
+  { label: 'Medium', value: PRIORITY_TYPE.MEDIUM },
+  { label: 'High', value: PRIORITY_TYPE.HIGH },
+  { label: 'Critical', value: PRIORITY_TYPE.CRITICAL },
+];

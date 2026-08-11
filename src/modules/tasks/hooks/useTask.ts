@@ -34,9 +34,10 @@ export const useCreateTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (payload: TaskPayload) => taskService.createTask(projectId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
+        exact: false,
       });
     },
   });

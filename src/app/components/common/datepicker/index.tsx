@@ -6,11 +6,12 @@ import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 
 interface WpDatePickerProps {
   label?: string;
-  value?: string; // ISO date string: "YYYY-MM-DD"
+  value?: string; // "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss"
   placeholder?: string;
   error?: string;
   hint?: string;
   disabled?: boolean;
+  showTime?: boolean;
   min?: string;
   max?: string;
   onChange: (value: string) => void;
@@ -32,10 +33,12 @@ const MONTHS = [
   'December',
 ];
 
-function formatDisplay(iso: string) {
+function formatDisplay(iso: string, showTime?: boolean) {
   if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  return `${MONTHS[parseInt(m) - 1]} ${parseInt(d)}, ${y}`;
+  const [datePart, timePart] = iso.split('T');
+  const [y, m, d] = datePart.split('-');
+  const base = `${MONTHS[parseInt(m) - 1]} ${parseInt(d)}, ${y}`;
+  return showTime && timePart ? `${base} ${timePart}` : base;
 }
 
 export const WpDatePicker = ({
@@ -45,16 +48,20 @@ export const WpDatePicker = ({
   error,
   hint,
   disabled = false,
+  showTime = false,
   min,
   max,
   onChange,
 }: WpDatePickerProps) => {
   const today = new Date();
-  const initDate = value ? new Date(value + 'T00:00:00') : today;
+  const datePart = value ? value.split('T')[0] : '';
+  const timePart = value?.includes('T') ? value.split('T')[1] : '00:00:00';
+  const initDate = datePart ? new Date(datePart + 'T00:00:00') : today;
 
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(initDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initDate.getMonth());
+  const [time, setTime] = useState(timePart);
   const ref = useRef<HTMLDivElement>(null);
 
   useOutsideClick(ref, () => setOpen(false));
@@ -86,13 +93,19 @@ export const WpDatePicker = ({
 
   const handleSelect = (d: number) => {
     const iso = toISO(viewYear, viewMonth, d);
-    onChange(iso);
-    setOpen(false);
+    onChange(showTime ? `${iso}T${time}` : iso);
+    if (!showTime) setOpen(false);
+  };
+
+  const handleTimeChange = (newTime: string) => {
+    setTime(newTime);
+    if (datePart) onChange(`${datePart}T${newTime}`);
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     onChange('');
+    setTime('00:00:00');
   };
 
   return (
@@ -125,7 +138,7 @@ export const WpDatePicker = ({
             className={`flex items-center gap-2 ${!value ? 'text-[var(--color-gray-400)]' : 'text-[var(--color-gray-900)]'}`}
           >
             <Calendar size={15} className="text-[var(--color-gray-400)]" />
-            {value ? formatDisplay(value) : placeholder}
+            {value ? formatDisplay(value, showTime) : placeholder}
           </span>
           {value && !disabled ? (
             <X
@@ -137,9 +150,9 @@ export const WpDatePicker = ({
         </button>
 
         {open && (
-          <div className="absolute z-50 mt-1 bg-white border border-[var(--color-gray-200)] rounded-lg shadow-lg p-3 w-72">
+          <div className="absolute z-50 mt-1 w-64 rounded-lg border border-[var(--color-gray-200)] bg-white p-2 shadow-lg">
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-1.5">
               <button
                 type="button"
                 onClick={prevMonth}
@@ -147,7 +160,7 @@ export const WpDatePicker = ({
               >
                 <ChevronLeft size={16} className="text-[var(--color-gray-600)]" />
               </button>
-              <span className="text-sm font-semibold text-[var(--color-gray-900)]">
+              <span className="text-xs font-semibold text-[var(--color-gray-900)]">
                 {MONTHS[viewMonth]} {viewYear}
               </span>
               <button
@@ -164,7 +177,7 @@ export const WpDatePicker = ({
               {DAYS.map((d) => (
                 <span
                   key={d}
-                  className="text-center text-xs font-medium text-[var(--color-gray-400)] py-1"
+                  className="text-center text-[11px] font-medium text-[var(--color-gray-400)] py-0.5"
                 >
                   {d}
                 </span>
@@ -172,7 +185,7 @@ export const WpDatePicker = ({
             </div>
 
             {/* Dates */}
-            <div className="grid grid-cols-7 gap-y-1">
+            <div className="grid grid-cols-7 gap-y-1" onClick={(e) => e.stopPropagation()}>
               {Array.from({ length: firstDay }).map((_, i) => (
                 <span key={`e-${i}`} />
               ))}
@@ -191,7 +204,7 @@ export const WpDatePicker = ({
                     disabled={disabled}
                     onClick={() => handleSelect(day)}
                     className={[
-                      'w-8 h-8 mx-auto flex items-center justify-center rounded-full text-xs transition-colors',
+                      'w-6 h-6 mx-auto flex items-center justify-center rounded-full text-xs transition-colors',
                       isSelected
                         ? 'bg-[var(--color-primary-focus)] text-white font-semibold'
                         : isToday
@@ -207,6 +220,26 @@ export const WpDatePicker = ({
                 );
               })}
             </div>
+
+            {showTime && (
+              <div className="mt-3 pt-3 border-t border-[var(--color-gray-200)] flex items-center justify-between gap-2">
+                <span className="text-xs text-[var(--color-gray-500)] font-medium">Time</span>
+                <input
+                  type="time"
+                  step={1}
+                  value={time}
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  className="text-sm border border-[var(--color-gray-300)] rounded-md px-2 py-1 focus:outline-none focus:border-[var(--color-primary-focus)] text-[var(--color-gray-900)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="text-xs px-3 py-1 bg-[var(--color-primary-focus)] text-white rounded-md hover:opacity-90"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

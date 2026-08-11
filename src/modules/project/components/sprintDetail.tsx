@@ -3,13 +3,18 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
-import AddTaskModal, { Task } from './addTaskModel';
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetSprintById, useDeleteSprint } from '@/src/modules/project/hooks/useSprint';
 import SprintDetailSkeleton from './sprintDetailSkeleton';
+import AddTaskModal, { Task } from './addTaskModel';
 import EditSprintModal from './editSprintModal';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
+import { useAppSelector } from '@/src/store';
+import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
+import { ColumnId, KanbanTask, Priority } from '@/src/types/board';
+import { TaskResponse } from '@/src/types/task';
+import { statusOptions } from '../data/project';
 
 const SprintDetail = () => {
   const router = useRouter();
@@ -22,6 +27,31 @@ const SprintDetail = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isRefreshingSprint, setIsRefreshingSprint] = useState(false);
   const { hasPermission } = usePermissions();
+  const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
+
+  const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
+    id: task.key ?? '',
+    title: task.title ?? '',
+    columnId: task.status as ColumnId,
+    description: task.description ?? '',
+    priority: task.priority
+      ? ((task.priority.charAt(0).toUpperCase() +
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+      : 'Medium',
+    labels: [],
+    dueDate: task.due_date ?? '',
+    startDate: task.start_date ?? '',
+    storyPoints: task.story_points ?? 0,
+    sprint: '',
+    parent: '',
+    subtasks: [],
+    assigneeInitials: '',
+    assigneeColor: '',
+    reporter: '',
+    reporterInitials: '',
+    reporterColor: undefined,
+    activity: [],
+  });
 
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
   const handleSprintSuccess = async () => {
@@ -36,8 +66,19 @@ const SprintDetail = () => {
   const { tasksList, isLoadingTasks, refetchTasks } = useGetTasks(projectId, {
     sprint_id: sprintId,
   });
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+
+  const assigneeOptions =
+    selectedApiProject?.members?.map((member) => ({
+      label: member.full_name || member.username,
+      value: member.user_id,
+    })) ?? [];
 
   if (isLoadingSprint || isLoadingTasks) return <SprintDetailSkeleton />;
+
+  const STATUS_LABELS = Object.fromEntries(
+    statusOptions.map((option) => [option.value, option.label])
+  );
 
   if (!sprint || isError) {
     return (
@@ -198,7 +239,11 @@ const SprintDetail = () => {
       ) : (
         <div className="space-y-3">
           {tasksList.map((task) => (
-            <div key={task.id} className="rounded-xl border border-gray-200 bg-white p-5">
+            <div
+              key={task.id}
+              onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
+              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-300 hover:shadow-sm"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">{task.title}</h3>
@@ -210,7 +255,7 @@ const SprintDetail = () => {
                   {/* Assuming assignee info isn't directly returned by TaskResponse yet */}
                 </div>
                 <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                  {task.status}
+                  {STATUS_LABELS[task.status] ?? task.status}
                 </span>
               </div>
             </div>
@@ -218,7 +263,16 @@ const SprintDetail = () => {
         </div>
       )}
       {showAddTaskModal && (
-        <AddTaskModal onClose={() => setShowAddTaskModal(false)} onCreate={handleCreateTask} />
+        <AddTaskModal
+          projectId={projectId}
+          sprintId={sprintId}
+          assigneeOptions={assigneeOptions}
+          onClose={() => setShowAddTaskModal(false)}
+          onCreate={handleCreateTask}
+        />
+      )}
+      {selectedTask && (
+        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
       )}
       {showEditModal && (
         <EditSprintModal
