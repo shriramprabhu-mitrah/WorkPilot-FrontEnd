@@ -47,10 +47,7 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export const Sidebar = ({
-  isOpen = true,
-  onClose,
-}: SidebarProps) => {
+export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const pathname = usePathname();
 
   const user = useAppSelector((state) => state.user);
@@ -101,10 +98,7 @@ export const Sidebar = ({
     <>
       {/* Mobile overlay */}
       {onClose && isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 xl:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 z-40 bg-black/40 xl:hidden" onClick={onClose} />
       )}
 
       {/* Sidebar wrapper */}
@@ -123,33 +117,26 @@ export const Sidebar = ({
           duration-300
           ease-in-out
 
-          ${onClose
-            ? isOpen
-              ? 'translate-x-0'
-              : '-translate-x-full'
-            : 'translate-x-0'
-          }
+          ${onClose ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
 
           xl:translate-x-0
         `}
       >
-        <aside
-          className={`
-            flex
-            flex-col
-            min-h-screen
-            bg-white
-            border-r
-            border-gray-200
-            shrink-0
-            transition-all
-            duration-300
+<aside
+  className={`
+    flex
+    flex-col
+    min-h-screen
+    bg-white
+    border-r
+    border-gray-200
+    shrink-0
+    transition-all
+    duration-300
 
-            w-[72px]
-
-            ${isExpanded ? 'xl:w-[220px]' : 'xl:w-[72px]'}
-          `}
-        >
+    ${isExpanded ? 'w-[220px]' : 'w-[72px]'}
+  `}
+>
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
             <div
@@ -188,10 +175,7 @@ export const Sidebar = ({
                 "
                 aria-label="Close sidebar"
               >
-                <X
-                  size={20}
-                  className="text-gray-500"
-                />
+                <X size={20} className="text-gray-500" />
               </button>
             )}
           </div>
@@ -249,12 +233,7 @@ export const Sidebar = ({
                 )}
               </div>
 
-              {showLabels && (
-                <ChevronDown
-                  size={13}
-                  className="text-gray-400 shrink-0"
-                />
-              )}
+              {showLabels && <ChevronDown size={13} className="text-gray-400 shrink-0" />}
             </div>
           </div>
 
@@ -297,17 +276,14 @@ export const Sidebar = ({
 
           {/* Navigation */}
           <nav className="flex-1 px-3 space-y-0.5">
-            {navItems.map(
-              ({ label, href, icon: Icon }) => {
-                const active =
-                  pathname === href ||
-                  pathname.startsWith(`${href}/`);
+            {navItems.map(({ label, href, icon: Icon }) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
 
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="
                       flex
                       items-center
                       px-3
@@ -318,57 +294,47 @@ export const Sidebar = ({
                       transition-colors
                       min-w-0
                     "
-                    style={{
-                      backgroundColor: active
-                        ? colors.primaryLight
-                        : undefined,
+                  style={{
+                    backgroundColor: active ? colors.primaryLight : undefined,
 
-                      color: active
-                        ? colors.primary
-                        : colors.gray700,
-                    }}
-                  >
-                    {/* Icon */}
-                    <div
-                      className="
+                    color: active ? colors.primary : colors.gray700,
+                  }}
+                >
+                  {/* Icon */}
+                  <div
+                    className="
                         w-6
                         flex
                         items-center
                         justify-center
                         shrink-0
                       "
-                    >
-                      <Icon
-                        size={15}
-                        style={{
-                          color: active
-                            ? colors.primary
-                            : colors.gray700,
-                        }}
-                      />
-                    </div>
+                  >
+                    <Icon
+                      size={15}
+                      style={{
+                        color: active ? colors.primary : colors.gray700,
+                      }}
+                    />
+                  </div>
 
-                    {/* Label */}
-                    <span
-                      className={`
+                  {/* Label */}
+                  <span
+                    className={`
                         ml-3
                         overflow-hidden
                         whitespace-nowrap
                         transition-all
                         duration-300
 
-                        ${showLabels
-                          ? 'max-w-[140px] opacity-100'
-                          : 'max-w-0 opacity-0'
-                        }
+                        ${showLabels ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'}
                       `}
-                    >
-                      {label}
-                    </span>
-                  </Link>
-                );
-              }
-            )}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Divider */}
@@ -381,10 +347,7 @@ export const Sidebar = ({
               items-center
               py-3.5
 
-              ${showLabels
-                ? 'gap-2.5 px-4'
-                : 'justify-center px-0'
-              }
+              ${showLabels ? 'gap-2.5 px-4' : 'justify-center px-0'}
             `}
           >
             <Link
