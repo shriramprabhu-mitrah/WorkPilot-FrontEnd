@@ -278,8 +278,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     }
   };
 
-  
-
   // Only project-level roles are assignable within a project
   const roleOptions = PROJECT_ROLES.map((role) => ({
     value: role,

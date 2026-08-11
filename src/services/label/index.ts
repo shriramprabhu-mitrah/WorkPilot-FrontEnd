@@ -1,27 +1,17 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
-import {
-  Label,
-  LabelListItem,
-  CreateLabelPayload,
-  UpdateLabelPayload,
-} from '@/src/types/label';
+import { Label, LabelListItem, CreateLabelPayload, UpdateLabelPayload } from '@/src/types/label';
 
 class LabelService {
-  async getLabels(
-    projectId: string
-  ): Promise<ApiResponse<LabelListItem[]>> {
+  async getLabels(projectId: string): Promise<ApiResponse<LabelListItem[]>> {
     const endpoint = ApiEndpoints.Label.getLabels.withNamedParams({
       projectId,
     });
 
     return apiService.get<LabelListItem[]>(endpoint.url);
   }
-  async createLabel(
-    projectId: string,
-    payload: CreateLabelPayload
-  ): Promise<ApiResponse<Label>> {
+  async createLabel(projectId: string, payload: CreateLabelPayload): Promise<ApiResponse<Label>> {
     const url = ApiEndpoints.Label.createLabel.withParams({
       projectId,
     });
@@ -48,10 +38,7 @@ class LabelService {
     });
   }
 
-  async deleteLabel(
-    projectId: string,
-    labelId: string
-  ): Promise<ApiResponse<unknown>> {
+  async deleteLabel(projectId: string, labelId: string): Promise<ApiResponse<unknown>> {
     const url = ApiEndpoints.Label.deleteLabel.withParams({
       projectId,
       labelId,

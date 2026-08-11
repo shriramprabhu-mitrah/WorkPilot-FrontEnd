@@ -122,8 +122,8 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           xl:translate-x-0
         `}
       >
-<aside
-  className={`
+        <aside
+          className={`
     flex
     flex-col
     min-h-screen
@@ -136,7 +136,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
     ${isExpanded ? 'w-[220px]' : 'w-[72px]'}
   `}
->
+        >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
             <div

@@ -58,7 +58,11 @@ class TaskService {
     });
   }
 
-  async updateTask(projectId: string,taskId: string,payload: UpdateTaskPayload): Promise<ApiResponse<TaskResponse>> {
+  async updateTask(
+    projectId: string,
+    taskId: string,
+    payload: UpdateTaskPayload
+  ): Promise<ApiResponse<TaskResponse>> {
     const url = ApiEndpoints.Task.updateTaskbyId.withParams({
       projectId,
       taskId,
@@ -69,7 +73,10 @@ class TaskService {
     });
   }
 
-  async bulkUpdateTasks(projectId: string,payload: BulkUpdateTasksPayload): Promise<ApiResponse<TaskResponse[]>> {
+  async bulkUpdateTasks(
+    projectId: string,
+    payload: BulkUpdateTasksPayload
+  ): Promise<ApiResponse<TaskResponse[]>> {
     const url = ApiEndpoints.Task.bulkUpdate.withParams({
       projectId,
     });
@@ -79,7 +86,11 @@ class TaskService {
     });
   }
 
-  async cloneTask( projectId: string,taskId: string,payload: ClonePayload): Promise<ApiResponse<TaskResponse>> {
+  async cloneTask(
+    projectId: string,
+    taskId: string,
+    payload: ClonePayload
+  ): Promise<ApiResponse<TaskResponse>> {
     const url = ApiEndpoints.Task.cloneTask.withParams({
       projectId,
       taskId,
@@ -90,7 +101,11 @@ class TaskService {
     });
   }
 
-  async attachLabel( projectId: string,taskId: string,labelId: string): Promise<ApiResponse<unknown>> {
+  async attachLabel(
+    projectId: string,
+    taskId: string,
+    labelId: string
+  ): Promise<ApiResponse<unknown>> {
     const url = ApiEndpoints.Task.attachLabel.withParams({
       projectId,
       taskId,
@@ -102,7 +117,11 @@ class TaskService {
     });
   }
 
-  async removeLabel(projectId: string, taskId: string,labelId: string): Promise<ApiResponse<unknown>> {
+  async removeLabel(
+    projectId: string,
+    taskId: string,
+    labelId: string
+  ): Promise<ApiResponse<unknown>> {
     const url = ApiEndpoints.Task.removeLabel.withParams({
       projectId,
       taskId,

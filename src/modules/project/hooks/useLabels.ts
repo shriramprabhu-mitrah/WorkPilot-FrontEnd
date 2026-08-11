@@ -1,14 +1,7 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { labelService } from '@/src/services/label';
-import {
-  CreateLabelPayload,
-  UpdateLabelPayload,
-} from '@/src/types/label';
+import { CreateLabelPayload, UpdateLabelPayload } from '@/src/types/label';
 
 const labelKeys = {
   all: ['labels'] as const,
@@ -27,13 +20,8 @@ export const useCreateLabel = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      projectId,
-      payload,
-    }: {
-      projectId: string;
-      payload: CreateLabelPayload;
-    }) => labelService.createLabel(projectId, payload),
+    mutationFn: ({ projectId, payload }: { projectId: string; payload: CreateLabelPayload }) =>
+      labelService.createLabel(projectId, payload),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -55,12 +43,7 @@ export const useUpdateLabel = () => {
       projectId: string;
       labelId: string;
       payload: UpdateLabelPayload;
-    }) =>
-      labelService.updateLabel(
-        projectId,
-        labelId,
-        payload
-      ),
+    }) => labelService.updateLabel(projectId, labelId, payload),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -74,13 +57,8 @@ export const useDeleteLabel = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      projectId,
-      labelId,
-    }: {
-      projectId: string;
-      labelId: string;
-    }) => labelService.deleteLabel(projectId, labelId),
+    mutationFn: ({ projectId, labelId }: { projectId: string; labelId: string }) =>
+      labelService.deleteLabel(projectId, labelId),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

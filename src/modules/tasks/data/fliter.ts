@@ -1,5 +1,4 @@
 export const filters = [
-
   {
     key: 'project',
     label: 'All Projects',
@@ -25,5 +24,4 @@ export const filters = [
     label: 'All Assignees',
     options: ['All Assignees', 'Marcus', 'Priya', 'Jordan', 'Alex'],
   },
-
 ];

@@ -28,8 +28,6 @@ export interface TaskPayload {
   status: string;
 }
 
-
-
 export interface TaskResponse {
   id?: string;
   project_id?: string;
@@ -83,5 +81,3 @@ export interface GetTasksQueryParams {
   sprint_id?: string;
   fieldName?: string;
 }
-
-

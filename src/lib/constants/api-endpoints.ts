@@ -202,12 +202,11 @@ export const ApiEndpoints = {
     removeLabel: createEndpoint('/projects/{projectId}/tasks/{taskId}/labels/{labelId}'),
   },
   Label: {
-  getLabels: createQueryEndpoint('/projects/{projectId}/labels'),
-  createLabel: createEndpoint('/projects/{projectId}/labels'),
-  deleteLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
-  updateLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
-},
-
+    getLabels: createQueryEndpoint('/projects/{projectId}/labels'),
+    createLabel: createEndpoint('/projects/{projectId}/labels'),
+    deleteLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
+    updateLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;
