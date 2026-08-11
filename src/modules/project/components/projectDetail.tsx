@@ -212,7 +212,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           })
         );
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getInitials = (name: string) => {

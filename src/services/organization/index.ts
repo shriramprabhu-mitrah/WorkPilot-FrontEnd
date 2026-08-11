@@ -81,14 +81,8 @@ class OrganizationService {
     });
   }
 
-  async getUsers(
-    params: GetUsersParams = {}
-  ): Promise<PaginatedApiResponse<OrganizationUser[]>> {
-    const {
-      page = 1,
-      page_size = 10,
-      is_active,
-    } = params;
+  async getUsers(params: GetUsersParams = {}): Promise<PaginatedApiResponse<OrganizationUser[]>> {
+    const { page = 1, page_size = 10, is_active } = params;
 
     const queryParams: Record<string, string | number | boolean> = {
       page,
@@ -105,7 +99,6 @@ class OrganizationService {
       showErrorToast: true,
     });
   }
-
 }
 
 export const organizationService = new OrganizationService();

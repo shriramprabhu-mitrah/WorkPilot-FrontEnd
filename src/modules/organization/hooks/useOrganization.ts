@@ -121,8 +121,8 @@ export const useGetOrganizationUsers = (page = 1, pageSize = 10, isActive = true
     refetch: refetchUsers,
     error,
   } = useQuery({
-    queryKey: ['organizationUsers', page, pageSize,isActive],
-    queryFn: () => organizationService.getUsers({ page, page_size: pageSize, is_active: isActive,}),
+    queryKey: ['organizationUsers', page, pageSize, isActive],
+    queryFn: () => organizationService.getUsers({ page, page_size: pageSize, is_active: isActive }),
   });
 
   return {
