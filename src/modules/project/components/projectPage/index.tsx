@@ -2,7 +2,7 @@
 import ProjectCard from '../projectCard';
 import { useState, useMemo, useEffect } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2, } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
@@ -53,10 +53,10 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     sprint_count: apiProject.sprint_count ?? 0,
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -91,6 +91,7 @@ const ProjectPage = () => {
     projects: apiProjects,
     meta,
     isLoadingProjects,
+    isFetchingProjects,
   } = useGetProjects({
     page,
     page_size: pageSize,
@@ -141,7 +142,7 @@ const ProjectPage = () => {
 
       setProjectName('');
       setDescription('');
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
@@ -198,6 +199,7 @@ const ProjectPage = () => {
             </p>
           </div>
 
+
           <div className="self-start mr-12 flex items-center gap-2">
             {hasPermission('PROJECT_CREATE') && (
               <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
@@ -247,6 +249,13 @@ const ProjectPage = () => {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8">
+        {isFetchingProjects && !isLoadingProjects && (
+          <div className="mb-3 flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Updating projects...
+          </div>
+        )}
+
         {isLoadingProjects ? (
           <ProjectSkeleton />
         ) : displayedProjects.length === 0 ? (

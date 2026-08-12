@@ -18,6 +18,7 @@ export const useGetProjects = (params?: GetProjectQueryParams) => {
     projects: query.data?.data,
     meta: query.data?.meta,
     isLoadingProjects: query.isLoading,
+    isFetchingProjects: query.isFetching,
     isError: query.isError,
     error: query.error,
     refetchProjects: query.refetch,

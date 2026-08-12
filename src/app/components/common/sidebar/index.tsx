@@ -124,18 +124,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       >
         <aside
           className={`
-    flex
-    flex-col
-    min-h-screen
-    bg-white
-    border-r
-    border-gray-200
-    shrink-0
-    transition-all
-    duration-300
-
-    ${isExpanded ? 'w-[220px]' : 'w-[72px]'}
-  `}
+          flex
+          flex-col
+          min-h-screen
+          bg-white
+          border-r
+          border-gray-200
+          shrink-0
+          transition-all
+          duration-300
+          ${isExpanded || (onClose && isOpen) ? 'w-[220px]' : 'w-[72px]'}
+        `}
         >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">

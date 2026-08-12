@@ -43,6 +43,10 @@ export const KanbanBoardTemplate = () => {
   });
 
   const filterRef = useRef<HTMLDivElement>(null);
+  const boardScrollRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const [hasHorizontalScroll, setHasHorizontalScroll] = useState(true);
   useOutsideClick(filterRef, () => setShowFilter(false));
 
   // Derive unique assignees & labels from all tasks
@@ -87,6 +91,42 @@ export const KanbanBoardTemplate = () => {
     duration: 200,
     easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
   };
+
+  useEffect(() => {
+    if (loading) return;
+
+    const board = boardScrollRef.current;
+
+    if (!board) return;
+
+    const updateScrollState = () => {
+      const maxScroll = board.scrollWidth - board.clientWidth;
+
+      setHasHorizontalScroll(maxScroll > 0);
+
+      if (maxScroll <= 0) {
+        setScrollProgress(0);
+        return;
+      }
+
+      setScrollProgress(board.scrollLeft / maxScroll);
+    };
+    requestAnimationFrame(updateScrollState);
+    board.addEventListener('scroll', updateScrollState);
+    window.addEventListener('resize', updateScrollState);
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateScrollState();
+    });
+    resizeObserver.observe(board);
+
+    return () => {
+      board.removeEventListener('scroll', updateScrollState);
+      window.removeEventListener('resize', updateScrollState);
+      resizeObserver.disconnect();
+    };
+  }, [loading]);
+
 
   const findColumnByTaskId = (taskId: string) =>
     columns.find((col) => col.tasks.some((t) => t.id === taskId));
@@ -196,7 +236,7 @@ export const KanbanBoardTemplate = () => {
     return <BoardSkeleton />;
   }
   return (
-    <div className="flex flex-col h-full min-h-0 px-3 sm:px-0">
+    <div className="relative flex flex-col h-full min-h-0 px-3 sm:px-0">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div>
@@ -336,7 +376,10 @@ export const KanbanBoardTemplate = () => {
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start snap-x snap-mandatory [scrollbar-width:thin] -mx-3 sm:mx-0 px-3 sm:px-0">
+        <div
+          ref={boardScrollRef}
+          className="board-scroll flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start snap-x snap-mandatory -mx-3 sm:mx-0 px-3 sm:px-0"
+        >
           {filteredColumns.map((column) => (
             <KanbanColumn key={column.id} column={column} isOver={overColumnId === column.id} />
           ))}
@@ -350,6 +393,44 @@ export const KanbanBoardTemplate = () => {
           )}
         </DragOverlay>
       </DndContext>
+      {hasHorizontalScroll && (
+        <div className="absolute right-10 bottom-7 z-50 h-[45px] w-[90px] rounded-[7px] border border-[#dfe1e6] bg-white p-[4px] shadow-[0_2px_6px_rgba(9,30,66,0.15)]">
+          <div className="flex h-full w-full items-center gap-[2px]">
+            {[0, 1, 2, 3].map((item) => {
+              const activeIndex = Math.min(3, Math.round(scrollProgress * 3));
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  className={`
+                    relative h-[30px] flex-1 rounded-[4px] border-0 p-0
+                    ${item === activeIndex ? 'bg-white' : 'bg-[#f1f2f4]'}
+                  `}
+
+                  onClick={() => {
+                    const board = boardScrollRef.current;
+
+                    if (!board) return;
+
+                    const maxScroll =
+                      board.scrollWidth - board.clientWidth;
+
+                    board.scrollTo({
+                      left: (maxScroll / 3) * item,
+                      behavior: 'smooth',
+                    });
+                  }}
+                  aria-label={`Scroll to section ${item + 1}`}
+                >
+                  {item === activeIndex && (
+                    <span className="absolute inset-0 rounded-[4px] border-2 border-[#0c66e4] bg-white" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

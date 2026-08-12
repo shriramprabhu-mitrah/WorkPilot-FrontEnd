@@ -3,11 +3,13 @@
 import { Sidebar } from '@/src/app/components/common/sidebar';
 import { Navbar } from '@/src/app/components/common/navbar';
 import { colors } from '@/src/styles/colors';
-import { useState } from 'react';
-
+import { useCallback, useState } from 'react';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  
+  const handleCloseSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+  }, []);
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: colors.gray50 }}>
       {/* Desktop sidebar - always visible */}
@@ -17,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile sidebar - toggleable */}
       <div className="lg:hidden">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar isOpen={isSidebarOpen} onClose={handleCloseSidebar} />
       </div>
 
       <div className="flex flex-col flex-1 min-w-0">
