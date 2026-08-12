@@ -22,8 +22,8 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
 
   return (
     <header
-      className="flex items-center justify-between h-[56px] px-3 md:px-5 border-b shrink-0"
-      style={{ backgroundColor: colors.navbarBg, borderColor: colors.navbarBorder }}
+      className="flex items-center justify-between h-[56px] px-3 md:px-5 border-b shrink-0 bg-white"
+      style={{ borderColor: colors.navbarBorder }}
     >
       {/* Left side - Hamburger + Breadcrumb + Search */}
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">

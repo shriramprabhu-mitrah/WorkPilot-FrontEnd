@@ -89,12 +89,12 @@ const SprintDetail = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedTaskIds.length === tasksList.length) {
+    if (selectedTaskIds.length === (tasksList || []).length) {
       setSelectedTaskIds([]);
       return;
     }
 
-    setSelectedTaskIds(tasksList.map((task) => task.id).filter((id): id is string => Boolean(id)));
+    setSelectedTaskIds((tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id)));
   };
   const handleDeleteTasks = async () => {
     if (selectedTaskIds.length === 0) return;
@@ -133,7 +133,7 @@ const SprintDetail = () => {
       </div>
     );
   }
-  const allTasksSelected = tasksList.length > 0 && selectedTaskIds.length === tasksList.length;
+  const allTasksSelected = (tasksList || []).length > 0 && selectedTaskIds.length === (tasksList || []).length;
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">
@@ -260,7 +260,7 @@ const SprintDetail = () => {
             <p className="mt-4 text-sm text-gray-500">Loading updated tasks...</p>
           </div>
         </div>
-      ) : !tasksList || tasksList.length === 0 ? (
+      ) : !(tasksList || []).length ? (
         <div className="rounded-2xl border border-gray-200 bg-white py-16">
           <div className="flex flex-col items-center justify-center">
             <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-72 w-72" />
@@ -287,7 +287,7 @@ const SprintDetail = () => {
             <span className="text-xs text-gray-500">Select all</span>
           </div>
 
-          {tasksList.map((task) => {
+          {(tasksList || []).map((task) => {
             const taskId = task.id ?? '';
 
             return (

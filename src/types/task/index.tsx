@@ -15,6 +15,7 @@ export type Task = {
   points: number;
   dueDate: string;
   sprint: string;
+  sprintId?: string;
   labels: string[];
 };
 

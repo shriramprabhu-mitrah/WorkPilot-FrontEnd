@@ -6,50 +6,86 @@ import { TaskHeader } from '../components/TaskHeader';
 import { useEffect } from 'react';
 import TaskSkeleton from '../components/taskSkeleton';
 import { WpButton } from '@/src/app/components/common/button';
+import { useGetTasks } from '../hooks/useTask';
+import { Task, TaskResponse } from '@/src/types/task';
+import { Priority } from '@/src/types/board';
+import { TaskStatus } from '@/src/app/components/common/task';
+
 export const TaskTemplate = () => {
   const [selectedFilters, setSelectedFilters] = useState({
-    project: 'All Projects',
+    project: '',
     status: 'All Statuses',
     priority: 'All Priorities',
     assignee: 'All Assignees',
-    sprint: 'All Sprints',
+    sprint: '',
   });
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-  const [tasks, setTasks] = useState(tasksData);
+
+  const { tasksList, isLoadingTasks } = useGetTasks(
+    selectedFilters.project,
+    { sprint_id: selectedFilters.sprint || undefined },
+    !!selectedFilters.project && !!selectedFilters.sprint
+  );
+
+  // Still maintaining local state for bulk deletes until API delete is integrated
+  const [tasks, setTasks] = useState<Task[]>([]);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    if (tasksList) {
+      const statusMap: Record<string, string> = {
+        'todo': 'To Do',
+        'in_progress': 'In Progress',
+        'in_review': 'In Review',
+        'testing': 'Testing',
+        'done': 'Done',
+        'backlog': 'Backlog'
+      };
+      const mappedTasks: Task[] = tasksList.map((t: TaskResponse) => ({
+        id: t.key || t.id || '-',
+        title: t.title || 'Untitled',
+        priority: (t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase() : 'Medium') as Priority,
+        status: (t.status ? (statusMap[t.status.toLowerCase()] || t.status) : 'To Do') as TaskStatus,
+        project: t.project_id || '',
+        assignee: {
+          name: t.assignee_name || 'Unassigned',
+          initials: t.assignee_name ? t.assignee_name.substring(0, 2).toUpperCase() : 'UN',
+          color: '#3B82F6',
+        },
+        points: t.story_points || 0,
+        dueDate: t.due_date || '-',
+        sprint: t.sprint_name || '-',
+        sprintId: t.sprint_id || '',
+        labels: [],
+      }));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTasks(mappedTasks);
+    }
+  }, [tasksList]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <TaskSkeleton />;
-  }
   const handleBulkDelete = () => {
     setTasks((prev) => prev.filter((task) => !selectedRows.includes(task.id)));
-
     setSelectedRows([]);
     setShowBulkDeleteModal(false);
   };
+
   return (
     <div className="w-full">
-      <>
-        <TaskHeader
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedFilters={selectedFilters}
-          setSelectedFilters={setSelectedFilters}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          selectedRows={selectedRows}
-          setShowBulkDeleteModal={setShowBulkDeleteModal}
-        />
+      <TaskHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        selectedRows={selectedRows}
+        setShowBulkDeleteModal={setShowBulkDeleteModal}
+      />
+      {isLoadingTasks && selectedFilters.project && selectedFilters.sprint ? (
+        <div className="mt-4"><TaskSkeleton /></div>
+      ) : (
         <TaskTable
           tasks={tasks}
           setTasks={setTasks}
@@ -60,7 +96,7 @@ export const TaskTemplate = () => {
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
         />
-      </>
+      )}
       {showBulkDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6">

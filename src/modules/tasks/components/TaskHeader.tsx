@@ -4,6 +4,8 @@ import { FilterDropdown } from './FilterDropdown';
 import { filters } from '../data/fliter';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
+import { ProjectSprintDropdowns } from '@/src/app/components/common/project-sprint-dropdown';
+
 type TaskHeaderProps = {
   searchTerm: string;
   selectedFilters: {
@@ -62,13 +64,14 @@ export const TaskHeader = ({
             Delete {selectedRows.length > 0 && `(${selectedRows.length})`}
           </WpButton>
 
-          <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>
+          {/*Comment for Future purpose
+           <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>
             Export
           </WpButton>
 
           <WpButton variant="secondary" size="sm" leftIcon={<Columns3 size={16} />}>
             Columns
-          </WpButton>
+          </WpButton> */}
         </div>
       </div>
 
@@ -85,7 +88,13 @@ export const TaskHeader = ({
           wrapperClassName="w-full sm:w-52"
           className="!py-1.5"
         />
-        {filters.map((filter) => (
+        <ProjectSprintDropdowns
+          selectedProject={selectedFilters.project}
+          setSelectedProject={(val) => handleFilterChange('project', val)}
+          selectedSprint={selectedFilters.sprint}
+          setSelectedSprint={(val) => handleFilterChange('sprint', val)}
+        />
+        {filters.filter(f => f.key !== 'project' && f.key !== 'sprint').map((filter) => (
           <FilterDropdown
             key={filter.key}
             value={selectedFilters[filter.key as keyof typeof selectedFilters]}

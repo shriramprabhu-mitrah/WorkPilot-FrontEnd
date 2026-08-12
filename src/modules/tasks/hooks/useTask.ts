@@ -21,7 +21,7 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
     enabled: enabled && !!projectId,
   });
   return {
-    tasksList: query.data?.data || [],
+    tasksList: query.data?.data,
     // pagination: query.data?.pagination,
     isLoadingTasks: query.isPending,
     isFetchingTasks: query.isFetching,
