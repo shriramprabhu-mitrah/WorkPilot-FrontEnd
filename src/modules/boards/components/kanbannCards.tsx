@@ -16,13 +16,18 @@ export const KanbanCard = ({ task }: { task: KanbanTask }) => {
     data: { type: 'card', task },
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition ?? 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
+    willChange: 'transform',
+  };
+
   if (isDragging) {
     return (
       <div
         ref={setNodeRef}
         style={{
-          transform: CSS.Translate.toString(transform),
-          transition,
+          ...style,
           borderColor: colors.dragPlaceholderBorder,
           backgroundColor: colors.dragPlaceholderBg,
         }}
@@ -35,11 +40,11 @@ export const KanbanCard = ({ task }: { task: KanbanTask }) => {
     <>
       <div
         ref={setNodeRef}
-        style={{ transform: CSS.Translate.toString(transform), transition }}
+        style={style}
         {...attributes}
         {...listeners}
         onClick={() => setShowModal(true)}
-        className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none"
+        className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none"
       >
         <KanbanCardContent task={task} />
       </div>

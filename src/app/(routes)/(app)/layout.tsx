@@ -6,7 +6,7 @@ import { colors } from '@/src/styles/colors';
 import { useCallback, useState } from 'react';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   const handleCloseSidebar = useCallback(() => {
     setIsSidebarOpen(false);
   }, []);

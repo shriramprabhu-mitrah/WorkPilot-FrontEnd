@@ -66,7 +66,6 @@ export const COLUMN_CONFIG: Record<
   ColumnId,
   { label: string; color: string; bg: string; dot: string }
 > = {
-  backlog: { label: 'Backlog', color: colors.gray500, bg: colors.gray100, dot: colors.colBacklog },
   todo: { label: 'To Do', color: colors.colTodo, bg: colors.colTodoBg, dot: colors.colTodo },
   in_progress: {
     label: 'In Progress',
@@ -87,15 +86,21 @@ export const COLUMN_CONFIG: Record<
     dot: colors.colTesting,
   },
   done: { label: 'Done', color: colors.colDone, bg: colors.colDoneBg, dot: colors.colDone },
+  blocked: {
+    label: 'Blocked',
+    color: colors.colBlocked,
+    bg: colors.colBlockedBg,
+    dot: colors.colBlocked,
+  },
 };
 
 export const COLUMN_ORDER: ColumnId[] = [
-  'backlog',
   'todo',
   'in_progress',
   'inreview',
   'testing',
   'done',
+  'blocked',
 ];
 
 export const taskColors = {

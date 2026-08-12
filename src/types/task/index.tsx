@@ -44,9 +44,14 @@ export interface TaskResponse {
   status: string;
   story_points?: number;
   estimated_hours: number;
+  due_date?: string;
+  assignee_name?: string;
+  assignee_id?: string;
+  sprint_id?: string;
+  sprint_name?: string;
+  actual_hours?: number;
   created_at?: string;
   updated_at?: string;
-  due_date?: string;
   start_date?: string;
 }
 

@@ -20,7 +20,7 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
   });
 
   return (
-    <div className="flex h-full w-[85vw] sm:w-[260px] sm:min-w-[260px] flex-shrink-0 flex-col snap-start">
+    <div className="flex h-full w-[85vw] sm:w-[260px] sm:min-w-[260px] flex-shrink-0 flex-col">
       {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-gray-50 px-1 py-2 mb-3">
         <div className="flex items-center gap-2">

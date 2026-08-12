@@ -31,6 +31,8 @@ const SprintDetail = () => {
 
   const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
     id: task.key ?? '',
+    taskId: task.id ?? '',
+    projectId: task.project_id ?? '',
     title: task.title ?? '',
     columnId: task.status as ColumnId,
     description: task.description ?? '',

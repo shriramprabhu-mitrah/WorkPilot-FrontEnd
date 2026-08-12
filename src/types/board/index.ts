@@ -1,6 +1,6 @@
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
-export type ColumnId = 'backlog' | 'todo' | 'in_progress' | 'inreview' | 'testing' | 'done';
+export type ColumnId = 'todo' | 'in_progress' | 'inreview' | 'testing' | 'done' | 'blocked';
 
 export interface SubTask {
   id: string;
@@ -30,6 +30,8 @@ export interface ActivityItem {
 
 export interface KanbanTask {
   id: string;
+  taskId?: string;
+  projectId?: string;
   title: string;
   priority: Priority;
   labels: string[];

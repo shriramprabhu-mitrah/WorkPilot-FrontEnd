@@ -30,7 +30,6 @@ import { setSelectedProject } from '@/src/store/slices/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
-import { Members } from '@/src/types/organization';
 
 interface ProjectDetailProps {
   project: Project & { id?: string };
