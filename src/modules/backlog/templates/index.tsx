@@ -27,7 +27,7 @@ export const BacklogTemplate = () => {
     taskId: task.id ?? '',
     projectId: task.project_id ?? '',
     title: task.title ?? '',
-    columnId: (task.status?.toLowerCase().replace(/\s+/g, '') as ColumnId) || 'todo',
+    columnId: ((task.status?.toLowerCase().replace(/\s+/g, '') === 'inprogress' ? 'in_progress' : task.status?.toLowerCase().replace(/\s+/g, '')) as ColumnId) || 'todo',
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
@@ -180,17 +180,6 @@ export const BacklogTemplate = () => {
                     />
                   ))
                 )}
-                <div className="px-3 sm:px-4 py-2">
-                  <WpButton
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={<Plus size={13} />}
-                    className="text-gray-400 hover:text-blue-600"
-                    onClick={() => setShowAddTaskModal(true)}
-                  >
-                    Add task
-                  </WpButton>
-                </div>
               </div>
             )}
           </div>

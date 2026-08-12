@@ -66,6 +66,7 @@ export const COLUMN_CONFIG: Record<
   ColumnId,
   { label: string; color: string; bg: string; dot: string }
 > = {
+  backlog: { label: 'Backlog', color: colors.colBacklog, bg: colors.colBacklogBg, dot: colors.colBacklog },
   todo: { label: 'To Do', color: colors.colTodo, bg: colors.colTodoBg, dot: colors.colTodo },
   in_progress: {
     label: 'In Progress',
@@ -95,6 +96,7 @@ export const COLUMN_CONFIG: Record<
 };
 
 export const COLUMN_ORDER: ColumnId[] = [
+  'backlog',
   'todo',
   'in_progress',
   'inreview',

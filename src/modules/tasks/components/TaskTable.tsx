@@ -98,7 +98,7 @@ export const TaskTable = ({
     storyPoints: task.points,
     dueDate: task.dueDate,
     sprint: task.sprint,
-    columnId: task.status.toLowerCase().replace(/\s+/g, '') as ColumnId,
+    columnId: (task.status.toLowerCase().replace(/\s+/g, '') === 'inprogress' ? 'in_progress' : task.status.toLowerCase().replace(/\s+/g, '')) as ColumnId,
     description: '',
     subtasks: [],
     activity: [],
@@ -134,7 +134,7 @@ export const TaskTable = ({
           <h2 className="mt-6 text-2xl font-bold text-gray-900">No Tasks Yet</h2>
 
           <p className="mt-2 max-w-md text-center text-gray-500">
-            Create your first task and track progress.
+            Please select the Projects and Sprints in the Dropdown
           </p>
         </div>
       ) : (

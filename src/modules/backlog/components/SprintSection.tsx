@@ -111,7 +111,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
               leftIcon={<Plus size={13} />}
               className="text-gray-400 hover:text-blue-600"
             >
-              Add task
+              Add User Story
             </WpButton>
           </div>
         </div>
