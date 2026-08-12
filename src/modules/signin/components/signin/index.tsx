@@ -71,6 +71,7 @@ export const SignIn = () => {
   const {
     register,
     handleSubmit,
+    reset: resetResetForm,
     formState: { errors },
   } = useForm<SigninFormData>({
     resolver: zodResolver(signinSchema),
@@ -108,7 +109,9 @@ export const SignIn = () => {
   const {
     register: registerForgot,
     handleSubmit: handleForgotFormSubmit,
+    reset: resetForgotForm,
     formState: { errors: forgotErrors },
+    setValue
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: 'onSubmit',
@@ -118,6 +121,7 @@ export const SignIn = () => {
     register: registerReset,
     handleSubmit: handleResetFormSubmit,
     formState: { errors: resetErrors },
+    reset : resetValues
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     mode: 'onSubmit',
@@ -135,11 +139,22 @@ export const SignIn = () => {
     }
   };
 
+  const resetForgotPasswordFlow = () => {
+    setForgotStep(1);
+    setForgotEmail('');
+    setForgotSuccessMessage(null);
+    setForgotErrorMsg(null);
+    resetForgotForm();
+    resetResetForm();
+    resetValues()
+  };
+
   const handleForgotSubmit = async (data: ForgotPasswordFormData) => {
     setForgotSuccessMessage(null);
     setForgotErrorMsg(null);
     try {
       const response = await handleForgotPasswordAsync(data.email);
+      setForgotEmail(data.email);
       setForgotSuccessMessage(response?.message || 'Reset link sent successfully to your email.');
       setForgotStep(2);
     } catch (err: unknown) {
@@ -157,7 +172,10 @@ export const SignIn = () => {
         new_password: data.newPassword,
       });
       setForgotSuccessMessage(response?.message || 'Password reset successfully.');
-      setTimeout(() => router.push('/signin'), 1500);
+      setForgotEmail('');
+      resetForgotPasswordFlow();
+      setShowForgotSidebar(false);
+       
     } catch (err: unknown) {
       setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to reset password');
     }
@@ -213,9 +231,7 @@ export const SignIn = () => {
             variant="ghost"
             size="sm"
             onClick={() => {
-              setForgotSuccessMessage(null);
-              setForgotErrorMsg(null);
-              setForgotStep(1);
+              resetForgotPasswordFlow();
               setShowForgotSidebar(true);
             }}
           >
@@ -238,7 +254,11 @@ export const SignIn = () => {
       {showForgotSidebar && (
         <div
           className="fixed inset-0 z-[999] flex justify-end bg-black/50"
-          onClick={() => setShowForgotSidebar(false)}
+          onClick={() => {
+            resetForgotPasswordFlow();
+            setShowForgotSidebar(false);
+            resetValues();
+          }}
         >
           <div
             className="flex h-screen w-full max-w-[600px] animate-[slideIn_0.3s_ease-out] flex-col bg-white p-10 shadow-[-4px_0_15px_rgba(0,0,0,0.1)]"
@@ -348,7 +368,10 @@ export const SignIn = () => {
               type="button"
               variant="secondary"
               fullWidth
-              onClick={() => setShowForgotSidebar(false)}
+              onClick={() => {
+                resetForgotPasswordFlow();
+                setShowForgotSidebar(true);
+              }}
             >
               Back to Login
             </WpButton>

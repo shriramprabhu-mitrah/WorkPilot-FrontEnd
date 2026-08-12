@@ -23,7 +23,8 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
   return {
     tasksList: query.data?.data || [],
     // pagination: query.data?.pagination,
-    isLoadingTasks: query.isLoading,
+    isLoadingTasks: query.isPending,
+    isFetchingTasks: query.isFetching,
     isError: query.isError,
     error: query.error,
     refetchTasks: query.refetch,
@@ -33,9 +34,10 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
 export const useCreateTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: TaskPayload) => taskService.createTask(projectId, payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
+    mutationFn: (payload: TaskPayload) =>
+      taskService.createTask(projectId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
         exact: false,
       });
@@ -66,20 +68,21 @@ export const useGetTaskById = (projectId?: string, taskId?: string) => {
   };
 };
 
-export const useDeleteTask = () => {
+export const useDeleteTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: ({ projectId, taskId }: { projectId: string; taskId: string }) =>
+    mutationFn: (taskId: string) =>
       taskService.deleteTask(projectId, taskId),
-    onSuccess: (_, variables) => {
+    onSuccess: (_, taskId) => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.tasks, variables.projectId],
+        queryKey: [QUERY_KEYS.tasks, projectId],
       });
       queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
+        queryKey: [QUERY_KEYS.task, projectId, taskId],
       });
     },
   });
+
   return {
     deleteTask: mutation.mutate,
     deleteTaskAsync: mutation.mutateAsync,

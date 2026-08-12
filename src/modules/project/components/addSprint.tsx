@@ -9,6 +9,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { useCreateSprint } from '../hooks/useSprint';
 import { SprintPayload } from '@/src/types/project';
 import SprintAccordionItem from './sprintAccordionItem';
+import { WpInput } from '@/src/app/components/common/input';
 
 const today = new Date().toISOString().split('T')[0];
 
@@ -109,9 +110,25 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                   className="h-10 w-10 p-0"
                   leftIcon={<Minus size={16} />}
                 />
-                <div className="flex h-10 w-16 items-center justify-center rounded-lg border font-semibold">
-                  {sprintCount}
-                </div>
+                <WpInput
+                  id="sprintCount"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={sprintCount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '') {
+                      setSprintCount(0);
+                      return;
+                    }
+                    const numberValue = Number(value);
+                    if (Number.isInteger(numberValue) && numberValue > 0) {
+                      setSprintCount(numberValue);
+                    }
+                  }}
+                  className="h-10 w-16 text-center font-semibold"
+                />
                 <WpButton
                   variant="secondary"
                   size="sm"
