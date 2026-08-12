@@ -38,13 +38,14 @@ export const useSignin = () => {
 
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const token = data?.data?.access_token;
       const params = new URLSearchParams(window.location.search);
       const isMobile = params.get('source') === 'mobile';
 
       if (isMobile && token) {
         window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
+        await signupService.logOut();
       } else {
         router.refresh();
         router.push('/dashboard');
