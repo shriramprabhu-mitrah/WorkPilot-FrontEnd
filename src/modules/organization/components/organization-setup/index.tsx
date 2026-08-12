@@ -19,12 +19,13 @@ import { setUser } from '@/src/store/slices/users';
 
 interface OrgSetupModalProps {
   onComplete?: () => void;
+  onBack: () => void;
 }
 
 // Helper: Convert enum value to readable label
 const toLabel = (val: string) => val.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
+export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProps) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
@@ -370,7 +371,7 @@ export const OrganizationSetupModal = ({ onComplete }: OrgSetupModalProps) => {
               <WpButton
                 variant="ghost"
                 size="sm"
-                // onClick={onComplete}
+                onClick={onBack}
                 leftIcon={<ArrowLeft size={18} />}
                 className="text-gray-500 hover:text-gray-900"
               >

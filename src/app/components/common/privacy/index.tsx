@@ -1,10 +1,10 @@
 'use client';
 
 import { colors } from '@/src/styles/colors';
-import { WpCheckbox } from '@/src/app/components/common/checkbox';
+// import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { WpButton } from '@/src/app/components/common/button';
-import { useAppDispatch, useAppSelector } from '@/src/store';
-import { setPrivacyAccepted } from '@/src/store/slices/agreement';
+// import { useAppDispatch, useAppSelector } from '@/src/store';
+// import { setPrivacyAccepted } from '@/src/store/slices/agreement';
 
 const hr = {
   margin: '32px 0',
@@ -18,8 +18,6 @@ interface PrivacyPolicyProps {
   showActions?: boolean;
 }
 export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyProps) => {
-  const dispatch = useAppDispatch();
-  const accepted = useAppSelector((state) => state.agreement.privacyAccepted);
   const handleContinue = () => {
     onContinue?.();
   };
@@ -299,28 +297,8 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       <hr style={hr} />
 
       {showActions && (
-        <div
-          style={{
-            marginTop: '40px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-          }}
-        >
-          <WpCheckbox
-            id="accept-privacy"
-            checked={accepted}
-            onChange={(e) => dispatch(setPrivacyAccepted(e.target.checked))}
-            label="I have read and agree to the Privacy Policy."
-          />
-
-          <WpButton
-            type="button"
-            size="sm"
-            disabled={!accepted}
-            onClick={handleContinue}
-            className="mt-5 w-full"
-          >
+        <div className="mt-8 flex justify-end">
+          <WpButton type="button" size="sm" onClick={handleContinue}>
             Continue
           </WpButton>
         </div>

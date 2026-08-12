@@ -8,6 +8,7 @@ import { signupService } from '@/src/services/signup';
 import Link from 'next/link';
 import { useSignup } from '../../hooks/useSignup';
 import { useRouter } from 'next/navigation';
+import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import {
   TrackrLogoSvg,
   EmailIconSvg,
@@ -165,9 +166,11 @@ export const SignUp = () => {
 
       {isSuccess && onboardingStep === 'org' && (
         <OrganizationSetupModal
+          onBack={() => {
+            router.push('/signup');
+          }}
           onComplete={() => {
-            setOnboardingStep('done');
-            router.push('/dashboard'); // or wherever makes sense after setup
+            router.push('/dashboard');
           }}
         />
       )}
@@ -262,43 +265,78 @@ export const SignUp = () => {
               <ErrorMessage message={errors.confirmPwd?.message} />
             )}
 
-            <div className="mb-6 text-xs text-gray-500">
-              By creating an account, please review our{' '}
-              <button
-                type="button"
-                onClick={() => setSidebarContent('terms')}
-                className="font-medium text-blue-600 hover:underline"
-              >
-                Terms & Conditions
-              </button>{' '}
-              and{' '}
-              <button
-                type="button"
-                onClick={() => setSidebarContent('privacy')}
-                className="font-medium text-blue-600 hover:underline"
-              >
-                Privacy Policy
-              </button>
-              .
+            <div className="mb-6">
+              <WpCheckbox
+                id="signup-agreement"
+                checked={termsAccepted && privacyAccepted}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+
+                  dispatch(setTermsAccepted(checked));
+                  dispatch(setPrivacyAccepted(checked));
+                }}
+                label={
+                  <span className="text-xs text-gray-500">
+                    I agree to the{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSidebarContent('terms');
+                      }}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      Terms & Conditions
+                    </button>{' '}
+                    and{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSidebarContent('privacy');
+                      }}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      Privacy Policy
+                    </button>
+                    .
+                  </span>
+                }
+              />
             </div>
             {sidebarContent && (
-              <div className="sidebarOverlay" onClick={() => setSidebarContent(null)}>
-                <div className="sidebarContainer" onClick={(e) => e.stopPropagation()}>
-                  <WpButton
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="sidebarCloseBtn"
-                    onClick={() => setSidebarContent(null)}
-                  >
-                    <CloseIconSvg />
-                  </WpButton>
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                onClick={() => setSidebarContent(null)}
+              >
+                <div
+                  className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Popup Header */}
+                  <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {sidebarContent === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'}
+                    </h2>
 
-                  {sidebarContent === 'terms' ? (
-                    <TermsConditions onContinue={() => setSidebarContent(null)} />
-                  ) : (
-                    <PrivacyPolicy onContinue={() => setSidebarContent(null)} />
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setSidebarContent(null)}
+                      className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      aria-label="Close"
+                    >
+                      <CloseIconSvg />
+                    </button>
+                  </div>
+
+                  {/* Popup Content */}
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    {sidebarContent === 'terms' ? (
+                      <TermsConditions onContinue={() => setSidebarContent(null)} />
+                    ) : (
+                      <PrivacyPolicy onContinue={() => setSidebarContent(null)} showActions />
+                    )}
+                  </div>
                 </div>
               </div>
             )}

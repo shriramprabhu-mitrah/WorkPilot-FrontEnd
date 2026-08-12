@@ -13,13 +13,15 @@ import { ROLE_TYPE } from '@/src/app/components/common/enum';
 import { rolesData } from '@/src/modules/settings/data/rolesJson';
 import ProfileSkeleton from './profileSkeleton';
 import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
-
+  const searchParams = useSearchParams();
+  const shouldChangePassword = searchParams.get('changePassword') === 'true';
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
@@ -49,7 +51,18 @@ export default function Profile() {
       setPwdError(err instanceof Error ? err.message : 'Failed to change password');
     }
   };
+  useEffect(() => {
+    if (!shouldChangePassword) return;
 
+    const timer = setTimeout(() => {
+      changePasswordRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [shouldChangePassword]);
   const getInitials = (name: string) => {
     if (!name) return 'U';
     const parts = name.split(' ');
@@ -303,7 +316,7 @@ export default function Profile() {
           </div>
 
           {/* Change Password Form */}
-          {isChangingPwd && (
+          {(isChangingPwd || shouldChangePassword) && (
             <div
               ref={changePasswordRef}
               className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"

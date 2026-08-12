@@ -34,8 +34,7 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
 export const useCreateTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: TaskPayload) =>
-      taskService.createTask(projectId, payload),
+    mutationFn: (payload: TaskPayload) => taskService.createTask(projectId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
@@ -71,8 +70,7 @@ export const useGetTaskById = (projectId?: string, taskId?: string) => {
 export const useDeleteTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (taskId: string) =>
-      taskService.deleteTask(projectId, taskId),
+    mutationFn: (taskId: string) => taskService.deleteTask(projectId, taskId),
     onSuccess: (_, taskId) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
