@@ -68,8 +68,8 @@ class TaskService {
       taskId,
     });
     return apiService.patch<TaskResponse>(url, payload, {
-      showSuccessToast: true,
-      successMessage: 'Task updated successfully',
+      showSuccessToast: false,
+      showErrorToast: true,
     });
   }
 

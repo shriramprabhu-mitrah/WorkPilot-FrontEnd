@@ -17,10 +17,20 @@ const priorityConfig: Record<Priority, { color: string; bg: string }> = {
 
 export const PriorityBadge = ({ priority }: { priority: string | Priority }) => {
   const normalizedPriority = priority
-    ? (priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) as Priority
+    ? ((priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) as Priority)
     : 'Medium';
-  const config = priorityConfig[normalizedPriority] || { color: colors.gray500, bg: colors.gray100 };
-  return <Chip label={normalizedPriority} color={config.color} bg={config.bg} icon={<Flag size={10} />} />;
+  const config = priorityConfig[normalizedPriority] || {
+    color: colors.gray500,
+    bg: colors.gray100,
+  };
+  return (
+    <Chip
+      label={normalizedPriority}
+      color={config.color}
+      bg={config.bg}
+      icon={<Flag size={10} />}
+    />
+  );
 };
 
 // ─── Status ──────────────────────────────────────────────────────────────────
@@ -38,20 +48,24 @@ const statusConfig: Record<TaskStatus, { color: string; bg: string }> = {
 
 export const StatusBadge = ({ status }: { status: string | TaskStatus }) => {
   const statusMap: Record<string, TaskStatus> = {
-    'backlog': 'Backlog',
-    'todo': 'To Do',
+    backlog: 'Backlog',
+    todo: 'To Do',
     'to do': 'To Do',
-    'in_progress': 'In Progress',
+    in_progress: 'In Progress',
     'in progress': 'In Progress',
-    'in_review': 'In Review',
+    in_review: 'In Review',
     'in review': 'In Review',
-    'done': 'Done',
-    'testing': 'Testing'
+    done: 'Done',
+    testing: 'Testing',
   };
-  
-  const normalizedStatus = (status ? statusMap[status.toLowerCase()] : undefined) || status || 'To Do';
-  const config = statusConfig[normalizedStatus as TaskStatus] || { color: colors.gray500, bg: colors.gray100 };
-  
+
+  const normalizedStatus =
+    (status ? statusMap[status.toLowerCase()] : undefined) || status || 'To Do';
+  const config = statusConfig[normalizedStatus as TaskStatus] || {
+    color: colors.gray500,
+    bg: colors.gray100,
+  };
+
   return <Chip label={normalizedStatus} color={config.color} bg={config.bg} />;
 };
 

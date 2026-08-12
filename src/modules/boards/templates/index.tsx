@@ -36,8 +36,8 @@ export const KanbanBoardTemplate = () => {
   const [columns, setColumns] = useState<KanbanColumnType[]>(BOARD_COLUMNS);
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
-  //temp loading
   const [loading, setLoading] = useState(true);
+  const [boardLoading, setBoardLoading] = useState(false);
   const dropTargetRef = useRef<{ columnId: string; index: number } | null>(null);
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedSprint, setSelectedSprint] = useState('');
@@ -340,7 +340,6 @@ export const KanbanBoardTemplate = () => {
         if (res.data && res.data.length > 0) {
           const list = res.data.map((s) => ({ id: s.id, name: s.name }));
           setSprintsList(list);
-          setSelectedSprint(list[0].id);
         } else {
           setSprintsList([]);
           setSelectedSprint('');
@@ -355,6 +354,7 @@ export const KanbanBoardTemplate = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       if (!selectedProject) return;
+      setBoardLoading(true);
       try {
         const params = selectedSprint ? { sprint_id: selectedSprint } : {};
         const res = await taskService.getTasks(selectedProject, params);
@@ -363,19 +363,22 @@ export const KanbanBoardTemplate = () => {
         }
       } catch (error) {
         logger.log('Failed to fetch tasks', error);
+      } finally {
+        setBoardLoading(false);
       }
     };
     fetchTasks();
   }, [selectedProject, selectedSprint]);
 
-  if (loading) {
-    return <BoardSkeleton />;
-  }
   return (
-    <div className="relative flex flex-col h-full min-h-0 px-3 sm:px-0">
+    <div className="relative flex flex-col h-full min-h-0 overflow-hidden px-3 sm:px-0">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div>
+          <h1 className="text-xl font-semibold text-gray-800 mb-1">Kanban Board</h1>
+          <p className="text-sm text-gray-500 mb-2">
+            Visualize and manage your team&apos;s tasks across workflow stages.
+          </p>
           <div className="flex items-center gap-3">
             <select
               value={selectedProject}
@@ -529,7 +532,9 @@ export const KanbanBoardTemplate = () => {
       )}
 
       {/* Board */}
-      {!hasTasks ? (
+      {boardLoading ? (
+        <BoardSkeleton />
+      ) : !hasTasks ? (
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center text-center">
             <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-56 w-56 opacity-80" />
@@ -551,11 +556,11 @@ export const KanbanBoardTemplate = () => {
         >
           <div
             ref={boardRefCallback}
-            className="board-scroll flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start -mx-3 sm:mx-0 px-3 sm:px-0"
+            className="board-scroll flex gap-3 sm:gap-4 overflow-x-auto overflow-y-hidden pb-4 flex-1 min-h-0 -mx-3 sm:mx-0 px-3 sm:px-0"
             style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
             {filteredColumns.map((column, i) => (
-              <div key={column.id} data-col-index={i}>
+              <div key={column.id} data-col-index={i} className="h-full">
                 <KanbanColumn column={column} isOver={overColumnId === column.id} />
               </div>
             ))}

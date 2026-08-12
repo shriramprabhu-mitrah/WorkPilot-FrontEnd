@@ -20,7 +20,7 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
   });
 
   return (
-    <div className="flex h-full w-[85vw] sm:w-[260px] sm:min-w-[260px] flex-shrink-0 flex-col">
+    <div className="flex h-full w-[85vw] sm:w-[260px] sm:min-w-[260px] flex-shrink-0 flex-col min-h-0">
       {/* Header */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-gray-50 px-1 py-2 mb-3">
         <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
         <div
           ref={setNodeRef}
           style={isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}}
-          className={`flex flex-col gap-3 flex-1 min-h-[80px] rounded-xl p-1 transition-colors duration-200 ${
+          className={`flex flex-col gap-3 flex-1 min-h-[80px] overflow-y-auto rounded-xl p-1 transition-colors duration-200 ${
             isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
           }`}
         >

@@ -13,7 +13,13 @@ type FilterDropdownProps = {
   disabled?: boolean;
 };
 
-const SimpleDropdown = ({ value, options, onChange, placeholder, disabled }: FilterDropdownProps) => {
+const SimpleDropdown = ({
+  value,
+  options,
+  onChange,
+  placeholder,
+  disabled,
+}: FilterDropdownProps) => {
   return (
     <select
       value={value}
@@ -21,7 +27,11 @@ const SimpleDropdown = ({ value, options, onChange, placeholder, disabled }: Fil
       disabled={disabled}
       className={`h-9 rounded-md border border-gray-200 bg-white px-3 text-xs ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      {placeholder && <option value="" disabled>{placeholder}</option>}
+      {placeholder && (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      )}
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -48,34 +58,46 @@ export const ProjectSprintDropdowns = ({
   const [sprints, setSprints] = useState<SprintDetail[]>([]);
 
   useEffect(() => {
-    projectService.getProject({ fieldName: 'id,name' }).then((res) => {
-      // res.data should be the array of projects, given the processPaginatedResponse unwrapping
-      const data = res.data || [];
-      // If data is still wrapped in an object for some reason (e.g. data.data), extract it
-      const actualData = Array.isArray(data) ? data : ((data as { data?: Project[] }).data || []);
-      setProjects(actualData);
-    }).catch(err => logger.error("Error fetching projects", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    projectService
+      .getProject({ fieldName: 'id,name' })
+      .then((res) => {
+        // res.data should be the array of projects, given the processPaginatedResponse unwrapping
+        const data = res.data || [];
+        // If data is still wrapped in an object for some reason (e.g. data.data), extract it
+        const actualData = Array.isArray(data) ? data : (data as { data?: Project[] }).data || [];
+        setProjects(actualData);
+      })
+      .catch((err) => logger.error('Error fetching projects', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (selectedProject) {
-      sprintService.getSprints(selectedProject, 'id,name').then((res) => {
-        const data = res.data || [];
-        const actualData = Array.isArray(data) ? data : ((data as { data?: SprintDetail[] }).data || []);
-        setSprints(actualData);
-        // Only reset sprint if it's no longer in the list
-        if (selectedSprint && actualData.length > 0 && !actualData.find((s: SprintDetail) => s.id === selectedSprint)) {
-          setSelectedSprint('');
-        }
-      }).catch(err => logger.error("Error fetching sprints", err));
+      sprintService
+        .getSprints(selectedProject, 'id,name')
+        .then((res) => {
+          const data = res.data || [];
+          const actualData = Array.isArray(data)
+            ? data
+            : (data as { data?: SprintDetail[] }).data || [];
+          setSprints(actualData);
+          // Only reset sprint if it's no longer in the list
+          if (
+            selectedSprint &&
+            actualData.length > 0 &&
+            !actualData.find((s: SprintDetail) => s.id === selectedSprint)
+          ) {
+            setSelectedSprint('');
+          }
+        })
+        .catch((err) => logger.error('Error fetching sprints', err));
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSprints([]);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSprint('');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProject]);
 
   const projectOptions = (projects || []).map((p) => ({ label: p.name || '', value: p.id || '' }));
