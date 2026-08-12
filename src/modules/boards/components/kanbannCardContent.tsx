@@ -16,12 +16,34 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
       <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">{task.title}</p>
 
       {/* Due date */}
-      {task.dueDate && (
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-          <Calendar size={11} className="text-gray-400" />
-          <span>{task.dueDate}</span>
-        </div>
-      )}
+      {task.dueDate &&
+        (() => {
+          const parts = task.dueDate.split('-');
+          const months = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+          const display =
+            parts.length === 3
+              ? `${months[parseInt(parts[1]) - 1]} ${parseInt(parts[2])}`
+              : task.dueDate;
+          return (
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+              <Calendar size={11} className="text-gray-400" />
+              <span>{display}</span>
+            </div>
+          );
+        })()}
 
       {/* Task ID row */}
       <div className="flex items-center justify-between mb-2">

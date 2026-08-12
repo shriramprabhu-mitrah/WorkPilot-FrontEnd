@@ -2,7 +2,7 @@
 import ProjectCard from '../projectCard';
 import { useState, useMemo, useEffect } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2, } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
@@ -53,10 +53,10 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     sprint_count: apiProject.sprint_count ?? 0,
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -142,7 +142,7 @@ const ProjectPage = () => {
 
       setProjectName('');
       setDescription('');
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
@@ -198,7 +198,6 @@ const ProjectPage = () => {
               {displayedProjects.length} projects across your workspace
             </p>
           </div>
-
 
           <div className="self-start mr-12 flex items-center gap-2">
             {hasPermission('PROJECT_CREATE') && (

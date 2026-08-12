@@ -15,6 +15,8 @@ import {
 } from './components/editable-fields';
 import { SubtasksSection } from './components/subtasks-section';
 import { useResize } from '@/src/hooks/useResize';
+import { taskService } from '@/src/services/tasks';
+import { logger } from '@/src/lib/utils/logger';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -66,7 +68,55 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
     sprint: task.sprint ?? '',
     parent: task.parent ?? '',
     assignee: task.assigneeInitials,
+    assigneeColor: task.assigneeColor,
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const hasFetched = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (hasFetched.current === task.taskId) return;
+
+    hasFetched.current = task.taskId ?? null;
+    const fetchDetail = async () => {
+      if (!task.projectId || !task.taskId) return;
+
+      try {
+        setIsLoading(true);
+        const res = await taskService.getTaskById(task.projectId, task.taskId);
+        if (res.data) {
+          const d = res.data;
+          const assigneeName = d.assignee_name ?? '';
+          const initials = assigneeName
+            ? assigneeName
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+            : task.assigneeInitials;
+          setTaskData((prev) => ({
+            ...prev,
+            description: d.description ?? prev.description,
+            priority: d.priority
+              ? ((d.priority.charAt(0).toUpperCase() +
+                  d.priority.slice(1).toLowerCase()) as Priority)
+              : prev.priority,
+            dueDate: d.due_date ? d.due_date.split('T')[0] : prev.dueDate,
+            storyPoints: d.story_points ?? prev.storyPoints,
+            sprint: d.sprint_name ?? prev.sprint,
+            assignee: initials,
+            assigneeColor: task.assigneeColor,
+          }));
+        }
+      } catch (error) {
+        logger.log('Failed to fetch task detail', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [task.taskId, task.projectId]);
 
   const [uiState, setUiState] = useState({
     showStatusMenu: false,
@@ -97,7 +147,7 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
       onClick={onClose}
     >
       <div
-        className="bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
+        className="relative bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
         style={{ maxWidth: '1100px', height: 'min(860px, 94vh)' }}
         onClick={(event) => event.stopPropagation()}
       >
@@ -145,6 +195,14 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
+          {isLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-7 h-7 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+                <span className="text-sm text-gray-500">Loading...</span>
+              </div>
+            </div>
+          )}
           <div
             className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
               mobileTab === 'details' ? 'hidden sm:block' : 'block'
@@ -294,8 +352,8 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <DetailRow label="Assignee">
                 <div className="flex items-center gap-2 group/edit">
                   <AssigneeAvatar
-                    initials={task.assigneeInitials}
-                    color={task.assigneeColor}
+                    initials={taskData.assignee}
+                    color={taskData.assigneeColor}
                     size="sm"
                   />
                   <EditableText

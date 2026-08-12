@@ -42,8 +42,8 @@ class TaskService {
     });
   }
 
-  async getTaskById(projectId: string, sprintId: string): Promise<ApiResponse<TaskResponse>> {
-    const url = ApiEndpoints.Task.createTasks.withParams({ projectId, sprintId });
+  async getTaskById(projectId: string, taskId: string): Promise<ApiResponse<TaskResponse>> {
+    const url = ApiEndpoints.Task.getTaskbyId.withParams({ projectId, taskId });
     return apiService.get<TaskResponse>(url);
   }
 

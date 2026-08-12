@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Filter, UserCircle2 } from 'lucide-react';
+import { projectService } from '@/src/services/project';
+import { sprintService } from '@/src/services/sprint';
+import { taskService } from '@/src/services/tasks';
+import { logger } from '@/src/lib/utils/logger';
+import { TaskResponse } from '@/src/types/task';
 import {
   DndContext,
   DragEndEvent,
@@ -9,18 +14,20 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  closestCenter,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import type { DropAnimation } from '@dnd-kit/core';
 import { ASSIGNEE_AVATARS, BOARD_COLUMNS } from '../data';
+import { colors } from '@/src/styles/colors';
 import { KanbanColumn as KanbanColumnType, KanbanTask } from '@/src/types/board';
 import { KanbanColumn } from '../components/kanbannColumn';
 import { KanbanCardPreview } from '../components/kanbannCardsPreviews';
 import { FilterPanel, FilterState } from '@/src/app/components/common/filter-panel';
-import { colors } from '@/src/styles/colors';
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 import { WpButton } from '@/src/app/components/common/button';
 import BoardSkeleton from '../components/boardSkeleton';
@@ -31,10 +38,11 @@ export const KanbanBoardTemplate = () => {
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   //temp loading
   const [loading, setLoading] = useState(true);
-  const [dropTarget, setDropTarget] = useState<{
-    columnId: string;
-    index: number;
-  } | null>(null);
+  const dropTargetRef = useRef<{ columnId: string; index: number } | null>(null);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedSprint, setSelectedSprint] = useState('');
+  const [projectsList, setProjectsList] = useState<{ id: string; name: string }[]>([]);
+  const [sprintsList, setSprintsList] = useState<{ id: string; name: string }[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     priorities: [],
@@ -44,9 +52,14 @@ export const KanbanBoardTemplate = () => {
 
   const filterRef = useRef<HTMLDivElement>(null);
   const boardScrollRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  const [hasHorizontalScroll, setHasHorizontalScroll] = useState(true);
+  const [boardMounted, setBoardMounted] = useState(false);
+  const boardRefCallback = useCallback((node: HTMLDivElement | null) => {
+    (boardScrollRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    setBoardMounted(!!node);
+  }, []);
+  const [firstVisibleCol, setFirstVisibleCol] = useState(0);
+  const [visibleColCount, setVisibleColCount] = useState(0);
+  const [hasHorizontalScroll, setHasHorizontalScroll] = useState(false);
   useOutsideClick(filterRef, () => setShowFilter(false));
 
   // Derive unique assignees & labels from all tasks
@@ -82,51 +95,67 @@ export const KanbanBoardTemplate = () => {
     }));
   }, [columns, filters, hasActiveFilter]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
       styles: { active: { opacity: '0.4' } },
     }),
-    duration: 200,
-    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+    duration: 150,
+    easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
   };
 
+  const hasTasks = columns.some((col) => col.tasks.length > 0);
+
   useEffect(() => {
-    if (loading) return;
-
+    if (loading || !hasTasks) return;
     const board = boardScrollRef.current;
-
     if (!board) return;
 
     const updateScrollState = () => {
-      const maxScroll = board.scrollWidth - board.clientWidth;
-
-      setHasHorizontalScroll(maxScroll > 0);
-
-      if (maxScroll <= 0) {
-        setScrollProgress(0);
+      const { scrollWidth, clientWidth } = board;
+      const maxScroll = scrollWidth - clientWidth;
+      setHasHorizontalScroll(maxScroll > 1);
+      if (maxScroll <= 1) {
+        setFirstVisibleCol(0);
+        setVisibleColCount(filteredColumns.length);
         return;
       }
-
-      setScrollProgress(board.scrollLeft / maxScroll);
+      const boardRect = board.getBoundingClientRect();
+      const colEls = Array.from(board.querySelectorAll('[data-col-index]')) as HTMLElement[];
+      let first = -1;
+      let last = -1;
+      colEls.forEach((el, i) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.right > boardRect.left + 1 && rect.left < boardRect.right - 1) {
+          if (first === -1) first = i;
+          last = i;
+        }
+      });
+      if (first === -1) {
+        first = 0;
+        last = 0;
+      }
+      setFirstVisibleCol(first);
+      setVisibleColCount(last - first + 1);
     };
-    requestAnimationFrame(updateScrollState);
-    board.addEventListener('scroll', updateScrollState);
-    window.addEventListener('resize', updateScrollState);
 
-    const resizeObserver = new ResizeObserver(() => {
-      updateScrollState();
-    });
-    resizeObserver.observe(board);
+    const rafId = requestAnimationFrame(updateScrollState);
+    board.addEventListener('scroll', updateScrollState, { passive: true });
+    window.addEventListener('resize', updateScrollState, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(board);
 
     return () => {
+      cancelAnimationFrame(rafId);
       board.removeEventListener('scroll', updateScrollState);
       window.removeEventListener('resize', updateScrollState);
-      resizeObserver.disconnect();
+      ro.disconnect();
     };
-  }, [loading]);
-
+  }, [loading, hasTasks, boardMounted, filteredColumns.length]);
 
   const findColumnByTaskId = (taskId: string) =>
     columns.find((col) => col.tasks.some((t) => t.id === taskId));
@@ -137,51 +166,52 @@ export const KanbanBoardTemplate = () => {
     setActiveTask(task ?? null);
   };
 
-  const onDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over) {
-      setOverColumnId(null);
-      setDropTarget(null);
-      return;
-    }
+  const onDragOver = useCallback(
+    ({ active, over }: DragOverEvent) => {
+      if (!over) {
+        setOverColumnId(null);
+        dropTargetRef.current = null;
+        return;
+      }
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+      const activeId = active.id as string;
+      const overId = over.id as string;
 
-    const activeCol = findColumnByTaskId(activeId);
-    const overCol = columns.find((c) => c.id === overId) ?? findColumnByTaskId(overId);
+      const activeCol = findColumnByTaskId(activeId);
+      const overCol = columns.find((c) => c.id === overId) ?? findColumnByTaskId(overId);
 
-    if (!activeCol || !overCol) {
-      setOverColumnId(null);
-      setDropTarget(null);
-      return;
-    }
+      if (!activeCol || !overCol) {
+        setOverColumnId(null);
+        dropTargetRef.current = null;
+        return;
+      }
 
-    const isOverColumnItself = overId === overCol.id;
-    let index: number;
+      const isOverColumnItself = overId === overCol.id;
+      let index: number;
 
-    if (isOverColumnItself) {
-      index = overCol.tasks.length;
-    } else {
-      const overIndex = overCol.tasks.findIndex((t) => t.id === overId);
-      const activeRect = active.rect.current.translated;
-      const overRect = over.rect;
+      if (isOverColumnItself) {
+        index = overCol.tasks.length;
+      } else {
+        const overIndex = overCol.tasks.findIndex((t) => t.id === overId);
+        const activeRect = active.rect.current.translated;
+        const overRect = over.rect;
+        const isBelowOverItem =
+          !!activeRect && !!overRect && activeRect.top > overRect.top + overRect.height;
+        index = overIndex >= 0 ? overIndex + (isBelowOverItem ? 1 : 0) : overCol.tasks.length;
+      }
 
-      const isBelowOverItem =
-        !!activeRect && !!overRect && activeRect.top > overRect.top + overRect.height;
-
-      const modifier = isBelowOverItem ? 1 : 0;
-      index = overIndex >= 0 ? overIndex + modifier : overCol.tasks.length;
-    }
-
-    setOverColumnId(overCol.id);
-    setDropTarget({ columnId: overCol.id, index });
-  };
+      // Only trigger re-render if column highlight actually changed
+      setOverColumnId((prev) => (prev === overCol.id ? prev : overCol.id));
+      dropTargetRef.current = { columnId: overCol.id, index };
+    },
+    [columns]
+  ); // eslint-disable-line
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveTask(null);
     setOverColumnId(null);
     if (!over) {
-      setDropTarget(null);
+      dropTargetRef.current = null;
       return;
     }
 
@@ -198,7 +228,9 @@ export const KanbanBoardTemplate = () => {
 
     const task = activeCol.tasks[taskIndex];
     const targetIndex =
-      dropTarget?.columnId === overCol.id ? dropTarget.index : overCol.tasks.length;
+      dropTargetRef.current?.columnId === overCol.id
+        ? dropTargetRef.current.index
+        : overCol.tasks.length;
 
     setColumns((prev) => {
       const next = prev.map((col) => ({ ...col, tasks: [...col.tasks] }));
@@ -221,16 +253,120 @@ export const KanbanBoardTemplate = () => {
       return next;
     });
 
-    setDropTarget(null);
+    if (activeCol.id !== overCol.id && task.taskId) {
+      const newStatus = COLUMN_TO_STATUS[overCol.id];
+      if (newStatus) {
+        taskService
+          .updateTask(task?.projectId ?? '', task.taskId, { status: newStatus })
+          .catch((err) => logger.log('Failed to update task status', err));
+      }
+    }
+
+    dropTargetRef.current = null;
+  };
+
+  const STATUS_TO_COLUMN: Record<string, string> = {
+    todo: 'todo',
+    in_progress: 'in_progress',
+    in_review: 'inreview',
+    testing: 'testing',
+    completed: 'done',
+    blocked: 'blocked',
+  };
+
+  const COLUMN_TO_STATUS: Record<string, string> = Object.fromEntries(
+    Object.entries(STATUS_TO_COLUMN).map(([status, col]) => [col, status])
+  );
+
+  const mapTasksToColumns = (tasks: TaskResponse[]) => {
+    return BOARD_COLUMNS.map((col) => ({
+      ...col,
+      tasks: tasks
+        .filter((t) => (STATUS_TO_COLUMN[t.status] ?? t.status) === col.id)
+        .map((t) => ({
+          id: t.key ?? t.id ?? '',
+          taskId: t.id ?? '',
+          projectId: selectedProject,
+          title: t.title ?? '',
+          priority: t.priority
+            ? ((t.priority.charAt(0).toUpperCase() +
+                t.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+            : 'Medium',
+          labels: [],
+          assigneeInitials: t.assignee_name
+            ? t.assignee_name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+            : '',
+          assigneeColor: colors.avatarBlue,
+          storyPoints: t.story_points ?? 0,
+          dueDate: t.due_date ? t.due_date.split('T')[0] : '',
+          columnId: col.id,
+          sprint: t.sprint_name ?? '',
+        })),
+    }));
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
+    const fetchProjects = async () => {
+      try {
+        const res = await projectService.getProject({ fieldName: 'id,name' });
+        if (res.data && res.data.length > 0) {
+          const list = res.data.map((p) => ({ id: p.id || '', name: p.name }));
+          setProjectsList(list);
+          setSelectedProject(list[0].id);
+        }
+      } catch (error) {
+        logger.log('Failed to fetch projects', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
   }, []);
+
+  useEffect(() => {
+    const fetchSprints = async () => {
+      if (!selectedProject) {
+        setSprintsList([]);
+        setSelectedSprint('');
+        return;
+      }
+      try {
+        const res = await sprintService.getSprints(selectedProject, 'id,name');
+        if (res.data && res.data.length > 0) {
+          const list = res.data.map((s) => ({ id: s.id, name: s.name }));
+          setSprintsList(list);
+          setSelectedSprint(list[0].id);
+        } else {
+          setSprintsList([]);
+          setSelectedSprint('');
+        }
+      } catch (error) {
+        logger.log('Failed to fetch sprints', error);
+      }
+    };
+    fetchSprints();
+  }, [selectedProject]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!selectedProject) return;
+      try {
+        const params = selectedSprint ? { sprint_id: selectedSprint } : {};
+        const res = await taskService.getTasks(selectedProject, params);
+        if (res.data) {
+          setColumns(mapTasksToColumns(res.data) as KanbanColumnType[]);
+        }
+      } catch (error) {
+        logger.log('Failed to fetch tasks', error);
+      }
+    };
+    fetchTasks();
+  }, [selectedProject, selectedSprint]);
 
   if (loading) {
     return <BoardSkeleton />;
@@ -240,12 +376,36 @@ export const KanbanBoardTemplate = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
-            Sprint 12 Board
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: colors.gray500 }}>
-            Atlas Platform · Jul 1 – Jul 15
-          </p>
+          <div className="flex items-center gap-3">
+            <select
+              value={selectedProject}
+              onChange={(e) => {
+                setSelectedProject(e.target.value);
+                setSelectedSprint('');
+              }}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50"
+            >
+              {projectsList.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedSprint}
+              onChange={(e) => setSelectedSprint(e.target.value)}
+              disabled={!selectedProject}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">All Sprints</option>
+              {sprintsList.map((sprint) => (
+                <option key={sprint.id} value={sprint.id}>
+                  {sprint.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Filter button */}
@@ -369,60 +529,66 @@ export const KanbanBoardTemplate = () => {
       )}
 
       {/* Board */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDragEnd={onDragEnd}
-      >
-        <div
-          ref={boardScrollRef}
-          className="board-scroll flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start snap-x snap-mandatory -mx-3 sm:mx-0 px-3 sm:px-0"
-        >
-          {filteredColumns.map((column) => (
-            <KanbanColumn key={column.id} column={column} isOver={overColumnId === column.id} />
-          ))}
+      {!hasTasks ? (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center">
+            <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-56 w-56 opacity-80" />
+            <h2 className="mt-4 text-xl font-bold text-gray-800">No tasks found</h2>
+            <p className="mt-1 text-sm text-gray-500 max-w-xs">
+              There are no tasks for this selection. Try a different project or sprint.
+            </p>
+          </div>
         </div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={(args) =>
+            pointerWithin(args).length ? pointerWithin(args) : closestCenter(args)
+          }
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnd={onDragEnd}
+        >
+          <div
+            ref={boardRefCallback}
+            className="board-scroll flex gap-3 sm:gap-4 overflow-x-auto pb-4 flex-1 items-start -mx-3 sm:mx-0 px-3 sm:px-0"
+            style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+          >
+            {filteredColumns.map((column, i) => (
+              <div key={column.id} data-col-index={i}>
+                <KanbanColumn column={column} isOver={overColumnId === column.id} />
+              </div>
+            ))}
+          </div>
 
-        <DragOverlay dropAnimation={dropAnimation}>
-          {activeTask && (
-            <div className="rotate-[1.5deg] scale-[1.03]">
-              <KanbanCardPreview task={activeTask} />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeTask && <KanbanCardPreview task={activeTask} />}
+          </DragOverlay>
+        </DndContext>
+      )}
       {hasHorizontalScroll && (
-        <div className="absolute right-10 bottom-7 z-50 h-[45px] w-[90px] rounded-[7px] border border-[#dfe1e6] bg-white p-[4px] shadow-[0_2px_6px_rgba(9,30,66,0.15)]">
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-10 sm:bottom-7 z-50 h-[45px] rounded-[7px] border border-[#dfe1e6] bg-white p-[4px] shadow-[0_2px_6px_rgba(9,30,66,0.15)]"
+          style={{ width: `clamp(80px, ${filteredColumns.length * 20 + 8}px, calc(100vw - 32px))` }}
+        >
           <div className="flex h-full w-full items-center gap-[2px]">
-            {[0, 1, 2, 3].map((item) => {
-              const activeIndex = Math.min(3, Math.round(scrollProgress * 3));
+            {filteredColumns.map((_, i) => {
+              const isVisible = i >= firstVisibleCol && i < firstVisibleCol + visibleColCount;
               return (
                 <button
-                  key={item}
+                  key={i}
                   type="button"
-                  className={`
-                    relative h-[30px] flex-1 rounded-[4px] border-0 p-0
-                    ${item === activeIndex ? 'bg-white' : 'bg-[#f1f2f4]'}
-                  `}
-
+                  className="relative h-[30px] flex-1 rounded-[4px] border-0 p-0"
+                  style={{ backgroundColor: isVisible ? '#ffffff' : '#f1f2f4' }}
                   onClick={() => {
                     const board = boardScrollRef.current;
-
                     if (!board) return;
-
-                    const maxScroll =
-                      board.scrollWidth - board.clientWidth;
-
-                    board.scrollTo({
-                      left: (maxScroll / 3) * item,
-                      behavior: 'smooth',
-                    });
+                    const colWidth = board.scrollWidth / filteredColumns.length;
+                    board.scrollTo({ left: colWidth * i, behavior: 'smooth' });
                   }}
-                  aria-label={`Scroll to section ${item + 1}`}
+                  aria-label={`Scroll to column ${i + 1}`}
                 >
-                  {item === activeIndex && (
+                  {isVisible && (
                     <span className="absolute inset-0 rounded-[4px] border-2 border-[#0c66e4] bg-white" />
                   )}
                 </button>

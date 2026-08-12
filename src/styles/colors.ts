@@ -77,6 +77,8 @@ export const colors = {
   colDone: '#22c55e',
   colDoneBg: '#f0fdf4',
   colActive: '#16a34a',
+  colBlocked: '#ef4444',
+  colBlockedBg: '#fef2f2',
 
   // Board — assignee avatars
   avatarBlue: '#3b82f6',
