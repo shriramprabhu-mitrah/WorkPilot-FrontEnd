@@ -2,42 +2,88 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Search, Filter } from 'lucide-react';
-import { SPRINTS, BACKLOG_TASKS } from '../data';
-import { SprintSection } from '../components/SprintSection';
 import { BacklogRow } from '../components/BacklogRow';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
-import { useEffect } from 'react';
+import Image from 'next/image';
+import { ProjectSprintDropdowns } from '@/src/app/components/common/project-sprint-dropdown';
+import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
+import AddTaskModal from '@/src/modules/project/components/addTaskModel';
+import { useAppSelector } from '@/src/store';
+import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
+import { ColumnId, KanbanTask } from '@/src/types/board';
+import { TaskResponse } from '@/src/types/task';
+import { ProjectDetailMember } from '@/src/types/project';
+
 export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
+
+  const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
+    id: task.key ?? '',
+    taskId: task.id ?? '',
+    projectId: task.project_id ?? '',
+    title: task.title ?? '',
+    columnId: (task.status?.toLowerCase().replace(/\s+/g, '') as ColumnId) || 'todo',
+    description: task.description ?? '',
+    priority: task.priority
+      ? ((task.priority.charAt(0).toUpperCase() +
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+      : 'Medium',
+    labels: [],
+    dueDate: task.due_date ?? '',
+    startDate: task.start_date ?? '',
+    storyPoints: task.story_points ?? task.estimated_hours ?? 0,
+    sprint: task.sprint_name ?? '',
+    parent: '',
+    subtasks: [],
+    assigneeInitials: task.assignee_name ? task.assignee_name.substring(0, 2).toUpperCase() : 'UN',
+    assigneeColor: '#3B82F6',
+    reporter: '',
+    reporterInitials: '',
+    reporterColor: undefined,
+    activity: [],
+  });
+  
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const assigneeOptions =
+    selectedApiProject?.members?.map((member: ProjectDetailMember) => ({
+      label: member.full_name || member.username,
+      value: member.user_id,
+    })) ?? [];
+    
   const [search, setSearch] = useState('');
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedSprint, setSelectedSprint] = useState('');
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <BacklogSkeleton />;
-  }
-  const q = search.toLowerCase();
-  const filteredBacklog = BACKLOG_TASKS.filter(
-    (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
+  const { tasksList, isLoadingTasks } = useGetTasks(
+    selectedProject,
+    { sprint_id: selectedSprint || undefined },
+    !!selectedProject
   );
 
-  const filteredSprints = SPRINTS.map((s) => ({
-    ...s,
-    tasks: s.tasks.filter(
-      (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
-    ),
-  }));
+
+
+  const q = search.toLowerCase();
+  
+  // Use tasksList if we have a project selected, otherwise fallback to empty array
+  const activeTasks = selectedProject ? (tasksList || []) : [];
+  
+  const filteredBacklog = activeTasks.filter(
+    (t: TaskResponse) => t.title?.toLowerCase().includes(q) || t.id?.toLowerCase().includes(q)
+  );
+  
+  // Comment for Future Purpose
+  // const filteredSprints = SPRINTS.map((s) => ({
+  //   ...s,
+  //   tasks: s.tasks.filter(
+  //     (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
+  //   ),
+  // }));
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -47,11 +93,18 @@ export const BacklogTemplate = () => {
             Backlog
           </h1>
           <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
-            Atlas Platform · {SPRINTS.length} sprints · {BACKLOG_TASKS.length} unassigned tasks
+            {/* Atlas Platform · {SPRINTS.length} sprints · {BACKLOG_TASKS.length} unassigned tasks */}
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <ProjectSprintDropdowns
+            selectedProject={selectedProject}
+            setSelectedProject={setSelectedProject}
+            selectedSprint={selectedSprint}
+            setSelectedSprint={setSelectedSprint}
+          />
+
           <WpInput
             type="text"
             placeholder="Search tasks..."
@@ -61,74 +114,102 @@ export const BacklogTemplate = () => {
             wrapperClassName="w-full sm:w-40"
             className="!py-1.5"
           />
-
-          <WpButton variant="secondary" size="sm" leftIcon={<Filter size={14} />}>
+          
+          
+          {/* Comment for future Purpose
+           <WpButton variant="secondary" size="sm" leftIcon={<Filter size={14} />}>
             <span className="hidden sm:inline">Filter</span>
-          </WpButton>
+          </WpButton> */}
 
-          <WpButton size="sm" leftIcon={<Plus size={14} />}>
-            <span className="hidden sm:inline">Create Sprint</span>
+          <WpButton size="sm" leftIcon={<Plus size={14} />} disabled={!selectedProject} onClick={() => setShowAddTaskModal(true)}>
+            <span className="hidden sm:inline">Create User Story</span>
             <span className="sm:hidden">Sprint</span>
           </WpButton>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1">
-        {filteredSprints.map((sprint) => (
-          <SprintSection key={sprint.id} sprint={sprint} />
-        ))}
-
-        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
-          <div
-            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
-            onClick={() => setBacklogOpen((v) => !v)}
-          >
-            <span className="text-gray-400 shrink-0">
-              {backlogOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </span>
-            <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
-              Backlog
-            </span>
-            <span
-              className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
-              style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
+        {isLoadingTasks && selectedProject ? (
+          <div className="mt-4"><BacklogSkeleton /></div>
+        ) : (
+          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
+            <div
+              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
+              onClick={() => setBacklogOpen((v) => !v)}
             >
-              {filteredBacklog.length} issues
-            </span>
-            <div className="ml-auto">
-              <WpButton
-                variant="secondary"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-                leftIcon={<Plus size={12} />}
+              <span className="text-gray-400 shrink-0">
+                {backlogOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </span>
+              <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
+                Backlog
+              </span>
+              <span
+                className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
               >
-                <span className="hidden sm:inline">Add to Sprint</span>
-                <span className="sm:hidden">Add</span>
-              </WpButton>
+                {filteredBacklog.length} issues
+              </span>
             </div>
-          </div>
 
-          {backlogOpen && (
-            <div>
-              {filteredBacklog.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">No backlog tasks found.</p>
-              ) : (
-                filteredBacklog.map((task) => <BacklogRow key={task.id} task={task} />)
-              )}
-              <div className="px-3 sm:px-4 py-2">
-                <WpButton
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Plus size={13} />}
-                  className="text-gray-400 hover:text-blue-600"
-                >
-                  Add task
-                </WpButton>
+            {backlogOpen && (
+              <div>
+                {filteredBacklog.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Image
+                      src="/images/Empty-rafiki.svg"
+                      alt="No Tasks"
+                      width={200}
+                      height={200}
+                      className="h-48 w-48"
+                    />
+                    <h2 className="mt-4 text-lg font-bold text-gray-900">
+                      {!selectedProject ? "Please select a project" : "No backlogs found"}
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {!selectedProject 
+                        ? "Select a project to view its backlogs." 
+                        : "Create your first backlog task and track progress."}
+                    </p>
+                  </div>
+                ) : (
+                  filteredBacklog.map((task: TaskResponse) => (
+                    <BacklogRow 
+                      key={task.id} 
+                      task={task} 
+                      onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
+                    />
+                  ))
+                )}
+                <div className="px-3 sm:px-4 py-2">
+                  <WpButton
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Plus size={13} />}
+                    className="text-gray-400 hover:text-blue-600"
+                    onClick={() => setShowAddTaskModal(true)}
+                  >
+                    Add task
+                  </WpButton>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
+      
+      {showAddTaskModal && (
+        <AddTaskModal
+          projectId={selectedProject}
+          sprintId={selectedSprint}
+          assigneeOptions={assigneeOptions}
+          onClose={() => setShowAddTaskModal(false)}
+          onCreate={() => setShowAddTaskModal(false)}
+        />
+      )}
+
+      {selectedTask && (
+        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
     </div>
   );
 };

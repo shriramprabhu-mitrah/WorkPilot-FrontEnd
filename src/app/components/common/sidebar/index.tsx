@@ -33,7 +33,7 @@ const navItems = [
   { label: 'Projects', href: '/projects', icon: FolderKanban },
   { label: 'Boards', href: '/boards', icon: KanbanSquareDashedIcon },
   { label: 'Backlog', href: '/backlog', icon: BarChart2 },
-  { label: 'Sprint', href: '/sprint', icon: SquareKanban },
+  // { label: 'Sprint', href: '/sprint', icon: SquareKanban },
   { label: 'Tasks', href: '/tasks', icon: ClipboardList },
   { label: 'Reports', href: '/reports', icon: Flag },
   { label: 'Teams', href: '/teams', icon: User },
