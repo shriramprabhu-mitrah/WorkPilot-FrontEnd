@@ -13,6 +13,7 @@ import { TaskPayload } from '@/src/types/task';
 import { formatISODateTime } from '@/src/app/components/common/format';
 import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
+import { WpTextarea } from '@/src/app/components/common/textarea';
 
 export interface Task {
   title: string;
@@ -268,7 +269,6 @@ const AddTaskModal = ({
                 clearFieldError('taskName');
               }}
             />
-
             <Controller
               name="type"
               control={control}
@@ -287,10 +287,11 @@ const AddTaskModal = ({
               )}
             />
           </div>
-          <WpInput
+          <WpTextarea
             id="description"
             label="Description"
             placeholder="Optional details..."
+            rows={4}
             {...descriptionRegister}
             error={errors.description?.message}
             onChange={(e) => {
@@ -335,26 +336,27 @@ const AddTaskModal = ({
               )}
             />
           </div>
-          <Controller
-            name="dueDate"
-            control={control}
-            render={({ field }) => (
-              <WpDatePicker
-                label="Due Date"
-                value={field.value}
-                onChange={(value) => {
-                  field.onChange(value);
-                  if (value) {
-                    clearFieldError('dueDate');
-                  }
-                }}
-                showTime
-                placeholder="Select due date and time"
-                error={errors.dueDate?.message}
-              />
-            )}
-          />
+
           <div className="grid grid-cols-2 gap-3">
+            <Controller
+              name="dueDate"
+              control={control}
+              render={({ field }) => (
+                <WpDatePicker
+                  label="Due Date"
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    if (value) {
+                      clearFieldError('dueDate');
+                    }
+                  }}
+                  showTime
+                  placeholder="Select due date and time"
+                  error={errors.dueDate?.message}
+                />
+              )}
+            />
             <Controller
               name="priority"
               control={control}
@@ -372,6 +374,8 @@ const AddTaskModal = ({
                 />
               )}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <WpInput
               id="storyPoints"
               label="Story Points"
@@ -385,8 +389,6 @@ const AddTaskModal = ({
                 clearFieldError('storyPoints');
               }}
             />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <WpInput
               id="estimatedHours"
               label="Estimated Hours"
