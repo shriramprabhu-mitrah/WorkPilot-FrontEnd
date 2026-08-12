@@ -1,10 +1,10 @@
 'use client';
 
 import { colors } from '@/src/styles/colors';
-import { WpCheckbox } from '../checkbox';
+// import { WpCheckbox } from '../checkbox';
 import { WpButton } from '@/src/app/components/common/button';
-import { useAppDispatch, useAppSelector } from '@/src/store';
-import { setTermsAccepted } from '@/src/store/slices/agreement';
+// import { useAppDispatch, useAppSelector } from '@/src/store';
+// import { setTermsAccepted } from '@/src/store/slices/agreement';
 
 const hr = {
   margin: '32px 0',
@@ -18,8 +18,6 @@ interface TermsConditionsProps {
 }
 
 export const TermsConditions = ({ onContinue }: TermsConditionsProps) => {
-  const dispatch = useAppDispatch();
-  const accepted = useAppSelector((state) => state.agreement.termsAccepted);
   const handleContinue = () => {
     onContinue();
   };
@@ -213,27 +211,8 @@ export const TermsConditions = ({ onContinue }: TermsConditionsProps) => {
       </div>
       <hr style={hr} />
 
-      <div
-        style={{
-          marginTop: '40px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <WpCheckbox
-          id="accept-terms"
-          checked={accepted}
-          onChange={(e) => dispatch(setTermsAccepted(e.target.checked))}
-          label="I have read and agree to the Terms & Conditions."
-        />
-        <WpButton
-          type="button"
-          size="sm"
-          disabled={!accepted}
-          onClick={handleContinue}
-          className="mt-5 w-full"
-        >
+      <div className="mt-8 flex justify-end">
+        <WpButton type="button" size="sm" onClick={handleContinue}>
           Continue
         </WpButton>
       </div>

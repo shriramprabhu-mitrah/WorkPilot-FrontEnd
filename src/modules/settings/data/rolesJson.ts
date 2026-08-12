@@ -201,6 +201,46 @@ export const rolesData = [
     analogyDescription:
       'A board member reviewing a live dashboard — full visibility, zero edit access.',
   },
+
+  {
+    id: 'member',
+    role: 'member',
+    name: 'Member',
+    number: 5,
+    icon: BriefcaseBusiness,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    borderColor: 'border-blue-200',
+    cardBg: 'bg-blue-50',
+    activeBg: 'bg-blue-50',
+    scope: 'Organization-wide',
+
+    description:
+      'A team member who contributes to the organization by working on assigned projects and tasks.',
+
+    capabilities: [
+      'View assigned projects and tasks',
+      'Create and update tasks',
+      'Update task status',
+      'Add comments and mention teammates',
+      'Upload attachments',
+      'Log work hours',
+      'View relevant project dashboards',
+    ],
+
+    restrictions: [
+      'Cannot manage organization settings',
+      'Cannot invite or remove organization members',
+      'Cannot change user roles',
+      'Cannot manage all projects',
+      'Cannot manage organization-wide settings',
+    ],
+
+    analogyTitle: 'Real-World Analogy',
+
+    analogyDescription:
+      'A regular team member who contributes to projects and completes assigned work without administrative control.',
+  },
 ];
 
 export const auditLogs = [

@@ -111,7 +111,7 @@ export const SignIn = () => {
     handleSubmit: handleForgotFormSubmit,
     reset: resetForgotForm,
     formState: { errors: forgotErrors },
-    setValue
+    setValue,
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: 'onSubmit',
@@ -121,7 +121,7 @@ export const SignIn = () => {
     register: registerReset,
     handleSubmit: handleResetFormSubmit,
     formState: { errors: resetErrors },
-    reset : resetValues
+    reset: resetValues,
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     mode: 'onSubmit',
@@ -146,7 +146,7 @@ export const SignIn = () => {
     setForgotErrorMsg(null);
     resetForgotForm();
     resetResetForm();
-    resetValues()
+    resetValues();
   };
 
   const handleForgotSubmit = async (data: ForgotPasswordFormData) => {
@@ -175,7 +175,6 @@ export const SignIn = () => {
       setForgotEmail('');
       resetForgotPasswordFlow();
       setShowForgotSidebar(false);
-       
     } catch (err: unknown) {
       setForgotErrorMsg(err instanceof Error ? err.message : 'Failed to reset password');
     }

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
-import { WpInput } from '@/src/app/components/common/input';
+// import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
 import { useEffect, useState } from 'react';
@@ -52,14 +52,19 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   const user = useAppSelector((state) => state.user);
   const organization = useAppSelector((state) => state.organization);
-
-  const { handleLogOut } = useSignin();
-
   const [isExpanded, setIsExpanded] = useState(false);
+  const { handleLogOutAsync, logOut } = useSignin();
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
+    if (logOut.isLoading) return;
+
     removeTokens();
-    handleLogOut();
+
+    try {
+      await handleLogOutAsync();
+    } catch {
+      // onError in useSignin handles redirect
+    }
   };
 
   const getOrgInitials = (orgName?: string) => {
@@ -217,18 +222,20 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 >
                   {getOrgInitials(organization?.name)}
                 </div>
-
                 {showLabels && (
-                  <span
-                    className="
+                  <div className="w-full overflow-hidden whitespace-nowrap">
+                    <div
+                      className="
+                      inline-block
                       text-[13px]
                       font-medium
                       text-gray-700
-                      truncate
-                    "
-                  >
-                    {organization?.name || 'My Workspace'}
-                  </span>
+                      animate-marquee
+                      "
+                    >
+                      {organization?.name || 'My Workspace'}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -236,7 +243,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             </div>
           </div>
 
-          {/* Search */}
+          {/* Search
           <div className="px-3 pb-2 h-10 flex items-center">
             {showLabels && (
               <WpInput
@@ -252,7 +259,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 "
               />
             )}
-          </div>
+          </div> */}
 
           {/* Menu label */}
           <p
@@ -404,6 +411,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogoutClick}
+                disabled={logOut.isLoading}
                 className="
                   !p-1.5
                   text-gray-400
@@ -413,6 +421,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 title="Logout"
               >
                 <LogOut size={15} />
+                {logOut.isLoading ? 'Logging out...' : 'Logout'}
               </WpButton>
             )}
           </div>

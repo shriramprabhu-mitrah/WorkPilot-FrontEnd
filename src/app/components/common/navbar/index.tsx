@@ -2,12 +2,25 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Search, Settings, ChevronRight, Menu } from 'lucide-react';
+import {
+  Bell,
+  Search,
+  Settings,
+  ChevronRight,
+  ChevronDown,
+  Menu,
+  User,
+  Lock,
+  LogOut,
+} from 'lucide-react';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { useAppSelector } from '@/src/store';
 import { getInitials } from '../format';
+import { removeTokens } from '@/src/lib/utils/cookies';
+import { useSignin } from '@/src/modules/signin/hooks/useSignin';
+import { useState } from 'react';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -19,11 +32,26 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const segments = pathname.split('/').filter(Boolean);
   const title = segments[0] ? segments[0].charAt(0).toUpperCase() + segments[0].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  const { handleLogOutAsync, logOut } = useSignin();
+
+  const handleLogoutClick = async () => {
+    if (logOut.isLoading) return;
+
+    removeTokens();
+    setShowProfileMenu(false);
+
+    try {
+      await handleLogOutAsync();
+    } catch {
+      // onError in useSignin handles redirect
+    }
+  };
   return (
     <header
       className="flex items-center justify-between h-[56px] px-3 md:px-5 border-b shrink-0"
-      style={{ backgroundColor: colors.navbarBg, borderColor: colors.navbarBorder }}
+      style={{ backgroundColor: colors.white, borderColor: colors.navbarBorder }}
     >
       {/* Left side - Hamburger + Breadcrumb + Search */}
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
@@ -90,22 +118,111 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         {/* Divider - hidden on mobile */}
         <div className="w-px h-5 bg-gray-300 hidden md:block" />
 
-        {/* Avatar */}
-        <Link
-          href="/profile"
-          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-            style={{ backgroundColor: colors.accent }}
+        {/* Profile Dropdown */}
+        <div className="relative">
+          {/* Profile button */}
+          <button
+            type="button"
+            onClick={() => setShowProfileMenu((prev) => !prev)}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
           >
-            {getInitials(user.name)}
-          </div>
-          <span className="text-[13px] font-medium text-gray-700 hidden md:inline">
-            {user.name || 'User Name'}
-          </span>
-          <ChevronRight size={13} className="text-gray-400 rotate-90 hidden md:inline" />
-        </Link>
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+              style={{ backgroundColor: colors.accent }}
+            >
+              {getInitials(user.name)}
+            </div>
+
+            <span className="text-[13px] font-medium text-gray-700 hidden md:inline">
+              {user.name || 'User Name'}
+            </span>
+
+            <ChevronDown
+              size={13}
+              className={`text-gray-400 hidden md:inline transition-transform ${
+                showProfileMenu ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {/* Dropdown */}
+          {showProfileMenu && (
+            <div
+              className="
+                absolute
+                right-0
+                top-full
+                mt-2
+                w-52
+                rounded-lg
+                border
+                border-gray-200
+                bg-white
+                shadow-lg
+                z-50
+                overflow-hidden
+              "
+            >
+              {/* My Account */}
+              <Link
+                href="/profile"
+                onClick={() => setShowProfileMenu(false)}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-2.5
+                  text-[13px]
+                  text-gray-700
+                  hover:bg-gray-50
+                  transition-colors
+                "
+              >
+                <User size={16} className="text-gray-500" />
+                <span>My Account</span>
+              </Link>
+
+              {/* Change Password */}
+              <Link
+                href="/profile?changePassword=true"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50"
+              >
+                <Lock size={16} className="text-gray-500" />
+                <span>Change Password</span>
+              </Link>
+
+              {/* Divider */}
+              <div className="border-t border-gray-100" />
+
+              {/* Logout */}
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                disabled={logOut.isLoading}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  w-full
+                  px-4
+                  py-2.5
+                  text-[13px]
+                  text-red-600
+                  hover:bg-red-50
+                  transition-colors
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
+                "
+              >
+                <LogOut size={16} />
+
+                <span>{logOut.isLoading ? 'Logging out...' : 'Logout'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
