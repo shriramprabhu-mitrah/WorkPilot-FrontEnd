@@ -401,7 +401,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             {isRefreshingMembers ? (
               <div className="flex items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-                <span className="text-xs font-medium text-gray-500">Adding members...</span>
+                <span className="text-xs font-medium text-gray-500">updating...</span>
               </div>
             ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
               <div className="flex items-center gap-2">
