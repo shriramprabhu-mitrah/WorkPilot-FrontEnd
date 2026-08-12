@@ -9,21 +9,24 @@ import {
   TaskLabel,
 } from '@/src/app/components/common/task';
 import { colors } from '@/src/styles/colors';
+import { formatMonthYear } from '@/src/app/components/common/format';
+import { TaskResponse } from '@/src/types/task';
 
-export const BacklogRow = ({ task }: { task: BacklogTask }) => (
+export const BacklogRow = ({ task, onClick }: { task: TaskResponse & { labels?: string[], assigneeInitials?: string, assigneeColor?: string, storyPoints?: number, dueDate?: string }; onClick?: () => void }) => (
   <div
-    className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b last:border-0 hover:bg-gray-50 transition-colors"
+    onClick={onClick}
+    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b last:border-0 hover:bg-gray-50 transition-colors ${onClick ? 'cursor-pointer' : ''}`}
     style={{ borderColor: colors.gray100 }}
   >
     <span
       className="text-[11px] sm:text-xs font-semibold w-12 sm:w-14 shrink-0"
       style={{ color: colors.primary }}
     >
-      {task.id}
+      {task.key || '-'}
     </span>
 
     <div className="w-16 sm:w-20 shrink-0">
-      <PriorityBadge priority={task.priority} />
+      <PriorityBadge priority={task.priority || 'Medium'} />
     </div>
 
     <span className="text-sm flex-1 min-w-0 truncate" style={{ color: colors.gray800 }}>
@@ -31,7 +34,7 @@ export const BacklogRow = ({ task }: { task: BacklogTask }) => (
     </span>
 
     <div className="hidden sm:flex items-center gap-1 shrink-0 min-w-0 max-w-[160px] overflow-hidden">
-      {task.labels.map((label) => (
+      {(task.labels || []).map((label: string) => (
         <TaskLabel key={label} label={label} />
       ))}
     </div>
@@ -45,17 +48,25 @@ export const BacklogRow = ({ task }: { task: BacklogTask }) => (
       style={{ color: colors.gray400 }}
     >
       <Hash size={11} />
-      {task.storyPoints}
+      {task.story_points ?? task.storyPoints ?? 0}
     </span>
 
     <span
-      className="hidden sm:flex items-center gap-1 text-xs leading-none w-16 shrink-0"
+      className="hidden sm:flex items-center gap-1 text-xs leading-none w-24 shrink-0"
       style={{ color: colors.gray400 }}
     >
       <Calendar size={11} className="shrink-0" />
-      <span className="truncate">{task.dueDate}</span>
+      <span className="truncate">{formatMonthYear(task.due_date || task.dueDate || '')}</span>
     </span>
 
-    <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} />
+    <div className="flex items-center gap-2 w-32 shrink-0">
+      <AssigneeAvatar 
+        initials={task.assigneeInitials || task.assignee_name?.charAt(0).toUpperCase() || '?'} 
+        color={task.assigneeColor || colors.primary} 
+      />
+      <span className="text-xs truncate text-gray-600" title={task.assignee_name}>
+        {task.assignee_name || 'Unassigned'}
+      </span>
+    </div>
   </div>
 );

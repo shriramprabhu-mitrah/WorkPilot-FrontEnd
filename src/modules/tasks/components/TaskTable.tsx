@@ -75,7 +75,7 @@ export const TaskTable = ({
       task.assignee.name === selectedFilters.assignee;
 
     const matchesSprint =
-      selectedFilters.sprint === 'All Sprints' || task.sprint === selectedFilters.sprint;
+      selectedFilters.sprint === 'All Sprints' || !selectedFilters.sprint || task.sprintId === selectedFilters.sprint || task.sprint === selectedFilters.sprint;
     const matchesProject =
       selectedFilters.project === 'All Projects' || task.project === selectedFilters.project;
     return (
