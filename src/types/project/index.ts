@@ -47,6 +47,7 @@ export interface ProjectMember {
     email?: string;
     avatar_url?: string;
   };
+  full_name?: string;
 }
 
 // Add Members Payload

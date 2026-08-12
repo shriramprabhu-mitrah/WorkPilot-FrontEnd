@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDown, Check, FileText, Link2, MoreHorizontal, Plus, X } from 'lucide-react';
+import { ChevronDown, Check, FileText, Link2, MoreHorizontal, Plus, X, User } from 'lucide-react';
 import type { ColumnId, KanbanTask, Priority, SubTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
@@ -16,11 +16,15 @@ import {
 import { SubtasksSection } from './components/subtasks-section';
 import { useResize } from '@/src/hooks/useResize';
 import { taskService } from '@/src/services/tasks';
+import { projectService } from '@/src/services/project';
 import { logger } from '@/src/lib/utils/logger';
+import type { ProjectMember } from '@/src/types/project';
+import { formatISODateTime } from '@/src/app/components/common/format';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
   onClose: () => void;
+  onUpdate?: (updated: Partial<KanbanTask>) => void;
 }
 
 const useResizable = (initial: number, min: number, max: number) => {
@@ -55,7 +59,7 @@ const useResizable = (initial: number, min: number, max: number) => {
   return { width, onMouseDown };
 };
 
-export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
+export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerProps) => {
   const [taskData, setTaskData] = useState({
     subtasks: task.subtasks ?? [],
     status: task.columnId,
@@ -69,10 +73,65 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
     parent: task.parent ?? '',
     assignee: task.assigneeInitials,
     assigneeColor: task.assigneeColor,
+    assigneeId: '',
+    assigneeName: '',
   });
 
+  const [members, setMembers] = useState<ProjectMember[]>([]);
+  const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [assigneeSearch, setAssigneeSearch] = useState('');
+  const assigneeMenuRef = useRef<HTMLDivElement>(null);
+  const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const hasFetched = useRef<string | null>(null);
+
+  const handleUpdate = useCallback(
+    async (patch: Partial<typeof taskData>) => {
+      if (!task.projectId || !task.taskId) return;
+
+      // Store previous state for rollback
+      const previousState = { ...taskData };
+
+      // Update UI immediately (optimistic update)
+      setTaskData((prev) => ({ ...prev, ...patch }));
+      onUpdate?.(patch as Partial<KanbanTask>);
+
+      // Then update on server
+      const payload: Record<string, unknown> = {};
+      if (patch.description !== undefined) payload.description = patch.description;
+      if (patch.priority !== undefined) payload.priority = patch.priority.toLowerCase();
+      if (patch.status !== undefined) {
+        const STATUS_MAP: Record<string, string> = {
+          todo: 'todo',
+          in_progress: 'in_progress',
+          inreview: 'in_review',
+          testing: 'testing',
+          done: 'completed',
+          blocked: 'blocked',
+        };
+        payload.status = STATUS_MAP[patch.status] ?? patch.status;
+      }
+      if (patch.dueDate !== undefined) {
+        payload.due_date = patch.dueDate ? formatISODateTime(patch.dueDate) : null;
+      }
+      if (patch.startDate !== undefined) payload.start_date = patch.startDate || null;
+      if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
+
+      try {
+        setIsSaving(true);
+        await taskService.updateTask(task.projectId, task.taskId, payload);
+      } catch (error) {
+        logger.log('Failed to update task', error);
+        // Revert on error
+        setTaskData(previousState);
+        onUpdate?.(previousState as Partial<KanbanTask>);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [task.projectId, task.taskId, onUpdate, taskData]
+  );
 
   useEffect(() => {
     if (hasFetched.current === task.taskId) return;
@@ -83,9 +142,13 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
 
       try {
         setIsLoading(true);
-        const res = await taskService.getTaskById(task.projectId, task.taskId);
-        if (res.data) {
-          const d = res.data;
+        const [taskRes, membersRes] = await Promise.all([
+          taskService.getTaskById(task.projectId, task.taskId),
+          projectService.getProjectMembers(task.projectId),
+        ]);
+        if (membersRes.data) setMembers(membersRes.data);
+        if (taskRes.data) {
+          const d = taskRes.data;
           const assigneeName = d.assignee_name ?? '';
           const initials = assigneeName
             ? assigneeName
@@ -107,6 +170,8 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
             sprint: d.sprint_name ?? prev.sprint,
             assignee: initials,
             assigneeColor: task.assigneeColor,
+            assigneeId: d.assignee_id ?? '',
+            assigneeName: assigneeName,
           }));
         }
       } catch (error) {
@@ -134,11 +199,33 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
       if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
         setUiState((prev) => ({ ...prev, showStatusMenu: false }));
       }
+      if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
+        setShowAssigneeMenu(false);
+      }
     };
 
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+  const AVATAR_COLORS = [
+    colors.avatarBlue,
+    colors.avatarGreen,
+    colors.avatarPink,
+    colors.avatarAmber,
+    colors.avatarIndigo,
+  ];
+
+  const getMemberColor = (userId: string) =>
+    AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
   return (
     <div
@@ -234,8 +321,12 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                   />
                   <div className="flex gap-2 mt-2">
                     <button
-                      onClick={() => setUiState((prev) => ({ ...prev, editingDesc: false }))}
-                      className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors"
+                      onClick={() => {
+                        setUiState((prev) => ({ ...prev, editingDesc: false }));
+                        handleUpdate({ description: taskData.description });
+                      }}
+                      disabled={isSaving}
+                      className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
                       style={{ backgroundColor: colors.primary }}
                     >
                       Save
@@ -322,8 +413,8 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
                       <button
                         key={column}
                         onClick={() => {
-                          setTaskData((prev) => ({ ...prev, status: column }));
                           setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+                          handleUpdate({ status: column });
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50"
                         style={{
@@ -350,17 +441,125 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <p className="text-base font-semibold text-gray-800 mb-2">Details</p>
 
               <DetailRow label="Assignee">
-                <div className="flex items-center gap-2 group/edit">
-                  <AssigneeAvatar
-                    initials={taskData.assignee}
-                    color={taskData.assigneeColor}
-                    size="sm"
-                  />
-                  <EditableText
-                    value={taskData.assignee}
-                    onChange={(assignee) => setTaskData((prev) => ({ ...prev, assignee }))}
-                    placeholder="Unassigned"
-                  />
+                <div className="relative" ref={assigneeMenuRef}>
+                  <button
+                    onClick={() => setShowAssigneeMenu((v) => !v)}
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                  >
+                    {taskData.assigneeId ? (
+                      <AssigneeAvatar
+                        initials={taskData.assignee}
+                        color={getMemberColor(taskData.assigneeId)}
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                        <User size={12} className="text-gray-400" />
+                      </span>
+                    )}
+                    <span className="text-sm text-gray-700 truncate">
+                      {taskData.assigneeName || 'Unassigned'}
+                    </span>
+                    <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                  </button>
+                  {showAssigneeMenu && (
+                    <div className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                      <button
+                        onClick={async () => {
+                          // Update UI immediately (optimistic update)
+                          const previousState = {
+                            assignee: taskData.assignee,
+                            assigneeId: taskData.assigneeId,
+                            assigneeName: taskData.assigneeName,
+                          };
+
+                          setTaskData((prev) => ({
+                            ...prev,
+                            assignee: '',
+                            assigneeId: '',
+                            assigneeName: '',
+                          }));
+                          setShowAssigneeMenu(false);
+
+                          // Then update on server
+                          try {
+                            await handleUpdate({ assignee: '', assigneeId: '' } as never);
+                          } catch (error) {
+                            logger.log('Failed to unassign', error);
+                            // Revert on error
+                            setTaskData((prev) => ({
+                              ...prev,
+                              ...previousState,
+                            }));
+                          }
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                          <User size={11} className="text-gray-400" />
+                        </span>
+                        Unassigned
+                      </button>
+                      {members.map((m) => {
+                        const name = m.full_name ?? m.user?.name ?? '';
+                        const displayName =
+                          name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
+                        const initials = getInitials(name || (m.user?.email?.split('@')[0] ?? 'U'));
+                        const color = getMemberColor(m.user_id);
+                        return (
+                          <button
+                            key={m.user_id}
+                            onClick={async () => {
+                              if (!task.projectId || !task.taskId) return;
+
+                              // Update UI immediately (optimistic update)
+                              setTaskData((prev) => ({
+                                ...prev,
+                                assignee: initials,
+                                assigneeId: m.user_id,
+                                assigneeName: displayName,
+                                assigneeColor: color,
+                              }));
+                              onUpdate?.({
+                                assigneeInitials: initials,
+                                assigneeColor: color,
+                              } as Partial<KanbanTask>);
+                              setShowAssigneeMenu(false);
+
+                              // Then update on server
+                              try {
+                                await taskService.updateTask(task.projectId, task.taskId, {
+                                  assignee_id: m.user_id,
+                                } as never);
+                              } catch (error) {
+                                logger.log('Failed to update assignee', error);
+                                // Revert on error
+                                setTaskData((prev) => ({
+                                  ...prev,
+                                  assignee: task.assigneeInitials,
+                                  assigneeId: taskData.assigneeId,
+                                  assigneeName: taskData.assigneeName,
+                                  assigneeColor: task.assigneeColor,
+                                }));
+                                onUpdate?.({
+                                  assigneeInitials: task.assigneeInitials,
+                                  assigneeColor: task.assigneeColor,
+                                } as Partial<KanbanTask>);
+                              }
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-900 flex items-center gap-2"
+                            style={{ fontWeight: m.user_id === taskData.assigneeId ? 600 : 400 }}
+                          >
+                            <AssigneeAvatar initials={initials} color={color} size="sm" />
+                            <span className="truncate text-gray-900">{displayName}</span>
+                            {m.user_id === taskData.assigneeId && (
+                              <Check size={12} className="ml-auto text-blue-600 shrink-0" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </DetailRow>
 
@@ -382,7 +581,7 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <DetailRow label="Priority">
                 <EditablePriority
                   value={taskData.priority}
-                  onChange={(priority) => setTaskData((prev) => ({ ...prev, priority }))}
+                  onChange={(priority) => handleUpdate({ priority })}
                 />
               </DetailRow>
 
@@ -404,15 +603,16 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <DetailRow label="Due date">
                 <EditableDate
                   value={taskData.dueDate}
-                  onChange={(dueDate) => setTaskData((prev) => ({ ...prev, dueDate }))}
+                  onChange={(dueDate) => handleUpdate({ dueDate })}
                   placeholder="Set due date"
+                  includeTime={true}
                 />
               </DetailRow>
 
               <DetailRow label="Start date">
                 <EditableDate
                   value={taskData.startDate}
-                  onChange={(startDate) => setTaskData((prev) => ({ ...prev, startDate }))}
+                  onChange={(startDate) => handleUpdate({ startDate })}
                   placeholder="Set start date"
                 />
               </DetailRow>
@@ -420,7 +620,7 @@ export const TaskDetailDrawer = ({ task, onClose }: TaskDetailDrawerProps) => {
               <DetailRow label="Story pts">
                 <EditableNumber
                   value={taskData.storyPoints}
-                  onChange={(storyPoints) => setTaskData((prev) => ({ ...prev, storyPoints }))}
+                  onChange={(storyPoints) => handleUpdate({ storyPoints })}
                 />
               </DetailRow>
 
