@@ -141,18 +141,18 @@ export const BacklogTemplate = () => {
                 {filteredBacklog.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <Image
-                      src="/images/Empty-rafiki.svg"
+                      src="/images/Multitasking-rafiki.svg"
                       alt="No Tasks"
-                      width={200}
+                      width={300}
                       height={200}
-                      className="h-48 w-48"
+                      className="h-90 w-90"
                     />
                     <h2 className="mt-4 text-lg font-bold text-gray-900">
                       {!selectedProject ? 'Please select a project' : 'No backlogs found'}
                     </h2>
                     <p className="mt-1 text-sm text-gray-500">
                       {!selectedProject
-                        ? 'Select a project from the sidebar to view its backlogs.'
+                        ? 'Select a project to view its backlogs.'
                         : 'Create your first backlog task and track progress.'}
                     </p>
                   </div>

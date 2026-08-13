@@ -129,7 +129,7 @@ export const TaskTable = ({
       {filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Image
-            src="/images/Empty-rafiki.svg"
+            src="/images/Time management-rafiki.png"
             alt="No Tasks"
             width={288}
             height={288}

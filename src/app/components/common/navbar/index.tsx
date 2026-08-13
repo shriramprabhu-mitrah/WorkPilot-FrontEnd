@@ -20,7 +20,7 @@ import { useAppSelector } from '@/src/store';
 import { getInitials } from '../format';
 import { removeTokens } from '@/src/lib/utils/cookies';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -33,7 +33,20 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const title = segments[0] ? segments[0].charAt(0).toUpperCase() + segments[0].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
 
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   const { handleLogOutAsync, logOut } = useSignin();
 
   const handleLogoutClick = async () => {
@@ -119,7 +132,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         <div className="w-px h-5 bg-gray-300 hidden md:block" />
 
         {/* Profile Dropdown */}
-        <div className="relative">
+        <div ref={profileMenuRef} className="relative">
           {/* Profile button */}
           <button
             type="button"
