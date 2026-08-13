@@ -12,46 +12,46 @@ import {
 } from 'lucide-react';
 
 export const rolesData = [
-  {
-    id: 'super-admin',
-    name: 'Super Admin',
-    number: 1,
-    icon: Crown,
-    iconColor: 'text-purple-600',
-    iconBg: 'bg-purple-100',
-    borderColor: 'border-purple-200',
-    cardBg: 'bg-purple-50',
-    activeBg: 'bg-purple-50',
-    scope: 'Platform-wide',
+  // {
+  //   id: 'super-admin',
+  //   name: 'Super Admin',
+  //   number: 1,
+  //   icon: Crown,
+  //   iconColor: 'text-purple-600',
+  //   iconBg: 'bg-purple-100',
+  //   borderColor: 'border-purple-200',
+  //   cardBg: 'bg-purple-50',
+  //   activeBg: 'bg-purple-50',
+  //   scope: 'Platform-wide',
 
-    description:
-      'The highest-privilege account holder. Typically the founder or CTO of the company using Trackr.',
+  //   description:
+  //     'The highest-privilege account holder. Typically the founder or CTO of the company using Trackr.',
 
-    capabilities: [
-      'Manage all organizations on the platform',
-      'Create or delete any organization',
-      'Assign or revoke Organization Admin roles',
-      'Access platform-level billing & settings',
-      'View all audit logs across all orgs',
-      'Override any permission in emergency',
-    ],
+  //   capabilities: [
+  //     'Manage all organizations on the platform',
+  //     'Create or delete any organization',
+  //     'Assign or revoke Organization Admin roles',
+  //     'Access platform-level billing & settings',
+  //     'View all audit logs across all orgs',
+  //     'Override any permission in emergency',
+  //   ],
 
-    restrictions: [
-      'Actions are immutable and logged permanently',
-      'Cannot be demoted except by another Super Admin',
-    ],
+  //   restrictions: [
+  //     'Actions are immutable and logged permanently',
+  //     'Cannot be demoted except by another Super Admin',
+  //   ],
 
-    analogyTitle: 'Real-World Analogy',
+  //   analogyTitle: 'Real-World Analogy',
 
-    analogyDescription:
-      'The AWS root account — all-powerful, rarely used, should be locked away safely.',
-  },
+  //   analogyDescription:
+  //     'The AWS root account — all-powerful, rarely used, should be locked away safely.',
+  // },
 
   {
     id: 'organization-admin',
     role: 'org_admin',
     name: 'Organization Admin',
-    number: 2,
+    number: 1,
     icon: Building2,
     iconColor: 'text-blue-600',
     iconBg: 'bg-blue-100',
@@ -90,7 +90,7 @@ export const rolesData = [
     id: 'project-manager',
     role: 'project_manager',
     name: 'Project Manager',
-    number: 3,
+    number: 2,
     icon: BriefcaseBusiness,
     iconColor: 'text-orange-600',
     iconBg: 'bg-orange-100',
@@ -129,7 +129,7 @@ export const rolesData = [
     id: 'developer',
     role: 'developer',
     name: 'Developer',
-    number: 8,
+    number: 3,
     icon: Code2,
     iconColor: 'text-green-600',
     iconBg: 'bg-green-100',

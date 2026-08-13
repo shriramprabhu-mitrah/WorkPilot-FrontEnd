@@ -469,7 +469,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         ) : sprints.length === 0 ? (
           <div className="rounded-2xl border border-gray-200 bg-white py-16">
             <div className="flex flex-col items-center justify-center">
-              <img src="/images/Empty-rafiki.svg" alt="No Sprints" className="h-72 w-72" />
+              <img src="/images/agile method-amico.svg" alt="No Sprints" className="h-72 w-72" />
 
               <h2 className="mt-6 text-2xl font-bold text-gray-900">No Sprints Found</h2>
 

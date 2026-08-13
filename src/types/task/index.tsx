@@ -3,7 +3,7 @@ import { Priority } from '../board';
 
 export type Task = {
   id: string;
-  key:string;
+  key: string;
   title: string;
   priority: Priority;
   status: TaskStatus;

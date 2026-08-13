@@ -277,7 +277,7 @@ const SprintDetail = () => {
       ) : !(tasksList || []).length ? (
         <div className="rounded-2xl border border-gray-200 bg-white py-16">
           <div className="flex flex-col items-center justify-center">
-            <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-72 w-72" />
+            <img src="/images/Time management-rafiki.png" alt="No Tasks" className="h-72 w-72" />
 
             <p className="text-sm font-medium text-gray-400">
               No tasks have been created for this sprint.

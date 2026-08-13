@@ -127,16 +127,13 @@ export const TaskTable = ({
 
   const handleDelete = () => {
     if (!deleteTaskId) return;
-    deleteTask(
-      [deleteTaskId],
-      {
-        onSuccess: () => {
-          setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
-          setSelectedRows((prev) => prev.filter((id) => id !== deleteTaskId));
-          setDeleteTaskId(null);
-        },
-      }
-    );
+    deleteTask([deleteTaskId], {
+      onSuccess: () => {
+        setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
+        setSelectedRows((prev) => prev.filter((id) => id !== deleteTaskId));
+        setDeleteTaskId(null);
+      },
+    });
   };
 
   return (
