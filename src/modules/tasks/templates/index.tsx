@@ -55,9 +55,7 @@ export const TaskTemplate = () => {
         priority: (t.priority
           ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase()
           : 'Medium') as Priority,
-        status: (t.status
-          ? statusMap[t.status.toLowerCase()] || t.status
-          : 'To Do') as TaskStatus,
+        status: (t.status ? statusMap[t.status.toLowerCase()] || t.status : 'To Do') as TaskStatus,
         project: t.project_id || '',
         assignee: {
           name: t.assignee_name || 'Unassigned',

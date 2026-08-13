@@ -52,7 +52,7 @@ class TaskService {
       projectId,
     });
     return apiService.delete<unknown>(url, {
-        task_ids: taskIds,
+      task_ids: taskIds,
     });
   }
 

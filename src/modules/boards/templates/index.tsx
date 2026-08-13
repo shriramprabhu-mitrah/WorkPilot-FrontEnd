@@ -38,7 +38,9 @@ export const KanbanBoardTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [boardLoading, setBoardLoading] = useState(false);
   const dropTargetRef = useRef<{ columnId: string; index: number } | null>(null);
-  const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector((state) => state.project);
+  const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector(
+    (state) => state.project
+  );
   const selectedProject = storeProject?.id ?? '';
   const selectedSprint = storeSprint?.id ?? '';
   const [showFilter, setShowFilter] = useState(false);
@@ -338,7 +340,8 @@ export const KanbanBoardTemplate = () => {
           </p>
           {storeProject && (
             <p className="text-xs text-gray-400 mt-0.5">
-              {storeProject.name}{storeSprint ? ` · ${storeSprint.name}` : ' · All Sprints'}
+              {storeProject.name}
+              {storeSprint ? ` · ${storeSprint.name}` : ' · All Sprints'}
             </p>
           )}
         </div>

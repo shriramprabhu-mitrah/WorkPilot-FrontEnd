@@ -75,7 +75,10 @@ export const TaskTable = ({
       task.assignee.name === selectedFilters.assignee;
 
     const matchesSprint =
-      selectedFilters.sprint === 'All Sprints' || !selectedFilters.sprint || task.sprintId === selectedFilters.sprint || task.sprint === selectedFilters.sprint;
+      selectedFilters.sprint === 'All Sprints' ||
+      !selectedFilters.sprint ||
+      task.sprintId === selectedFilters.sprint ||
+      task.sprint === selectedFilters.sprint;
     const matchesProject =
       selectedFilters.project === 'All Projects' || task.project === selectedFilters.project;
     return (
@@ -98,7 +101,9 @@ export const TaskTable = ({
     storyPoints: task.points,
     dueDate: task.dueDate,
     sprint: task.sprint,
-    columnId: (task.status.toLowerCase().replace(/\s+/g, '') === 'inprogress' ? 'in_progress' : task.status.toLowerCase().replace(/\s+/g, '')) as ColumnId,
+    columnId: (task.status.toLowerCase().replace(/\s+/g, '') === 'inprogress'
+      ? 'in_progress'
+      : task.status.toLowerCase().replace(/\s+/g, '')) as ColumnId,
     description: '',
     subtasks: [],
     activity: [],

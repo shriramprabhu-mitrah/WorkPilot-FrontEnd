@@ -12,7 +12,19 @@ import { colors } from '@/src/styles/colors';
 import { formatMonthYear } from '@/src/app/components/common/format';
 import { TaskResponse } from '@/src/types/task';
 
-export const BacklogRow = ({ task, onClick }: { task: TaskResponse & { labels?: string[], assigneeInitials?: string, assigneeColor?: string, storyPoints?: number, dueDate?: string }; onClick?: () => void }) => (
+export const BacklogRow = ({
+  task,
+  onClick,
+}: {
+  task: TaskResponse & {
+    labels?: string[];
+    assigneeInitials?: string;
+    assigneeColor?: string;
+    storyPoints?: number;
+    dueDate?: string;
+  };
+  onClick?: () => void;
+}) => (
   <div
     onClick={onClick}
     className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b last:border-0 hover:bg-gray-50 transition-colors ${onClick ? 'cursor-pointer' : ''}`}
@@ -60,9 +72,9 @@ export const BacklogRow = ({ task, onClick }: { task: TaskResponse & { labels?: 
     </span>
 
     <div className="flex items-center gap-2 w-32 shrink-0">
-      <AssigneeAvatar 
-        initials={task.assigneeInitials || task.assignee_name?.charAt(0).toUpperCase() || '?'} 
-        color={task.assigneeColor || colors.primary} 
+      <AssigneeAvatar
+        initials={task.assigneeInitials || task.assignee_name?.charAt(0).toUpperCase() || '?'}
+        color={task.assigneeColor || colors.primary}
       />
       <span className="text-xs truncate text-gray-600" title={task.assignee_name}>
         {task.assignee_name || 'Unassigned'}

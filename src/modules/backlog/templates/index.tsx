@@ -44,7 +44,10 @@ export const BacklogTemplate = () => {
     taskId: task.id ?? '',
     projectId: task.project_id ?? '',
     title: task.title ?? '',
-    columnId: ((task.status?.toLowerCase().replace(/\s+/g, '') === 'inprogress' ? 'in_progress' : task.status?.toLowerCase().replace(/\s+/g, '')) as ColumnId) || 'todo',
+    columnId:
+      ((task.status?.toLowerCase().replace(/\s+/g, '') === 'inprogress'
+        ? 'in_progress'
+        : task.status?.toLowerCase().replace(/\s+/g, '')) as ColumnId) || 'todo',
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
@@ -66,7 +69,7 @@ export const BacklogTemplate = () => {
   });
 
   const q = search.toLowerCase();
-  const activeTasks = selectedProject ? (tasksList || []) : [];
+  const activeTasks = selectedProject ? tasksList || [] : [];
   const filteredBacklog = activeTasks.filter(
     (t: TaskResponse) => t.title?.toLowerCase().includes(q) || t.id?.toLowerCase().includes(q)
   );
@@ -80,7 +83,8 @@ export const BacklogTemplate = () => {
           </h1>
           {selectedApiProject && (
             <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
-              {selectedApiProject.name}{selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
+              {selectedApiProject.name}
+              {selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
             </p>
           )}
         </div>
@@ -95,7 +99,12 @@ export const BacklogTemplate = () => {
             wrapperClassName="w-full sm:w-40"
             className="!py-1.5"
           />
-          <WpButton size="sm" leftIcon={<Plus size={14} />} disabled={!selectedProject} onClick={() => setShowAddTaskModal(true)}>
+          <WpButton
+            size="sm"
+            leftIcon={<Plus size={14} />}
+            disabled={!selectedProject}
+            onClick={() => setShowAddTaskModal(true)}
+          >
             <span className="hidden sm:inline">Create User Story</span>
             <span className="sm:hidden">Sprint</span>
           </WpButton>
@@ -104,7 +113,9 @@ export const BacklogTemplate = () => {
 
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1">
         {isLoadingTasks && selectedProject ? (
-          <div className="mt-4"><BacklogSkeleton /></div>
+          <div className="mt-4">
+            <BacklogSkeleton />
+          </div>
         ) : (
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
             <div

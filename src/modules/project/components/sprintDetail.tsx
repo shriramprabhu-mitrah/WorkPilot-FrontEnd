@@ -53,7 +53,7 @@ const SprintDetail = () => {
       label: member.full_name || member.username,
       value: member.user_id,
     })) ?? [];
-    
+
   const STATUS_LABELS = Object.fromEntries(
     statusOptions.map((option) => [option.value, option.label])
   );
@@ -107,17 +107,18 @@ const SprintDetail = () => {
       return;
     }
 
-    setSelectedTaskIds((tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id)));
+    setSelectedTaskIds(
+      (tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id))
+    );
   };
- const handleDeleteTasks = async () => {
-   if (selectedTaskIds.length === 0) return;
-   try {
-     await deleteTaskAsync(selectedTaskIds);
-     setSelectedTaskIds([]);
-     setShowDeleteTaskConfirm(false);
-   } catch (error) {
-   }
- };
+  const handleDeleteTasks = async () => {
+    if (selectedTaskIds.length === 0) return;
+    try {
+      await deleteTaskAsync(selectedTaskIds);
+      setSelectedTaskIds([]);
+      setShowDeleteTaskConfirm(false);
+    } catch (error) {}
+  };
   const handleSprintSuccess = async () => {
     await refetch();
   };
@@ -145,7 +146,8 @@ const SprintDetail = () => {
       </div>
     );
   }
-  const allTasksSelected = (tasksList || []).length > 0 && selectedTaskIds.length === (tasksList || []).length;
+  const allTasksSelected =
+    (tasksList || []).length > 0 && selectedTaskIds.length === (tasksList || []).length;
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">

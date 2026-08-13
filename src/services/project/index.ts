@@ -76,28 +76,23 @@ class ProjectService {
     });
   }
 
-  async getProjectMembers(
-  projectId: string,
-  params?: GetProjectMembersParams
-) {
-  const url = ApiEndpoints.Project.getProjectMembers.withParams({
-    projectId,
-  });
-  const searchParams = new URLSearchParams();
-  if (params?.page !== undefined) {
-    searchParams.append('page', String(params.page));
+  async getProjectMembers(projectId: string, params?: GetProjectMembersParams) {
+    const url = ApiEndpoints.Project.getProjectMembers.withParams({
+      projectId,
+    });
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) {
+      searchParams.append('page', String(params.page));
+    }
+    if (params?.page_size !== undefined) {
+      searchParams.append('page_size', String(params.page_size));
+    }
+    if (params?.name?.trim()) {
+      searchParams.append('name', params.name.trim());
+    }
+    const query = searchParams.toString();
+    return apiService.get<ProjectMember[]>(query ? `${url}?${query}` : url);
   }
-  if (params?.page_size !== undefined) {
-    searchParams.append('page_size', String(params.page_size));
-  }
-  if (params?.name?.trim()) {
-    searchParams.append('name', params.name.trim());
-  }
-  const query = searchParams.toString();
-  return apiService.get<ProjectMember[]>(
-    query ? `${url}?${query}` : url
-  );
-}
 
   async removeMember(projectId: string, userId: string): Promise<ApiResponse<unknown>> {
     const url = ApiEndpoints.Project.removeMember.withParams({ projectId, userId });
