@@ -59,7 +59,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">1. Information We Collect</h1>
 
         <h3
@@ -131,7 +131,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">2. How We Use Your Information</h1>
         <p className="ms-7">We use your information to:</p>
         <ul className="mb-5 ms-8 list-disc mt-1 space-y-2 pl-6 text-gray-600">
@@ -146,7 +146,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">3. Cookies</h1>
         <p className="leading-7 ms-7 text-gray-600">
           WorkPilot uses cookies and similar technologies to:
@@ -164,7 +164,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">4. Data Security</h1>
         <p className="leading-7 ms-7 text-gray-600">
           We use industry-standard security measures, including:
@@ -179,7 +179,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">5. Data Sharing</h1>
         <p className="leading-7 ms-7 text-gray-600">
           We do <strong>not sell</strong> your personal information.
@@ -194,7 +194,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">6. Data Retention</h1>
         <p className="leading-7 ms-7 text-gray-600">
           Your data is retained only for as long as necessary to:
@@ -212,7 +212,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">7. Your Rights</h1>
         <p className="leading-7 ms-7 text-gray-600">
           Depending on your location, you may have the right to:
@@ -227,7 +227,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200  bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">8. Third-Party Integrations</h1>
         <p className="leading-7 ms-7 text-gray-600">
           WorkPilot may integrate with third-party services such as:
@@ -246,7 +246,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">9. Children&lsquo;s Privacy</h1>
         <p className="leading-7 ms-7 text-gray-600">
           WorkPilot is intended for business and professional use and is not designed for children
@@ -255,7 +255,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">
           10. Changes to This Privacy Policy
         </h1>
@@ -266,7 +266,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">11. Contact Us</h1>
         <p className="leading-7 ms-9 text-gray-600">
           If you have questions or concerns about this Privacy Policy, please contact:

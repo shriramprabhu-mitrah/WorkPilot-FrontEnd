@@ -2,9 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { removeTokens } from '@/src/lib/utils/cookies';
 import { useAppSelector } from '@/src/store';
-import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -23,8 +21,6 @@ import {
 } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
-// import { WpInput } from '@/src/app/components/common/input';
-import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
 import { useEffect, useState } from 'react';
 
@@ -53,20 +49,6 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const user = useAppSelector((state) => state.user);
   const organization = useAppSelector((state) => state.organization);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { handleLogOutAsync, logOut } = useSignin();
-
-  const handleLogoutClick = async () => {
-    if (logOut.isLoading) return;
-
-    removeTokens();
-
-    try {
-      await handleLogOutAsync();
-    } catch {
-      // onError in useSignin handles redirect
-    }
-  };
-
   const getOrgInitials = (orgName?: string) => {
     if (!orgName) return 'W';
 
@@ -358,15 +340,15 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           >
             <Link
               href="/profile"
-              className="
+              className={`
                 flex
                 items-center
                 gap-2.5
-                flex-1
                 min-w-0
                 group
                 cursor-pointer
-              "
+                ${showLabels ? 'flex-1' : 'justify-center w-full'}
+              `}
             >
               {/* Avatar */}
               <div
@@ -404,26 +386,6 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 </div>
               )}
             </Link>
-
-            {/* Logout */}
-            {showLabels && (
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={handleLogoutClick}
-                disabled={logOut.isLoading}
-                className="
-                  !p-1.5
-                  text-gray-400
-                  hover:bg-red-50
-                  hover:!text-red-500
-                "
-                title="Logout"
-              >
-                <LogOut size={15} />
-                {logOut.isLoading ? 'Logging out...' : 'Logout'}
-              </WpButton>
-            )}
           </div>
         </aside>
       </div>

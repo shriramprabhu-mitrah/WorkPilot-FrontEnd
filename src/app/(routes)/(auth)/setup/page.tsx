@@ -9,7 +9,7 @@ export default function Page() {
   return (
     <OrganizationSetupModal
       onBack={() => {
-        router.push('/signup');
+        router.push('/signup?from=setup');
       }}
       onComplete={() => {
         router.push('/dashboard');
