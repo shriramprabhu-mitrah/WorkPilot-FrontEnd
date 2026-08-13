@@ -307,7 +307,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const handleSprintSuccess = async () => {
     try {
       setIsRefreshingSprints(true);
-      await refetchSprints();
     } finally {
       setIsRefreshingSprints(false);
     }

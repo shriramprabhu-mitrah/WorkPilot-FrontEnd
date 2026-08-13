@@ -5,6 +5,7 @@ import {
   UpdateProjectPayload,
   AddProjectMembersPayload,
   GetProjectQueryParams,
+  GetProjectMembersParams,
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '../types/project';
 
@@ -106,16 +107,27 @@ export const useAddProjectMembers = () => {
   };
 };
 
-export const useGetProjectMembers = (projectId: string, enabled = true) => {
+export const useGetProjectMembers = (
+  projectId: string,
+  params?: GetProjectMembersParams,
+  enabled = true
+) => {
   const query = useQuery({
-    queryKey: ['projectMembers', projectId],
-    queryFn: () => projectService.getProjectMembers(projectId),
-    enabled: enabled && !!projectId,
+    queryKey: [
+      'projectMembers',
+      projectId,
+      params?.page ?? 1,
+      params?.page_size ?? 10,
+      params?.name ?? '',
+    ],
+    queryFn: () => projectService.getProjectMembers(projectId, params),
+    enabled: enabled && Boolean(projectId),
+    staleTime: 30 * 1000,
   });
-
   return {
-    members: query.data?.data,
+    members: query.data?.data ?? [],
     isLoadingMembers: query.isLoading,
+    isFetchingMembers: query.isFetching,
     isError: query.isError,
     error: query.error,
     refetchMembers: query.refetch,

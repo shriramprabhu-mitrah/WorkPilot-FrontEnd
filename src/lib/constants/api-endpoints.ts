@@ -193,7 +193,7 @@ export const ApiEndpoints = {
     getTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
     updateTaskbyId: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
     cloneTask: createEndpoint('/projects/{projectId}/tasks/{taskId}/clone'),
-    deleteTask: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+    deleteTask: createEndpoint('/projects/{projectId}/tasks'),
     restoreTask: createEndpoint('/projects/{projectId}/tasks/{taskId}/restore'),
     bulkUpdate: createEndpoint('/projects/{projectId}/tasks/bulk'),
     getUserStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),

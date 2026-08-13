@@ -132,3 +132,16 @@ export interface ProjectDetail {
   key?: string; // Optional key to be added after fetching
   owner?: string; // Optional owner to be added after fetching
 }
+
+export interface ProjectMember {
+  user_id: string;
+  username: string;
+  full_name?: string;
+  role?: string;
+}
+
+export interface GetProjectMembersParams {
+  page?: number;
+  page_size?: number;
+  name?: string;
+}

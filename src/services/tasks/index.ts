@@ -47,14 +47,12 @@ class TaskService {
     return apiService.get<TaskResponse>(url);
   }
 
-  async deleteTask(projectId: string, taskId: string): Promise<ApiResponse<unknown>> {
+  async deleteTask(projectId: string, taskIds: string[]): Promise<ApiResponse<unknown>> {
     const url = ApiEndpoints.Task.deleteTask.withParams({
       projectId,
-      taskId,
     });
     return apiService.delete<unknown>(url, {
-      showSuccessToast: true,
-      successMessage: 'Task deleted successfully',
+        task_ids: taskIds,
     });
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, X } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import { WpButton } from '@/src/app/components/common/button';
@@ -32,10 +32,16 @@ export interface Task {
 interface AddTaskModalProps {
   projectId: string;
   sprintId: string;
+
   assigneeOptions: {
     label: string;
     value: string;
   }[];
+
+  memberSearch?: string;
+  onMemberSearchChange?: (value: string) => void;
+  isLoadingMembers?: boolean;
+
   onClose: () => void;
   onCreate: (task: Task) => void;
 }
@@ -57,6 +63,9 @@ const AddTaskModal = ({
   projectId,
   sprintId,
   assigneeOptions,
+  memberSearch,
+  onMemberSearchChange,
+  isLoadingMembers,
   onClose,
   onCreate,
 }: AddTaskModalProps) => {
@@ -82,6 +91,20 @@ const AddTaskModal = ({
       actualHours: '',
     },
   });
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const assigneeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (assigneeRef.current && !assigneeRef.current.contains(event.target as Node)) {
+        setShowAssigneeDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const validateField = (field: keyof FormValues): boolean => {
     const value = getValues(field)?.toString().trim() ?? '';
@@ -300,24 +323,62 @@ const AddTaskModal = ({
             }}
           />
           <div className="grid grid-cols-2 gap-3">
-            <Controller
-              name="assignee"
-              control={control}
-              render={({ field }) => (
-                <WpDropdown
-                  label="Assignee"
-                  options={assigneeOptions}
-                  value={field.value}
-                  onChange={(value) => {
-                    field.onChange(value);
-                    clearFieldError('assignee');
-                  }}
-                  placeholder="Select assignee"
-                  error={errors.assignee?.message}
-                />
-              )}
-            />
-
+            <div className="relative" ref={assigneeRef}>
+              <Controller
+                name="assignee"
+                control={control}
+                render={({ field }) => (
+                  <div className="relative">
+                    <WpInput
+                      id="assignee"
+                      label="Assignee"
+                      placeholder="Search assignee..."
+                      showRequired
+                      value={memberSearch}
+                      onFocus={() => {
+                        setShowAssigneeDropdown(true);
+                      }}
+                      onChange={(e) => {
+                        onMemberSearchChange?.(e.target.value);
+                        setShowAssigneeDropdown(true);
+                        clearFieldError('assignee');
+                      }}
+                      error={errors.assignee?.message}
+                    />
+                    {showAssigneeDropdown && (
+                      <div className="absolute z-50 mt-[-20px] w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                        {isLoadingMembers ? (
+                          <div className="px-4 py-3 text-sm text-gray-500">Searching...</div>
+                        ) : assigneeOptions.length > 0 ? (
+                          assigneeOptions.map((member) => (
+                            <button
+                              key={member.value}
+                              type="button"
+                              onClick={() => {
+                                field.onChange(member.value);
+                                onMemberSearchChange?.(member.label);
+                                setShowAssigneeDropdown(false);
+                                clearFieldError('assignee');
+                              }}
+                              className="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+                            >
+                              <span>{member.label}</span>
+                              {field.value === member.value && (
+                                <Check size={14} className="text-blue-600" />
+                              )}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-gray-500">
+                            {memberSearch ? 'No members found' : 'No members available'}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
             <Controller
               name="status"
               control={control}

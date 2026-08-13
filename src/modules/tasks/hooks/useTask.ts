@@ -70,7 +70,7 @@ export const useGetTaskById = (projectId?: string, taskId?: string) => {
 export const useDeleteTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (taskId: string) => taskService.deleteTask(projectId, taskId),
+    mutationFn: (taskIds: string[]) => taskService.deleteTask(projectId, taskIds),
     onSuccess: (_, taskId) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],

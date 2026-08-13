@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col flex-1 min-w-0">
         <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
         <main
-          className="flex-1 overflow-hidden flex flex-col p-3 sm:p-4 md:p-6"
+          className="flex-1 overflow-y-auto flex flex-col p-3 sm:p-4 md:p-6"
           style={{ backgroundColor: colors.gray50 }}
         >
           {children}

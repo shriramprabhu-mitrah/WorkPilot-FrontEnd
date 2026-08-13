@@ -110,25 +110,27 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                   className="h-10 w-10 p-0"
                   leftIcon={<Minus size={16} />}
                 />
-                <WpInput
-                  id="sprintCount"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={sprintCount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '') {
-                      setSprintCount(0);
-                      return;
-                    }
-                    const numberValue = Number(value);
-                    if (Number.isInteger(numberValue) && numberValue > 0) {
-                      setSprintCount(numberValue);
-                    }
-                  }}
-                  className="h-10 w-16 text-center font-semibold"
-                />
+                <div className="w-14">
+                  <WpInput
+                    id="sprintCount"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={sprintCount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '') {
+                        setSprintCount(0);
+                        return;
+                      }
+                      const numberValue = Number(value);
+                      if (Number.isInteger(numberValue) && numberValue > 0) {
+                        setSprintCount(numberValue);
+                      }
+                    }}
+                    className="h-10 w-14 text-center font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                </div>
                 <WpButton
                   variant="secondary"
                   size="sm"

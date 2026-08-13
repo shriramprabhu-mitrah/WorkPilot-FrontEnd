@@ -16,6 +16,8 @@ import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { ColumnId, KanbanTask } from '@/src/types/board';
 import { TaskResponse } from '@/src/types/task';
 import { statusOptions } from '../data/project';
+import { useGetProjectMembers } from '../hooks/useProject';
+import { useDebounce } from '@/src/hooks/useDebounce';
 const SprintDetail = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,12 +37,23 @@ const SprintDetail = () => {
   });
 
   const { deleteTaskAsync, isDeletingTask } = useDeleteTask(projectId);
-  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const [memberSearch, setMemberSearch] = useState('');
+  const debouncedMemberSearch = useDebounce(memberSearch, 500);
+  const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
+    projectId,
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedMemberSearch,
+    },
+    true
+  );
   const assigneeOptions =
-    selectedApiProject?.members?.map((member) => ({
+    members?.map((member) => ({
       label: member.full_name || member.username,
       value: member.user_id,
     })) ?? [];
+    
   const STATUS_LABELS = Object.fromEntries(
     statusOptions.map((option) => [option.value, option.label])
   );
@@ -96,16 +109,15 @@ const SprintDetail = () => {
 
     setSelectedTaskIds((tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id)));
   };
-  const handleDeleteTasks = async () => {
-    if (selectedTaskIds.length === 0) return;
-
-    try {
-      await Promise.all(selectedTaskIds.map((taskId) => deleteTaskAsync(taskId)));
-
-      setSelectedTaskIds([]);
-      setShowDeleteTaskConfirm(false);
-    } catch (error) {}
-  };
+ const handleDeleteTasks = async () => {
+   if (selectedTaskIds.length === 0) return;
+   try {
+     await deleteTaskAsync(selectedTaskIds);
+     setSelectedTaskIds([]);
+     setShowDeleteTaskConfirm(false);
+   } catch (error) {
+   }
+ };
   const handleSprintSuccess = async () => {
     await refetch();
   };
@@ -334,7 +346,13 @@ const SprintDetail = () => {
           projectId={projectId}
           sprintId={sprintId}
           assigneeOptions={assigneeOptions}
-          onClose={() => setShowAddTaskModal(false)}
+          memberSearch={memberSearch}
+          onMemberSearchChange={setMemberSearch}
+          isLoadingMembers={isLoadingMembers || isFetchingMembers}
+          onClose={() => {
+            setShowAddTaskModal(false);
+            setMemberSearch('');
+          }}
           onCreate={handleCreateTask}
         />
       )}
