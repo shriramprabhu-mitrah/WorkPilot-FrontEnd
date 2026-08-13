@@ -11,11 +11,14 @@ import { Task } from '@/src/types/task';
 import { KanbanTask, ColumnId } from '@/src/types/board';
 import { logger } from '@/src/lib/utils/logger';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useDeleteTask } from '../hooks/useTask';
 import Image from 'next/image';
 
 type TaskTableProps = {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  projectId: string;
+  sprintId: string;
 
   selectedFilters: {
     project: string;
@@ -39,11 +42,14 @@ export const TaskTable = ({
   setCurrentPage,
   selectedRows,
   setSelectedRows,
+  projectId,
+  sprintId,
 }: TaskTableProps) => {
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const rowsPerPage = 10;
   const { hasPermission } = usePermissions();
+  const { deleteTask, isDeletingTask } = useDeleteTask(projectId);
   const canEdit = hasPermission('TASK_EDIT');
   const canDelete = hasPermission('TASK_DELETE');
 
@@ -92,7 +98,9 @@ export const TaskTable = ({
   });
 
   const toKanbanTask = (task: Task): KanbanTask => ({
-    id: task.id,
+    id: task.key || task.id,
+    projectId: projectId,
+    taskId: task.id,
     title: task.title,
     priority: task.priority,
     labels: task.labels,
@@ -119,9 +127,16 @@ export const TaskTable = ({
 
   const handleDelete = () => {
     if (!deleteTaskId) return;
-    setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
-    setSelectedRows((prev) => prev.filter((id) => id !== deleteTaskId));
-    setDeleteTaskId(null);
+    deleteTask(
+      [deleteTaskId],
+      {
+        onSuccess: () => {
+          setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
+          setSelectedRows((prev) => prev.filter((id) => id !== deleteTaskId));
+          setDeleteTaskId(null);
+        },
+      }
+    );
   };
 
   return (
@@ -143,7 +158,7 @@ export const TaskTable = ({
           </p>
         </div>
       ) : (
-        <div className="max-h-[600px] overflow-auto">
+        <div className="max-h-[600px] overflow-auto pb-32">
           <table className="w-full min-w-[900px] border-collapse text-sm">
             <thead className="sticky top-0 z-20 bg-gray-100">
               <tr className="h-12 text-[11px] font-medium uppercase tracking-wide text-gray-500">
@@ -166,7 +181,7 @@ export const TaskTable = ({
                 <th className="p-3 text-left">Due Date</th>
                 <th className="p-3 text-left">Sprint</th>
                 <th className="p-3 text-left">Labels</th>
-                <th className="p-3 text-center"></th>
+                <th className="p-3 text-center">Actions</th>
               </tr>
             </thead>
 
@@ -182,7 +197,7 @@ export const TaskTable = ({
 
                   <td className="p-3 font-semibold text-blue-600">
                     <span className="rounded bg-blue-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600">
-                      {task.id}
+                      {task.key || task.id}
                     </span>
                   </td>
 
@@ -298,7 +313,7 @@ export const TaskTable = ({
                 Cancel
               </WpButton>
 
-              <WpButton variant="danger" onClick={handleDelete}>
+              <WpButton variant="danger" onClick={handleDelete} isLoading={isDeletingTask}>
                 Delete
               </WpButton>
             </div>

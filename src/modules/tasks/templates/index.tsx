@@ -5,17 +5,19 @@ import { TaskHeader } from '../components/TaskHeader';
 import { useEffect } from 'react';
 import TaskSkeleton from '../components/taskSkeleton';
 import { WpButton } from '@/src/app/components/common/button';
-import { useGetTasks } from '../hooks/useTask';
+import { useGetTasks, useDeleteTask } from '../hooks/useTask';
 import { Task, TaskResponse } from '@/src/types/task';
 import { Priority } from '@/src/types/board';
 import { TaskStatus } from '@/src/app/components/common/task';
 import { useAppSelector } from '@/src/store';
+import { formatMonthYear } from '@/src/app/components/common/format';
 
 export const TaskTemplate = () => {
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const projectId = selectedApiProject?.id ?? '';
   const sprintId = selectedSprintStore?.id ?? '';
+  const { deleteTask, isDeletingTask } = useDeleteTask(projectId);
 
   const [selectedFilters, setSelectedFilters] = useState({
     project: projectId,
@@ -50,8 +52,9 @@ export const TaskTemplate = () => {
         backlog: 'Backlog',
       };
       const mappedTasks: Task[] = tasksList.map((t: TaskResponse) => ({
-        id: t.key || t.id || '-',
-        title: t.title || 'Untitled',
+        id: t.id || '-',
+        key: t.key || '',
+        title: t.title || '-',
         priority: (t.priority
           ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase()
           : 'Medium') as Priority,
@@ -63,7 +66,7 @@ export const TaskTemplate = () => {
           color: '#3B82F6',
         },
         points: t.story_points || 0,
-        dueDate: t.due_date || '-',
+        dueDate: formatMonthYear(t.due_date || '-'),
         sprint: t.sprint_name || '-',
         sprintId: t.sprint_id || '',
         labels: [],
@@ -74,9 +77,15 @@ export const TaskTemplate = () => {
   }, [tasksList]);
 
   const handleBulkDelete = () => {
-    setTasks((prev) => prev.filter((task) => !selectedRows.includes(task.id)));
-    setSelectedRows([]);
-    setShowBulkDeleteModal(false);
+    if (!projectId || selectedRows.length === 0) return;
+    
+    deleteTask(selectedRows, {
+      onSuccess: () => {
+        setTasks((prev) => prev.filter((task) => !selectedRows.includes(task.id)));
+        setSelectedRows([]);
+        setShowBulkDeleteModal(false);
+      },
+    });
   };
 
   return (
@@ -99,6 +108,8 @@ export const TaskTemplate = () => {
         <TaskTable
           tasks={tasks}
           setTasks={setTasks}
+          projectId={projectId}
+          sprintId={sprintId}
           selectedFilters={mergedFilters}
           searchTerm={searchTerm}
           currentPage={currentPage}
@@ -119,7 +130,7 @@ export const TaskTemplate = () => {
               <WpButton variant="secondary" onClick={() => setShowBulkDeleteModal(false)}>
                 Cancel
               </WpButton>
-              <WpButton variant="danger" onClick={handleBulkDelete}>
+              <WpButton variant="danger" onClick={handleBulkDelete} isLoading={isDeletingTask}>
                 Delete
               </WpButton>
             </div>

@@ -393,17 +393,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
                   }
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
                   style={{
-                    color: COLUMN_CONFIG[taskData.status].color,
-                    backgroundColor: COLUMN_CONFIG[taskData.status].bg,
-                    borderColor: `${COLUMN_CONFIG[taskData.status].dot}55`,
+                    color: COLUMN_CONFIG[taskData?.status]?.color,
+                    backgroundColor: COLUMN_CONFIG[taskData?.status]?.bg,
+                    borderColor: `${COLUMN_CONFIG[taskData?.status]?.dot}55`,
                   }}
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: COLUMN_CONFIG[taskData.status].dot }}
+                      style={{ backgroundColor: COLUMN_CONFIG[taskData.status]?.dot }}
                     />
-                    {COLUMN_CONFIG[taskData.status].label}
+                    {COLUMN_CONFIG[taskData.status]?.label}
                   </span>
                   <ChevronDown size={14} />
                 </button>
