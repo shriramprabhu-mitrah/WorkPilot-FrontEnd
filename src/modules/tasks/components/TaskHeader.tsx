@@ -1,10 +1,9 @@
 'use client';
-import { Search, Download, Columns3, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { FilterDropdown } from './FilterDropdown';
 import { filters } from '../data/fliter';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
-import { ProjectSprintDropdowns } from '@/src/app/components/common/project-sprint-dropdown';
 
 type TaskHeaderProps = {
   searchTerm: string;
@@ -17,7 +16,6 @@ type TaskHeaderProps = {
   };
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   currentPage: number;
-
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
   setSelectedFilters: React.Dispatch<
     React.SetStateAction<{
@@ -31,6 +29,7 @@ type TaskHeaderProps = {
   selectedRows: string[];
   setShowBulkDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
 export const TaskHeader = ({
   selectedFilters,
   setSelectedFilters,
@@ -43,16 +42,13 @@ export const TaskHeader = ({
 }: TaskHeaderProps) => {
   const handleFilterChange = (key: string, value: string) => {
     setCurrentPage(1);
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setSelectedFilters((prev) => ({ ...prev, [key]: value }));
   };
+
   return (
     <div className="mb-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Task List</h1>
-
         <div className="flex gap-2">
           <WpButton
             variant="danger"
@@ -63,15 +59,6 @@ export const TaskHeader = ({
           >
             Delete {selectedRows.length > 0 && `(${selectedRows.length})`}
           </WpButton>
-
-          {/*Comment for Future purpose
-           <WpButton variant="secondary" size="sm" leftIcon={<Download size={16} />}>
-            Export
-          </WpButton>
-
-          <WpButton variant="secondary" size="sm" leftIcon={<Columns3 size={16} />}>
-            Columns
-          </WpButton> */}
         </div>
       </div>
 
@@ -88,20 +75,16 @@ export const TaskHeader = ({
           wrapperClassName="w-full sm:w-52"
           className="!py-1.5"
         />
-        <ProjectSprintDropdowns
-          selectedProject={selectedFilters.project}
-          setSelectedProject={(val) => handleFilterChange('project', val)}
-          selectedSprint={selectedFilters.sprint}
-          setSelectedSprint={(val) => handleFilterChange('sprint', val)}
-        />
-        {filters.filter(f => f.key !== 'project' && f.key !== 'sprint').map((filter) => (
-          <FilterDropdown
-            key={filter.key}
-            value={selectedFilters[filter.key as keyof typeof selectedFilters]}
-            options={filter.options}
-            onChange={(value) => handleFilterChange(filter.key, value)}
-          />
-        ))}
+        {filters
+          .filter((f) => f.key !== 'project' && f.key !== 'sprint')
+          .map((filter) => (
+            <FilterDropdown
+              key={filter.key}
+              value={selectedFilters[filter.key as keyof typeof selectedFilters]}
+              options={filter.options}
+              onChange={(value) => handleFilterChange(filter.key, value)}
+            />
+          ))}
         <WpButton variant="secondary" size="sm" leftIcon={<SlidersHorizontal size={16} />}>
           More Filters
         </WpButton>

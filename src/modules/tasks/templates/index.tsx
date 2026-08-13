@@ -1,5 +1,4 @@
 'use client';
-import { tasksData } from '../data/tasks';
 import { TaskTable } from '../components/TaskTable';
 import { useState } from 'react';
 import { TaskHeader } from '../components/TaskHeader';
@@ -10,44 +9,55 @@ import { useGetTasks } from '../hooks/useTask';
 import { Task, TaskResponse } from '@/src/types/task';
 import { Priority } from '@/src/types/board';
 import { TaskStatus } from '@/src/app/components/common/task';
+import { useAppSelector } from '@/src/store';
 
 export const TaskTemplate = () => {
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
+  const projectId = selectedApiProject?.id ?? '';
+  const sprintId = selectedSprintStore?.id ?? '';
+
   const [selectedFilters, setSelectedFilters] = useState({
-    project: '',
+    project: projectId,
     status: 'All Statuses',
     priority: 'All Priorities',
     assignee: 'All Assignees',
-    sprint: '',
+    sprint: sprintId,
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
+  const mergedFilters = { ...selectedFilters, project: projectId, sprint: sprintId };
+
   const { tasksList, isLoadingTasks } = useGetTasks(
-    selectedFilters.project,
-    { sprint_id: selectedFilters.sprint || undefined },
-    !!selectedFilters.project && !!selectedFilters.sprint
+    mergedFilters.project,
+    { sprint_id: mergedFilters.sprint || undefined },
+    !!mergedFilters.project
   );
 
-  // Still maintaining local state for bulk deletes until API delete is integrated
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     if (tasksList) {
       const statusMap: Record<string, string> = {
-        'todo': 'To Do',
-        'in_progress': 'In Progress',
-        'in_review': 'In Review',
-        'testing': 'Testing',
-        'done': 'Done',
-        'backlog': 'Backlog'
+        todo: 'To Do',
+        in_progress: 'In Progress',
+        in_review: 'In Review',
+        testing: 'Testing',
+        done: 'Done',
+        backlog: 'Backlog',
       };
       const mappedTasks: Task[] = tasksList.map((t: TaskResponse) => ({
         id: t.key || t.id || '-',
         title: t.title || 'Untitled',
-        priority: (t.priority ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase() : 'Medium') as Priority,
-        status: (t.status ? (statusMap[t.status.toLowerCase()] || t.status) : 'To Do') as TaskStatus,
+        priority: (t.priority
+          ? t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase()
+          : 'Medium') as Priority,
+        status: (t.status
+          ? statusMap[t.status.toLowerCase()] || t.status
+          : 'To Do') as TaskStatus,
         project: t.project_id || '',
         assignee: {
           name: t.assignee_name || 'Unassigned',
@@ -76,20 +86,22 @@ export const TaskTemplate = () => {
       <TaskHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        selectedFilters={selectedFilters}
+        selectedFilters={mergedFilters}
         setSelectedFilters={setSelectedFilters}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         selectedRows={selectedRows}
         setShowBulkDeleteModal={setShowBulkDeleteModal}
       />
-      {isLoadingTasks && selectedFilters.project && selectedFilters.sprint ? (
-        <div className="mt-4"><TaskSkeleton /></div>
+      {isLoadingTasks && mergedFilters.project ? (
+        <div className="mt-4">
+          <TaskSkeleton />
+        </div>
       ) : (
         <TaskTable
           tasks={tasks}
           setTasks={setTasks}
-          selectedFilters={selectedFilters}
+          selectedFilters={mergedFilters}
           searchTerm={searchTerm}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
@@ -101,17 +113,14 @@ export const TaskTemplate = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6">
             <h2 className="text-lg font-semibold text-gray-900">Delete Tasks</h2>
-
             <p className="mt-2 text-sm text-gray-500">
               Are you sure you want to delete {selectedRows.length} selected
               {selectedRows.length === 1 ? ' task' : ' tasks'}?
             </p>
-
             <div className="mt-6 flex justify-end gap-3">
               <WpButton variant="secondary" onClick={() => setShowBulkDeleteModal(false)}>
                 Cancel
               </WpButton>
-
               <WpButton variant="danger" onClick={handleBulkDelete}>
                 Delete
               </WpButton>
