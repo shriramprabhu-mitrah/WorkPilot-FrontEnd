@@ -6,6 +6,7 @@ import { clearUser, setUser } from '../../../store/slices/users';
 import { userService } from '../../../services/user';
 import { SignInPayload } from '../../../types/signin';
 import { setTokens } from '../../../lib/utils/cookies';
+import { clearSelectedProject } from '@/src/store/slices/project';
 export const useSignin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -66,11 +67,13 @@ export const useSignin = () => {
     mutationFn: () => signupService.logOut(),
     onSuccess: () => {
       dispatch(clearUser());
+      dispatch(clearSelectedProject());
       queryClient.clear();
       router.push('/signin');
     },
     onError: () => {
       dispatch(clearUser());
+      dispatch(clearSelectedProject());
       queryClient.clear();
       router.push('/signin');
     },

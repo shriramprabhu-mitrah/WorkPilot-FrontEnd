@@ -268,7 +268,7 @@ export const KanbanBoardTemplate = () => {
   const STATUS_TO_COLUMN: Record<string, string> = {
     todo: 'todo',
     in_progress: 'in_progress',
-    in_review: 'inreview',
+    in_review: 'in_review',
     testing: 'testing',
     completed: 'done',
     blocked: 'blocked',
