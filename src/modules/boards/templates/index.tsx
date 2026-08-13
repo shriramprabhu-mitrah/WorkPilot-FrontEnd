@@ -472,9 +472,11 @@ export const KanbanBoardTemplate = () => {
       ) : !hasTasks ? (
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center text-center">
-            <img src="/images/Empty-rafiki.svg" alt="No Tasks" className="h-56 w-56 opacity-80" />
-            <h2 className="mt-4 text-xl font-bold text-gray-800">No tasks found</h2>
-            <p className="mt-1 text-sm text-gray-500 max-w-xs">
+            <img src="/images/kanban method-pana.svg" alt="No Tasks" className="h-90 w-90" />
+
+            <h2 className="text-2xl font-bold text-gray-900">No tasks found</h2>
+
+            <p className="mt-3 max-w-md text-center text-gray-500">
               There are no tasks for this selection. Try a different project or sprint.
             </p>
           </div>
