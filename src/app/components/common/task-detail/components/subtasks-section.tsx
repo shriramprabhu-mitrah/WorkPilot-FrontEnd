@@ -66,7 +66,7 @@ export const SubtasksSection = ({
           className="flex items-center gap-1.5 text-base font-semibold text-gray-800 hover:text-gray-600 transition-colors"
         >
           {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          Child issues
+          Child Tickets
           <span className="text-sm font-normal text-gray-400 ml-1">
             ({doneCount}/{subtasks.length})
           </span>
@@ -167,7 +167,7 @@ export const SubtasksSection = ({
 
           {subtasks.length === 0 && !creating && (
             <div className="px-3 py-4 text-center">
-              <p className="text-xs text-gray-400">No child issues yet.</p>
+              <p className="text-xs text-gray-400">No child tickets yet.</p>
             </div>
           )}
         </div>

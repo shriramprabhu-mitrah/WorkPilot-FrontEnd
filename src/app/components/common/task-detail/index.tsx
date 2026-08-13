@@ -299,7 +299,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
 
             <div className="flex flex-wrap items-center gap-2 mb-6">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <Plus size={14} /> Add child issue
+                <Plus size={14} /> Add child Ticket
               </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Link2 size={14} /> Link issue
