@@ -78,7 +78,7 @@ export const TaskTemplate = () => {
 
   const handleBulkDelete = () => {
     if (!projectId || selectedRows.length === 0) return;
-    
+
     deleteTask(selectedRows, {
       onSuccess: () => {
         setTasks((prev) => prev.filter((task) => !selectedRows.includes(task.id)));

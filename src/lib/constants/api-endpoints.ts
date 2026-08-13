@@ -201,6 +201,35 @@ export const ApiEndpoints = {
     attachLabel: createEndpoint('/projects/{projectId}/tasks/{taskId}/labels/{labelId}'),
     removeLabel: createEndpoint('/projects/{projectId}/tasks/{taskId}/labels/{labelId}'),
   },
+
+  TaskAttachment: {
+    uploadTaskAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
+
+    listTaskAttachments: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
+
+    downloadTaskAttachment: createEndpoint(
+      '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/download'
+    ),
+
+    deleteTaskAttachment: createEndpoint(
+      '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}'
+    ),
+  },
+
+  CommentAttachment: {
+    uploadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
+
+    listCommentAttachments: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
+
+    downloadCommentAttachment: createEndpoint(
+      '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}/download'
+    ),
+
+    deleteCommentAttachment: createEndpoint(
+      '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}'
+    ),
+  },
+
   Label: {
     getLabels: createQueryEndpoint('/projects/{projectId}/labels'),
     createLabel: createEndpoint('/projects/{projectId}/labels'),
