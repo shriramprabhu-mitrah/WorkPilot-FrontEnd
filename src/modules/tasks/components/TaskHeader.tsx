@@ -85,9 +85,10 @@ export const TaskHeader = ({
               onChange={(value) => handleFilterChange(filter.key, value)}
             />
           ))}
-        <WpButton variant="secondary" size="sm" leftIcon={<SlidersHorizontal size={16} />}>
+        {/* Comment for Future purpose}
+        {/* <WpButton variant="secondary" size="sm" leftIcon={<SlidersHorizontal size={16} />}>
           More Filters
-        </WpButton>
+        </WpButton> */}
       </div>
     </div>
   );
