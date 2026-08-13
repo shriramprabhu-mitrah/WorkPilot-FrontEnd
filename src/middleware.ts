@@ -34,9 +34,21 @@ export async function middleware(req: NextRequest) {
     pathname === '/' || pathname.startsWith('/signin') || pathname.startsWith('/signup');
 
   const isSetupRoute = pathname.startsWith('/setup');
+  const fromSetup = req.nextUrl.searchParams.get('from') === 'setup';
+  const fromSignup = req.nextUrl.searchParams.get('from') === 'signup';
+  if (isSetupRoute) {
+    if (accessToken && fromSignup) {
+      return NextResponse.next();
+    }
 
+    if (accessToken) {
+      return NextResponse.redirect(new URL(DEFAULT_PRIVATE, req.url));
+    }
+
+    return NextResponse.redirect(new URL(DEFAULT_PUBLIC, req.url));
+  }
   // Missing access token but refresh token exists — refresh before redirecting
-  if (!accessToken && refreshToken && !isPublicRoute && !isSetupRoute) {
+  if (!accessToken && refreshToken && !isPublicRoute) {
     try {
       const tokens = await refreshAccessToken(refreshToken, req.url);
       return applyRefreshedTokens(NextResponse.next(), tokens);
@@ -46,12 +58,11 @@ export async function middleware(req: NextRequest) {
   }
 
   // No tokens at all on a protected route
-  if (!accessToken && !refreshToken && !isPublicRoute && !isSetupRoute) {
+  if (!accessToken && !refreshToken && !isPublicRoute) {
     return NextResponse.redirect(new URL(DEFAULT_PUBLIC, req.url));
   }
 
-  // Authenticated users should not access auth pages
-  if (accessToken && isPublicRoute) {
+  if (accessToken && isPublicRoute && !fromSetup) {
     return NextResponse.redirect(new URL(DEFAULT_PRIVATE, req.url));
   }
 

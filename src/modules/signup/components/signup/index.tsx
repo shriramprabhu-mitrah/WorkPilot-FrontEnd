@@ -159,7 +159,7 @@ export const SignUp = () => {
           email={email}
           onBack={() => setIsSuccess(false)}
           onVerified={() => {
-            router.push('/setup');
+            router.push('/setup?from=signup');
           }}
         />
       )}
@@ -167,7 +167,7 @@ export const SignUp = () => {
       {isSuccess && onboardingStep === 'org' && (
         <OrganizationSetupModal
           onBack={() => {
-            router.push('/signup');
+            router.push('/signup?from=setup');
           }}
           onComplete={() => {
             router.push('/dashboard');

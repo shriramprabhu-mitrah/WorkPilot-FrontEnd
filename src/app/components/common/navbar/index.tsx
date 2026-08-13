@@ -209,6 +209,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
                   px-4
                   py-2.5
                   text-[13px]
+                   font-semibold
                   text-red-600
                   hover:bg-red-50
                   transition-colors
@@ -217,8 +218,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
                 "
               >
                 <LogOut size={16} />
-
-                <span>{logOut.isLoading ? 'Logging out...' : 'Logout'}</span>
+                <span>Logout</span>
               </button>
             </div>
           )}
