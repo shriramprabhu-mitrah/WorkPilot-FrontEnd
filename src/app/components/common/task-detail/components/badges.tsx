@@ -79,7 +79,7 @@ export const COLUMN_CONFIG: Record<
     bg: colors.colInProgressBg,
     dot: colors.colInProgress,
   },
-  inreview: {
+  in_review: {
     label: 'In Review',
     color: colors.colInReview,
     bg: colors.colInReviewBg,
@@ -101,10 +101,9 @@ export const COLUMN_CONFIG: Record<
 };
 
 export const COLUMN_ORDER: ColumnId[] = [
-  'backlog',
   'todo',
   'in_progress',
-  'inreview',
+  'in_review',
   'testing',
   'done',
   'blocked',

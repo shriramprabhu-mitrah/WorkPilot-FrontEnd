@@ -1,7 +1,7 @@
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
 export type ColumnId =
-  'backlog' | 'todo' | 'in_progress' | 'inreview' | 'testing' | 'done' | 'blocked';
+  'backlog' | 'todo' | 'in_progress' | 'in_review' | 'testing' | 'done' | 'blocked';
 
 export interface SubTask {
   id: string;

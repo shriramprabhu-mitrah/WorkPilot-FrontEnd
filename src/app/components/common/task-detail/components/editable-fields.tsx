@@ -78,28 +78,28 @@ export const EditableDate = ({
   placeholder?: string;
   includeTime?: boolean;
 }) => {
-  const [localValue, setLocalValue] = useState(value);
-
-  // Sync with parent when value prop changes.
-  // Defer updating local state to avoid calling setState() synchronously within the effect.
+  const [localValue, setLocalValue] = useState('');
   useEffect(() => {
-    if (value === localValue) return;
-
-    const timeoutId = setTimeout(() => setLocalValue(value), 0);
-    return () => clearTimeout(timeoutId);
-  }, [value, localValue]);
-
+    const timer = setTimeout(() => {
+      setLocalValue(value);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [value]);
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue);
+  };
   const handleCommit = (newValue: string) => {
+    // Update local UI
     setLocalValue(newValue);
     onChange(newValue);
   };
 
   return (
-    <div className="relative z-[100]">
+    <div className="relative">
       <WpDatePicker
         value={localValue}
-        onChange={setLocalValue} // Update local state for intermediate changes (calendar UI)
-        onCommit={handleCommit} // Call API only on Done/commit
+        onChange={handleChange}
+        onCommit={handleCommit}
         placeholder={placeholder}
         showTime={includeTime}
       />
@@ -134,6 +134,7 @@ export const EditableNumber = ({
         ref={inputRef}
         type="number"
         value={draft}
+        min={1}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => {

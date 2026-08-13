@@ -130,7 +130,7 @@ export const WpDatePicker = ({
   };
 
   return (
-    <div className="w-full mb-5">
+    <div className="w-full">
       {label && (
         <label className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
           {label}
@@ -143,15 +143,13 @@ export const WpDatePicker = ({
           disabled={disabled}
           onClick={handleOpen}
           className={[
-            'w-full flex items-center justify-between px-3 py-2.5 border rounded-lg text-sm transition-all bg-white',
+            'w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-sm transition-all bg-transparent',
             error
-              ? 'border-[var(--color-error)]'
+              ? 'text-[var(--color-error)]'
               : open
-                ? 'border-[var(--color-primary-focus)] ring-2 ring-[rgba(37,99,235,0.2)]'
-                : 'border-[var(--color-gray-300)] hover:border-[var(--color-gray-400)]',
-            disabled
-              ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
-              : 'cursor-pointer',
+                ? 'bg-[var(--color-primary-light)]'
+                : 'hover:bg-[var(--color-gray-100)]',
+            disabled ? 'cursor-not-allowed text-[var(--color-gray-400)]' : 'cursor-pointer',
           ]
             .filter(Boolean)
             .join(' ')}

@@ -4,7 +4,7 @@ import { colors } from '@/src/styles/colors';
 export const BOARD_COLUMNS: KanbanColumn[] = [
   { id: 'todo', label: 'To Do', color: colors.colTodo, tasks: [] },
   { id: 'in_progress', label: 'In Progress', color: colors.colInProgress, tasks: [] },
-  { id: 'inreview', label: 'In Review', color: colors.colInReview, tasks: [] },
+  { id: 'in_review', label: 'In Review', color: colors.colInReview, tasks: [] },
   { id: 'testing', label: 'Testing', color: colors.colTesting, tasks: [] },
   { id: 'done', label: 'Completed', color: colors.colDone, tasks: [] },
   { id: 'blocked', label: 'Blocked', color: colors.colBlocked, tasks: [] },

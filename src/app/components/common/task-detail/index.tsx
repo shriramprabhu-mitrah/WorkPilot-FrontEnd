@@ -20,6 +20,10 @@ import { projectService } from '@/src/services/project';
 import { logger } from '@/src/lib/utils/logger';
 import type { ProjectMember } from '@/src/types/project';
 import { formatISODateTime } from '@/src/app/components/common/format';
+import { useDebounce } from '@/src/hooks/useDebounce';
+import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
+import { WpButton } from '../button';
+import { WpInput } from '../input';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -76,10 +80,19 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     assigneeId: '',
     assigneeName: '',
   });
-
-  const [members, setMembers] = useState<ProjectMember[]>([]);
+  // const [members, setMembers] = useState<ProjectMember[]>([]);
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState('');
+  const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
+  const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
+    task.projectId ?? '',
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedAssigneeSearch,
+    },
+    showAssigneeMenu
+  );
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,10 +103,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     async (patch: Partial<typeof taskData>) => {
       if (!task.projectId || !task.taskId) return;
 
-      // Store previous state for rollback
       const previousState = { ...taskData };
-
-      // Update UI immediately (optimistic update)
       setTaskData((prev) => ({ ...prev, ...patch }));
       onUpdate?.(patch as Partial<KanbanTask>);
 
@@ -105,7 +115,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
         const STATUS_MAP: Record<string, string> = {
           todo: 'todo',
           in_progress: 'in_progress',
-          inreview: 'in_review',
+          inreview: 'inreview',
           testing: 'testing',
           done: 'completed',
           blocked: 'blocked',
@@ -113,11 +123,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
         payload.status = STATUS_MAP[patch.status] ?? patch.status;
       }
       if (patch.dueDate !== undefined) {
-        payload.due_date = patch.dueDate ? formatISODateTime(patch.dueDate) : null;
+        payload.due_date = patch.dueDate ? patch.dueDate + 'Z' : null;
       }
       if (patch.startDate !== undefined) payload.start_date = patch.startDate || null;
       if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
-
       try {
         setIsSaving(true);
         await taskService.updateTask(task.projectId, task.taskId, payload);
@@ -142,11 +151,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
 
       try {
         setIsLoading(true);
-        const [taskRes, membersRes] = await Promise.all([
-          taskService.getTaskById(task.projectId, task.taskId),
-          projectService.getProjectMembers(task.projectId),
-        ]);
-        if (membersRes.data) setMembers(membersRes.data);
+        const taskRes = await taskService.getTaskById(task.projectId, task.taskId);
         if (taskRes.data) {
           const d = taskRes.data;
           const assigneeName = d.assignee_name ?? '';
@@ -165,7 +170,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
               ? ((d.priority.charAt(0).toUpperCase() +
                   d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
-            dueDate: d.due_date ? d.due_date.split('T')[0] : prev.dueDate,
+            status: (d.status as ColumnId) ?? (prev.status as ColumnId),
+            dueDate: d.due_date ? d.due_date?.replace(/Z$/, '') : '',
             storyPoints: d.story_points ?? prev.storyPoints,
             sprint: d.sprint_name ?? prev.sprint,
             assignee: initials,
@@ -463,101 +469,115 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
                     <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
                   </button>
                   {showAssigneeMenu && (
-                    <div className="absolute top-full left-0 mt-1 w-full min-w-[180px] bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
-                      <button
-                        onClick={async () => {
-                          // Update UI immediately (optimistic update)
-                          const previousState = {
-                            assignee: taskData.assignee,
-                            assigneeId: taskData.assigneeId,
-                            assigneeName: taskData.assigneeName,
-                          };
-
-                          setTaskData((prev) => ({
-                            ...prev,
-                            assignee: '',
-                            assigneeId: '',
-                            assigneeName: '',
-                          }));
-                          setShowAssigneeMenu(false);
-
-                          // Then update on server
-                          try {
-                            await handleUpdate({ assignee: '', assigneeId: '' } as never);
-                          } catch (error) {
-                            logger.log('Failed to unassign', error);
-                            // Revert on error
-                            setTaskData((prev) => ({
-                              ...prev,
-                              ...previousState,
-                            }));
-                          }
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 flex items-center gap-2"
-                      >
-                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                          <User size={11} className="text-gray-400" />
-                        </span>
-                        Unassigned
-                      </button>
-                      {members.map((m) => {
-                        const name = m.full_name ?? m.user?.name ?? '';
-                        const displayName =
-                          name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
-                        const initials = getInitials(name || (m.user?.email?.split('@')[0] ?? 'U'));
-                        const color = getMemberColor(m.user_id);
-                        return (
-                          <button
-                            key={m.user_id}
-                            onClick={async () => {
-                              if (!task.projectId || !task.taskId) return;
-
-                              // Update UI immediately (optimistic update)
-                              setTaskData((prev) => ({
-                                ...prev,
-                                assignee: initials,
-                                assigneeId: m.user_id,
-                                assigneeName: displayName,
-                                assigneeColor: color,
-                              }));
-                              onUpdate?.({
-                                assigneeInitials: initials,
-                                assigneeColor: color,
-                              } as Partial<KanbanTask>);
-                              setShowAssigneeMenu(false);
-
-                              // Then update on server
-                              try {
-                                await taskService.updateTask(task.projectId, task.taskId, {
-                                  assignee_id: m.user_id,
-                                } as never);
-                              } catch (error) {
-                                logger.log('Failed to update assignee', error);
-                                // Revert on error
+                    <div className="absolute top-full left-0 mt-1 w-full  bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                      {/* Search */}
+                      <div className="p-2 border-b border-gray-200">
+                        <WpInput
+                          ref={assigneeSearchRef}
+                          value={assigneeSearch}
+                          onChange={(e) => setAssigneeSearch(e.target.value)}
+                          placeholder="Search assignee..."
+                        />
+                      </div>
+                      {(isLoadingMembers || isFetchingMembers) && (
+                        <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                          Searching...
+                        </div>
+                      )}
+                      {!isLoadingMembers &&
+                        !isFetchingMembers &&
+                        members?.map((m) => {
+                          const name = m.full_name ?? m.user?.name ?? '';
+                          const displayName =
+                            name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
+                          const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
+                          const color = getMemberColor(m.user_id);
+                          return (
+                            <WpButton
+                              key={m.user_id}
+                              type="button"
+                              variant="ghost"
+                              onClick={async () => {
+                                if (!task.projectId || !task.taskId) return;
                                 setTaskData((prev) => ({
                                   ...prev,
-                                  assignee: task.assigneeInitials,
-                                  assigneeId: taskData.assigneeId,
-                                  assigneeName: taskData.assigneeName,
-                                  assigneeColor: task.assigneeColor,
+                                  assignee: initials,
+                                  assigneeId: m.user_id,
+                                  assigneeName: displayName,
+                                  assigneeColor: color,
                                 }));
                                 onUpdate?.({
-                                  assigneeInitials: task.assigneeInitials,
-                                  assigneeColor: task.assigneeColor,
-                                } as Partial<KanbanTask>);
-                              }
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-900 flex items-center gap-2"
-                            style={{ fontWeight: m.user_id === taskData.assigneeId ? 600 : 400 }}
-                          >
-                            <AssigneeAvatar initials={initials} color={color} size="sm" />
-                            <span className="truncate text-gray-900">{displayName}</span>
-                            {m.user_id === taskData.assigneeId && (
-                              <Check size={12} className="ml-auto text-blue-600 shrink-0" />
-                            )}
-                          </button>
-                        );
-                      })}
+                                  assigneeInitials: initials,
+                                  assigneeColor: color,
+                                });
+                                setShowAssigneeMenu(false);
+                                setAssigneeSearch('');
+                                try {
+                                  await taskService.updateTask(task.projectId, task.taskId, {
+                                    assignee_id: m.user_id,
+                                  });
+                                } catch (error) {
+                                  logger.log('Failed to update assignee', error);
+                                }
+                              }}
+                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 text-gray-900"
+                            >
+                              <AssigneeAvatar initials={initials} color={color} size="sm" />
+                              <span className="truncate">{displayName}</span>
+                              {m.user_id === taskData.assigneeId && (
+                                <Check size={12} className="ml-auto text-blue-600 shrink-0" />
+                              )}
+                            </WpButton>
+                          );
+                        })}
+                      {!isLoadingMembers &&
+                        !isFetchingMembers &&
+                        assigneeSearch &&
+                        (!members || members.length === 0) && (
+                          <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                            No members found
+                          </div>
+                        )}
+
+                      {/* Unassigned */}
+                      {!isLoadingMembers && !isFetchingMembers && !assigneeSearch && (
+                        <WpButton
+                          type="button"
+                          variant="ghost"
+                          onClick={async () => {
+                            if (!task.projectId || !task.taskId) return;
+
+                            setShowAssigneeMenu(false);
+                            setAssigneeSearch('');
+
+                            try {
+                              await taskService.updateTask(task.projectId, task.taskId, {
+                                assignee_id: undefined,
+                              });
+
+                              setTaskData((prev) => ({
+                                ...prev,
+                                assignee: '',
+                                assigneeId: '',
+                                assigneeName: '',
+                              }));
+
+                              onUpdate?.({
+                                assigneeInitials: '',
+                                assigneeColor: '',
+                              });
+                            } catch (error) {
+                              logger.log('Failed to unassign', error);
+                            }
+                          }}
+                          className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 hover:bg-gray-50"
+                        >
+                          <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                            <User size={11} className="text-gray-400" />
+                          </span>
+                          Unassigned
+                        </WpButton>
+                      )}
                     </div>
                   )}
                 </div>
