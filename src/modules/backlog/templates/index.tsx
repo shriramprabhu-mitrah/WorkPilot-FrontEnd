@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Search, Filter } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
 import { BacklogRow } from '../components/BacklogRow';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
 import Image from 'next/image';
-import { ProjectSprintDropdowns } from '@/src/app/components/common/project-sprint-dropdown';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import { useAppSelector } from '@/src/store';
@@ -21,6 +20,24 @@ export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
+  const [search, setSearch] = useState('');
+
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
+  const selectedProject = selectedApiProject?.id ?? '';
+  const selectedSprint = selectedSprintStore?.id ?? '';
+
+  const assigneeOptions =
+    selectedApiProject?.members?.map((member: ProjectDetailMember) => ({
+      label: member.full_name || member.username,
+      value: member.user_id,
+    })) ?? [];
+
+  const { tasksList, isLoadingTasks } = useGetTasks(
+    selectedProject,
+    { sprint_id: selectedSprint || undefined },
+    !!selectedProject
+  );
 
   const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
     id: task.key ?? '',
@@ -47,43 +64,12 @@ export const BacklogTemplate = () => {
     reporterColor: undefined,
     activity: [],
   });
-  
-  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-  const assigneeOptions =
-    selectedApiProject?.members?.map((member: ProjectDetailMember) => ({
-      label: member.full_name || member.username,
-      value: member.user_id,
-    })) ?? [];
-    
-  const [search, setSearch] = useState('');
-
-  const [selectedProject, setSelectedProject] = useState('');
-  const [selectedSprint, setSelectedSprint] = useState('');
-
-  const { tasksList, isLoadingTasks } = useGetTasks(
-    selectedProject,
-    { sprint_id: selectedSprint || undefined },
-    !!selectedProject
-  );
-
-
 
   const q = search.toLowerCase();
-  
-  // Use tasksList if we have a project selected, otherwise fallback to empty array
   const activeTasks = selectedProject ? (tasksList || []) : [];
-  
   const filteredBacklog = activeTasks.filter(
     (t: TaskResponse) => t.title?.toLowerCase().includes(q) || t.id?.toLowerCase().includes(q)
   );
-  
-  // Comment for Future Purpose
-  // const filteredSprints = SPRINTS.map((s) => ({
-  //   ...s,
-  //   tasks: s.tasks.filter(
-  //     (t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
-  //   ),
-  // }));
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -92,19 +78,14 @@ export const BacklogTemplate = () => {
           <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
             Backlog
           </h1>
-          <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
-            {/* Atlas Platform · {SPRINTS.length} sprints · {BACKLOG_TASKS.length} unassigned tasks */}
-          </p>
+          {selectedApiProject && (
+            <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
+              {selectedApiProject.name}{selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <ProjectSprintDropdowns
-            selectedProject={selectedProject}
-            setSelectedProject={setSelectedProject}
-            selectedSprint={selectedSprint}
-            setSelectedSprint={setSelectedSprint}
-          />
-
           <WpInput
             type="text"
             placeholder="Search tasks..."
@@ -114,13 +95,6 @@ export const BacklogTemplate = () => {
             wrapperClassName="w-full sm:w-40"
             className="!py-1.5"
           />
-          
-          
-          {/* Comment for future Purpose
-           <WpButton variant="secondary" size="sm" leftIcon={<Filter size={14} />}>
-            <span className="hidden sm:inline">Filter</span>
-          </WpButton> */}
-
           <WpButton size="sm" leftIcon={<Plus size={14} />} disabled={!selectedProject} onClick={() => setShowAddTaskModal(true)}>
             <span className="hidden sm:inline">Create User Story</span>
             <span className="sm:hidden">Sprint</span>
@@ -163,19 +137,19 @@ export const BacklogTemplate = () => {
                       className="h-48 w-48"
                     />
                     <h2 className="mt-4 text-lg font-bold text-gray-900">
-                      {!selectedProject ? "Please select a project" : "No backlogs found"}
+                      {!selectedProject ? 'Please select a project' : 'No backlogs found'}
                     </h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      {!selectedProject 
-                        ? "Select a project to view its backlogs." 
-                        : "Create your first backlog task and track progress."}
+                      {!selectedProject
+                        ? 'Select a project from the sidebar to view its backlogs.'
+                        : 'Create your first backlog task and track progress.'}
                     </p>
                   </div>
                 ) : (
                   filteredBacklog.map((task: TaskResponse) => (
-                    <BacklogRow 
-                      key={task.id} 
-                      task={task} 
+                    <BacklogRow
+                      key={task.id}
+                      task={task}
                       onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                     />
                   ))
@@ -185,7 +159,7 @@ export const BacklogTemplate = () => {
           </div>
         )}
       </div>
-      
+
       {showAddTaskModal && (
         <AddTaskModal
           projectId={selectedProject}

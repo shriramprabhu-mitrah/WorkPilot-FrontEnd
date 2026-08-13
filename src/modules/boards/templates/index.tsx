@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Filter, UserCircle2 } from 'lucide-react';
-import { projectService } from '@/src/services/project';
-import { sprintService } from '@/src/services/sprint';
 import { taskService } from '@/src/services/tasks';
 import { logger } from '@/src/lib/utils/logger';
+import { useAppSelector } from '@/src/store';
 import { TaskResponse } from '@/src/types/task';
 import {
   DndContext,
@@ -36,13 +35,12 @@ export const KanbanBoardTemplate = () => {
   const [columns, setColumns] = useState<KanbanColumnType[]>(BOARD_COLUMNS);
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [boardLoading, setBoardLoading] = useState(false);
   const dropTargetRef = useRef<{ columnId: string; index: number } | null>(null);
-  const [selectedProject, setSelectedProject] = useState('');
-  const [selectedSprint, setSelectedSprint] = useState('');
-  const [projectsList, setProjectsList] = useState<{ id: string; name: string }[]>([]);
-  const [sprintsList, setSprintsList] = useState<{ id: string; name: string }[]>([]);
+  const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector((state) => state.project);
+  const selectedProject = storeProject?.id ?? '';
+  const selectedSprint = storeSprint?.id ?? '';
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     priorities: [],
@@ -311,47 +309,6 @@ export const KanbanBoardTemplate = () => {
   };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await projectService.getProject({ fieldName: 'id,name' });
-        if (res.data && res.data.length > 0) {
-          const list = res.data.map((p) => ({ id: p.id || '', name: p.name }));
-          setProjectsList(list);
-          setSelectedProject(list[0].id);
-        }
-      } catch (error) {
-        logger.log('Failed to fetch projects', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    const fetchSprints = async () => {
-      if (!selectedProject) {
-        setSprintsList([]);
-        setSelectedSprint('');
-        return;
-      }
-      try {
-        const res = await sprintService.getSprints(selectedProject, 'id,name');
-        if (res.data && res.data.length > 0) {
-          const list = res.data.map((s) => ({ id: s.id, name: s.name }));
-          setSprintsList(list);
-        } else {
-          setSprintsList([]);
-          setSelectedSprint('');
-        }
-      } catch (error) {
-        logger.log('Failed to fetch sprints', error);
-      }
-    };
-    fetchSprints();
-  }, [selectedProject]);
-
-  useEffect(() => {
     const fetchTasks = async () => {
       if (!selectedProject) return;
       setBoardLoading(true);
@@ -376,39 +333,14 @@ export const KanbanBoardTemplate = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0">
         <div>
           <h1 className="text-xl font-semibold text-gray-800 mb-1">Kanban Board</h1>
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-gray-500">
             Visualize and manage your team&apos;s tasks across workflow stages.
           </p>
-          <div className="flex items-center gap-3">
-            <select
-              value={selectedProject}
-              onChange={(e) => {
-                setSelectedProject(e.target.value);
-                setSelectedSprint('');
-              }}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50"
-            >
-              {projectsList.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedSprint}
-              onChange={(e) => setSelectedSprint(e.target.value)}
-              disabled={!selectedProject}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-[15px] font-medium shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">All Sprints</option>
-              {sprintsList.map((sprint) => (
-                <option key={sprint.id} value={sprint.id}>
-                  {sprint.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {storeProject && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              {storeProject.name}{storeSprint ? ` · ${storeSprint.name}` : ' · All Sprints'}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Filter button */}
