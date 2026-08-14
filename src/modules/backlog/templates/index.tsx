@@ -110,7 +110,7 @@ export const BacklogTemplate = () => {
             wrapperClassName="w-full sm:w-40"
             className="!py-1.5"
           />
-          <WpButton
+          {/* <WpButton
             size="sm"
             leftIcon={<Plus size={14} />}
             disabled={!selectedProject}
@@ -118,7 +118,7 @@ export const BacklogTemplate = () => {
           >
             <span className="hidden sm:inline">Create User Story</span>
             <span className="sm:hidden">Sprint</span>
-          </WpButton>
+          </WpButton> */}
         </div>
       </div>
 
