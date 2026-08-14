@@ -74,6 +74,27 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
   },
 
+  // User Story permissions
+  USER_STORY_CREATE: {
+    allowedRoles: [
+      ROLE_TYPE.ORG_ADMIN,
+      ROLE_TYPE.PROJECT_MANAGER,
+      ROLE_TYPE.DEVELOPER,
+      ROLE_TYPE.TESTER,
+    ],
+  },
+  USER_STORY_EDIT: {
+    allowedRoles: [
+      ROLE_TYPE.ORG_ADMIN,
+      ROLE_TYPE.PROJECT_MANAGER,
+      ROLE_TYPE.DEVELOPER,
+      ROLE_TYPE.TESTER,
+    ],
+  },
+  USER_STORY_DELETE: {
+    allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],
+  },
+
   // Team permissions
   TEAMS_EDIT: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN, ROLE_TYPE.PROJECT_MANAGER],

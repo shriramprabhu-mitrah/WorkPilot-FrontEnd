@@ -28,6 +28,7 @@ export interface TaskPayload {
   label_ids?: string[];
   priority?: string;
   sprint_id?: string;
+  user_story_id?: string; // Added for creating tasks under user stories
   status: string;
   story_points?: number;
   estimated_hours?: number;
@@ -94,4 +95,31 @@ export interface GetTasksQueryParams {
   page_size?: number;
   sprint_id?: string;
   fieldName?: string;
+}
+
+export interface CommentUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  task_id: string;
+  user_id: string;
+  parent_comment_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: CommentUser;
+  replies?: Comment[];
+}
+
+export interface CreateCommentPayload {
+  content: string;
+  parent_comment_id?: string;
+}
+
+export interface UpdateCommentPayload {
+  content: string;
 }

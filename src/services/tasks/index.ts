@@ -7,6 +7,9 @@ import {
   UpdateTaskPayload,
   BulkUpdateTasksPayload,
   ClonePayload,
+  Comment,
+  CreateCommentPayload,
+  UpdateCommentPayload,
 } from '@/src/types/task';
 import { apiService, PaginatedApiResponse } from '../axios';
 
@@ -144,6 +147,46 @@ class TaskService {
         successMessage: 'Task restored successfully',
       }
     );
+  }
+
+  async getReplies(
+    taskId: string,
+    commentId: string,
+    page = 1,
+    pageSize = 10
+  ): Promise<PaginatedApiResponse<Comment[]>> {
+    const url = ApiEndpoints.Task.getReplies
+      .withNamedParams({ taskId, commentId })
+      .withQuery({ page, page_size: pageSize });
+    return apiService.getPaginated<Comment[]>(url);
+  }
+
+  async getComments(
+    taskId: string,
+    page = 1,
+    pageSize = 10
+  ): Promise<PaginatedApiResponse<Comment[]>> {
+    const url = ApiEndpoints.Task.getComments
+      .withNamedParams({ taskId })
+      .withQuery({ page, page_size: pageSize });
+    return apiService.getPaginated<Comment[]>(url);
+  }
+
+  async createComment(
+    taskId: string,
+    payload: CreateCommentPayload
+  ): Promise<ApiResponse<Comment>> {
+    const url = ApiEndpoints.Task.createComment.withParams({ taskId });
+    return apiService.post<Comment>(url, payload);
+  }
+
+  async updateComment(
+    taskId: string,
+    commentId: string,
+    payload: UpdateCommentPayload
+  ): Promise<ApiResponse<Comment>> {
+    const url = ApiEndpoints.Task.updateComment.withParams({ taskId, commentId });
+    return apiService.patch<Comment>(url, payload);
   }
 }
 

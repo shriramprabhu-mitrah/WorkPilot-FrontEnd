@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
 import { BacklogRow } from '../components/BacklogRow';
 import { colors } from '@/src/styles/colors';
@@ -9,15 +10,18 @@ import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
 import Image from 'next/image';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
+import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import { useAppSelector } from '@/src/store';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { ColumnId, KanbanTask } from '@/src/types/board';
 import { TaskResponse } from '@/src/types/task';
 import { ProjectDetailMember } from '@/src/types/project';
+import { UserStoryResponse } from '@/src/types/userstories';
 import CreateUserStoryModal from '../components/createUserStoryModal';
 
 export const BacklogTemplate = () => {
+  const router = useRouter();
   const [backlogOpen, setBacklogOpen] = useState(true);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
@@ -38,6 +42,12 @@ export const BacklogTemplate = () => {
   const { tasksList, isLoadingTasks } = useGetTasks(
     selectedProject,
     { sprint_id: selectedSprint || undefined },
+    !!selectedProject
+  );
+
+  const { userStories, isLoadingUserStories } = useGetUserStories(
+    selectedProject,
+    {},
     !!selectedProject
   );
 
@@ -76,6 +86,10 @@ export const BacklogTemplate = () => {
     (t: TaskResponse) => t.title?.toLowerCase().includes(q) || t.id?.toLowerCase().includes(q)
   );
 
+  const filteredStories = (selectedProject ? userStories : []).filter(
+    (s: UserStoryResponse) => s.title?.toLowerCase().includes(q) || s.id?.toLowerCase().includes(q)
+  );
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 flex-shrink-0">
@@ -110,75 +124,123 @@ export const BacklogTemplate = () => {
             wrapperClassName="w-full sm:w-40"
             className="!py-1.5"
           />
-          {/* <WpButton
-            size="sm"
-            leftIcon={<Plus size={14} />}
-            disabled={!selectedProject}
-            onClick={() => setShowAddTaskModal(true)}
-          >
-            <span className="hidden sm:inline">Create User Story</span>
-            <span className="sm:hidden">Sprint</span>
-          </WpButton> */}
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1">
-        {isLoadingTasks && selectedProject ? (
+        {(isLoadingTasks || isLoadingUserStories) && selectedProject ? (
           <div className="mt-4">
             <BacklogSkeleton />
           </div>
         ) : (
-          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
-            <div
-              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
-              onClick={() => setBacklogOpen((v) => !v)}
-            >
-              <span className="text-gray-400 shrink-0">
-                {backlogOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </span>
-              <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
-                Backlog
-              </span>
-              <span
-                className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
-                style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
-              >
-                {filteredBacklog.length} issues
-              </span>
+          <>
+            {/* User Stories Section */}
+            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
+              <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b border-gray-100">
+                <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
+                  User Stories
+                </span>
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                  style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
+                >
+                  {filteredStories.length} stories
+                </span>
+              </div>
+              {filteredStories.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                  <p className="text-sm text-gray-500">
+                    {!selectedProject
+                      ? 'Select a project to view stories.'
+                      : 'No user stories found. Create one to get started.'}
+                  </p>
+                </div>
+              ) : (
+                filteredStories.map((story: UserStoryResponse) => (
+                  <div
+                    key={story.id}
+                    onClick={() =>
+                      router.push(`/backlog/story/${story.id}?projectId=${selectedProject}`)
+                    }
+                    className="flex items-center gap-3 px-3 sm:px-4 py-2.5 border-b last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                    style={{ borderColor: colors.gray100 }}
+                  >
+                    <span
+                      className="text-sm flex-1 min-w-0 truncate"
+                      style={{ color: colors.gray800 }}
+                    >
+                      {story.title}
+                    </span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0"
+                      style={{ backgroundColor: colors.gray100, color: colors.gray500 }}
+                    >
+                      {story.priority ?? 'medium'}
+                    </span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0"
+                      style={{ backgroundColor: colors.gray100, color: colors.gray500 }}
+                    >
+                      {story.status ?? 'todo'}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
 
-            {backlogOpen && (
-              <div>
-                {filteredBacklog.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <Image
-                      src="/images/Multitasking-rafiki.svg"
-                      alt="No Tasks"
-                      width={300}
-                      height={200}
-                      className="h-90 w-90"
-                    />
-                    <h2 className="mt-4 text-lg font-bold text-gray-900">
-                      {!selectedProject ? 'Please select a project' : 'No backlogs found'}
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {!selectedProject
-                        ? 'Select a project to view its backlogs.'
-                        : 'Create your first backlog task and track progress.'}
-                    </p>
-                  </div>
-                ) : (
-                  filteredBacklog.map((task: TaskResponse) => (
-                    <BacklogRow
-                      key={task.id}
-                      task={task}
-                      onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
-                    />
-                  ))
-                )}
+            {/* Backlog Tasks Section */}
+            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
+              <div
+                className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                onClick={() => setBacklogOpen((v) => !v)}
+              >
+                <span className="text-gray-400 shrink-0">
+                  {backlogOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </span>
+                <span className="font-semibold text-sm" style={{ color: colors.gray900 }}>
+                  Backlog
+                </span>
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                  style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
+                >
+                  {filteredBacklog.length} issues
+                </span>
               </div>
-            )}
-          </div>
+
+              {backlogOpen && (
+                <div>
+                  {filteredBacklog.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Image
+                        src="/images/Multitasking-rafiki.svg"
+                        alt="No Tasks"
+                        width={300}
+                        height={200}
+                        className="h-90 w-90"
+                      />
+                      <h2 className="mt-4 text-lg font-bold text-gray-900">
+                        {!selectedProject ? 'Please select a project' : 'No backlogs found'}
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {!selectedProject
+                          ? 'Select a project to view its backlogs.'
+                          : 'Create your first backlog task and track progress.'}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredBacklog.map((task: TaskResponse) => (
+                      <BacklogRow
+                        key={task.id}
+                        task={task}
+                        onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 

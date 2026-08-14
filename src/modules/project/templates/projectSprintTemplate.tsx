@@ -1,17 +1,49 @@
 'use client';
 
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
 import ProjectDetail from '../components/projectDetail';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { Project } from '../types/project';
 import ProjectSkeleton from '../components/projectDetailSkeleton';
+import AddSprintModal from '../components/addSprint';
+import { projectService } from '@/src/services/project';
+import { setSelectedProject, setProjectLoading } from '@/src/store/slices/project';
 
 const ProjectSprintTemplate = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-
   const isLoading = useAppSelector((state) => state.project.isLoading);
+  const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
+
+  // Handle projectId param from eye icon navigation
+  useEffect(() => {
+    const projectId = searchParams.get('projectId');
+    if (!projectId) return;
+    const fetchAndSet = async () => {
+      dispatch(setProjectLoading(true));
+      try {
+        const res = await projectService.getProjectDetail(projectId);
+        const detail = res.data;
+        if (!detail) return;
+        const { creator, ...rest } = detail;
+        dispatch(setSelectedProject({ ...rest, owner: creator ?? 'Unassigned' }));
+      } finally {
+        dispatch(setProjectLoading(false));
+      }
+    };
+    fetchAndSet();
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const openCreate = searchParams.get('openCreate');
+    if (openCreate === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsSprintModalOpen(true);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedProject = useMemo((): (Project & { id?: string }) | null => {
     if (!selectedApiProject) return null;
@@ -76,7 +108,17 @@ const ProjectSprintTemplate = () => {
     );
   }
 
-  return <ProjectDetail project={selectedProject} />;
+  return (
+    <>
+      <ProjectDetail project={selectedProject} />
+      {isSprintModalOpen && selectedApiProject?.id && (
+        <AddSprintModal
+          projectId={selectedApiProject.id}
+          onClose={() => setIsSprintModalOpen(false)}
+        />
+      )}
+    </>
+  );
 };
 
 export default ProjectSprintTemplate;

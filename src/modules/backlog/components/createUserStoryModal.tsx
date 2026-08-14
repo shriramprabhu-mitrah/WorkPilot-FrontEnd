@@ -6,6 +6,9 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { PRIORITY_TYPE, priorityOptions } from '@/src/app/components/common/enum';
+import { useCreateUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAppSelector } from '@/src/store';
 
 interface CreateUserStoryModalProps {
   onClose: () => void;
@@ -17,7 +20,20 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
 
-  const handleCreate = () => {
+  const selectedProject = useAppSelector((state) => state.project.selectedProject);
+  const projectId = selectedProject?.id ?? '';
+  const queryClient = useQueryClient();
+  const { createUserStoryAsync, isCreatingUserStory } = useCreateUserStory(projectId);
+
+  const handleCreate = async () => {
+    if (!title.trim() || !projectId) return;
+    await createUserStoryAsync({
+      title: title.trim(),
+      description: description.trim() || undefined,
+      priority: priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical',
+      story_points: storyPoints ? Number(storyPoints) : undefined,
+    });
+    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
     onClose();
   };
 
@@ -74,7 +90,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
               type="number"
               value={storyPoints}
               onChange={(e) => setStoryPoints(e.target.value)}
-              placeholder="8"
+              placeholder="Enter story points"
             />
           </div>
         </div>
@@ -84,7 +100,12 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             Cancel
           </WpButton>
 
-          <WpButton type="button" onClick={handleCreate}>
+          <WpButton
+            type="button"
+            onClick={handleCreate}
+            disabled={!title.trim() || isCreatingUserStory}
+            isLoading={isCreatingUserStory}
+          >
             Create Story
           </WpButton>
         </div>

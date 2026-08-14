@@ -9,6 +9,19 @@ import {
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '../types/project';
 
+export const useGetProjectsWithSprints = () => {
+  const query = useQuery({
+    queryKey: ['projects-with-sprints'],
+    queryFn: () => projectService.getProject({ include_sprints: true }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return {
+    projectsWithSprints: query.data?.data ?? [],
+    isLoadingProjectsWithSprints: query.isLoading,
+  };
+};
+
 export const useGetProjects = (params?: GetProjectQueryParams) => {
   const query = useQuery({
     queryKey: ['projects', params],
@@ -33,6 +46,7 @@ export const useCreateProject = () => {
     mutationFn: (payload: CreateProjectPayload) => projectService.createProject(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-with-sprints'] });
     },
   });
 
