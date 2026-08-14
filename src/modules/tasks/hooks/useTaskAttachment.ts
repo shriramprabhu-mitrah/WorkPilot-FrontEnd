@@ -5,7 +5,6 @@ import { taskAttachmentService } from '@/src/services/taskAttachment';
 
 export const useTaskAttachments = (projectId: string, taskId: string, enabled = true) => {
   const queryClient = useQueryClient();
-
   const {
     data: attachments,
     isLoading: isLoadingAttachments,
@@ -46,7 +45,6 @@ export const useTaskAttachments = (projectId: string, taskId: string, enabled = 
 
   return {
     attachments,
-
     isLoadingAttachments,
     isFetchingAttachments,
     refetchAttachments,

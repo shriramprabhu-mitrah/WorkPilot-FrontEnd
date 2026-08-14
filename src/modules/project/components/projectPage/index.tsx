@@ -75,10 +75,11 @@ const ProjectPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { hasPermission } = usePermissions();
-  
+
   // Derive initial modal state from URL params
-  const shouldOpenModal = searchParams.get('openCreate') === 'true' && hasPermission('PROJECT_CREATE');
-  
+  const shouldOpenModal =
+    searchParams.get('openCreate') === 'true' && hasPermission('PROJECT_CREATE');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');

@@ -93,7 +93,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
       })
     );
 
-    if(getAuthSource() === 'mobile'){
+    if (getAuthSource() === 'mobile') {
       const token = getAccessToken();
       if (token) {
         window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
@@ -101,7 +101,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
       } else {
         router.push('/dashboard');
       }
-    } else{
+    } else {
       router.push('/dashboard');
     }
   };

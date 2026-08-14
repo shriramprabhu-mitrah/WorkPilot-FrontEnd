@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDown, Check, FileText, Link2, MoreHorizontal, Plus, X, User } from 'lucide-react';
+import {
+  ChevronDown,
+  Check,
+  FileText,
+  Link2,
+  MoreHorizontal,
+  Plus,
+  X,
+  User,
+  Paperclip,
+  Download,
+  Trash2,
+} from 'lucide-react';
 import type { ColumnId, KanbanTask, Priority, SubTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
@@ -24,6 +36,7 @@ import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { WpButton } from '../button';
 import { WpInput } from '../input';
+import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -98,6 +111,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const hasFetched = useRef<string | null>(null);
+  const {
+    attachments,
+    isLoadingAttachments,
+    isFetchingAttachments,
+    uploadAttachment,
+    downloadAttachment,
+    deleteAttachment,
+  } = useTaskAttachments(task.projectId ?? '', task.taskId ?? '');
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
@@ -233,6 +255,50 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024) {
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
+  const handleAttachmentDownload = async (attachmentId: string, fileName: string) => {
+    try {
+      const blob = await downloadAttachment.mutateAsync(attachmentId);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      logger.log('Failed to download attachment', error);
+    }
+  };
+  const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await uploadAttachment.mutateAsync(formData);
+    } catch (error) {
+      logger.log('Failed to upload attachment', error);
+    } finally {
+      event.target.value = '';
+    }
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -303,14 +369,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
           >
             <h1 className="text-2xl font-bold text-gray-900 mb-5 leading-snug">{task.title}</h1>
 
-            <div className="flex flex-wrap items-center gap-2 mb-6">
+            {/* future purpose
+             <div className="flex flex-wrap items-center gap-2 mb-6">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Plus size={14} /> Add child Ticket
               </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Link2 size={14} /> Link issue
               </button>
-            </div>
+            </div> */}
 
             <section className="mb-6 pb-6 border-b border-gray-200">
               <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
@@ -360,20 +427,112 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
               )}
             </section>
 
+            {/* future purpose 
             <SubtasksSection
               subtasks={taskData.subtasks}
               onChange={(subtasks) => setTaskData((prev) => ({ ...prev, subtasks }))}
-              onOpenSubtask={() => {}}
-            />
+              onOpenSubtask={() => { }}
+            /> */}
 
-            <section className="mb-6 pb-6 border-b border-gray-200">
+            {/* <section className="mb-6 pb-6 border-b border-gray-200">
               <p className="text-base font-semibold text-gray-800 mb-2">Linked work items</p>
               <button className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
                 + Add linked work item
               </button>
-            </section>
+            </section> */}
+            {/* Attachments */}
+            <div className="mb-6 pb-6 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-700">Attachments</p>
 
-            <ActivitySection items={task.activity ?? []} taskId={task.taskId} />
+                <input
+                  ref={attachmentInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleAttachmentUpload}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => attachmentInputRef.current?.click()}
+                  disabled={uploadAttachment.isPending}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                >
+                  <Paperclip size={14} />
+                  {uploadAttachment.isPending ? 'Uploading...' : 'Add'}
+                </button>
+              </div>
+
+              {/* Empty state */}
+              {isLoadingAttachments || isFetchingAttachments ? (
+                <div className="border border-gray-200 rounded-xl px-4 py-5 text-center bg-white">
+                  <p className="text-sm text-gray-400">Loading attachments...</p>
+                </div>
+              ) : !attachments?.data?.length ? (
+                <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
+                  <div className="w-9 h-9 mx-auto mb-2 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <Paperclip size={16} className="text-gray-400" />
+                  </div>
+
+                  <p className="text-sm text-gray-500">No attachments</p>
+
+                  <p className="text-xs text-gray-400 mt-1">Add files to this task</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {attachments?.data?.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+                    >
+                      {/* File icon */}
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                        <FileText size={17} className="text-gray-500" />
+                      </div>
+
+                      {/* File details */}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm font-medium text-gray-700 truncate"
+                          title={attachment.original_filename}
+                        >
+                          {attachment.original_filename}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {formatFileSize(attachment.file_size)}
+                        </p>
+                      </div>
+
+                      {/* Download */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleAttachmentDownload(attachment.id, attachment.original_filename)
+                        }
+                        disabled={downloadAttachment.isPending}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                        title="Download"
+                      >
+                        <Download size={15} />
+                      </button>
+
+                      {/* Delete */}
+                      <button
+                        type="button"
+                        onClick={() => deleteAttachment.mutate(attachment.id)}
+                        disabled={deleteAttachment.isPending}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <ActivitySection items={task.activity ?? []} />
           </div>
 
           <div

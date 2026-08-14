@@ -39,12 +39,8 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
     storyId
   );
 
-  const {
-    relatedTasks,
-    isLoadingRelatedTasks,
-    isFetchingRelatedTasks,
-    refetchRelatedTasks,
-  } = useTaskStoryRelationship(projectId, storyId);
+  const { relatedTasks, isLoadingRelatedTasks, isFetchingRelatedTasks, refetchRelatedTasks } =
+    useTaskStoryRelationship(projectId, storyId);
 
   const deleteUserStoryMutation = useDeleteUserStory();
 
@@ -299,7 +295,9 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
             <p className="text-sm font-medium text-gray-400">
               No tasks have been created for this user story.
             </p>
-            <p className="mt-1 text-xs text-gray-400">Add your first task to start tracking work.</p>
+            <p className="mt-1 text-xs text-gray-400">
+              Add your first task to start tracking work.
+            </p>
           </div>
         </div>
       ) : (
@@ -396,8 +394,8 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <h3 className="text-lg font-bold text-gray-900">Delete User Story</h3>
             <p className="mt-2 text-sm text-gray-500">
-              Are you sure you want to delete this user story? This action cannot be undone and
-              will also affect all associated tasks.
+              Are you sure you want to delete this user story? This action cannot be undone and will
+              also affect all associated tasks.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <WpButton

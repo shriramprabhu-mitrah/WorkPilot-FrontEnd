@@ -1,7 +1,7 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
-
+import { TaskAttachment } from '@/src/types/task';
 class TaskAttachmentService {
   async uploadTaskAttachment(
     projectId: string,
@@ -13,19 +13,22 @@ class TaskAttachmentService {
       taskId,
     });
 
-    return apiService.post<void>(url, payload, {
+    return apiService.postFormData<void>(url, payload, {
       showSuccessToast: true,
       showErrorToast: true,
     });
   }
 
-  async listTaskAttachments(projectId: string, taskId: string): Promise<ApiResponse<void>> {
+  async listTaskAttachments(
+    projectId: string,
+    taskId: string
+  ): Promise<ApiResponse<TaskAttachment[]>> {
     const url = ApiEndpoints.TaskAttachment.listTaskAttachments.withParams({
       projectId,
       taskId,
     });
 
-    return apiService.get<void>(url, {
+    return apiService.get<TaskAttachment[]>(url, {
       showErrorToast: true,
     });
   }
@@ -34,14 +37,14 @@ class TaskAttachmentService {
     projectId: string,
     taskId: string,
     attachmentId: string
-  ): Promise<ApiResponse<void>> {
+  ): Promise<Blob> {
     const url = ApiEndpoints.TaskAttachment.downloadTaskAttachment.withParams({
       projectId,
       taskId,
       attachmentId,
     });
 
-    return apiService.get<void>(url, {
+    return apiService.getBlob(url, {
       showErrorToast: true,
     });
   }

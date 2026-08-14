@@ -378,7 +378,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   <button
                     onClick={() => {
                       if (!tempProject) return;
-                      dispatch(setSelectedProject(tempProject as Parameters<typeof setSelectedProject>[0]));
+                      dispatch(
+                        setSelectedProject(tempProject as Parameters<typeof setSelectedProject>[0])
+                      );
                       dispatch(setSprints(tempSprints));
                       setShowManageProject(false);
                       router.push(`/projects/sprints?projectId=${tempProject.id}&openCreate=true`);
@@ -395,7 +397,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               {isLoadingProjectsWithSprints ? (
                 <div className="text-xs text-gray-400 py-2">Loading sprints...</div>
               ) : (
-              <div className="space-y-1">
+                <div className="space-y-1">
                   {/* All Sprints option */}
                   <button
                     onClick={() => setTempSprint(null)}

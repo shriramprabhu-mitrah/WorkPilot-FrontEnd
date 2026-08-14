@@ -155,12 +155,31 @@ class AxiosApiService {
       const response = await axiosInstance.post(endpoint, payload, {
         headers: options?.headers,
       });
+
       return processResponse<T>(response, options);
     } catch (error) {
       return handleApiError(error, 'POST', options);
     }
   }
 
+  async postFormData<T>(
+    endpoint: string,
+    payload: FormData,
+    options?: ApiRequestOptions
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await axiosInstance.post(endpoint, payload, {
+        headers: {
+          'Content-Type': undefined,
+          ...options?.headers,
+        },
+      });
+
+      return processResponse<T>(response, options);
+    } catch (error) {
+      return handleApiError(error, 'POST', options);
+    }
+  }
   // PUT Request
   async put<T>(
     endpoint: string,
@@ -227,6 +246,19 @@ class AxiosApiService {
     try {
       const response = await axiosInstance.get(endpoint);
       return processPaginatedResponse<T>(response, options);
+    } catch (error) {
+      return handleApiError(error, 'GET', options);
+    }
+  }
+
+  // GET Request for file/blob downloads
+  async getBlob(endpoint: string, options?: ApiRequestOptions): Promise<Blob> {
+    try {
+      const response = await axiosInstance.get(endpoint, {
+        responseType: 'blob',
+      });
+
+      return response.data;
     } catch (error) {
       return handleApiError(error, 'GET', options);
     }

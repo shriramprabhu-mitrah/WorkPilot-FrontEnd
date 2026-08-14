@@ -25,9 +25,7 @@ const EditUserStoryModal = ({
 }: EditUserStoryModalProps) => {
   const [title, setTitle] = useState(userStory.title || '');
   const [description, setDescription] = useState(userStory.description || '');
-  const [priority, setPriority] = useState<string>(
-    userStory.priority?.toLowerCase() || 'medium'
-  );
+  const [priority, setPriority] = useState<string>(userStory.priority?.toLowerCase() || 'medium');
   const [status, setStatus] = useState(userStory.status || 'todo');
   const [storyPoints, setStoryPoints] = useState(
     userStory.story_points !== undefined ? String(userStory.story_points) : ''
@@ -46,7 +44,8 @@ const EditUserStoryModal = ({
           title: title.trim(),
           description: description.trim() || undefined,
           priority: priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical',
-          status: status as 'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked',
+          status: status as
+            'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked',
           story_points: storyPoints ? Number(storyPoints) : undefined,
         },
       });

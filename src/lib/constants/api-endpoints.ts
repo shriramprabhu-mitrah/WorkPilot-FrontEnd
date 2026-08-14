@@ -208,13 +208,10 @@ export const ApiEndpoints = {
 
   TaskAttachment: {
     uploadTaskAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
-
     listTaskAttachments: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
-
     downloadTaskAttachment: createEndpoint(
       '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/download'
     ),
-
     deleteTaskAttachment: createEndpoint(
       '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}'
     ),
@@ -222,13 +219,10 @@ export const ApiEndpoints = {
 
   CommentAttachment: {
     uploadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
-
     listCommentAttachments: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
-
     downloadCommentAttachment: createEndpoint(
       '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}/download'
     ),
-
     deleteCommentAttachment: createEndpoint(
       '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}'
     ),
@@ -236,11 +230,8 @@ export const ApiEndpoints = {
 
   TaskStoryRelationship: {
     createTaskUnderStory: createEndpoint('/projects/{projectId}/tasks'),
-
     assignTaskToStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
-
     removeTaskFromStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
-
     getTasksByStory: createQueryEndpoint('/projects/{projectId}/tasks'),
   },
 
@@ -250,6 +241,7 @@ export const ApiEndpoints = {
     deleteLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
     updateLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
   },
+
   UserStory: {
     getUserStories: createQueryEndpoint('/projects/{projectId}/user-stories'),
     createUserStory: createEndpoint('/projects/{projectId}/user-stories'),
@@ -257,7 +249,7 @@ export const ApiEndpoints = {
     updateUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     deleteUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     reorderUserStories: createEndpoint('/projects/{projectId}/user-stories/reorder'),
-  }
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;
