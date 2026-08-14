@@ -252,6 +252,7 @@ export const ApiEndpoints = {
     getUserStoryById: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     updateUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     deleteUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
+    reorderUserStories: createEndpoint('/projects/{projectId}/user-stories/reorder'),
   }
 };
 

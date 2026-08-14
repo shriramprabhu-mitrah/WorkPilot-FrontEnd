@@ -48,3 +48,7 @@ export interface UpdateUserStoryPayload {
   assignee_id?: string;
   sprint_id?: string;
 }
+
+export interface ReorderUserStoriesPayload {
+  user_story_ids: string[];
+}

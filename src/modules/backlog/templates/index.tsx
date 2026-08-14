@@ -15,12 +15,14 @@ import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { ColumnId, KanbanTask } from '@/src/types/board';
 import { TaskResponse } from '@/src/types/task';
 import { ProjectDetailMember } from '@/src/types/project';
+import CreateUserStoryModal from '../components/createUserStoryModal';
 
 export const BacklogTemplate = () => {
   const [backlogOpen, setBacklogOpen] = useState(true);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [search, setSearch] = useState('');
+  const [showCreateStoryModal, setShowCreateStoryModal] = useState(false);
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
@@ -90,6 +92,15 @@ export const BacklogTemplate = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <WpButton
+            size="sm"
+            leftIcon={<Plus size={14} />}
+            disabled={!selectedProject}
+            onClick={() => setShowCreateStoryModal(true)}
+          >
+            <span className="hidden sm:inline">Create New Story</span>
+            <span className="sm:hidden">Create</span>
+          </WpButton>
           <WpInput
             type="text"
             placeholder="Search tasks..."
@@ -183,6 +194,9 @@ export const BacklogTemplate = () => {
 
       {selectedTask && (
         <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+      {showCreateStoryModal && (
+        <CreateUserStoryModal onClose={() => setShowCreateStoryModal(false)} />
       )}
     </div>
   );

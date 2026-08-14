@@ -1,6 +1,7 @@
 import { userStoryService } from '@/src/services/userstory';
 import {
   GetUserStoriesQueryParams,
+  ReorderUserStoriesPayload,
   UpdateUserStoryPayload,
   UserStoryPayload,
 } from '@/src/types/userstories';
@@ -71,5 +72,17 @@ export const useDeleteUserStory = () => {
   return useMutation({
     mutationFn: ({ projectId, userStoryId }: { projectId: string; userStoryId: string }) =>
       userStoryService.deleteUserStory(projectId, userStoryId),
+  });
+};
+
+export const useReorderUserStories = () => {
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      payload,
+    }: {
+      projectId: string;
+      payload: ReorderUserStoriesPayload;
+    }) => userStoryService.reorderUserStories(projectId, payload),
   });
 };
