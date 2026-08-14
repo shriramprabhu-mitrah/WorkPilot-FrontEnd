@@ -58,6 +58,7 @@ export const SignIn = () => {
     isLoading,
     forgotPassword,
     resetPasswordConfirm,
+    isMobile
   } = useSignin();
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
@@ -245,10 +246,14 @@ export const SignIn = () => {
 
       <div className="signupPrompt">
         Don&apos;t have an account?
-        <Link href="/signup" className="signupLink">
+        <Link
+          href={`/signup?source=${isMobile ? 'mobile' : 'web'}`}
+          className="signupLink"
+        >
           Create account
         </Link>
       </div>
+
 
       {showForgotSidebar && (
         <div

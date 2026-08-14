@@ -16,6 +16,9 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { userService } from '@/src/services/user';
 import { setUser } from '@/src/store/slices/users';
+import { getAuthSource } from '@/src/lib/utils/auth';
+import { signupService } from '@/src/services/signup';
+import { getAccessToken } from '@/src/lib/utils/cookies';
 
 interface OrgSetupModalProps {
   onComplete?: () => void;
@@ -90,7 +93,17 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
       })
     );
 
-    router.push('/dashboard');
+    if(getAuthSource() === 'mobile'){
+      const token = getAccessToken();
+      if (token) {
+        window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
+        await signupService.logOut();
+      } else {
+        router.push('/dashboard');
+      }
+    } else{
+      router.push('/dashboard');
+    }
   };
 
   const filteredCountries =

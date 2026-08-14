@@ -25,8 +25,8 @@ import { setTermsAccepted, setPrivacyAccepted } from '@/src/store/slices/agreeme
 import { TermsConditions } from '@/src/app/components/common/terms-coditions';
 import { PrivacyPolicy } from '@/src/app/components/common/privacy';
 import { WpInput } from '@/src/app/components/common/input';
-import { ArrowRight, CheckCircle2, Circle, ShieldCheck } from 'lucide-react';
 import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
+import { getAuthSource } from '@/src/lib/utils/auth';
 const signupSchema = z
   .object({
     full_name: z.string().trim().min(1, 'Full name is required'),
@@ -61,6 +61,7 @@ export const SignUp = () => {
   const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
 
+  const isMobile = getAuthSource() === 'mobile' 
   const {
     register,
     handleSubmit,
@@ -159,7 +160,7 @@ export const SignUp = () => {
           email={email}
           onBack={() => setIsSuccess(false)}
           onVerified={() => {
-            router.push('/setup?from=signup');
+            router.push(`/setup?from=signup&source=${getAuthSource()}`);
           }}
         />
       )}
@@ -353,7 +354,7 @@ export const SignUp = () => {
 
           <div className="signupPrompt" style={{ marginTop: '24px' }}>
             Already have an account?
-            <Link href="/signin" className="signupLink">
+            <Link href={`/signin?source=${isMobile ? 'mobile' : 'web'}`} className="signupLink">
               Sign in
             </Link>
           </div>

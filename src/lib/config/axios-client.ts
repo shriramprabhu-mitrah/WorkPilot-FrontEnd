@@ -2,15 +2,20 @@ import axios from 'axios';
 import { refreshAccessToken } from '@/src/lib/auth/refresh-access-token';
 import { getRefreshToken, setTokens } from '@/src/lib/utils/cookies';
 import { showToast } from '@/src/utils/toast';
+import { getAuthSource } from '../utils/auth';
 
 export const axiosInstance = axios.create({
   baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json',
-    'X-Client-Platform': 'web',
   },
-
   withCredentials: true,
+});
+
+axiosInstance.interceptors.request.use((config) => {
+  config.headers['X-Client-Platform'] = getAuthSource();
+
+  return config;
 });
 
 let isRefreshing = false;

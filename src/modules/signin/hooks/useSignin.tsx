@@ -6,11 +6,16 @@ import { clearUser, setUser } from '../../../store/slices/users';
 import { userService } from '../../../services/user';
 import { SignInPayload } from '../../../types/signin';
 import { setTokens } from '../../../lib/utils/cookies';
+import { getAuthSource } from '@/src/lib/utils/auth';
 import { clearSelectedProject } from '@/src/store/slices/project';
 export const useSignin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const authSource = getAuthSource();
+
+  const isMobile = authSource === 'mobile';
 
   const signInMutation = useMutation({
     mutationFn: async (payload: SignInPayload) => {
@@ -41,8 +46,6 @@ export const useSignin = () => {
     },
     onSuccess: async (data) => {
       const token = data?.data?.access_token;
-      const params = new URLSearchParams(window.location.search);
-      const isMobile = params.get('source') === 'mobile';
 
       if (isMobile && token) {
         window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
@@ -123,5 +126,7 @@ export const useSignin = () => {
       isError: logOutMutation.isError,
       error: logOutMutation.error,
     },
+    authSource,
+    isMobile,
   };
 };
