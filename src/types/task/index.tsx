@@ -97,6 +97,16 @@ export interface GetTasksQueryParams {
   fieldName?: string;
 }
 
+export interface TaskAttachment {
+  id: string;
+  task_id: string;
+  original_filename: string;
+  mime_type: string;
+  file_size: number;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
 export interface CommentUser {
   id: string;
   name: string;

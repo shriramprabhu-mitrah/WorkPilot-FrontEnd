@@ -61,7 +61,7 @@ export const SignUp = () => {
   const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
 
-  const isMobile = getAuthSource() === 'mobile' 
+  const isMobile = getAuthSource() === 'mobile';
   const {
     register,
     handleSubmit,
