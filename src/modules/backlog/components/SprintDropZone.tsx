@@ -1,0 +1,98 @@
+'use client';
+
+import { useState } from 'react';
+import { ChevronDown, ChevronRight, Inbox } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
+import { colors } from '@/src/styles/colors';
+import { SprintDetail } from '@/src/types/project';
+import { UserStoryResponse } from '@/src/types/userstories';
+import { DraggableUserStory } from './DraggableUserStory';
+
+interface SprintDropZoneProps {
+  sprint: SprintDetail;
+  userStories: UserStoryResponse[];
+  projectId: string;
+}
+
+export const SprintDropZone = ({ sprint, userStories, projectId }: SprintDropZoneProps) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const { setNodeRef, isOver } = useDroppable({
+    id: `sprint-${sprint.id}`,
+    data: { sprintId: sprint.id },
+  });
+
+  const sprintStories = userStories.filter((story) => story.sprint_id === sprint.id);
+
+  return (
+    <div
+      className={`rounded-xl border bg-white overflow-hidden mb-3 transition-all duration-200 ${
+        isOver 
+          ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.02]' 
+          : 'border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      <div
+        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer transition-all select-none border-b ${
+          isOver ? 'bg-blue-100 border-blue-200' : 'hover:bg-gray-50 border-gray-100'
+        }`}
+        onClick={() => setIsOpen((v) => !v)}
+      >
+        <span className={`transition-colors shrink-0 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}>
+          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </span>
+
+        <span className={`font-semibold text-sm truncate transition-colors ${isOver ? 'text-blue-700' : 'text-gray-900'}`}>
+          {sprint.name}
+        </span>
+
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
+            isOver 
+              ? 'bg-blue-200 text-blue-800 scale-110' 
+              : 'bg-gray-100 text-gray-500'
+          }`}
+        >
+          {sprintStories.length} {sprintStories.length === 1 ? 'story' : 'stories'}
+        </span>
+
+        {sprint.start_date && sprint.end_date && (
+          <span className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600' : 'text-gray-400'}`}>
+            {new Date(sprint.start_date).toLocaleDateString()} -{' '}
+            {new Date(sprint.end_date).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+
+      {isOpen && (
+        <div ref={setNodeRef} className="min-h-[100px]">
+          {isOver && (
+            <div className="px-3 sm:px-4 pb-2 pt-2">
+              <div className="border-2 border-dashed border-blue-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
+                <div className="flex items-center justify-center gap-2">
+                  <Inbox className="w-5 h-5 text-blue-600" />
+                  <p className="text-sm text-blue-700 font-semibold">Drop user story here</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {sprintStories.length === 0 && !isOver ? (
+            <div className="flex flex-col items-center justify-center py-6 px-4">
+              <Inbox className="w-8 h-8 text-gray-300 mb-2" />
+              <p className="text-sm text-gray-500 text-center">
+                No user stories assigned to this sprint
+              </p>
+              <p className="text-xs text-gray-400 mt-1 text-center">
+                Drag stories here to assign them
+              </p>
+            </div>
+          ) : (
+            sprintStories.map((story) => (
+              <DraggableUserStory key={story.id} story={story} projectId={projectId} />
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
