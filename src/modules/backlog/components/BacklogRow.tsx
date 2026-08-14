@@ -36,14 +36,13 @@ export const BacklogRow = ({
     >
       {task.key || '-'}
     </span>
+    <span className="text-sm flex-1 min-w-0 truncate" style={{ color: colors.gray800 }}>
+      {task.title}
+    </span>
 
     <div className="w-16 sm:w-20 shrink-0">
       <PriorityBadge priority={task.priority || 'Medium'} />
     </div>
-
-    <span className="text-sm flex-1 min-w-0 truncate" style={{ color: colors.gray800 }}>
-      {task.title}
-    </span>
 
     <div className="hidden sm:flex items-center gap-1 shrink-0 min-w-0 max-w-[160px] overflow-hidden">
       {(task.labels || []).map((label: string) => (

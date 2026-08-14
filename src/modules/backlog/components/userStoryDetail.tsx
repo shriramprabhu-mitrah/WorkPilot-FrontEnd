@@ -18,6 +18,8 @@ import { TaskStoryRelationshipItem } from '@/src/types/taskStoryRelationship';
 import { statusOptions } from '@/src/modules/project/data/project';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { AssigneeAvatar } from '@/src/app/components/common/task';
+import { colors } from '@/src/styles/colors';
 
 interface UserStoryDetailProps {
   projectId: string;
@@ -306,49 +308,77 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
             <div
               key={task.id}
               onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
-              className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-300 hover:shadow-sm"
+              className="group cursor-pointer rounded-xl border border-gray-200 bg-white px-5 py-4 transition-all hover:border-gray-300 hover:shadow-sm"
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-gray-500">{task.key}</span>
-                  <h3 className="text-sm font-semibold text-gray-900">{task.title}</h3>
-                </div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 capitalize">
-                    {task.type}
-                  </span>
-                  {task.assignee_name && (
-                    <span className="flex items-center gap-1">
-                      <span className="font-medium">Assignee:</span>
-                      {task.assignee_name}
+              <div className="flex items-center justify-between gap-6">
+                {/* Left Content */}
+                <div className="min-w-0 flex-1">
+                  {/* Task key + title */}
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-bold text-blue-500">
+                      {task.key}
                     </span>
-                  )}
-                  {task.sprint_name && (
-                    <span className="flex items-center gap-1">
-                      <span className="font-medium">Sprint:</span>
-                      {task.sprint_name}
-                    </span>
-                  )}
-                </div>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    task.priority === 'critical'
-                      ? 'bg-red-50 text-red-600'
-                      : task.priority === 'high'
-                        ? 'bg-orange-50 text-orange-600'
-                        : task.priority === 'medium'
-                          ? 'bg-yellow-50 text-yellow-600'
-                          : 'bg-green-50 text-green-600'
-                  }`}
-                >
-                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                </span>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                  {STATUS_LABELS[task.status] ?? task.status}
-                </span>
+                    <h3 className="truncate text-sm font-semibold text-gray-900 group-hover:text-gray-700 ml-4">
+                      {task.title}
+                    </h3>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5  text-xs text-gray-500">
+                    {/* Type */}
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 capitalize">
+                      {task.type}
+                    </span>
+
+                    {task.assignee_name && (
+                      <span className="flex items-center gap-2 ml-3">
+                        <AssigneeAvatar
+                          initials={task.assignee_name
+                            .split(' ')
+                            .map((name) => name[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
+                          color={colors.primaryFocus}
+                          size="sm"
+                        />
+
+                        <span className="text-gray-600">{task.assignee_name}</span>
+                      </span>
+                    )}
+
+                    {/* Sprint */}
+                    {task.sprint_name && (
+                      <span className="flex items-center gap-1.5">
+                        <span className="font-medium text-gray-400">Sprint</span>
+                        <span className="text-gray-600">{task.sprint_name}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Content */}
+                <div className="flex shrink-0 items-center gap-2">
+                  {/* Priority */}
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                      task.priority === 'critical'
+                        ? 'bg-red-50 text-red-600'
+                        : task.priority === 'high'
+                          ? 'bg-orange-50 text-orange-600'
+                          : task.priority === 'medium'
+                            ? 'bg-yellow-50 text-yellow-600'
+                            : 'bg-green-50 text-green-600'
+                    }`}
+                  >
+                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                  </span>
+
+                  {/* Status */}
+                  <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600">
+                    {STATUS_LABELS[task.status] ?? task.status}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

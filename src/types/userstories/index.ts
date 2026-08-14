@@ -23,6 +23,7 @@ export interface UserStoryResponse {
   story_points?: number;
   created_at?: string;
   updated_at?: string;
+  reporter_name?: string
 }
 
 export interface UserStoryPayload {
