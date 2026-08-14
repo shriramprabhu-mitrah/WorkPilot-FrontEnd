@@ -3,6 +3,7 @@ import { PaginatedApiResponse } from '../axios';
 import { apiService } from '../axios';
 import {
   GetUserStoriesQueryParams,
+  ReorderUserStoriesPayload,
   UpdateUserStoryPayload,
   UserStoryPayload,
   UserStoryResponse,
@@ -99,6 +100,19 @@ class UserStoryService {
     return apiService.delete<unknown>(url, {
       showSuccessToast: true,
       successMessage: 'User story deleted successfully',
+    });
+  }
+
+  async reorderUserStories(
+    projectId: string,
+    payload: ReorderUserStoriesPayload
+  ): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.UserStory.reorderUserStories.withParams({
+      projectId,
+    });
+    return apiService.patch<unknown>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'User stories reordered successfully',
     });
   }
 }
