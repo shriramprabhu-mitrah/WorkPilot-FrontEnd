@@ -230,6 +230,16 @@ export const ApiEndpoints = {
     ),
   },
 
+  TaskStoryRelationship: {
+    createTaskUnderStory: createEndpoint('/projects/{projectId}/tasks'),
+
+    assignTaskToStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+
+    removeTaskFromStory: createEndpoint('/projects/{projectId}/tasks/{taskId}'),
+
+    getTasksByStory: createQueryEndpoint('/projects/{projectId}/tasks'),
+  },
+
   Label: {
     getLabels: createQueryEndpoint('/projects/{projectId}/labels'),
     createLabel: createEndpoint('/projects/{projectId}/labels'),
