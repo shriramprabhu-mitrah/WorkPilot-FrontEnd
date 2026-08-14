@@ -143,13 +143,15 @@ export const WpDatePicker = ({
           disabled={disabled}
           onClick={handleOpen}
           className={[
-            'w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-sm transition-all bg-transparent',
+            'w-full flex items-center justify-between px-3 py-2 h-11 rounded-lg text-sm transition-all bg-white border border-[var(--color-gray-300)]',
             error
-              ? 'text-[var(--color-error)]'
+              ? 'border-[var(--color-error)] text-[var(--color-error)]'
               : open
-                ? 'bg-[var(--color-primary-light)]'
-                : 'hover:bg-[var(--color-gray-100)]',
-            disabled ? 'cursor-not-allowed text-[var(--color-gray-400)]' : 'cursor-pointer',
+                ? 'border-[var(--color-primary-focus)] bg-[var(--color-primary-light)]'
+                : 'hover:border-[var(--color-gray-400)]',
+            disabled
+              ? 'cursor-not-allowed text-[var(--color-gray-400)] bg-[var(--color-gray-100)]'
+              : 'cursor-pointer',
           ]
             .filter(Boolean)
             .join(' ')}
