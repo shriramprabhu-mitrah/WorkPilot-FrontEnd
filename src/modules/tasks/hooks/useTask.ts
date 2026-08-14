@@ -35,11 +35,19 @@ export const useCreateTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (payload: TaskPayload) => taskService.createTask(projectId, payload),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate all task queries for this project
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
         exact: false,
       });
+      
+      // If task was created under a user story, invalidate task-story-relationship queries
+      if (variables.user_story_id) {
+        queryClient.invalidateQueries({
+          queryKey: ['task-story-relationship', projectId, variables.user_story_id],
+        });
+      }
     },
   });
   return {
@@ -71,12 +79,22 @@ export const useDeleteTask = (projectId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (taskIds: string[]) => taskService.deleteTask(projectId, taskIds),
-    onSuccess: (_, taskId) => {
+    onSuccess: (_, taskIds) => {
+      // Invalidate all task queries for this project
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
       });
-      queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.task, projectId, taskId],
+      
+      // Invalidate task-story-relationship queries (covers all user stories)
+      queryClient.invalidateQueries({
+        queryKey: ['task-story-relationship', projectId],
+      });
+      
+      // Remove individual task queries
+      taskIds.forEach((taskId) => {
+        queryClient.removeQueries({
+          queryKey: [QUERY_KEYS.task, projectId, taskId],
+        });
       });
     },
   });
@@ -104,11 +122,19 @@ export const useUpdateTask = () => {
       payload: UpdateTaskPayload;
     }) => taskService.updateTask(projectId, taskId, payload),
     onSuccess: (_, variables) => {
+      // Invalidate all task queries for this project
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
+      
+      // Invalidate the specific task
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
+      });
+      
+      // Invalidate task-story-relationship queries (covers all user stories)
+      queryClient.invalidateQueries({
+        queryKey: ['task-story-relationship', variables.projectId],
       });
     },
   });
