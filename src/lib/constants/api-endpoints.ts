@@ -236,6 +236,13 @@ export const ApiEndpoints = {
     deleteLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
     updateLabel: createEndpoint('/projects/{projectId}/labels/{labelId}'),
   },
+  UserStory: {
+    getUserStories: createQueryEndpoint('/projects/{projectId}/user-stories'),
+    createUserStory: createEndpoint('/projects/{projectId}/user-stories'),
+    getUserStoryById: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
+    updateUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
+    deleteUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
+  }
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;
