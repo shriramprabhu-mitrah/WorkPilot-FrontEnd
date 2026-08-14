@@ -88,7 +88,6 @@ class UserStoryService {
     });
     return apiService.patch<UserStoryResponse>(url, payload, {
       showSuccessToast: true,
-      successMessage: 'User story updated successfully',
     });
   }
 

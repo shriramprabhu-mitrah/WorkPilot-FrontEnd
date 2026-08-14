@@ -47,7 +47,7 @@ export interface UpdateUserStoryPayload {
   status?: 'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked';
   story_points?: number;
   assignee_id?: string;
-  sprint_id?: string;
+  sprint_id?: string | null;
 }
 
 export interface ReorderUserStoriesPayload {

@@ -38,6 +38,8 @@ export const KanbanBoardTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [boardLoading, setBoardLoading] = useState(false);
   const dropTargetRef = useRef<{ columnId: string; index: number } | null>(null);
+
+  const pendingUpdatesRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector(
     (state) => state.project
   );
@@ -99,6 +101,14 @@ export const KanbanBoardTemplate = () => {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   );
+
+  // Cleanup pending updates on unmount
+  useEffect(() => {
+    return () => {
+      pendingUpdatesRef.current.forEach((timeout) => clearTimeout(timeout));
+      pendingUpdatesRef.current.clear();
+    };
+  }, []);
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
