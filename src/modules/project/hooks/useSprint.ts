@@ -26,6 +26,7 @@ export const useCreateSprint = (projectId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sprints', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projectDetail', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects-with-sprints'] });
     },
   });
 

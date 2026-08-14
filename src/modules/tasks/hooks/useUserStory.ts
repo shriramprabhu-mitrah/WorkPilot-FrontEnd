@@ -51,6 +51,7 @@ export const useGetUserStoryById = (projectId: string, userStoryId: string, enab
     isFetchingUserStory: query.isFetching,
     refetchUserStory: query.refetch,
     error: query.error,
+    isError: query.isError,
   };
 };
 

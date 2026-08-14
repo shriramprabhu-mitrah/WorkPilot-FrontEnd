@@ -22,16 +22,15 @@ import {
   Check,
   Zap,
   Plus,
+  Eye,
 } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
-import { useEffect, useState, useRef } from 'react';
-import { projectService } from '@/src/services/project';
-import { sprintService } from '@/src/services/sprint';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Project, SprintDetail } from '@/src/types/project';
-import { logger } from '@/src/lib/utils/logger';
+import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -64,23 +63,29 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   // Manage Project modal state
   const [showManageProject, setShowManageProject] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [tempProject, setTempProject] = useState<Project | null>(selectedProject);
   const [tempSprint, setTempSprint] = useState<SprintDetail | null>(selectedSprint);
-  const [tempSprints, setTempSprints] = useState<SprintDetail[]>(sprints);
-  const [loadingProjects, setLoadingProjects] = useState(false);
-  const [loadingSprints, setLoadingSprints] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const prevTempProjectId = useRef<string | undefined>(undefined);
 
-  const handleLogoutClick = async () => {
-    if (logOut.isLoading) return;
-    removeTokens();
-    try {
-      await handleLogOutAsync();
-    } catch {
-      // onError in useSignin handles redirect
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Derive sprints from projectsWithSprints based on tempProject
+  const tempSprints = useMemo(() => {
+    if (!tempProject?.id || isLoadingProjectsWithSprints) return [];
+    const found = projectsWithSprints.find((p) => p.id === tempProject.id);
+    return found?.sprints ?? [];
+  }, [tempProject, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  // Reset sprint when project changes
+  useEffect(() => {
+    if (!tempProject?.id) return;
+    const projectChanged = prevTempProjectId.current !== tempProject.id;
+    prevTempProjectId.current = tempProject.id;
+    if (projectChanged) {
+      setTempSprint(null);
     }
-  };
+  }, [tempProject?.id]);
 
   const getProjectInitials = (name?: string) => {
     if (!name) return 'W';
@@ -91,63 +96,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       .join('');
   };
 
-  useEffect(() => {
-    if (onClose) onClose();
-  }, [pathname, onClose]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (onClose && isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
-
-  // Fetch projects when modal opens
-  useEffect(() => {
-    if (!showManageProject) return;
-    const fetchProjects = async () => {
-      setLoadingProjects(true);
-      try {
-        const res = await projectService.getProject({ fieldName: 'id,name,key' });
-        setProjects(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        logger.error('Error fetching projects', err);
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-    fetchProjects();
-  }, [showManageProject]);
-
-  // Fetch sprints when tempProject changes inside modal
-  useEffect(() => {
-    if (!tempProject?.id) return;
-    const fetchSprints = async () => {
-      setLoadingSprints(true);
-      try {
-        const res = await sprintService.getSprints(tempProject.id ?? '');
-        setTempSprints(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        logger.error('Error fetching sprints', err);
-      } finally {
-        setLoadingSprints(false);
-      }
-    };
-    fetchSprints();
-  }, [tempProject?.id]);
-
-  // Reset sprints when project is cleared
-  const resolvedTempSprints = tempProject?.id ? tempSprints : [];
-  const resolvedTempSprint = tempProject?.id ? tempSprint : null;
-
   const openManageProject = () => {
     setTempProject(selectedProject);
     setTempSprint(selectedSprint);
-    setTempSprints(sprints);
     setShowManageProject(true);
   };
 
@@ -342,22 +293,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-gray-900">Manage Project</h2>
-                {isOrgAdmin && (
-                  <button
-                    onClick={() => {
-                      setShowManageProject(false);
-                      router.push('/projects');
-                    }}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50"
-                    style={{ color: colors.primary, borderColor: colors.primary }}
-                  >
-                    <Plus size={10} />
-                    New
-                  </button>
-                )}
-              </div>
+              <h2 className="text-sm font-semibold text-gray-900">Manage Project</h2>
               <button
                 onClick={() => setShowManageProject(false)}
                 className="w-6 h-6 rounded-full border border-red-300 flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors"
@@ -368,14 +304,29 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
             <div className="px-5 pb-5 max-h-[70vh] overflow-y-auto">
               {/* Projects */}
-              <p className="text-xs font-semibold text-gray-700 mb-2">
-                Projects <span className="text-red-500">*</span>
-              </p>
-              {loadingProjects ? (
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-700">
+                  Projects <span className="text-red-500">*</span>
+                </p>
+                {isOrgAdmin && (
+                  <button
+                    onClick={() => {
+                      setShowManageProject(false);
+                      router.push('/projects?openCreate=true');
+                    }}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50"
+                    style={{ color: colors.primary, borderColor: colors.primary }}
+                  >
+                    <Plus size={10} />
+                    New Project
+                  </button>
+                )}
+              </div>
+              {isLoadingProjectsWithSprints ? (
                 <div className="text-xs text-gray-400 py-2">Loading projects...</div>
               ) : (
                 <div className="space-y-1 mb-4">
-                  {projects.map((p) => (
+                  {projectsWithSprints.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => {
@@ -400,20 +351,51 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         </div>
                         <span className="font-medium text-gray-800">{p.name}</span>
                       </div>
-                      <span className="text-xs text-gray-400 font-medium">{p.key}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400 font-medium">{p.key}</span>
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowManageProject(false);
+                            router.push(`/projects/sprints?projectId=${p.id}`);
+                          }}
+                          className="p-0.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors"
+                        >
+                          <Eye size={13} />
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
               )}
 
               {/* Sprints */}
-              <p className="text-xs font-semibold text-gray-700 mb-2">
-                Sprints <span className="text-red-500">*</span>
-              </p>
-              {loadingSprints ? (
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-700">
+                  Sprints <span className="text-red-500">*</span>
+                </p>
+                {isOrgAdmin && (
+                  <button
+                    onClick={() => {
+                      if (!tempProject) return;
+                      dispatch(setSelectedProject(tempProject as Parameters<typeof setSelectedProject>[0]));
+                      dispatch(setSprints(tempSprints));
+                      setShowManageProject(false);
+                      router.push(`/projects/sprints?projectId=${tempProject.id}&openCreate=true`);
+                    }}
+                    disabled={!tempProject}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ color: colors.primary, borderColor: colors.primary }}
+                  >
+                    <Plus size={10} />
+                    New Sprint
+                  </button>
+                )}
+              </div>
+              {isLoadingProjectsWithSprints ? (
                 <div className="text-xs text-gray-400 py-2">Loading sprints...</div>
               ) : (
-                <div className="space-y-1">
+              <div className="space-y-1">
                   {/* All Sprints option */}
                   <button
                     onClick={() => setTempSprint(null)}
@@ -473,7 +455,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                     );
                   })}
 
-                  {!loadingSprints && tempSprints?.length === 0 && tempProject && (
+                  {!isLoadingProjectsWithSprints && tempSprints?.length === 0 && tempProject && (
                     <p className="text-xs text-gray-400 px-3 py-2">No sprints found</p>
                   )}
                   {!tempProject && (

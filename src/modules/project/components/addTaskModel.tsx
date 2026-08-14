@@ -32,6 +32,7 @@ export interface Task {
 interface AddTaskModalProps {
   projectId: string;
   sprintId: string;
+  userStoryId?: string; // Optional user story ID
 
   assigneeOptions: {
     label: string;
@@ -62,6 +63,7 @@ interface FormValues {
 const AddTaskModal = ({
   projectId,
   sprintId,
+  userStoryId,
   assigneeOptions,
   memberSearch,
   onMemberSearchChange,
@@ -227,8 +229,9 @@ const AddTaskModal = ({
       if (data.dueDate) {
         payload.due_date = formatISODateTime(data.dueDate);
       }
-      if (sprintId) {
-        payload.sprint_id = sprintId;
+      // Use userStoryId if provided, otherwise use sprintId
+      if (userStoryId) {
+        payload.user_story_id = userStoryId;
       }
       if (data.storyPoints) {
         payload.story_points = Number(data.storyPoints);

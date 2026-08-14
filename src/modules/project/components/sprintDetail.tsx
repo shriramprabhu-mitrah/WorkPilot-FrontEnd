@@ -254,7 +254,7 @@ const SprintDetail = () => {
             </WpButton>
           )}
 
-          <WpButton
+          {/* <WpButton
             type="button"
             variant="primary"
             size="md"
@@ -262,7 +262,7 @@ const SprintDetail = () => {
             leftIcon={<Plus size={16} />}
           >
             Add Task
-          </WpButton>
+          </WpButton> */}
         </div>
       </div>
 

@@ -20,6 +20,7 @@ export interface UserStoryResponse {
   assignee_id?: string;
   reporter_id?: string;
   sprint_id?: string;
+  story_points?: number;
   created_at?: string;
   updated_at?: string;
 }

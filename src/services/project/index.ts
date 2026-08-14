@@ -44,6 +44,10 @@ class ProjectService {
       searchParams.append('fieldName', params.fieldName);
     }
 
+    if (params?.include_sprints) {
+      searchParams.append('include_sprints', 'true');
+    }
+
     const query = searchParams.toString();
     const url = `${ApiEndpoints.Project.getProject.url}${query ? `?${query}` : ''}`;
     return apiService.getPaginated<Project[]>(url);

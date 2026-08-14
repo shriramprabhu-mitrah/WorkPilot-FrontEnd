@@ -16,6 +16,7 @@ export interface Project {
   creator?: Creator;
   owner?: string;
   sprint_count?: number;
+  sprints?: SprintDetail[];
 }
 
 // Create Project Payload
@@ -66,6 +67,7 @@ export interface GetProjectQueryParams {
   name?: string;
   status?: string;
   fieldName?: string;
+  include_sprints?: boolean;
 }
 
 export interface Creator {

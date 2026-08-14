@@ -36,7 +36,7 @@ const SprintPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await projectService.getProject({ fieldName: 'id,name' });
+        const res = await projectService.getProject({});
         if (res.data) {
           setProjectsList(res.data.map((p) => ({ id: p.id || '', name: p.name })));
         }
@@ -58,7 +58,7 @@ const SprintPage = () => {
         return;
       }
       try {
-        const res = await sprintService.getSprints(selectedProject, 'id,name');
+        const res = await sprintService.getSprints(selectedProject);
         if (res.data) {
           setSprintsList(res.data.map((s) => ({ id: s.id, name: s.name })));
         }

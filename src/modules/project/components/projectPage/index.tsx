@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2 } from
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCreateProject, useGetProjects } from '../../hooks/useProject';
 import { useQueryClient } from '@tanstack/react-query';
 import { projectService } from '@/src/services/project';
@@ -72,20 +72,32 @@ export const PROJECT_STATUS_API_MAP = {
 } as const;
 
 const ProjectPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { hasPermission } = usePermissions();
+  
+  // Derive initial modal state from URL params
+  const shouldOpenModal = searchParams.get('openCreate') === 'true' && hasPermission('PROJECT_CREATE');
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(shouldOpenModal);
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const { createProjectAsync, isCreatingProject } = useCreateProject();
-  const { hasPermission } = usePermissions();
   const queryClient = useQueryClient();
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [view, setView] = useState<ViewType>('grid');
   const [page, setPage] = useState(1);
+
+  // Clean up URL when modal should be opened
+  useEffect(() => {
+    if (shouldOpenModal) {
+      router.replace('/projects');
+    }
+  }, [shouldOpenModal, router]);
   const pageSize = 10;
   const {
     projects: apiProjects,
