@@ -250,6 +250,14 @@ export const ApiEndpoints = {
     deleteUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     reorderUserStories: createEndpoint('/projects/{projectId}/user-stories/reorder'),
   },
+
+  Colors: {
+    getCustomStatuses: createQueryEndpoint('/projects/{projectId}/custom-statuses'),
+    createCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses'),
+    updateCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
+    deleteCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
+    assignCustomStatusToTask: createEndpoint('/projects/{projectId}/tasks'),
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

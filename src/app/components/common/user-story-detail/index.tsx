@@ -1,7 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { ChevronDown, Check, FileText, X, User, Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import {
+  ChevronDown,
+  Check,
+  FileText,
+  X,
+  User,
+  Plus,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
@@ -31,12 +41,48 @@ export interface UserStoryDetailDrawerProps {
 type ActivityTab = 'all' | 'comments' | 'history' | 'childTickets';
 
 const STATUS_OPTIONS = [
-  { value: 'todo', label: 'To Do', color: colors.colTodo, bg: colors.colTodoBg, dot: colors.colTodo },
-  { value: 'in_progress', label: 'In Progress', color: colors.colInProgress, bg: colors.colInProgressBg, dot: colors.colInProgress },
-  { value: 'in_review', label: 'In Review', color: colors.colInReview, bg: colors.colInReviewBg, dot: colors.colInReview },
-  { value: 'testing', label: 'Testing', color: colors.colTesting, bg: colors.colTestingBg, dot: colors.colTesting },
-  { value: 'done', label: 'Done', color: colors.colDone, bg: colors.colDoneBg, dot: colors.colDone },
-  { value: 'blocked', label: 'Blocked', color: colors.colBlocked, bg: colors.colBlockedBg, dot: colors.colBlocked },
+  {
+    value: 'todo',
+    label: 'To Do',
+    color: colors.colTodo,
+    bg: colors.colTodoBg,
+    dot: colors.colTodo,
+  },
+  {
+    value: 'in_progress',
+    label: 'In Progress',
+    color: colors.colInProgress,
+    bg: colors.colInProgressBg,
+    dot: colors.colInProgress,
+  },
+  {
+    value: 'in_review',
+    label: 'In Review',
+    color: colors.colInReview,
+    bg: colors.colInReviewBg,
+    dot: colors.colInReview,
+  },
+  {
+    value: 'testing',
+    label: 'Testing',
+    color: colors.colTesting,
+    bg: colors.colTestingBg,
+    dot: colors.colTesting,
+  },
+  {
+    value: 'done',
+    label: 'Done',
+    color: colors.colDone,
+    bg: colors.colDoneBg,
+    dot: colors.colDone,
+  },
+  {
+    value: 'blocked',
+    label: 'Blocked',
+    color: colors.colBlocked,
+    bg: colors.colBlockedBg,
+    dot: colors.colBlocked,
+  },
 ];
 
 const STATUS_CONFIG = Object.fromEntries(STATUS_OPTIONS.map((opt) => [opt.value, opt]));
@@ -81,29 +127,34 @@ export const UserStoryDetailDrawer = ({
   onDelete,
 }: UserStoryDetailDrawerProps) => {
   const [tab, setTab] = useState<ActivityTab>('all');
-  
+
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
   const { userStory: fetchedUserStory, isLoadingUserStory } = useGetUserStoryById(
     initialUserStory.project_id ?? '',
     initialUserStory.id
   );
-  
+
   // Use fetched data if available, otherwise fall back to initial prop
   const currentUserStory = fetchedUserStory || initialUserStory;
-  
+
   // Only keep editable fields in local state to avoid cascading renders
   const [editableFields, setEditableFields] = useState({
     title: currentUserStory.title,
     description: currentUserStory.description ?? '',
   });
-  
+
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
     const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
     const assigneeInitials = assigneeName
-      ? assigneeName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+      ? assigneeName
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
-      
+
     return {
       ...editableFields, // Use local state for editable fields
       priority: currentUserStory.priority
@@ -118,7 +169,7 @@ export const UserStoryDetailDrawer = ({
       sprintId: currentUserStory.sprint_id ?? '',
     };
   }, [currentUserStory, editableFields]);
-  
+
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
   useEffect(() => {
@@ -162,10 +213,10 @@ export const UserStoryDetailDrawer = ({
       if (!currentUserStory.project_id || !currentUserStory.id) return;
 
       const previousEditableFields = { ...editableFields };
-      
+
       // Update local editable fields immediately for optimistic updates
       if (patch.title !== undefined || patch.description !== undefined) {
-        setEditableFields(prev => ({
+        setEditableFields((prev) => ({
           ...prev,
           ...(patch.title !== undefined && { title: patch.title }),
           ...(patch.description !== undefined && { description: patch.description }),
@@ -218,7 +269,12 @@ export const UserStoryDetailDrawer = ({
   }, []);
 
   const getInitials = (name: string) =>
-    name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
 
   const AVATAR_COLORS = [
     colors.avatarBlue,
@@ -249,9 +305,7 @@ export const UserStoryDetailDrawer = ({
     sprint: task.sprint_name ?? '',
     parent: '',
     subtasks: [],
-    assigneeInitials: task.assignee_name
-      ? task.assignee_name.substring(0, 2).toUpperCase()
-      : 'UN',
+    assigneeInitials: task.assignee_name ? task.assignee_name.substring(0, 2).toUpperCase() : 'UN',
     assigneeColor: '#3B82F6',
     reporter: '',
     reporterInitials: '',
@@ -396,7 +450,7 @@ export const UserStoryDetailDrawer = ({
                     </button>
                     <button
                       onClick={() => {
-                        setEditableFields(prev => ({ ...prev, title: currentUserStory.title }));
+                        setEditableFields((prev) => ({ ...prev, title: currentUserStory.title }));
                         setEditingTitle(false);
                       }}
                       className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
@@ -439,7 +493,7 @@ export const UserStoryDetailDrawer = ({
                       </button>
                       <button
                         onClick={() => {
-                          setEditableFields(prev => ({
+                          setEditableFields((prev) => ({
                             ...prev,
                             description: currentUserStory.description ?? '',
                           }));
@@ -603,9 +657,7 @@ export const UserStoryDetailDrawer = ({
                       key={t.key}
                       onClick={() => setTab(t.key)}
                       className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-                        tab === t.key
-                          ? 'text-blue-600'
-                          : 'text-gray-500 hover:text-gray-700'
+                        tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
                       }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
@@ -649,9 +701,7 @@ export const UserStoryDetailDrawer = ({
             {/* Right Column - Details */}
             <div
               className={`overflow-y-auto bg-gray-50/60 ${
-                mobileTab === 'content'
-                  ? 'hidden sm:block sm:shrink-0'
-                  : 'block w-full sm:shrink-0'
+                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
               }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
@@ -757,8 +807,13 @@ export const UserStoryDetailDrawer = ({
                           members?.map((m) => {
                             const name = m.full_name ?? m.user?.name ?? '';
                             const displayName =
-                              name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
-                            const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
+                              name ||
+                              m.user?.email?.split('@')[0] ||
+                              m.user?.email ||
+                              'Unknown User';
+                            const initials = getInitials(
+                              name || m.user?.email?.split('@')[0] || 'U'
+                            );
                             const color = getMemberColor(m.user_id);
                             return (
                               <WpButton
@@ -843,11 +898,7 @@ export const UserStoryDetailDrawer = ({
               also affect all associated tasks.
             </p>
             <div className="mt-6 flex justify-end gap-3">
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
+              <WpButton variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </WpButton>
               <WpButton

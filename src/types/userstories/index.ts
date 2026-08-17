@@ -42,7 +42,7 @@ export interface UserStoryResponse {
   total_tasks?: number;
   completed_tasks?: number;
   progress?: number;
-  created_at?: string; 
+  created_at?: string;
   updated_at?: string;
   tasks?: TaskResponse[];
 }

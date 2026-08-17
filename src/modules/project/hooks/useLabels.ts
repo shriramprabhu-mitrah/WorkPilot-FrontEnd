@@ -1,12 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { labelService } from '@/src/services/label';
-import { CreateLabelPayload, UpdateLabelPayload } from '@/src/types/label';
+import { customStatusService } from '@/src/services/colors';
+
+import {
+  CreateLabelPayload,
+  UpdateLabelPayload,
+} from '@/src/types/label';
+
+import {
+  CreateCustomStatusPayload,
+  UpdateCustomStatusPayload,
+  AssignColorToTaskPayload,
+} from '@/src/types/colors';
+
+
+const colorsKeys = {
+  all: ['colors'] as const,
+  list: (projectId: string) => ['colors', projectId] as const,
+};
 
 const labelKeys = {
   all: ['labels'] as const,
   list: (projectId: string) => ['labels', projectId] as const,
 };
+
 
 export const useGetLabels = (projectId: string) => {
   return useQuery({
@@ -63,6 +81,110 @@ export const useDeleteLabel = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: labelKeys.list(variables.projectId),
+      });
+    },
+  });
+};
+
+
+export const useGetColors = (projectId: string) => {
+  return useQuery({
+    queryKey: colorsKeys.list(projectId),
+    queryFn: () => customStatusService.getCustomStatuses(projectId),
+    enabled: !!projectId,
+  });
+};
+
+export const useCreateColor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      payload,
+    }: {
+      projectId: string;
+      payload: CreateCustomStatusPayload;
+    }) => customStatusService.createCustomStatus(projectId, payload),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: colorsKeys.list(variables.projectId),
+      });
+    },
+  });
+};
+
+export const useUpdateColor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      statusId,
+      payload,
+    }: {
+      projectId: string;
+      statusId: string;
+      payload: UpdateCustomStatusPayload;
+    }) =>
+      customStatusService.updateCustomStatus(
+        projectId,
+        statusId,
+        payload
+      ),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: colorsKeys.list(variables.projectId),
+      });
+    },
+  });
+};
+
+export const useDeleteColor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      statusId,
+    }: {
+      projectId: string;
+      statusId: string;
+    }) =>
+      customStatusService.deleteCustomStatus(
+        projectId,
+        statusId
+      ),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: colorsKeys.list(variables.projectId),
+      });
+    },
+  });
+};
+
+export const useAssignColorToTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      payload,
+    }: {
+      projectId: string;
+      payload: AssignColorToTaskPayload;
+    }) =>
+      customStatusService.assignCustomStatusToTask(
+        projectId,
+        payload
+      ),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: colorsKeys.list(variables.projectId),
       });
     },
   });

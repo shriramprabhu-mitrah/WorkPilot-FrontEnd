@@ -18,7 +18,11 @@ import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
-import { useGetUserStories, useUpdateUserStory, useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import {
+  useGetUserStories,
+  useUpdateUserStory,
+  useDeleteUserStory,
+} from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
@@ -60,9 +64,13 @@ export const BacklogTemplate = () => {
 
   // Debounce member search for API calls
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
-  
+
   // Get project members with search
-  const { members: projectMembers, isLoadingMembers: isLoadingProjectMembers, isFetchingMembers: isFetchingProjectMembers } = useGetProjectMembers(
+  const {
+    members: projectMembers,
+    isLoadingMembers: isLoadingProjectMembers,
+    isFetchingMembers: isFetchingProjectMembers,
+  } = useGetProjectMembers(
     selectedProject,
     {
       page: 1,
@@ -617,8 +625,8 @@ export const BacklogTemplate = () => {
             // Invalidate both user stories list and the specific user story detail
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
             if (taskUserStoryId) {
-              queryClient.invalidateQueries({ 
-                queryKey: ['user-story', selectedProject, taskUserStoryId] 
+              queryClient.invalidateQueries({
+                queryKey: ['user-story', selectedProject, taskUserStoryId],
               });
             }
             setTaskUserStoryId('');
