@@ -111,7 +111,7 @@ export const useDeleteTask = (projectId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['task-story-relationship', projectId],
       });
-      
+
       // Remove individual task queries
       taskIds.forEach((taskId) => {
         queryClient.removeQueries({
@@ -148,7 +148,7 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
-      
+
       // Invalidate the specific task
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],

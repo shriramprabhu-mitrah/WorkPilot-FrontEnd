@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Minus, Plus, X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Plus, X, } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +9,6 @@ import { WpButton } from '@/src/app/components/common/button';
 import { useCreateSprint } from '../hooks/useSprint';
 import { SprintPayload } from '@/src/types/project';
 import SprintAccordionItem from './sprintAccordionItem';
-import { WpInput } from '@/src/app/components/common/input';
 
 const today = new Date().toISOString().split('T')[0];
 
@@ -38,8 +37,6 @@ interface AddSprintModalProps {
 }
 
 const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) => {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [sprintCount, setSprintCount] = useState(1);
   const [openSprint, setOpenSprint] = useState(0);
 
   const { createSprintAsync, isCreatingSprint } = useCreateSprint(projectId);
@@ -51,23 +48,19 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
     formState: { errors },
   } = useForm<AddSprintFormValues>({
     resolver: zodResolver(addSprintSchema),
-    defaultValues: { sprints: [] },
+    defaultValues: {
+      sprints: [
+        {
+          name: 'Sprint 1',
+          goal: '',
+          start_date: '',
+          end_date: '',
+        },
+      ],
+    },
   });
 
-  const { fields, replace } = useFieldArray({ control, name: 'sprints' });
-
-  const handleNext = () => {
-    const newSprints = Array.from({ length: sprintCount }, (_, i) => ({
-      name: `Sprint ${i + 1}`,
-      goal: '',
-      start_date: '',
-      end_date: '',
-    }));
-    replace(newSprints);
-    setOpenSprint(0);
-    setStep(2);
-  };
-
+  const { fields, append } = useFieldArray({ control, name: 'sprints' });
   const onSubmit = async (data: AddSprintFormValues) => {
     try {
       const payload: SprintPayload = {
@@ -81,13 +74,14 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
       await createSprintAsync(payload);
       onSuccess?.();
       onClose();
-    } catch {}
+    } catch { }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="max-h-[80vh] w-full max-w-md overflow-visible rounded-2xl bg-white shadow-xl">
-        {step === 1 && (
+        {/* future purpose
+         {step === 1 && (
           <>
             <div className="flex items-center justify-between border-b p-5">
               <h2 className="text-xl font-bold">Add Sprints</h2>
@@ -157,51 +151,66 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
               </WpButton>
             </div>
           </>
-        )}
+        )} */}
         <div className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl bg-white">
-          {step === 2 && (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-              <div className="flex items-center justify-between border-b p-5">
-                <h2 className="text-xl font-bold">Configure {fields.length} Sprints</h2>
-                <WpButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  aria-label="Close"
-                  className="p-2"
-                  leftIcon={<X size={18} />}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+            <div className="flex items-center justify-between border-b p-5">
+              <h2 className="text-xl font-bold">Configure {fields.length} Sprints</h2>
+              <WpButton
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                aria-label="Close"
+                className="p-2"
+                leftIcon={<X size={18} />}
+              />
+            </div>
+            <div className="max-h-[40vh] overflow-y-auto px-5 py-4 space-y-4">
+              {fields.map((field, index) => (
+                <SprintAccordionItem
+                  key={field.id}
+                  index={index}
+                  fieldId={field.id}
+                  isOpen={openSprint === index}
+                  onToggle={() => setOpenSprint(openSprint === index ? -1 : index)}
+                  control={control}
+                  register={register}
+                  errors={errors}
                 />
-              </div>
-              <div className="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-4">
-                {fields.map((field, index) => (
-                  <SprintAccordionItem
-                    key={field.id}
-                    index={index}
-                    fieldId={field.id}
-                    isOpen={openSprint === index}
-                    onToggle={() => setOpenSprint(openSprint === index ? -1 : index)}
-                    control={control}
-                    register={register}
-                    errors={errors}
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between p-5">
-                <WpButton
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => setStep(1)}
-                  leftIcon={<ArrowLeft size={16} />}
-                >
-                  Back
-                </WpButton>
-                <WpButton type="submit" variant="primary" size="md" disabled={isCreatingSprint}>
-                  {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
-                </WpButton>
-              </div>
-            </form>
-          )}
+              ))}
+            </div>
+            <div className="px-5 pb-3">
+              <button
+                type="button"
+                onClick={() => {
+                  append({
+                    name: `Sprint ${fields.length + 1}`,
+                    goal: '',
+                    start_date: '',
+                    end_date: '',
+                  });
+
+                  setOpenSprint(fields.length);
+                }}
+                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                <Plus size={16} />
+                Add Sprint
+              </button>
+            </div>
+            <div className="flex justify-end p-5">
+              <WpButton
+                type="submit"
+                variant="primary"
+                size="md"
+                disabled={isCreatingSprint}
+              >
+                {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
+              </WpButton>
+            </div>
+          </form>
+
         </div>
       </div>
     </div>
