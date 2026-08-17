@@ -8,6 +8,10 @@ import { SignInPayload } from '../../../types/signin';
 import { setTokens } from '../../../lib/utils/cookies';
 import { getAuthSource } from '@/src/lib/utils/auth';
 import { clearSelectedProject } from '@/src/store/slices/project';
+import { organizationService } from '@/src/services/organization';
+import { setOrganization } from '@/src/store/slices/organization';
+import Cookies from 'js-cookie';
+
 export const useSignin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -42,17 +46,46 @@ export const useSignin = () => {
         })
       );
 
-      return response;
+      // Fetch organization to get the slug
+      let organizationData = null;
+      try {
+        const organizationResponse = await organizationService.getOrganization();
+        if (organizationResponse.data) {
+          organizationData = organizationResponse.data;
+          dispatch(setOrganization(organizationResponse.data));
+
+          // Store org slug in cookie for middleware access
+          if (organizationData.slug) {
+            Cookies.set('org_slug', organizationData.slug, {
+              expires: 365, // 1 year
+              path: '/',
+              sameSite: 'lax',
+            });
+          }
+        }
+      } catch (error) {
+        // console.error('Failed to fetch organization:', error);
+      }
+
+      return { ...response, organization: organizationData };
     },
     onSuccess: async (data) => {
       const token = data?.data?.access_token;
+      const orgSlug = data?.organization?.slug;
 
       if (isMobile && token) {
         window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
         await signupService.logOut();
       } else {
-        router.refresh();
-        router.push('/dashboard');
+        // Redirect to organization dashboard or setup if no organization
+        if (orgSlug) {
+          // Use router.push for fast client-side navigation
+          // Organization data is already in Redux from mutationFn
+          router.push(`/${orgSlug}/dashboard`);
+        } else {
+          // No organization found, redirect to setup
+          router.push('/setup');
+        }
       }
     },
   });
@@ -72,12 +105,16 @@ export const useSignin = () => {
       dispatch(clearUser());
       dispatch(clearSelectedProject());
       queryClient.clear();
+      // Clear org slug cookie
+      Cookies.remove('org_slug', { path: '/' });
       router.push('/signin');
     },
     onError: () => {
       dispatch(clearUser());
       dispatch(clearSelectedProject());
       queryClient.clear();
+      // Clear org slug cookie
+      Cookies.remove('org_slug', { path: '/' });
       router.push('/signin');
     },
   });

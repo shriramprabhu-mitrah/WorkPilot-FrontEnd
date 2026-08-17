@@ -23,8 +23,11 @@ import { colors } from '@/src/styles/colors';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+
 const SprintDetail = () => {
   const router = useRouter();
+  const { push } = useOrgNavigation();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const sprintId = searchParams.get('sprintId') ?? '';
@@ -40,7 +43,11 @@ const SprintDetail = () => {
   const { hasPermission } = usePermissions();
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
   const { deleteSprintAsync, isDeletingSprint } = useDeleteSprint(projectId);
-  const { userStories: tasksList, isLoadingUserStories: isLoadingTasks, isFetchingUserStories: isFetchingTasks } = useGetUserStories(projectId, {
+  const {
+    userStories: tasksList,
+    isLoadingUserStories: isLoadingTasks,
+    isFetchingUserStories: isFetchingTasks,
+  } = useGetUserStories(projectId, {
     sprint_id: sprintId,
   });
 
@@ -78,8 +85,8 @@ const SprintDetail = () => {
           task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
-    dueDate: 'due_date' in task ? task.due_date ?? '' : '',
-    startDate: 'start_date' in task ? task.start_date ?? '' : '',
+    dueDate: 'due_date' in task ? (task.due_date ?? '') : '',
+    startDate: 'start_date' in task ? (task.start_date ?? '') : '',
     storyPoints: task.story_points ?? 0,
     sprint: '',
     parent: '',
@@ -104,7 +111,7 @@ const SprintDetail = () => {
   const handleCreateTask = async (_newTask: Task) => {
     setShowAddTaskModal(false);
   };
-  
+
   const handleUserStorySelection = (userStoryId: string) => {
     setSelectedUserStoryIds((prev) =>
       prev.includes(userStoryId) ? prev.filter((id) => id !== userStoryId) : [...prev, userStoryId]
@@ -121,7 +128,7 @@ const SprintDetail = () => {
       (tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id))
     );
   };
-  
+
   const handleDeleteUserStories = async () => {
     if (selectedUserStoryIds.length === 0) return;
     try {
@@ -136,7 +143,7 @@ const SprintDetail = () => {
       setShowDeleteUserStoryConfirm(false);
     } catch (error) {}
   };
-  
+
   const handleSprintSuccess = async () => {
     await refetch();
   };
@@ -243,7 +250,7 @@ const SprintDetail = () => {
       <div className="flex items-center gap-2 text-sm">
         <button
           type="button"
-          onClick={() => router.push('/projects')}
+          onClick={() => push('/projects')}
           className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-gray-500 hover:text-gray-700 hover:underline"
         >
           Projects
@@ -487,8 +494,8 @@ const SprintDetail = () => {
             setShowAddTaskModal(false);
             queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
             if (taskUserStoryId) {
-              queryClient.invalidateQueries({ 
-                queryKey: ['user-story', projectId, taskUserStoryId] 
+              queryClient.invalidateQueries({
+                queryKey: ['user-story', projectId, taskUserStoryId],
               });
             }
             setTaskUserStoryId('');
@@ -543,7 +550,10 @@ const SprintDetail = () => {
 
             <p className="mt-2 text-sm text-gray-500">
               Are you sure you want to delete{' '}
-              {selectedUserStoryIds.length === 1 ? 'this user story' : `${selectedUserStoryIds.length} user stories`}?
+              {selectedUserStoryIds.length === 1
+                ? 'this user story'
+                : `${selectedUserStoryIds.length} user stories`}
+              ?
             </p>
 
             <div className="mt-6 flex justify-end gap-3">

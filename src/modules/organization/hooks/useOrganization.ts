@@ -4,6 +4,7 @@ import { useAppDispatch } from '@/src/store';
 import { updateOrganization, setOrganization } from '@/src/store/slices/organization';
 import { useEffect } from 'react';
 import { CountryService } from '@/src/services/common/countryservice';
+import Cookies from 'js-cookie';
 
 // Hook for fetching organization data
 export const useGetOrganization = () => {
@@ -14,12 +15,23 @@ export const useGetOrganization = () => {
   } = useQuery({
     queryKey: ['organization'],
     queryFn: organizationService.getOrganization,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes (formerly cacheTime)
   });
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (organization) {
-      dispatch(setOrganization(organization.data ?? {}));
+    if (organization?.data) {
+      dispatch(setOrganization(organization.data));
+      
+      // Store org slug in cookie for middleware access
+      if (organization.data.slug) {
+        Cookies.set('org_slug', organization.data.slug, { 
+          expires: 365, // 1 year
+          path: '/',
+          sameSite: 'lax'
+        });
+      }
     }
   }, [organization, dispatch]);
 

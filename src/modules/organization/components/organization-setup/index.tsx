@@ -19,6 +19,7 @@ import { setUser } from '@/src/store/slices/users';
 import { getAuthSource } from '@/src/lib/utils/auth';
 import { signupService } from '@/src/services/signup';
 import { getAccessToken } from '@/src/lib/utils/cookies';
+import Cookies from 'js-cookie';
 
 interface OrgSetupModalProps {
   onComplete?: () => void;
@@ -72,6 +73,16 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
     }
 
     await createOrg(formData);
+    
+    // Store org slug in cookie for middleware access
+    if (orgSlug) {
+      Cookies.set('org_slug', orgSlug, { 
+        expires: 365, // 1 year
+        path: '/',
+        sameSite: 'lax'
+      });
+    }
+    
     const validMembers = teamMembers.filter((m) => m.email.trim() !== '');
     if (validMembers.length > 0) {
       await inviteOrgUsers({ members: validMembers });
@@ -99,10 +110,12 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
         window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
         await signupService.logOut();
       } else {
-        router.push('/dashboard');
+        // Use router for fast client-side navigation
+        router.push(`/${orgSlug}/dashboard`);
       }
     } else {
-      router.push('/dashboard');
+      // Use router for fast client-side navigation
+      router.push(`/${orgSlug}/dashboard`);
     }
   };
 
