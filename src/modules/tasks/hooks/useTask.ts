@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { taskService } from '@/src/services/tasks';
@@ -42,19 +41,19 @@ export const useCreateTask = (projectId: string) => {
         queryKey: [QUERY_KEYS.tasks, projectId],
         exact: false,
       });
-      
+
       // If task was created under a user story, invalidate user story and task-story-relationship queries
       if (variables.user_story_id) {
         // Invalidate the specific user story to refresh its tasks array
         queryClient.invalidateQueries({
           queryKey: ['user-story', projectId, variables.user_story_id],
         });
-        
+
         // Also invalidate the user stories list to update counters
         queryClient.invalidateQueries({
           queryKey: ['user-stories', projectId],
         });
-        
+
         queryClient.invalidateQueries({
           queryKey: ['task-story-relationship', projectId, variables.user_story_id],
         });
@@ -95,18 +94,18 @@ export const useDeleteTask = (projectId: string) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, projectId],
       });
-      
+
       // Invalidate user stories to update task counts and lists
       queryClient.invalidateQueries({
         queryKey: ['user-stories', projectId],
       });
-      
+
       // Invalidate all user story details (we don't know which specific ones were affected)
       queryClient.invalidateQueries({
         queryKey: ['user-story', projectId],
         exact: false,
       });
-      
+
       // Invalidate task-story-relationship queries (covers all user stories)
       queryClient.invalidateQueries({
         queryKey: ['task-story-relationship', projectId],
@@ -153,19 +152,19 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
-      
+
       // Invalidate user stories to update task counts and lists
       queryClient.invalidateQueries({
         queryKey: ['user-stories', variables.projectId],
       });
-      
+
       // If task has a user story association, invalidate that specific user story
       if (variables.payload.user_story_id) {
         queryClient.invalidateQueries({
           queryKey: ['user-story', variables.projectId, variables.payload.user_story_id],
         });
       }
-      
+
       // Invalidate task-story-relationship queries (covers all user stories)
       queryClient.invalidateQueries({
         queryKey: ['task-story-relationship', variables.projectId],

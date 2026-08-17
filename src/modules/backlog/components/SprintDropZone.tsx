@@ -15,7 +15,12 @@ interface SprintDropZoneProps {
   onStoryClick?: (story: UserStoryResponse) => void;
 }
 
-export const SprintDropZone = ({ sprint, userStories, projectId, onStoryClick }: SprintDropZoneProps) => {
+export const SprintDropZone = ({
+  sprint,
+  userStories,
+  projectId,
+  onStoryClick,
+}: SprintDropZoneProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const { setNodeRef, isOver } = useDroppable({
     id: `sprint-${sprint.id}`,
@@ -27,8 +32,8 @@ export const SprintDropZone = ({ sprint, userStories, projectId, onStoryClick }:
   return (
     <div
       className={`rounded-xl border bg-white overflow-hidden mb-3 transition-all duration-200 ${
-        isOver 
-          ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.02]' 
+        isOver
+          ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.02]'
           : 'border-gray-200 hover:border-gray-300'
       }`}
     >
@@ -38,26 +43,30 @@ export const SprintDropZone = ({ sprint, userStories, projectId, onStoryClick }:
         }`}
         onClick={() => setIsOpen((v) => !v)}
       >
-        <span className={`transition-colors shrink-0 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}>
+        <span
+          className={`transition-colors shrink-0 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}
+        >
           {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </span>
 
-        <span className={`font-semibold text-sm truncate transition-colors ${isOver ? 'text-blue-700' : 'text-gray-900'}`}>
+        <span
+          className={`font-semibold text-sm truncate transition-colors ${isOver ? 'text-blue-700' : 'text-gray-900'}`}
+        >
           {sprint.name}
         </span>
 
         <span
           className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-            isOver 
-              ? 'bg-blue-200 text-blue-800 scale-110' 
-              : 'bg-gray-100 text-gray-500'
+            isOver ? 'bg-blue-200 text-blue-800 scale-110' : 'bg-gray-100 text-gray-500'
           }`}
         >
           {sprintStories.length} {sprintStories.length === 1 ? 'story' : 'stories'}
         </span>
 
         {sprint.start_date && sprint.end_date && (
-          <span className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600' : 'text-gray-400'}`}>
+          <span
+            className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600' : 'text-gray-400'}`}
+          >
             {new Date(sprint.start_date).toLocaleDateString()} -{' '}
             {new Date(sprint.end_date).toLocaleDateString()}
           </span>
@@ -76,7 +85,7 @@ export const SprintDropZone = ({ sprint, userStories, projectId, onStoryClick }:
               </div>
             </div>
           )}
-          
+
           {sprintStories.length === 0 && !isOver ? (
             <div className="flex flex-col items-center justify-center py-6 px-4">
               <Inbox className="w-8 h-8 text-gray-300 mb-2" />
