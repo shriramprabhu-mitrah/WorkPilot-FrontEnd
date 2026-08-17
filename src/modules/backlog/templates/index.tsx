@@ -18,12 +18,13 @@ import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
-import { useGetUserStories, useUpdateUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import { useGetUserStories, useUpdateUserStory, useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
 import { useAppSelector } from '@/src/store';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
+import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { KanbanTask } from '@/src/types/board';
 import { ProjectDetailMember } from '@/src/types/project';
 import { UserStoryResponse } from '@/src/types/userstories';
@@ -33,13 +34,18 @@ import { DraggableUserStory } from '../components/DraggableUserStory';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useDebounce } from '@/src/hooks/useDebounce';
+import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 
 export const BacklogTemplate = () => {
   const queryClient = useQueryClient();
   const { hasPermission } = usePermissions();
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
+  const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
+  const [taskUserStoryId, setTaskUserStoryId] = useState<string>('');
   const [search, setSearch] = useState('');
+  const [memberSearch, setMemberSearch] = useState('');
   const [showCreateStoryModal, setShowCreateStoryModal] = useState(false);
   const [showAddSprintModal, setShowAddSprintModal] = useState(false);
   const [activeStory, setActiveStory] = useState<UserStoryResponse | null>(null);
@@ -52,10 +58,29 @@ export const BacklogTemplate = () => {
   const selectedProject = selectedApiProject?.id ?? '';
   const selectedSprint = selectedSprintStore?.id ?? '';
 
+  // Debounce member search for API calls
+  const debouncedMemberSearch = useDebounce(memberSearch, 500);
+  
+  // Get project members with search
+  const { members: projectMembers, isLoadingMembers: isLoadingProjectMembers, isFetchingMembers: isFetchingProjectMembers } = useGetProjectMembers(
+    selectedProject,
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedMemberSearch,
+    },
+    showAddTaskModal // Only fetch when modal is open
+  );
+
   // Ref to store pending API calls
   const pendingUpdatesRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // Configure sensors for drag and drop with better touch support
+  // Generate assignee options from fetched members
+  const assigneeOptions =
+    projectMembers?.map((member) => ({
+      label: member.full_name || member.username,
+      value: member.user_id,
+    })) ?? [];
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -73,12 +98,6 @@ export const BacklogTemplate = () => {
     };
   }, []);
 
-  const assigneeOptions =
-    selectedApiProject?.members?.map((member: ProjectDetailMember) => ({
-      label: member.full_name || member.username,
-      value: member.user_id,
-    })) ?? [];
-
   const { userStories, isLoadingUserStories } = useGetUserStories(
     selectedProject,
     {},
@@ -91,6 +110,7 @@ export const BacklogTemplate = () => {
   );
 
   const updateUserStoryMutation = useUpdateUserStory();
+  const deleteUserStoryMutation = useDeleteUserStory();
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -411,6 +431,7 @@ export const BacklogTemplate = () => {
                           key={story.id}
                           story={story}
                           projectId={selectedProject}
+                          onStoryClick={(story) => setSelectedUserStory(story)}
                         />
                       ))
                     )}
@@ -517,6 +538,7 @@ export const BacklogTemplate = () => {
                   sprint={sprint}
                   userStories={filteredStories}
                   projectId={selectedProject}
+                  onStoryClick={(story) => setSelectedUserStory(story)}
                 />
               ))
             )}
@@ -579,15 +601,60 @@ export const BacklogTemplate = () => {
       {showAddTaskModal && (
         <AddTaskModal
           projectId={selectedProject}
-          sprintId={selectedSprint}
+          sprintId={taskUserStoryId ? '' : selectedSprint}
+          userStoryId={taskUserStoryId || undefined}
           assigneeOptions={assigneeOptions}
-          onClose={() => setShowAddTaskModal(false)}
-          onCreate={() => setShowAddTaskModal(false)}
+          memberSearch={memberSearch}
+          onMemberSearchChange={setMemberSearch}
+          isLoadingMembers={isLoadingProjectMembers || isFetchingProjectMembers}
+          onClose={() => {
+            setShowAddTaskModal(false);
+            setTaskUserStoryId('');
+            setMemberSearch(''); // Clear search on close
+          }}
+          onCreate={() => {
+            setShowAddTaskModal(false);
+            // Invalidate both user stories list and the specific user story detail
+            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+            if (taskUserStoryId) {
+              queryClient.invalidateQueries({ 
+                queryKey: ['user-story', selectedProject, taskUserStoryId] 
+              });
+            }
+            setTaskUserStoryId('');
+            setMemberSearch(''); // Clear search after creation
+          }}
         />
       )}
 
       {selectedTask && (
         <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+      {selectedUserStory && (
+        <UserStoryDetailDrawer
+          userStory={selectedUserStory}
+          onClose={() => setSelectedUserStory(null)}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+          }}
+          onCreateTask={() => {
+            // Keep user story drawer open, task modal will appear on top
+            setTaskUserStoryId(selectedUserStory.id);
+            setShowAddTaskModal(true);
+          }}
+          onDelete={async () => {
+            try {
+              await deleteUserStoryMutation.mutateAsync({
+                projectId: selectedProject,
+                userStoryId: selectedUserStory.id,
+              });
+              queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+              setSelectedUserStory(null);
+            } catch (error) {
+              // Error is already handled by the mutation
+            }
+          }}
+        />
       )}
       {showCreateStoryModal && (
         <CreateUserStoryModal onClose={() => setShowCreateStoryModal(false)} />

@@ -39,17 +39,21 @@ export interface TaskPayload {
 export interface TaskResponse {
   id?: string;
   project_id?: string;
+  user_story_id?: string;
   key?: string;
   title?: string;
   description?: string;
   type?: string;
   priority?: string;
   status: string;
+  status_id?: string;
+  status_color?: string;
   story_points?: number;
   estimated_hours: number;
   due_date?: string;
   assignee_name?: string;
   assignee_id?: string;
+  reporter_id?: string;
   sprint_id?: string;
   sprint_name?: string;
   actual_hours?: number;
@@ -72,6 +76,7 @@ export interface UpdateTaskPayload {
   story_points?: number;
   title?: string;
   type?: string;
+  user_story_id?: string;
 }
 
 export interface BulkUpdateTaskItem {

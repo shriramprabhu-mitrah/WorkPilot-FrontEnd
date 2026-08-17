@@ -12,9 +12,10 @@ interface SprintDropZoneProps {
   sprint: SprintDetail;
   userStories: UserStoryResponse[];
   projectId: string;
+  onStoryClick?: (story: UserStoryResponse) => void;
 }
 
-export const SprintDropZone = ({ sprint, userStories, projectId }: SprintDropZoneProps) => {
+export const SprintDropZone = ({ sprint, userStories, projectId, onStoryClick }: SprintDropZoneProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const { setNodeRef, isOver } = useDroppable({
     id: `sprint-${sprint.id}`,
@@ -88,7 +89,12 @@ export const SprintDropZone = ({ sprint, userStories, projectId }: SprintDropZon
             </div>
           ) : (
             sprintStories.map((story) => (
-              <DraggableUserStory key={story.id} story={story} projectId={projectId} />
+              <DraggableUserStory
+                key={story.id}
+                story={story}
+                projectId={projectId}
+                onStoryClick={onStoryClick}
+              />
             ))
           )}
         </div>

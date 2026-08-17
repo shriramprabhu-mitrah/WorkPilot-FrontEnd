@@ -1,3 +1,5 @@
+import { TaskResponse } from '../task';
+
 export interface GetUserStoriesQueryParams {
   page?: number;
   page_size?: number;
@@ -13,17 +15,36 @@ export interface GetUserStoriesQueryParams {
 
 export interface UserStoryResponse {
   id: string;
+  project_id?: string;
   title: string;
   description?: string;
   status?: string;
   priority?: string;
   assignee_id?: string;
+  assignee_name?: string;
   reporter_id?: string;
+  reporter_name?: string;
+  assignee?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  reporter?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
   sprint_id?: string;
   story_points?: number;
-  created_at?: string;
+  backlog_order?: number;
+  total_tasks?: number;
+  completed_tasks?: number;
+  progress?: number;
+  created_at?: string; 
   updated_at?: string;
-  reporter_name?: string
+  tasks?: TaskResponse[];
 }
 
 export interface UserStoryPayload {

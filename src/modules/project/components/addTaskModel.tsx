@@ -265,10 +265,10 @@ const AddTaskModal = ({
   const estimatedHoursRegister = register('estimatedHours');
   const actualHoursRegister = register('actualHours');
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-xl font-bold text-gray-900">Add User Story</h2>
+          <h2 className="text-xl font-bold text-gray-900">Add Task</h2>
 
           <WpButton
             type="button"
