@@ -20,6 +20,7 @@ import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { AssigneeAvatar } from '@/src/app/components/common/task';
 import { colors } from '@/src/styles/colors';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 interface UserStoryDetailProps {
   projectId: string;
@@ -28,6 +29,7 @@ interface UserStoryDetailProps {
 
 const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
   const router = useRouter();
+  const { push } = useOrgNavigation();
   const queryClient = useQueryClient();
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -121,7 +123,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       });
       // Invalidate user stories cache to refresh the list
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-      router.push('/backlog');
+      push('/backlog');
     } catch (error) {
       setShowDeleteConfirm(false);
     }
@@ -158,7 +160,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       <div className="flex items-center gap-2 text-sm">
         <button
           type="button"
-          onClick={() => router.push('/backlog')}
+          onClick={() => push('/backlog')}
           className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-gray-500 hover:text-gray-700 hover:underline"
         >
           Backlog

@@ -28,6 +28,7 @@ import {
 } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
 
@@ -37,6 +38,7 @@ interface ProjectDetailProps {
 
 const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const router = useRouter();
+  const { push } = useOrgNavigation();
   const dispatch = useAppDispatch();
   const [showAddSprintModal, setShowAddSprintModal] = useState(false);
   const [expandedSprint, setExpandedSprint] = useState<string | null>(null);
@@ -184,7 +186,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     try {
       await deleteProjectAsync(project.id);
       setShowDeleteConfirm(false);
-      router.push('/projects');
+      push('/projects');
     } catch (error) {
       setShowDeleteConfirm(false);
     }
@@ -314,7 +316,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-gray-500" onClick={() => router.push('/projects')}>
+        <span className="text-gray-500 cursor-pointer" onClick={() => push('/projects')}>
           Projects
         </span>
         <ChevronRight size={14} className="text-gray-400" />

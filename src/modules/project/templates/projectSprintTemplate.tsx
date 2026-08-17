@@ -9,9 +9,11 @@ import ProjectSkeleton from '../components/projectDetailSkeleton';
 import AddSprintModal from '../components/addSprint';
 import { projectService } from '@/src/services/project';
 import { setSelectedProject, setProjectLoading } from '@/src/store/slices/project';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 const ProjectSprintTemplate = () => {
   const router = useRouter();
+  const { push } = useOrgNavigation();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
@@ -90,9 +92,9 @@ const ProjectSprintTemplate = () => {
 
   useEffect(() => {
     if (!selectedApiProject) {
-      router.push('/projects');
+      push('/projects');
     }
-  }, [selectedApiProject, router]);
+  }, [selectedApiProject, push]);
 
   if (isLoading) {
     return <ProjectSkeleton />;

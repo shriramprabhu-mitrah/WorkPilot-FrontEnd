@@ -30,7 +30,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const segments = pathname.split('/').filter(Boolean);
-  const title = segments[0] ? segments[0].charAt(0).toUpperCase() + segments[0].slice(1) : 'Home';
+  const title = segments[1] ? segments[1].charAt(0).toUpperCase() + segments[1].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);

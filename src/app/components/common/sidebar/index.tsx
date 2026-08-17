@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import { removeTokens } from '@/src/lib/utils/cookies';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSelectedSprint, setSprints } from '@/src/store/slices/project';
@@ -32,17 +32,17 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Project, SprintDetail } from '@/src/types/project';
 import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  //   { label: 'Projects', href: '/projects', icon: FolderKanban },
-  { label: 'Boards', href: '/boards', icon: KanbanSquareDashedIcon },
-  { label: 'Backlog', href: '/backlog', icon: BarChart2 },
-  { label: 'Tasks', href: '/tasks', icon: ClipboardList },
-  { label: 'Reports', href: '/reports', icon: Flag },
-  { label: 'Teams', href: '/teams', icon: User },
-  { label: 'Calendar', href: '/calendar', icon: Calendar },
-  { label: 'Settings', href: '/settings', icon: Settings },
-  { label: 'My Profile', href: '/profile', icon: User },
+const navItemsBase = [
+  { label: 'Dashboard', path: 'dashboard', icon: LayoutDashboard },
+  //   { label: 'Projects', path: 'projects', icon: FolderKanban },
+  { label: 'Boards', path: 'boards', icon: KanbanSquareDashedIcon },
+  { label: 'Backlog', path: 'backlog', icon: BarChart2 },
+  { label: 'Tasks', path: 'tasks', icon: ClipboardList },
+  { label: 'Reports', path: 'reports', icon: Flag },
+  { label: 'Teams', path: 'teams', icon: User },
+  { label: 'Calendar', path: 'calendar', icon: Calendar },
+  { label: 'Settings', path: 'settings', icon: Settings },
+  { label: 'My Profile', path: 'profile', icon: User },
 ];
 
 interface SidebarProps {
@@ -53,13 +53,24 @@ interface SidebarProps {
 export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
   const dispatch = useAppDispatch();
+  const orgSlug = params.orgSlug as string;
 
   const user = useAppSelector((state) => state.user);
   const isOrgAdmin = user.role === 'org_admin';
   const { selectedProject, selectedSprint, sprints } = useAppSelector((state) => state.project);
   const [isExpanded, setIsExpanded] = useState(false);
   const { handleLogOutAsync, logOut } = useSignin();
+
+  // Build navigation items with organization slug
+  const navItems = useMemo(() => {
+    if (!orgSlug) return [];
+    return navItemsBase.map((item) => ({
+      ...item,
+      href: `/${orgSlug}/${item.path}`,
+    }));
+  }, [orgSlug]);
 
   // Manage Project modal state
   const [showManageProject, setShowManageProject] = useState(false);
@@ -251,7 +262,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             className={`flex items-center py-3.5 ${showLabels ? 'gap-2.5 px-4' : 'justify-center px-0'}`}
           >
             <Link
-              href="/profile"
+              href={`/${orgSlug}/profile`}
               className={`
                 flex
                 items-center
@@ -312,7 +323,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   <button
                     onClick={() => {
                       setShowManageProject(false);
-                      router.push('/projects?openCreate=true');
+                      router.push(`/${orgSlug}/projects?openCreate=true`);
                     }}
                     className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50"
                     style={{ color: colors.primary, borderColor: colors.primary }}
@@ -355,7 +366,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowManageProject(false);
-                            router.push(`/projects/sprints?projectId=${p.id}`);
+                            router.push(`/${orgSlug}/projects/sprints?projectId=${p.id}`);
                           }}
                           className="p-0.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors"
                         >
@@ -381,7 +392,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       );
                       dispatch(setSprints(tempSprints));
                       setShowManageProject(false);
-                      router.push(`/projects/sprints?projectId=${tempProject.id}&openCreate=true`);
+                      router.push(
+                        `/${orgSlug}/projects/sprints?projectId=${tempProject.id}&openCreate=true`
+                      );
                     }}
                     disabled={!tempProject}
                     className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"

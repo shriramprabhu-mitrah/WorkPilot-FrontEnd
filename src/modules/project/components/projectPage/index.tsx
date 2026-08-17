@@ -18,6 +18,7 @@ import { usePermissions } from '@/src/hooks/usePermissions';
 import ProjectSkeleton from '../projectSkeleton';
 import { ViewToggle, ViewType } from '../viewToggle';
 import Image from 'next/image';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
@@ -73,6 +74,7 @@ export const PROJECT_STATUS_API_MAP = {
 
 const ProjectPage = () => {
   const router = useRouter();
+  const { push } = useOrgNavigation();
   const searchParams = useSearchParams();
   const { hasPermission } = usePermissions();
 
@@ -93,12 +95,6 @@ const ProjectPage = () => {
   const [view, setView] = useState<ViewType>('grid');
   const [page, setPage] = useState(1);
 
-  // Clean up URL when modal should be opened
-  useEffect(() => {
-    if (shouldOpenModal) {
-      router.replace('/projects');
-    }
-  }, [shouldOpenModal, router]);
   const pageSize = 10;
   const {
     projects: apiProjects,
@@ -161,7 +157,7 @@ const ProjectPage = () => {
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
     if (!apiProject.id) return;
     dispatch(setProjectLoading(true));
-    router.push('/projects/sprints');
+    push('/projects/sprints');
     try {
       const res = await queryClient.fetchQuery({
         queryKey: ['projectDetail', apiProject.id],
