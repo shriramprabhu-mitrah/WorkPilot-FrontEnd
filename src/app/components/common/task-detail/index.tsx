@@ -279,9 +279,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
 
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      logger.log('Failed to download attachment', error);
-    }
+    } catch (error) {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -294,7 +292,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     try {
       await uploadAttachment.mutateAsync(formData);
     } catch (error) {
-      logger.log('Failed to upload attachment', error);
     } finally {
       event.target.value = '';
     }
