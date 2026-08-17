@@ -5,7 +5,7 @@ import {
   UpdateUserStoryPayload,
   UserStoryPayload,
 } from '@/src/types/userstories';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useGetUserStories = (
   projectId: string,
@@ -56,6 +56,7 @@ export const useGetUserStoryById = (projectId: string, userStoryId: string, enab
 };
 
 export const useUpdateUserStory = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       projectId,
@@ -66,6 +67,16 @@ export const useUpdateUserStory = () => {
       userStoryId: string;
       payload: UpdateUserStoryPayload;
     }) => userStoryService.updateUserStory(projectId, userStoryId, payload),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific user story to refetch with updated tasks
+      queryClient.invalidateQueries({
+        queryKey: ['user-story', variables.projectId, variables.userStoryId],
+      });
+      // Invalidate the user stories list
+      queryClient.invalidateQueries({
+        queryKey: ['user-stories', variables.projectId],
+      });
+    },
   });
 };
 

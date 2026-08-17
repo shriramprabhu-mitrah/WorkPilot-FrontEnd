@@ -74,6 +74,7 @@ export const colors = {
   colInReview: '#a855f7',
   colInReviewBg: '#faf5ff',
   colTesting: '#f97316',
+  colTestingBg: '#fff7ed',
   colDone: '#22c55e',
   colDoneBg: '#f0fdf4',
   colActive: '#16a34a',

@@ -4,17 +4,15 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { colors } from '@/src/styles/colors';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { useRouter } from 'next/navigation';
-import { GripVertical, Hash, Calendar } from 'lucide-react';
+import { GripVertical, Hash } from 'lucide-react';
 
 interface DraggableUserStoryProps {
   story: UserStoryResponse;
   projectId: string;
+  onStoryClick?: (story: UserStoryResponse) => void;
 }
 
-export const DraggableUserStory = ({ story, projectId }: DraggableUserStoryProps) => {
-  const router = useRouter();
-
+export const DraggableUserStory = ({ story, projectId, onStoryClick }: DraggableUserStoryProps) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `story-${story.id}`,
     data: {
@@ -31,8 +29,7 @@ export const DraggableUserStory = ({ story, projectId }: DraggableUserStoryProps
   const handleClick = (e: React.MouseEvent) => {
     if (!isDragging) {
       e.stopPropagation();
-
-      router.push(`/backlog/story/${story.id}?projectId=${projectId}`);
+      onStoryClick?.(story);
     }
   };
 
