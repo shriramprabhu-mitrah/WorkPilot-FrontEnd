@@ -22,57 +22,32 @@ interface StatusModalProps {
   onClose: () => void;
 }
 
-const StatusModal = ({
-  projectId,
-  mode,
-  status,
-  statuses,
-  onClose,
-}: StatusModalProps) => {
+const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModalProps) => {
   const isEditMode = mode === 'edit';
   const isDeleteMode = mode === 'delete';
 
   const [statusName, setStatusName] = useState(status?.name ?? '');
   const [color, setColor] = useState(status?.color ?? '#8A2BE2');
 
-  const [displayOrder, setDisplayOrder] = useState(
-    String(status?.display_order ?? 0)
-  );
+  const [displayOrder, setDisplayOrder] = useState(String(status?.display_order ?? 0));
 
-  const [selectedStatusId, setSelectedStatusId] = useState(
-    status?.id ?? ''
-  );
+  const [selectedStatusId, setSelectedStatusId] = useState(status?.id ?? '');
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const {
-    mutateAsync: createStatus,
-    isPending: isCreating,
-  } = useCreateStatus();
+  const { mutateAsync: createStatus, isPending: isCreating } = useCreateStatus();
 
-  const {
-    mutateAsync: updateStatus,
-    isPending: isUpdating,
-  } = useUpdateStatus();
+  const { mutateAsync: updateStatus, isPending: isUpdating } = useUpdateStatus();
 
-  const {
-    mutateAsync: deleteStatus,
-    isPending: isDeletingStatus,
-  } = useDeleteStatus();
+  const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
-  const isPending =
-    isCreating || isUpdating || isDeletingStatus;
+  const isPending = isCreating || isUpdating || isDeletingStatus;
 
-  const sortedStatuses = [...statuses].sort(
-    (a, b) => a.display_order - b.display_order
-  );
-
-  const handleStatusChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selected = statuses.find(
-      (item) => item.id === event.target.value
-    );
+  const sortedStatuses = [...statuses].sort((a, b) => a.display_order - b.display_order);
+  const selectedStatus =
+    sortedStatuses.find((item) => item.id === selectedStatusId) || sortedStatuses[0];
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = statuses.find((item) => item.id === event.target.value);
 
     if (!selected) return;
 
@@ -116,12 +91,14 @@ const StatusModal = ({
   };
 
   const handleDeleteStatus = async () => {
-    if (!selectedStatusId) return;
+    const statusIdToDelete = selectedStatus?.id;
+
+    if (!statusIdToDelete) return;
 
     try {
       await deleteStatus({
         projectId,
-        statusId: selectedStatusId,
+        statusId: statusIdToDelete,
       });
 
       setShowDeleteConfirm(false);
@@ -130,7 +107,6 @@ const StatusModal = ({
       // apiService handles error toast
     }
   };
-
   return (
     <>
       {/* Main Modal */}
@@ -146,11 +122,7 @@ const StatusModal = ({
           <div className="flex items-start justify-between px-6 pt-5">
             <div>
               <h2 className="text-xl font-bold text-[var(--color-text-body)]">
-                {isDeleteMode
-                  ? 'Delete status'
-                  : isEditMode
-                    ? 'Edit status'
-                    : 'Add status'}
+                {isDeleteMode ? 'Delete status' : isEditMode ? 'Edit status' : 'Add status'}
               </h2>
 
               <p className="mt-2 text-sm text-[var(--color-gray-500)]">
@@ -181,15 +153,12 @@ const StatusModal = ({
                 </label>
 
                 <select
-                  value={selectedStatusId}
+                  value={selectedStatusId || sortedStatuses[0]?.id || ''}
                   onChange={handleStatusChange}
                   className="h-10 w-full rounded-lg border border-[var(--color-gray-300)] bg-white px-3 text-sm text-[var(--color-gray-700)] outline-none focus:border-blue-500"
                 >
                   {sortedStatuses.map((item) => (
-                    <option
-                      key={item.id}
-                      value={item.id}
-                    >
+                    <option key={item.id} value={item.id}>
                       {item.name}
                     </option>
                   ))}
@@ -197,16 +166,13 @@ const StatusModal = ({
               </div>
             )}
 
-            {/* Edit Fields */}
-            {isEditMode && (
+            {!isDeleteMode && (
               <>
                 {/* Status Name */}
                 <WpInput
                   label="Status name"
                   value={statusName}
-                  onChange={(event) =>
-                    setStatusName(event.target.value)
-                  }
+                  onChange={(event) => setStatusName(event.target.value)}
                   placeholder="Enter status name"
                 />
 
@@ -220,9 +186,7 @@ const StatusModal = ({
                     <input
                       type="color"
                       value={color}
-                      onChange={(event) =>
-                        setColor(event.target.value)
-                      }
+                      onChange={(event) => setColor(event.target.value)}
                       className="h-10 w-12 cursor-pointer rounded-lg border border-[var(--color-gray-300)] bg-white p-1"
                     />
 
@@ -234,9 +198,7 @@ const StatusModal = ({
                         }}
                       />
 
-                      <span className="text-sm text-[var(--color-gray-700)]">
-                        {color}
-                      </span>
+                      <span className="text-sm text-[var(--color-gray-700)]">{color}</span>
                     </div>
                   </div>
                 </div>
@@ -247,9 +209,7 @@ const StatusModal = ({
                   type="number"
                   min={0}
                   value={displayOrder}
-                  onChange={(event) =>
-                    setDisplayOrder(event.target.value)
-                  }
+                  onChange={(event) => setDisplayOrder(event.target.value)}
                   placeholder="Enter display order"
                 />
               </>
@@ -258,12 +218,7 @@ const StatusModal = ({
 
           {/* Footer */}
           <div className="flex justify-end gap-2 border-t border-[var(--color-gray-200)] px-6 py-4">
-            <WpButton
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={isPending}
-            >
+            <WpButton type="button" variant="secondary" onClick={onClose} disabled={isPending}>
               Cancel
             </WpButton>
 
@@ -271,7 +226,7 @@ const StatusModal = ({
               <WpButton
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                disabled={!selectedStatusId || isDeletingStatus}
+                disabled={!selectedStatus?.id || isDeletingStatus}
                 className="!bg-red-600 hover:!bg-red-700"
               >
                 Delete
@@ -280,11 +235,7 @@ const StatusModal = ({
               <WpButton
                 type="button"
                 onClick={handleSubmit}
-                disabled={
-                  !statusName.trim() ||
-                  isPending ||
-                  (isEditMode && !selectedStatusId)
-                }
+                disabled={!statusName.trim() || isPending || (isEditMode && !selectedStatusId)}
                 isLoading={isCreating || isUpdating}
               >
                 {isEditMode ? 'Edit' : 'Add'}
@@ -306,35 +257,25 @@ const StatusModal = ({
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
-                <Trash2
-                  size={18}
-                  className="text-red-600"
-                />
+                <Trash2 size={18} className="text-red-600" />
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Delete Status
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Delete Status</h3>
 
-                <p className="text-sm text-gray-500">
-                  {statusName}
-                </p>
+                <p className="text-sm text-gray-500">{selectedStatus?.name}</p>
               </div>
             </div>
 
             <p className="mt-4 text-sm leading-6 text-gray-600">
-              Are you sure you want to delete this status?
-              This action cannot be undone.
+              Are you sure you want to delete this status? This action cannot be undone.
             </p>
 
             <div className="mt-6 flex justify-end gap-2">
               <WpButton
                 type="button"
                 variant="secondary"
-                onClick={() =>
-                  setShowDeleteConfirm(false)
-                }
+                onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeletingStatus}
               >
                 Cancel

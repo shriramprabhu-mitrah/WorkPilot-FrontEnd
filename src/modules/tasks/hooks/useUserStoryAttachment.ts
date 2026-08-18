@@ -1,17 +1,20 @@
 import { userStoryService } from '@/src/services/userstory';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const useUploadUserStoryAttachment = (projectId: string, userStoryId: string) => {
+export const useUploadUserStoryAttachment = (projectId: string) => {
   const queryClient = useQueryClient();
+
   const mutation = useMutation({
-    mutationFn: (file: File) =>
+    mutationFn: ({ userStoryId, file }: { userStoryId: string; file: File }) =>
       userStoryService.uploadUserStoryAttachment(projectId, userStoryId, file),
-    onSuccess: () => {
+
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['user-story-attachments', projectId, userStoryId],
+        queryKey: ['user-story-attachments', projectId, variables.userStoryId],
       });
     },
   });
+
   return {
     uploadUserStoryAttachment: mutation.mutate,
     uploadUserStoryAttachmentAsync: mutation.mutateAsync,
