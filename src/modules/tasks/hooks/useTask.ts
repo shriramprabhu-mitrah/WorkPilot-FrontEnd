@@ -330,3 +330,114 @@ export const useBulkUpdateTasks = () => {
     error: mutation.error,
   };
 };
+
+// Task Comments Hooks
+export const useGetTaskComments = (taskId: string, page = 1, pageSize = 10, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['task-comments', taskId, page, pageSize],
+    queryFn: () => taskService.getComments(taskId, page, pageSize),
+    enabled: enabled && !!taskId,
+    retry: false,
+  });
+  
+  return {
+    comments: query.data?.data ?? [],
+    meta: query.data?.meta,
+    isLoadingComments: enabled && !!taskId ? query.isPending : false,
+    isFetchingComments: query.isFetching,
+    isErrorComments: query.isError,
+    commentsError: query.error,
+    refetchComments: query.refetch,
+  };
+};
+
+export const useGetTaskReplies = (
+  taskId: string,
+  commentId: string,
+  page = 1,
+  pageSize = 10,
+  enabled = true
+) => {
+  const query = useQuery({
+    queryKey: ['task-comment-replies', taskId, commentId, page, pageSize],
+    queryFn: () => taskService.getReplies(taskId, commentId, page, pageSize),
+    enabled: enabled && !!taskId && !!commentId,
+  });
+  return {
+    replies: query.data?.data ?? [],
+    meta: query.data?.meta,
+    isLoadingReplies: query.isPending,
+    isFetchingReplies: query.isFetching,
+    isErrorReplies: query.isError,
+    repliesError: query.error,
+    refetchReplies: query.refetch,
+  };
+};
+
+export const useCreateTaskComment = (taskId: string) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (payload: { content: string; parent_comment_id?: string }) =>
+      taskService.createComment(taskId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task-comments', taskId],
+      });
+    },
+  });
+  return {
+    createComment: mutation.mutate,
+    createCommentAsync: mutation.mutateAsync,
+    isCreatingComment: mutation.isPending,
+    createCommentData: mutation.data,
+    createCommentError: mutation.error,
+    resetCreateComment: mutation.reset,
+  };
+};
+
+export const useUpdateTaskComment = (taskId: string, commentId: string) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (payload: { content: string }) =>
+      taskService.updateComment(taskId, commentId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task-comments', taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['task-comment-replies', taskId],
+      });
+    },
+  });
+  return {
+    updateComment: mutation.mutate,
+    updateCommentAsync: mutation.mutateAsync,
+    isUpdatingComment: mutation.isPending,
+    updateCommentData: mutation.data,
+    updateCommentError: mutation.error,
+    resetUpdateComment: mutation.reset,
+  };
+};
+
+export const useDeleteTaskComment = (taskId: string, commentId: string) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => taskService.deleteComment(taskId, commentId, { content: '' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['task-comments', taskId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['task-comment-replies', taskId],
+      });
+    },
+  });
+  return {
+    deleteComment: mutation.mutate,
+    deleteCommentAsync: mutation.mutateAsync,
+    isDeletingComment: mutation.isPending,
+    deleteCommentData: mutation.data,
+    deleteCommentError: mutation.error,
+    resetDeleteComment: mutation.reset,
+  };
+};

@@ -680,7 +680,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </div>
               )}
             </div>
-            <ActivitySection items={task.activity ?? []} />
+            <ActivitySection items={task.activity ?? []} taskId={task.taskId ?? task.id} />
           </div>
 
           <div

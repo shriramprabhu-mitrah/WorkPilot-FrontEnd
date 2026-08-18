@@ -125,9 +125,14 @@ export interface Comment {
   content: string;
   task_id: string;
   user_id: string;
+  user_name?: string;
+  full_name?: string;
+  email?: string;
   parent_comment_id?: string | null;
   created_at: string;
   updated_at: string;
+  is_deleted?: boolean;
+  replies_count: number;
   user?: CommentUser;
   replies?: Comment[];
 }

@@ -21,10 +21,7 @@ class UserStoryCommentService {
       projectId,
       userStoryId,
     });
-    return apiService.post<UserStoryCommentResponse>(url, payload, {
-      showSuccessToast: true,
-      successMessage: 'Comment created successfully',
-    });
+    return apiService.post<UserStoryCommentResponse>(url, payload);
   }
 
   async getComments(
@@ -95,10 +92,7 @@ class UserStoryCommentService {
       userStoryId,
       commentId,
     });
-    return apiService.patch<UserStoryCommentResponse>(url, payload, {
-      showSuccessToast: true,
-      successMessage: 'Comment updated successfully',
-    });
+    return apiService.patch<UserStoryCommentResponse>(url, payload);
   }
 
   async deleteComment(
@@ -111,10 +105,7 @@ class UserStoryCommentService {
       userStoryId,
       commentId,
     });
-    return apiService.delete<DeleteUserStoryCommentResponse>(url, {
-      showSuccessToast: true,
-      successMessage: 'Comment deleted successfully',
-    });
+    return apiService.delete<DeleteUserStoryCommentResponse>(url);
   }
 }
 

@@ -188,6 +188,15 @@ class TaskService {
     const url = ApiEndpoints.Task.updateComment.withParams({ taskId, commentId });
     return apiService.patch<Comment>(url, payload);
   }
+
+  async deleteComment(
+    taskId: string,
+    commentId: string,
+    payload: UpdateCommentPayload
+  ): Promise<ApiResponse<Comment>> {
+    const url = ApiEndpoints.Task.updateComment.withParams({ taskId, commentId });
+    return apiService.delete<Comment>(url, payload);
+  }
 }
 
 export const taskService = new TaskService();
