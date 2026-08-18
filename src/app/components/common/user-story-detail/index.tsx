@@ -35,10 +35,7 @@ import { TaskDetailDrawer } from '../task-detail';
 import { KanbanTask, ColumnId } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-import {
-  useGetStatus,
-  useDeleteStatus,
-} from '@/src/modules/project/hooks/useLabels';
+import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from '../task-detail/components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
@@ -161,18 +158,18 @@ export const UserStoryDetailDrawer = ({
     const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
     const assigneeInitials = assigneeName
       ? assigneeName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     return {
       ...editableFields, // Use local state for editable fields
       priority: currentUserStory.priority
         ? ((currentUserStory.priority.charAt(0).toUpperCase() +
-          currentUserStory.priority.slice(1).toLowerCase()) as Priority)
+            currentUserStory.priority.slice(1).toLowerCase()) as Priority)
         : ('Medium' as Priority),
       status: currentUserStory.status ?? '',
       storyPoints: currentUserStory.story_points ?? 0,
@@ -215,8 +212,7 @@ export const UserStoryDetailDrawer = ({
   const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [statusModalMode, setStatusModalMode] =
-    useState<'add' | 'edit' | 'delete'>('add');
+  const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
   const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
@@ -226,10 +222,7 @@ export const UserStoryDetailDrawer = ({
   );
 
   const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
-  const {
-    mutateAsync: deleteStatus,
-    isPending: isDeletingStatus,
-  } = useDeleteStatus();
+  const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
   const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
     currentUserStory.project_id ?? '',
     {
@@ -269,7 +262,7 @@ export const UserStoryDetailDrawer = ({
       if (patch.title !== undefined) payload.title = patch.title;
       if (patch.description !== undefined) payload.description = patch.description;
       if (patch.priority !== undefined) payload.priority = patch.priority.toLowerCase();
-      if (patch.status !== undefined) payload.status = patch.status;
+      if (patch.status !== undefined) payload.status_id = patch.status;
       if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
       if (patch.assigneeId !== undefined) payload.assignee_id = patch.assigneeId || undefined;
       if (patch.sprintId !== undefined) payload.sprint_id = patch.sprintId || null;
@@ -359,7 +352,7 @@ export const UserStoryDetailDrawer = ({
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -466,19 +459,21 @@ export const UserStoryDetailDrawer = ({
           <div className="flex sm:hidden border-b border-gray-200 shrink-0">
             <button
               onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mobileTab === 'content'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-                }`}
+              }`}
             >
               Content
             </button>
             <button
               onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mobileTab === 'details'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-                }`}
+              }`}
             >
               Details
             </button>
@@ -496,8 +491,9 @@ export const UserStoryDetailDrawer = ({
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
-                }`}
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+                mobileTab === 'details' ? 'hidden sm:block' : 'block'
+              }`}
             >
               {editingTitle ? (
                 <div className="mb-5">
@@ -691,11 +687,11 @@ export const UserStoryDetailDrawer = ({
                                     initials={
                                       task.assignee_name
                                         ? task.assignee_name
-                                          .split(' ')
-                                          .map((name) => name[0])
-                                          .join('')
-                                          .slice(0, 2)
-                                          .toUpperCase()
+                                            .split(' ')
+                                            .map((name) => name[0])
+                                            .join('')
+                                            .slice(0, 2)
+                                            .toUpperCase()
                                         : 'UN'
                                     }
                                     color={getMemberColor(task.assignee_id)}
@@ -744,8 +740,9 @@ export const UserStoryDetailDrawer = ({
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
-                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                        }`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${
+                        tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                      }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
                       }}
@@ -833,8 +830,9 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-                }`}
+              className={`overflow-y-auto bg-gray-50/60 ${
+                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+              }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
@@ -1112,7 +1110,7 @@ export const UserStoryDetailDrawer = ({
                         {selectedSprintName ||
                           (userStoryData.sprintId
                             ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
-                              ?.name || 'Sprint assigned'
+                                ?.name || 'Sprint assigned'
                             : 'No sprint')}
                       </span>
 
@@ -1178,10 +1176,10 @@ export const UserStoryDetailDrawer = ({
                   <span className="text-sm text-gray-700">
                     {userStoryData.start_date
                       ? new Date(userStoryData.start_date).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })
                       : 'None'}
                   </span>
                 </DetailRow>

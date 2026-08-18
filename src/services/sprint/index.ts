@@ -13,7 +13,7 @@ class SprintService {
       search?: string;
       sort_by?: string;
       sort_order?: 'ASC' | 'DESC';
-      fieldName?: string;
+      fields?: string;
     }
   ): Promise<ApiResponse<SprintDetail[]>> {
     const endpoint = ApiEndpoints.Sprint.getSprints.withNamedParams({ projectId });

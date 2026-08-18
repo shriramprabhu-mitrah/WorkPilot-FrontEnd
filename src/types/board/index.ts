@@ -1,7 +1,8 @@
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
+// Allow both predefined and custom status IDs
 export type ColumnId =
-  'backlog' | 'todo' | 'in_progress' | 'in_review' | 'testing' | 'done' | 'blocked';
+  'backlog' | 'todo' | 'in_progress' | 'in_review' | 'testing' | 'done' | 'blocked' | string;
 
 export interface SubTask {
   id: string;

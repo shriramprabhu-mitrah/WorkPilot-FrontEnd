@@ -59,7 +59,7 @@ export const ProjectSprintDropdowns = ({
 
   useEffect(() => {
     projectService
-      .getProject({ fieldName: 'id,name' })
+      .getProject({ fields: 'id,name' })
       .then((res) => {
         // res.data should be the array of projects, given the processPaginatedResponse unwrapping
         const data = res.data || [];
@@ -74,7 +74,7 @@ export const ProjectSprintDropdowns = ({
   useEffect(() => {
     if (selectedProject) {
       sprintService
-        .getSprints(selectedProject, { fieldName: 'id,name' })
+        .getSprints(selectedProject, { fields: 'id,name' })
         .then((res) => {
           const data = res.data || [];
           const actualData = Array.isArray(data)

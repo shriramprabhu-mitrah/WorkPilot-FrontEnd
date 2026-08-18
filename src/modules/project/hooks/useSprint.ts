@@ -11,7 +11,7 @@ export const useGetSprints = (
     search?: string;
     sort_by?: string;
     sort_order?: 'ASC' | 'DESC';
-    fieldName?: string;
+    fields?: string;
   },
   enabled = true
 ) => {

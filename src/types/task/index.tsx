@@ -77,6 +77,7 @@ export interface UpdateTaskPayload {
   title?: string;
   type?: string;
   user_story_id?: string;
+  status_id?: string;
 }
 
 export interface BulkUpdateTaskItem {
@@ -99,7 +100,7 @@ export interface GetTasksQueryParams {
   page?: number;
   page_size?: number;
   sprint_id?: string;
-  fieldName?: string;
+  fields?: string;
 }
 
 export interface TaskAttachment {
