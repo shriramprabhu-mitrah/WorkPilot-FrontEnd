@@ -15,6 +15,7 @@ export interface GetUserStoriesQueryParams {
 
 export interface UserStoryResponse {
   id: string;
+  key?: string;
   project_id?: string;
   title: string;
   description?: string;

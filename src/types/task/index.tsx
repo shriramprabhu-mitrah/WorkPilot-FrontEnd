@@ -77,6 +77,7 @@ export interface UpdateTaskPayload {
   title?: string;
   type?: string;
   user_story_id?: string;
+  status_id?: string;
 }
 
 export interface BulkUpdateTaskItem {
