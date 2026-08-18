@@ -12,6 +12,7 @@ import {
   Pencil,
   Trash2,
   Download,
+  CornerDownRight,
 } from 'lucide-react';
 import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
@@ -30,7 +31,7 @@ import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { useGetUserStoryById } from '@/src/modules/tasks/hooks/useUserStory';
 import { WpButton } from '../button';
 import { WpInput } from '../input';
-import { UserStoryResponse } from '@/src/types/userstories';
+import { UserStoryResponse, UserStoryReplyResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
 import { TaskDetailDrawer } from '../task-detail';
 import { KanbanTask, ColumnId } from '@/src/types/board';
@@ -39,6 +40,15 @@ import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from '../task-detail/components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
+import {
+  useCreateUserStoryComment,
+  useGetUserStoryComments,
+  useUpdateUserStoryComment,
+  useDeleteUserStoryComment,
+  useGetUserStoryReplies,
+} from '@/src/modules/tasks/hooks/useUserStoryComments';
+import { userStoryCommentService } from '@/src/services/userstoryComments';
+import toast from 'react-hot-toast';
 import {
   useUploadUserStoryAttachment,
   useGetUserStoryAttachments,
@@ -253,7 +263,60 @@ export const UserStoryDetailDrawer = ({
   );
 
   const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
-  const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
+  const {
+    mutateAsync: deleteStatus,
+    isPending: isDeletingStatus,
+  } = useDeleteStatus();
+
+  // Comment hooks
+  const { createCommentAsync, isCreatingComment } = useCreateUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id
+  );
+  const { comments, isLoadingComments } = useGetUserStoryComments(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    { page: 1, page_size: 50 },
+    true
+  );
+  
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState('');
+  const { updateCommentAsync, isUpdatingComment } = useUpdateUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    editingCommentId ?? ''
+  );
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const { deleteCommentAsync, isDeletingComment } = useDeleteUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    deletingCommentId ?? ''
+  );
+
+  // Reply functionality
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [showRepliesForComment, setShowRepliesForComment] = useState<Set<string>>(new Set());
+  const [repliesMap, setRepliesMap] = useState<Map<string, UserStoryReplyResponse[]>>(new Map());
+  
+  // Reply edit/delete state
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editingReplyContent, setEditingReplyContent] = useState('');
+  const [deletingReplyId, setDeletingReplyId] = useState<string | null>(null);
+  
+  // Hooks for reply update/delete
+  const { updateCommentAsync: updateReplyAsync, isUpdatingComment: isUpdatingReply } = useUpdateUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    editingReplyId ?? ''
+  );
+  const { deleteCommentAsync: deleteReplyAsync, isDeletingComment: isDeletingReply } = useDeleteUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    deletingReplyId ?? ''
+  );
+
   const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
     currentUserStory.project_id ?? '',
     {
@@ -388,6 +451,171 @@ export const UserStoryDetailDrawer = ({
   };
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
+
+  // Comment handlers
+  const handleAddComment = async () => {
+    if (!comment.trim()) return;
+    
+    try {
+      await createCommentAsync({ content: comment });
+      setComment('');
+      setShowCommentEditor(false);
+      toast.success('Comment added successfully');
+    } catch (error) {
+      toast.error('Failed to add comment');
+      logger.log('Failed to add comment', error);
+    }
+  };
+
+  const handleUpdateComment = async (commentId: string) => {
+    if (!editingCommentContent.trim()) return;
+    
+    try {
+      await updateCommentAsync({ content: editingCommentContent });
+      setEditingCommentId(null);
+      setEditingCommentContent('');
+      toast.success('Comment updated successfully');
+    } catch (error) {
+      toast.error('Failed to update comment');
+      logger.log('Failed to update comment', error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      setDeletingCommentId(commentId);
+      await deleteCommentAsync();
+      toast.success('Comment deleted successfully');
+      setDeletingCommentId(null);
+    } catch (error) {
+      toast.error('Failed to delete comment');
+      logger.log('Failed to delete comment', error);
+      setDeletingCommentId(null);
+    }
+  };
+
+  // Reply handlers
+  const handleToggleReplies = async (commentId: string, userName: string) => {
+    const newShowReplies = new Set(showRepliesForComment);
+    if (newShowReplies.has(commentId)) {
+      newShowReplies.delete(commentId);
+      setReplyingToCommentId(null);
+      setReplyContent(''); // Clear mention when closing
+    } else {
+      newShowReplies.add(commentId);
+      setReplyingToCommentId(commentId);
+      
+      // Set initial mention with @username
+      const mention = `<span class="mention" data-type="mention" data-id="${userName}">@${userName}</span>&nbsp;`;
+      setReplyContent(mention);
+      
+      // Fetch replies for this comment if not already fetched
+      if (!repliesMap.has(commentId)) {
+        try {
+          const response = await userStoryCommentService.getReplies(
+            currentUserStory.project_id ?? '',
+            currentUserStory.id,
+            commentId,
+            { page: 1, page_size: 50 }
+          );
+          setRepliesMap(new Map(repliesMap.set(commentId, response.data ?? [])));
+        } catch (error) {
+          logger.log('Failed to fetch replies', error);
+          toast.error('Failed to load replies');
+        }
+      }
+    }
+    setShowRepliesForComment(newShowReplies);
+  };
+
+  const handleAddReply = async (parentCommentId: string) => {
+    if (!replyContent.trim()) return;
+    
+    try {
+      await createCommentAsync({ 
+        content: replyContent,
+        parent_comment_id: parentCommentId 
+      });
+      setReplyContent('');
+      setReplyingToCommentId(null); // Close the reply editor
+      toast.success('Reply added successfully');
+      
+      // Refetch replies for this comment
+      try {
+        const response = await userStoryCommentService.getReplies(
+          currentUserStory.project_id ?? '',
+          currentUserStory.id,
+          parentCommentId,
+          { page: 1, page_size: 50 }
+        );
+        setRepliesMap(new Map(repliesMap.set(parentCommentId, response.data ?? [])));
+      } catch (error) {
+        logger.log('Failed to refresh replies', error);
+      }
+    } catch (error) {
+      toast.error('Failed to add reply');
+      logger.log('Failed to add reply', error);
+    }
+  };
+
+  const handleCancelReply = () => {
+    setReplyContent('');
+    setReplyingToCommentId(null);
+  };
+
+  // Reply edit/delete handlers
+  const handleUpdateReply = async (replyId: string, parentCommentId: string) => {
+    if (!editingReplyContent.trim()) return;
+    
+    try {
+      await updateReplyAsync({ content: editingReplyContent });
+      setEditingReplyId(null);
+      setEditingReplyContent('');
+      toast.success('Reply updated successfully');
+      
+      // Refetch replies for this comment
+      try {
+        const response = await userStoryCommentService.getReplies(
+          currentUserStory.project_id ?? '',
+          currentUserStory.id,
+          parentCommentId,
+          { page: 1, page_size: 50 }
+        );
+        setRepliesMap(new Map(repliesMap.set(parentCommentId, response.data ?? [])));
+      } catch (error) {
+        logger.log('Failed to refresh replies', error);
+      }
+    } catch (error) {
+      toast.error('Failed to update reply');
+      logger.log('Failed to update reply', error);
+    }
+  };
+
+  const handleDeleteReply = async (replyId: string, parentCommentId: string) => {
+    try {
+      setDeletingReplyId(replyId);
+      await deleteReplyAsync();
+      toast.success('Reply deleted successfully');
+      setDeletingReplyId(null);
+      
+      // Refetch replies for this comment
+      try {
+        const response = await userStoryCommentService.getReplies(
+          currentUserStory.project_id ?? '',
+          currentUserStory.id,
+          parentCommentId,
+          { page: 1, page_size: 50 }
+        );
+        setRepliesMap(new Map(repliesMap.set(parentCommentId, response.data ?? [])));
+      } catch (error) {
+        logger.log('Failed to refresh replies', error);
+      }
+    } catch (error) {
+      toast.error('Failed to delete reply');
+      logger.log('Failed to delete reply', error);
+      setDeletingReplyId(null);
+    }
+  };
 
   const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
     id: task.key ?? '',
@@ -1166,6 +1394,7 @@ export const UserStoryDetailDrawer = ({
                             type="button"
                             variant="secondary"
                             onClick={() => {
+                              setComment('');
                               setShowCommentEditor(false);
                             }}
                           >
@@ -1175,14 +1404,10 @@ export const UserStoryDetailDrawer = ({
                           <WpButton
                             type="button"
                             variant="primary"
-                            disabled={!comment.trim()}
-                            onClick={() => {
-                              if (!comment.trim()) return;
-                              setComment('');
-                              setShowCommentEditor(false);
-                            }}
+                            disabled={!comment.trim() || isCreatingComment}
+                            onClick={handleAddComment}
                           >
-                            Add Comment
+                            {isCreatingComment ? 'Adding...' : 'Add Comment'}
                           </WpButton>
                         </div>
                       </>
@@ -1197,6 +1422,266 @@ export const UserStoryDetailDrawer = ({
                       >
                         Write a comment...
                       </button>
+                    )}
+
+                    {/* Comments List */}
+                    {isLoadingComments ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+                      </div>
+                    ) : comments.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-gray-500">No comments yet</p>
+                        <p className="text-xs text-gray-400 mt-1">Be the first to comment</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 mt-6">
+                        {comments.map((commentItem) => (
+                          <div key={commentItem.id}>
+                            <div className="flex gap-3">
+                              <AssigneeAvatar
+                                initials={
+                                  commentItem.user_name
+                                    ? commentItem.user_name
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)
+                                    : 'UN'
+                                }
+                                color={getMemberColor(commentItem.user_id)}
+                                size="sm"
+                              />
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-semibold text-gray-900">
+                                    {commentItem.user_name || 'Unknown User'}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(commentItem.created_at).toLocaleString()}
+                                  </span>
+                                </div>
+
+                                {editingCommentId === commentItem.id ? (
+                                  <div className="space-y-2">
+                                    <WpRichTextEditor
+                                      value={editingCommentContent}
+                                      onChange={setEditingCommentContent}
+                                      placeholder="Edit comment..."
+                                      minHeight="100px"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                      <WpButton
+                                        type="button"
+                                        variant="primary"
+                                        size="sm"
+                                        disabled={!editingCommentContent.trim() || isUpdatingComment}
+                                        onClick={() => handleUpdateComment(commentItem.id)}
+                                      >
+                                        {isUpdatingComment ? 'Saving...' : 'Save'}
+                                      </WpButton>
+                                      <WpButton
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => {
+                                          setEditingCommentId(null);
+                                          setEditingCommentContent('');
+                                        }}
+                                      >
+                                        Cancel
+                                      </WpButton>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="bg-gray-50 rounded-lg px-3 py-2 relative group">
+                                      <div
+                                        className="text-sm text-gray-700 prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: commentItem.content }}
+                                      />
+
+                                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                        <button
+                                          onClick={() => {
+                                            setEditingCommentId(commentItem.id);
+                                            setEditingCommentContent(commentItem.content);
+                                          }}
+                                          className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                          title="Edit comment"
+                                        >
+                                          <Pencil size={14} className="text-gray-600" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteComment(commentItem.id)}
+                                          className="p-1 rounded hover:bg-red-100 transition-colors"
+                                          title="Delete comment"
+                                          disabled={deletingCommentId === commentItem.id}
+                                        >
+                                          <Trash2 size={14} className="text-red-600" />
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Reply Button */}
+                                    <div className="mt-2">
+                                      <button
+                                        onClick={() => handleToggleReplies(commentItem.id, commentItem.user_name || 'User')}
+                                        className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                      >
+                                        <CornerDownRight size={14} />
+                                        <span>Reply</span>
+                                        {commentItem.replies_count > 0 && (
+                                          <span className="text-xs font-semibold text-blue-600">
+                                            ({commentItem.replies_count})
+                                          </span>
+                                        )}
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* Replies Section */}
+                                {showRepliesForComment.has(commentItem.id) && (
+                                  <div className="mt-4 ml-4 border-l-2 border-gray-200 pl-4 space-y-4">
+                                    {/* Display Replies First */}
+                                    {repliesMap.get(commentItem.id) && repliesMap.get(commentItem.id)!.length > 0 && (
+                                      <div className="space-y-3">
+                                        {repliesMap.get(commentItem.id)!.map((reply: UserStoryReplyResponse) => (
+                                          <div key={reply.id} className="flex gap-2">
+                                            <AssigneeAvatar
+                                              initials={
+                                                reply.user_name
+                                                  ? reply.user_name
+                                                      .split(' ')
+                                                      .map((n: string) => n[0])
+                                                      .join('')
+                                                      .toUpperCase()
+                                                      .slice(0, 2)
+                                                  : 'UN'
+                                              }
+                                              color={getMemberColor(reply.user_id)}
+                                              size='md'
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-xs font-semibold text-gray-900">
+                                                  {reply.user_name || 'Unknown User'}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                  {new Date(reply.created_at).toLocaleString()}
+                                                </span>
+                                              </div>
+                                              
+                                              {editingReplyId === reply.id ? (
+                                                <div className="space-y-2">
+                                                  <WpRichTextEditor
+                                                    value={editingReplyContent}
+                                                    onChange={setEditingReplyContent}
+                                                    placeholder="Edit reply..."
+                                                    minHeight="80px"
+                                                  />
+                                                  <div className="flex items-center gap-2">
+                                                    <WpButton
+                                                      type="button"
+                                                      variant="primary"
+                                                      size="sm"
+                                                      disabled={!editingReplyContent.trim() || isUpdatingReply}
+                                                      onClick={() => handleUpdateReply(reply.id, commentItem.id)}
+                                                    >
+                                                      {isUpdatingReply ? 'Saving...' : 'Save'}
+                                                    </WpButton>
+                                                    <WpButton
+                                                      type="button"
+                                                      variant="secondary"
+                                                      size="sm"
+                                                      onClick={() => {
+                                                        setEditingReplyId(null);
+                                                        setEditingReplyContent('');
+                                                      }}
+                                                    >
+                                                      Cancel
+                                                    </WpButton>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <div className="bg-white rounded-lg px-3 py-2 border border-gray-200 relative group">
+                                                  <div
+                                                    className="text-xs text-gray-700 prose prose-sm max-w-none"
+                                                    dangerouslySetInnerHTML={{ __html: reply.content }}
+                                                  />
+                                                  
+                                                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                    <button
+                                                      onClick={() => {
+                                                        setEditingReplyId(reply.id);
+                                                        setEditingReplyContent(reply.content);
+                                                      }}
+                                                      className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                                      title="Edit reply"
+                                                    >
+                                                      <Pencil size={12} className="text-gray-600" />
+                                                    </button>
+                                                    <button
+                                                      onClick={() => handleDeleteReply(reply.id, commentItem.id)}
+                                                      className="p-1 rounded hover:bg-red-100 transition-colors"
+                                                      title="Delete reply"
+                                                      disabled={deletingReplyId === reply.id}
+                                                    >
+                                                      <Trash2 size={12} className="text-red-600" />
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Reply Input After existing replies */}
+                                    {replyingToCommentId === commentItem.id && (
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                                          <CornerDownRight size={12} />
+                                          <span>Replying to <span className="font-semibold text-gray-700">{commentItem.user_name || 'User'}</span></span>
+                                        </div>
+                                        <WpRichTextEditor
+                                          value={replyContent}
+                                          onChange={setReplyContent}
+                                          placeholder="Write a reply..."
+                                          minHeight="80px"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <WpButton
+                                            type="button"
+                                            variant="primary"
+                                            size="sm"
+                                            disabled={!replyContent.trim() || isCreatingComment}
+                                            onClick={() => handleAddReply(commentItem.id)}
+                                          >
+                                            {isCreatingComment ? 'Replying...' : 'Reply'}
+                                          </WpButton>
+                                          <WpButton
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleCancelReply}
+                                          >
+                                            Cancel
+                                          </WpButton>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}

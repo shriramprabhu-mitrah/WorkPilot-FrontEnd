@@ -112,6 +112,7 @@ export interface UserStoryCommentResponse {
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
+  replies_count:number;
 }
 
 export interface GetUserStoryCommentsQueryParams {

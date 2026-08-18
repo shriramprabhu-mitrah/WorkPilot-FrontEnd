@@ -203,6 +203,7 @@ export const ApiEndpoints = {
     getComments: createQueryEndpoint('/task/{taskId}/comments'),
     createComment: createEndpoint('/task/{taskId}/comments'),
     updateComment: createEndpoint('/task/{taskId}/comments/{commentId}'),
+    deleteComment: createEndpoint('/task/{taskId}/comments/{commentId}'),
     getReplies: createQueryEndpoint('/task/{taskId}/comments/replies/{commentId}'),
   },
 

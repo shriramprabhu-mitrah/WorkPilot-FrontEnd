@@ -1,13 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
-import { Send, Pencil, Check, X } from 'lucide-react';
+import { useState } from 'react';
+import { CornerDownRight, Pencil, Trash2 } from 'lucide-react';
 import type { ActivityItem } from '@/src/types/board';
 import type { Comment } from '@/src/types/task';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../../task';
-import { taskService } from '@/src/services/tasks';
 import { logger } from '@/src/lib/utils/logger';
 import { WpButton } from '../../button';
 import WpRichTextEditor from '../../htmlEditor';
+import {
+  useGetTaskComments,
+  useCreateTaskComment,
+  useUpdateTaskComment,
+  useDeleteTaskComment,
+} from '@/src/modules/tasks/hooks/useTask';
+import toast from 'react-hot-toast';
 
 type ActivityTab = 'all' | 'comments' | 'history';
 
@@ -32,150 +38,151 @@ const formatTime = (iso: string) => {
 export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
   const [tab, setTab] = useState<ActivityTab>('all');
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCommentEditor, setShowCommentEditor] = useState(false);
+
+  // Hooks for comments
+  const { comments, isLoadingComments, isErrorComments, commentsError } = useGetTaskComments(
+    taskId ?? '', 
+    1, 
+    50, 
+    !!taskId
+  );
+  const { createCommentAsync, isCreatingComment } = useCreateTaskComment(taskId ?? '');
+
+  // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const { updateCommentAsync, isUpdatingComment } = useUpdateTaskComment(
+    taskId ?? '',
+    editingId ?? ''
+  );
+
+  // Delete state
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { deleteCommentAsync } = useDeleteTaskComment(taskId ?? '', deletingId ?? '');
+
+  // Reply state
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  const [loadingRepliesFor, setLoadingRepliesFor] = useState<string | null>(null);
-  const hasFetched = useRef(false);
-  const [showCommentEditor, setShowCommentEditor] = useState(true);
+  const [showRepliesForComment, setShowRepliesForComment] = useState<Set<string>>(new Set());
+  const [repliesMap, setRepliesMap] = useState<Map<string, Comment[]>>(new Map());
 
-  useEffect(() => {
-    if (!taskId || hasFetched.current) return;
-    hasFetched.current = true;
-
-    const fetchComments = async () => {
-      try {
-        setIsLoading(true);
-        const res = await taskService.getComments(taskId);
-        if (res.data) setComments(Array.isArray(res.data) ? res.data : []);
-      } catch (error) {
-        logger.log('Failed to fetch comments', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchComments();
-  }, [taskId]);
-
-  const submitComment = (content: string, parentId?: string, onDone?: () => void) => {
-    if (!taskId || !content.trim()) return;
-
-    const trimmed = content.trim();
-    const tempId = `temp-${crypto.randomUUID()}`;
-    const optimistic: Comment = {
-      id: tempId,
-      content: trimmed,
-      task_id: taskId,
-      user_id: '',
-      parent_comment_id: parentId ?? null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    // Add optimistically & clear input immediately
-    setComments((prev) =>
-      parentId
-        ? prev.map((c) =>
-            c.id === parentId ? { ...c, replies: [...(c.replies ?? []), optimistic] } : c
-          )
-        : [...prev, optimistic]
-    );
-    onDone?.();
-
-    setIsSubmitting(true);
-    const payload = parentId
-      ? { content: trimmed, parent_comment_id: parentId }
-      : { content: trimmed };
-
-    taskService
-      .createComment(taskId, payload)
-      .then(() => {
-        // API only returns success message, optimistic comment stays as-is
-      })
-      .catch((error) => {
-        logger.log('Failed to post comment', error);
-        setComments((prev) =>
-          parentId
-            ? prev.map((c) =>
-                c.id === parentId
-                  ? { ...c, replies: (c.replies ?? []).filter((r) => r.id !== tempId) }
-                  : c
-              )
-            : prev.filter((c) => c.id !== tempId)
-        );
-      })
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const toggleReplies = (commentId: string) => {
-    if (!taskId) return;
-    const comment = comments.find((c) => c.id === commentId);
-
-    // If already expanded, just collapse
-    if (replyingTo === commentId) {
-      setReplyingTo(null);
+  // Comment handlers
+  const submitComment = async (content: string, parentId?: string) => {
+    // Strip HTML tags for validation
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (!taskId || !textContent.trim()) {
       return;
     }
 
-    // If replies already loaded, just open reply box
-    if (comment?.replies && comment.replies.length > 0) {
-      setReplyingTo(commentId);
-      return;
-    }
-
-    // Fetch replies from API
-    setLoadingRepliesFor(commentId);
-    taskService
-      .getReplies(taskId, commentId)
-      .then((res) => {
-        const replies = Array.isArray(res.data) ? res.data : [];
-        setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, replies } : c)));
-        setReplyingTo(commentId);
-      })
-      .catch((error) => logger.log('Failed to fetch replies', error))
-      .finally(() => setLoadingRepliesFor(null));
-  };
-
-  const saveEdit = async (commentId: string) => {
-    if (!taskId || !editContent.trim()) return;
-    const trimmed = editContent.trim();
-    // Optimistically update content immediately
-    setComments((prev) =>
-      prev.map((c) => {
-        if (c.id === commentId) return { ...c, content: trimmed };
-        if (c.replies) {
-          return {
-            ...c,
-            replies: c.replies.map((r) => (r.id === commentId ? { ...r, content: trimmed } : r)),
-          };
-        }
-        return c;
-      })
-    );
-    setEditingId(null);
     try {
-      await taskService.updateComment(taskId, commentId, { content: trimmed });
+      await createCommentAsync({
+        content: content,
+        parent_comment_id: parentId,
+      });
+
+      if (parentId) {
+        setReplyContent('');
+        setReplyingTo(null);
+        // Refetch replies
+        const { taskService } = await import('@/src/services/tasks');
+        const res = await taskService.getReplies(taskId, parentId);
+        if (res.data) {
+          setRepliesMap(new Map(repliesMap.set(parentId, res.data)));
+        }
+        toast.success('Reply added successfully');
+      } else {
+        setComment('');
+        setShowCommentEditor(false);
+        toast.success('Comment added successfully');
+      }
     } catch (error) {
-      logger.log('Failed to update comment', error);
-      // Revert on failure
-      setComments((prev) =>
-        prev.map((c) => {
-          if (c.id === commentId) return { ...c, content: editContent };
-          if (c.replies) {
-            return {
-              ...c,
-              replies: c.replies.map((r) =>
-                r.id === commentId ? { ...r, content: editContent } : r
-              ),
-            };
+      toast.error('Failed to add comment');
+      logger.log('Failed to post comment', error);
+    }
+  };
+
+  const toggleReplies = async (commentId: string, userName: string) => {
+    const newShowReplies = new Set(showRepliesForComment);
+
+    if (newShowReplies.has(commentId)) {
+      newShowReplies.delete(commentId);
+      setReplyingTo(null);
+      setReplyContent('');
+    } else {
+      newShowReplies.add(commentId);
+      setReplyingTo(commentId);
+
+      // Set initial mention
+      const mention = `<span class="mention" data-type="mention" data-id="${userName}">@${userName}</span>&nbsp;`;
+      setReplyContent(mention);
+
+      // Fetch replies if not already fetched
+      if (!repliesMap.has(commentId) && taskId) {
+        try {
+          const { taskService } = await import('@/src/services/tasks');
+          const res = await taskService.getReplies(taskId, commentId);
+          if (res.data) {
+            setRepliesMap(new Map(repliesMap.set(commentId, res.data)));
           }
-          return c;
-        })
-      );
+        } catch (error) {
+          logger.log('Failed to fetch replies', error);
+          toast.error('Failed to load replies');
+        }
+      }
+    }
+    setShowRepliesForComment(newShowReplies);
+  };
+
+  const saveEdit = async (commentId: string, parentCommentId?: string) => {
+    if (!taskId || !editContent.trim()) return;
+
+    try {
+      await updateCommentAsync({ content: editContent.trim() });
+      setEditingId(null);
+      setEditContent('');
+      
+      // Refetch replies if it's a reply
+      if (parentCommentId) {
+        const { taskService } = await import('@/src/services/tasks');
+        const res = await taskService.getReplies(taskId, parentCommentId);
+        if (res.data) {
+          setRepliesMap(new Map(repliesMap.set(parentCommentId, res.data)));
+        }
+      }
+      
+      toast.success('Comment updated successfully');
+    } catch (error) {
+      toast.error('Failed to update comment');
+      logger.log('Failed to update comment', error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string, parentCommentId?: string) => {
+    if (!taskId) return;
+
+    try {
+      setDeletingId(commentId);
+      await deleteCommentAsync();
+      
+      // Refetch replies if it's a reply
+      if (parentCommentId) {
+        const { taskService } = await import('@/src/services/tasks');
+        const res = await taskService.getReplies(taskId, parentCommentId);
+        if (res.data) {
+          setRepliesMap(new Map(repliesMap.set(parentCommentId, res.data)));
+        }
+      }
+      
+      toast.success('Comment deleted successfully');
+      setDeletingId(null);
+    } catch (error) {
+      toast.error('Failed to delete comment');
+      logger.log('Failed to delete comment', error);
+      setDeletingId(null);
     }
   };
 
@@ -187,105 +194,158 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     { key: 'history', label: 'History' },
   ];
 
-  const renderComment = (c: Comment, isReply = false) => {
-    const name = c.user?.name ?? 'Unknown';
+  const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
+    const name = c.user_name || c.full_name || c.user?.name || 'Unknown';
     const initials = getInitials(name);
     const isEditing = editingId === c.id;
-    const isTemp = c.id.startsWith('temp-');
 
     return (
-      <div key={c.id} className={`flex gap-3 ${isReply ? 'ml-8 mt-2' : ''}`}>
-        <AssigneeAvatar initials={initials} color={colors.avatarBlue} size="md" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-sm font-semibold text-gray-800">{name}</span>
-            <span className="text-xs text-gray-400">{formatTime(c.created_at)}</span>
-            <button
-              onClick={() => {
-                setEditingId(c.id);
-                setEditContent(c.content);
-              }}
-              disabled={isTemp}
-              className="ml-auto p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Pencil size={11} />
-            </button>
+      <div key={c.id} className={`${isReply ? '' : 'mb-4'}`}>
+        <div className="flex gap-3">
+          <AssigneeAvatar initials={initials} color={colors.avatarBlue} size={isReply ? 'xs' : 'sm'} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`${isReply ? 'text-xs' : 'text-sm'} font-semibold text-gray-900`}>
+                {name}
+              </span>
+              <span className="text-xs text-gray-500">{formatTime(c.created_at)}</span>
+            </div>
+
+            {isEditing ? (
+              <div className="space-y-2">
+                <WpRichTextEditor
+                  value={editContent}
+                  onChange={setEditContent}
+                  placeholder="Edit comment..."
+                  minHeight={isReply ? '80px' : '100px'}
+                />
+                <div className="flex items-center gap-2">
+                  <WpButton
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    disabled={!editContent.trim() || isUpdatingComment}
+                    onClick={() => saveEdit(c.id, parentCommentId)}
+                  >
+                    {isUpdatingComment ? 'Saving...' : 'Save'}
+                  </WpButton>
+                  <WpButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(null);
+                      setEditContent('');
+                    }}
+                  >
+                    Cancel
+                  </WpButton>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={`${isReply ? 'bg-white border border-gray-200' : 'bg-gray-50'} rounded-lg px-3 py-2 relative group`}>
+                  <div
+                    className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700 prose prose-sm max-w-none`}
+                    dangerouslySetInnerHTML={{ __html: c.content }}
+                  />
+
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setEditingId(c.id);
+                        setEditContent(c.content);
+                      }}
+                      className="p-1 rounded hover:bg-gray-200 transition-colors"
+                      title="Edit comment"
+                    >
+                      <Pencil size={isReply ? 12 : 14} className="text-gray-600" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteComment(c.id, parentCommentId)}
+                      className="p-1 rounded hover:bg-red-100 transition-colors"
+                      title="Delete comment"
+                      disabled={deletingId === c.id}
+                    >
+                      <Trash2 size={isReply ? 12 : 14} className="text-red-600" />
+                    </button>
+                  </div>
+                </div>
+
+                {!isReply && (
+                  <div className="mt-2">
+                    <button
+                      onClick={() => toggleReplies(c.id, name)}
+                      className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                      <CornerDownRight size={14} />
+                      <span>Reply</span>
+                      {c.replies_count && c.replies_count > 0 && (
+                        <span className="text-xs font-semibold text-blue-600">
+                          ({c.replies_count})
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          {isEditing ? (
-            <div className="mt-1.5 flex gap-1.5 items-end">
-              <textarea
-                autoFocus
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                rows={2}
-                className="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
-              />
-              <button
-                onClick={() => saveEdit(c.id)}
-                className="p-1 text-blue-600 hover:text-blue-700"
-              >
-                <Check size={14} />
-              </button>
-              <button
-                onClick={() => setEditingId(null)}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ) : (
-            <p className="mt-1 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 leading-relaxed">
-              {c.content}
-            </p>
-          )}
-          {!isReply && (
-            <button
-              onClick={() => toggleReplies(c.id)}
-              className="mt-1 text-xs text-gray-400 hover:text-blue-600 transition-colors"
-            >
-              {loadingRepliesFor === c.id
-                ? 'Loading…'
-                : replyingTo === c.id
-                  ? 'Cancel'
-                  : `Reply${c.replies?.length ? ` (${c.replies.length})` : ''}`}
-            </button>
-          )}
-          {replyingTo === c.id && (
-            <div className="mt-2 flex gap-2 items-end">
-              <textarea
-                autoFocus
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    submitComment(replyContent, c.id, () => {
-                      setReplyContent('');
-                      setReplyingTo(null);
-                    });
-                  }
-                }}
-                placeholder="Write a reply…"
-                rows={2}
-                className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2 pr-10 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
-              />
-              <button
-                onClick={() =>
-                  submitComment(replyContent, c.id, () => {
-                    setReplyContent('');
-                    setReplyingTo(null);
-                  })
-                }
-                disabled={!replyContent.trim() || isSubmitting}
-                className="p-1 rounded-lg transition-colors disabled:opacity-30"
-                style={{ color: colors.primary }}
-              >
-                <Send size={14} />
-              </button>
-            </div>
-          )}
-          {c.replies?.map((r) => renderComment(r, true))}
         </div>
+
+        {/* Replies Section */}
+        {showRepliesForComment.has(c.id) && (
+          <div className="mt-4 ml-8 border-l-2 border-gray-200 pl-4 space-y-4">
+            {/* Display Replies */}
+            {repliesMap.get(c.id) && repliesMap.get(c.id)!.length > 0 && (
+              <div className="space-y-3">
+                {repliesMap.get(c.id)!.map((reply: Comment) =>
+                  renderComment(reply, true, c.id)
+                )}
+              </div>
+            )}
+
+            {/* Reply Input */}
+            {replyingTo === c.id && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <CornerDownRight size={12} />
+                  <span>
+                    Replying to <span className="font-semibold text-gray-700">{name}</span>
+                  </span>
+                </div>
+                <WpRichTextEditor
+                  value={replyContent}
+                  onChange={setReplyContent}
+                  placeholder="Write a reply..."
+                  minHeight="80px"
+                />
+                <div className="flex items-center gap-2">
+                  <WpButton
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    disabled={isCreatingComment}
+                    onClick={() => submitComment(replyContent, c.id)}
+                  >
+                    {isCreatingComment ? 'Replying...' : 'Reply'}
+                  </WpButton>
+                  <WpButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setReplyingTo(null);
+                      setReplyContent('');
+                    }}
+                  >
+                    Cancel
+                  </WpButton>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -294,31 +354,47 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     <section>
       <p className="text-base font-semibold text-gray-800 mb-3">Activity</p>
 
-      <div className="flex items-center gap-1 mb-4 border-b border-gray-300 pb-2">
-        {tabs.map((tabItem) => (
+      <div className="flex gap-1 border-b border-gray-200 mb-4">
+        {tabs.map((t) => (
           <button
-            key={tabItem.key}
-            onClick={() => setTab(tabItem.key)}
-            className="px-3 py-1.5 text-sm rounded-md font-medium transition-colors"
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-3 py-2 text-sm font-medium transition-colors relative ${
+              tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            }`}
             style={{
-              backgroundColor: tab === tabItem.key ? colors.primaryLight : 'transparent',
-              color: tab === tabItem.key ? colors.primary : colors.gray500,
-              border: `1px solid ${tab === tabItem.key ? colors.primary : 'transparent'}`,
+              borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
             }}
           >
-            {tabItem.label}
+            {t.label}
           </button>
         ))}
       </div>
 
       <div className="space-y-4 mb-5">
-        {isLoading && <p className="text-sm text-gray-400">Loading comments…</p>}
-
-        {(tab === 'all' || tab === 'comments') &&
-          !isLoading &&
-          (comments.length === 0
-            ? tab === 'comments' && <p className="text-sm text-gray-400">No comments yet.</p>
-            : comments.map((c) => renderComment(c)))}
+        {(tab === 'all' || tab === 'comments') && (
+          <>
+            {isLoadingComments ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+              </div>
+            ) : isErrorComments ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-red-500">Failed to load comments</p>
+                <p className="text-xs text-gray-400 mt-1">{commentsError?.message || 'Unknown error'}</p>
+              </div>
+            ) : comments.length === 0 ? (
+              tab === 'comments' && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-500">No comments yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Be the first to comment</p>
+                </div>
+              )
+            ) : (
+              comments.map((c) => renderComment(c))
+            )}
+          </>
+        )}
 
         {(tab === 'all' || tab === 'history') &&
           historyItems.map((item) => (
@@ -342,10 +418,6 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
               </div>
             </div>
           ))}
-
-        {tab === 'all' && !isLoading && comments.length === 0 && historyItems.length === 0 && (
-          <p className="text-sm text-gray-400">No activity yet.</p>
-        )}
       </div>
 
       {(tab === 'all' || tab === 'comments') && (
@@ -354,7 +426,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
 
           <div className="flex-1 min-w-0">
             {showCommentEditor ? (
-              <>
+              <div className="space-y-2">
                 <WpRichTextEditor
                   value={comment}
                   onChange={setComment}
@@ -362,7 +434,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
                   minHeight="120px"
                 />
 
-                <div className="flex justify-end gap-2 mt-2">
+                <div className="flex justify-end gap-2">
                   <WpButton
                     type="button"
                     variant="secondary"
@@ -377,25 +449,20 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
                   <WpButton
                     type="button"
                     variant="primary"
-                    disabled={!comment.trim() || isSubmitting}
-                    onClick={() => {
-                      submitComment(comment, undefined, () => {
-                        setComment('');
-                        setShowCommentEditor(false);
-                      });
-                    }}
+                    disabled={isCreatingComment}
+                    onClick={() => submitComment(comment)}
                   >
-                    {isSubmitting ? 'Posting...' : 'Add Comment'}
+                    {isCreatingComment ? 'Posting...' : 'Add Comment'}
                   </WpButton>
                 </div>
-              </>
+              </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setShowCommentEditor(true)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-left text-sm text-gray-400 hover:border-gray-300 hover:text-gray-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-left text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500"
               >
-                Add a comment...
+                Write a comment...
               </button>
             )}
           </div>
