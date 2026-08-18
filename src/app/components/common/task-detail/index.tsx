@@ -47,6 +47,7 @@ interface CustomStatus {
 }
 import { useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
+import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -91,11 +92,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [taskData, setTaskData] = useState({
     subtasks: task.subtasks ?? [],
     status: task.status ?? task.columnId ?? '',
+    project_id : task.projectId ?? '',
     description: task.description ?? '',
     priority: task.priority,
     labels: task.labels,
     dueDate: task.dueDate ?? '',
     startDate: task.startDate ?? '',
+    user_story_title:task.user_story_title ?? '' ,
+    user_story_id : task.user_story_id ?? '',
     storyPoints: task.storyPoints,
     sprint: task.sprint ?? '',
     parent: task.parent ?? '',
@@ -113,6 +117,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [keepAssignee, setKeepAssignee] = useState(true);
   const [assigneeSearch, setAssigneeSearch] = useState('');
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
+  const [userStorySearch, setUserStorySearch] = useState('');
+  const [showUserStoryMenu, setShowUserStoryMenu] = useState(false);
+  const debouncedUserStorySearch = useDebounce(userStorySearch, 500);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     task.projectId ?? '',
     {
@@ -121,6 +128,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       name: debouncedAssigneeSearch,
     },
     showAssigneeMenu
+  );
+  
+  const { userStories, isLoadingUserStories, isFetchingUserStories } = useGetUserStories(
+    taskData.project_id,
+    {
+      page: 1,
+      page_size: 10,
+      search: debouncedUserStorySearch,
+    }
   );
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
@@ -177,17 +193,18 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       }
       if (patch.startDate !== undefined) payload.start_date = patch.startDate || null;
       if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
-      try {
-        setIsSaving(true);
-        await taskService.updateTask(task.projectId, task.taskId, payload);
-      } catch (error) {
-        logger.log('Failed to update task', error);
-        // Revert on error
-        setTaskData(previousState);
-        onUpdate?.(previousState as Partial<KanbanTask>);
-      } finally {
-        setIsSaving(false);
-      }
+      if (patch.user_story_id !== undefined) payload.user_story_id = patch.user_story_id ;
+        try {
+          setIsSaving(true);
+          await taskService.updateTask(task.projectId, task.taskId, payload);
+        } catch (error) {
+          logger.log('Failed to update task', error);
+          // Revert on error
+          setTaskData(previousState);
+          onUpdate?.(previousState as Partial<KanbanTask>);
+        } finally {
+          setIsSaving(false);
+        }
     },
     [task.projectId, task.taskId, onUpdate, taskData]
   );
@@ -222,6 +239,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
             status: d.status ?? prev.status,
+            user_story_title: d.user_story_title ?? prev.user_story_title,
             dueDate: d.due_date ? d.due_date?.replace(/Z$/, '') : '',
             storyPoints: d.story_points ?? prev.storyPoints,
             sprint: d.sprint_name ?? prev.sprint,
@@ -931,6 +949,80 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 />
               </DetailRow>
 
+              <DetailRow label="User Story">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserStoryMenu((v) => !v)}
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {taskData.user_story_title || 'No user story'}
+                    </span>
+
+                    <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                  </button>
+
+                  {showUserStoryMenu && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-[100] overflow-hidden">
+                      {/* Search */}
+                      <div className="p-2 border-b border-gray-200">
+                        <WpInput
+                          value={userStorySearch}
+                          onChange={(e) => setUserStorySearch(e.target.value)}
+                          placeholder="Search user story..."
+                          autoFocus
+                        />
+                      </div>
+
+                      {/* Loading */}
+                      {(isLoadingUserStories || isFetchingUserStories) && (
+                        <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                          Searching...
+                        </div>
+                      )}
+                      {/* User Stories */}
+                      {/* User Stories */}
+                      {!isLoadingUserStories &&
+                        !isFetchingUserStories &&
+                        userStories?.map((story) => (
+                          <button
+                            key={story.id}
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await handleUpdate({
+                                  user_story_id: story.id,
+                                });
+
+                                setTaskData((prev) => ({
+                                  ...prev,
+                                  user_story_title: story.title,
+                                }));
+
+                                setShowUserStoryMenu(false);
+                                setUserStorySearch('');
+                              } catch (error) {
+                                logger.log('Failed to update user story', error);
+                              }
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50"
+                          >
+                            <span className="truncate">{story.title}</span>
+                          </button>
+                        ))}
+                      {!isLoadingUserStories &&
+                        !isFetchingUserStories &&
+                        userStories?.length === 0 && (
+                          <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                            No user stories found
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              </DetailRow>
+
               <DetailRow label="Labels">
                 <EditableLabels
                   value={taskData.labels}
@@ -961,14 +1053,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   onChange={(storyPoints) => handleUpdate({ storyPoints })}
                 />
               </DetailRow>
-
-              <DetailRow label="Parent">
+              {/* need discussion */}
+              {/* <DetailRow label="Parent">
                 <EditableText
                   value={taskData.parent}
                   onChange={(parent) => setTaskData((prev) => ({ ...prev, parent }))}
                   placeholder="None"
                 />
-              </DetailRow>
+              </DetailRow> */}
             </div>
           </div>
         </div>

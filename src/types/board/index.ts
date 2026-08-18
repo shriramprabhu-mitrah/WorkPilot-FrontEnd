@@ -39,6 +39,8 @@ export interface KanbanTask {
   priority: Priority;
   labels: string[];
   assigneeInitials: string;
+  user_story_id? : string
+  user_story_title?:string
   assigneeColor: string;
   storyPoints: number;
   dueDate: string;

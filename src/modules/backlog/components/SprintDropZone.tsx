@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Inbox } from 'lucide-react';
+import { ChevronDown, ChevronRight, Inbox, Link } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { colors } from '@/src/styles/colors';
 import { SprintDetail } from '@/src/types/project';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { DraggableUserStory } from './DraggableUserStory';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+
 
 interface SprintDropZoneProps {
   sprint: SprintDetail;
@@ -26,7 +28,7 @@ export const SprintDropZone = ({
     id: `sprint-${sprint.id}`,
     data: { sprintId: sprint.id },
   });
-
+const { push } = useOrgNavigation();
   const sprintStories = userStories.filter((story) => story.sprint_id === sprint.id);
 
   return (
@@ -50,11 +52,16 @@ export const SprintDropZone = ({
         </span>
 
         <span
-          className={`font-semibold text-sm truncate transition-colors ${isOver ? 'text-blue-700' : 'text-gray-900'}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            push(`/projects/sprints?sprintId=${sprint.id}`);
+          }}
+          className={`font-semibold text-sm truncate cursor-pointer transition-colors ${
+            isOver ? 'text-blue-700' : 'text-gray-900 hover:text-blue-600'
+          }`}
         >
           {sprint.name}
         </span>
-
         <span
           className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
             isOver ? 'bg-blue-200 text-blue-800 scale-110' : 'bg-gray-100 text-gray-500'
