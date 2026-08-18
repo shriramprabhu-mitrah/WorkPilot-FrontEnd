@@ -344,15 +344,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         setTempProject(p);
                         setTempSprint(null);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${tempProject?.id === p.id
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50 border border-transparent'
-                        }`}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                        tempProject?.id === p.id
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50 border border-transparent'
+                      }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempProject?.id === p.id ? 'border-blue-600' : 'border-gray-300'
-                            }`}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            tempProject?.id === p.id ? 'border-blue-600' : 'border-gray-300'
+                          }`}
                         >
                           {tempProject?.id === p.id && (
                             <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -413,23 +415,21 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
                   <button
                     onClick={() => setTempSprint(null)}
-                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${tempSprint === null
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50 border border-transparent'
-                      }`}
+                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                      tempSprint === null
+                        ? 'bg-blue-50 border border-blue-200'
+                        : 'hover:bg-gray-50 border border-transparent'
+                    }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint === null ? 'border-blue-600' : 'border-gray-300'
-                        }`}
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        tempSprint === null ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                     >
-                      {tempSprint === null && (
-                        <div className="w-2 h-2 rounded-full bg-blue-600" />
-                      )}
+                      {tempSprint === null && <div className="w-2 h-2 rounded-full bg-blue-600" />}
                     </div>
 
-                    <span className="font-medium text-gray-800">
-                      All Sprints
-                    </span>
+                    <span className="font-medium text-gray-800">All Sprints</span>
                   </button>
 
                   {tempSprints?.map((s) => {
@@ -437,26 +437,24 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       <div
                         key={s.id}
                         onClick={() => setTempSprint(s)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${tempSprint?.id === s.id
-                          ? 'bg-blue-50 border border-blue-200'
-                          : 'hover:bg-gray-50 border border-transparent'
-                          }`}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
+                          tempSprint?.id === s.id
+                            ? 'bg-blue-50 border border-blue-200'
+                            : 'hover:bg-gray-50 border border-transparent'
+                        }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint?.id === s.id
-                              ? 'border-blue-600'
-                              : 'border-gray-300'
-                              }`}
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              tempSprint?.id === s.id ? 'border-blue-600' : 'border-gray-300'
+                            }`}
                           >
                             {tempSprint?.id === s.id && (
                               <div className="w-2 h-2 rounded-full bg-blue-600" />
                             )}
                           </div>
 
-                          <span className="font-medium text-gray-800">
-                            {s.name}
-                          </span>
+                          <span className="font-medium text-gray-800">{s.name}</span>
                         </div>
 
                         <button
@@ -465,7 +463,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                             e.stopPropagation();
                             setShowManageProject(false);
                             dispatch(setSelectedSprint(s));
-                            router.push(`/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`);
+                            router.push(
+                              `/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
+                            );
                           }}
                           className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
                           title="View sprint"

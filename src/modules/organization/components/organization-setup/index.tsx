@@ -73,16 +73,16 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
     }
 
     await createOrg(formData);
-    
+
     // Store org slug in cookie for middleware access
     if (orgSlug) {
-      Cookies.set('org_slug', orgSlug, { 
+      Cookies.set('org_slug', orgSlug, {
         expires: 365, // 1 year
         path: '/',
-        sameSite: 'lax'
+        sameSite: 'lax',
       });
     }
-    
+
     const validMembers = teamMembers.filter((m) => m.email.trim() !== '');
     if (validMembers.length > 0) {
       await inviteOrgUsers({ members: validMembers });

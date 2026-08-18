@@ -23,13 +23,13 @@ export const useGetOrganization = () => {
   useEffect(() => {
     if (organization?.data) {
       dispatch(setOrganization(organization.data));
-      
+
       // Store org slug in cookie for middleware access
       if (organization.data.slug) {
-        Cookies.set('org_slug', organization.data.slug, { 
+        Cookies.set('org_slug', organization.data.slug, {
           expires: 365, // 1 year
           path: '/',
-          sameSite: 'lax'
+          sameSite: 'lax',
         });
       }
     }

@@ -35,7 +35,13 @@ import { TaskDetailDrawer } from '../task-detail';
 import { KanbanTask, ColumnId } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-
+import {
+  useGetStatus,
+  useDeleteStatus,
+} from '@/src/modules/project/hooks/useLabels';
+import StatusModal from '../task-detail/components/StatusModal';
+import { CustomStatus } from '@/src/types/colors';
+// import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
   onClose: () => void;
@@ -46,52 +52,52 @@ export interface UserStoryDetailDrawerProps {
 
 type ActivityTab = 'all' | 'comments' | 'history' | 'childTickets';
 
-const STATUS_OPTIONS = [
-  {
-    value: 'todo',
-    label: 'To Do',
-    color: colors.colTodo,
-    bg: colors.colTodoBg,
-    dot: colors.colTodo,
-  },
-  {
-    value: 'in_progress',
-    label: 'In Progress',
-    color: colors.colInProgress,
-    bg: colors.colInProgressBg,
-    dot: colors.colInProgress,
-  },
-  {
-    value: 'in_review',
-    label: 'In Review',
-    color: colors.colInReview,
-    bg: colors.colInReviewBg,
-    dot: colors.colInReview,
-  },
-  {
-    value: 'testing',
-    label: 'Testing',
-    color: colors.colTesting,
-    bg: colors.colTestingBg,
-    dot: colors.colTesting,
-  },
-  {
-    value: 'done',
-    label: 'Done',
-    color: colors.colDone,
-    bg: colors.colDoneBg,
-    dot: colors.colDone,
-  },
-  {
-    value: 'blocked',
-    label: 'Blocked',
-    color: colors.colBlocked,
-    bg: colors.colBlockedBg,
-    dot: colors.colBlocked,
-  },
-];
+// const STATUS_OPTIONS = [
+//   {
+//     value: 'todo',
+//     label: 'To Do',
+//     color: colors.colTodo,
+//     bg: colors.colTodoBg,
+//     dot: colors.colTodo,
+//   },
+//   {
+//     value: 'in_progress',
+//     label: 'In Progress',
+//     color: colors.colInProgress,
+//     bg: colors.colInProgressBg,
+//     dot: colors.colInProgress,
+//   },
+//   {
+//     value: 'in_review',
+//     label: 'In Review',
+//     color: colors.colInReview,
+//     bg: colors.colInReviewBg,
+//     dot: colors.colInReview,
+//   },
+//   {
+//     value: 'testing',
+//     label: 'Testing',
+//     color: colors.colTesting,
+//     bg: colors.colTestingBg,
+//     dot: colors.colTesting,
+//   },
+//   {
+//     value: 'done',
+//     label: 'Done',
+//     color: colors.colDone,
+//     bg: colors.colDoneBg,
+//     dot: colors.colDone,
+//   },
+//   {
+//     value: 'blocked',
+//     label: 'Blocked',
+//     color: colors.colBlocked,
+//     bg: colors.colBlockedBg,
+//     dot: colors.colBlocked,
+//   },
+// ];
 
-const STATUS_CONFIG = Object.fromEntries(STATUS_OPTIONS.map((opt) => [opt.value, opt]));
+// const STATUS_CONFIG = Object.fromEntries(STATUS_OPTIONS.map((opt) => [opt.value, opt]));
 
 const useResizable = (initial: number, min: number, max: number) => {
   const [width, setWidth] = useState(initial);
@@ -154,20 +160,20 @@ export const UserStoryDetailDrawer = ({
     const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
     const assigneeInitials = assigneeName
       ? assigneeName
-          .split(' ')
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
       : '';
 
     return {
       ...editableFields, // Use local state for editable fields
       priority: currentUserStory.priority
         ? ((currentUserStory.priority.charAt(0).toUpperCase() +
-            currentUserStory.priority.slice(1).toLowerCase()) as Priority)
+          currentUserStory.priority.slice(1).toLowerCase()) as Priority)
         : ('Medium' as Priority),
-      status: currentUserStory.status ?? 'todo',
+      status: currentUserStory.status ?? '',
       storyPoints: currentUserStory.story_points ?? 0,
       assigneeId: currentUserStory.assignee_id ?? '',
       assigneeName: assigneeName,
@@ -205,13 +211,24 @@ export const UserStoryDetailDrawer = ({
   const [selectedSprintName, setSelectedSprintName] = useState('');
 
   const debouncedSprintSearch = useDebounce(sprintSearch, 500);
-
+  const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalMode, setStatusModalMode] =
+    useState<'add' | 'edit' | 'delete'>('add');
+  const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
+  const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     currentUserStory.project_id ?? '',
     { page: 1, page_size: 10, name: debouncedAssigneeSearch },
     showAssigneeMenu
   );
+
+  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
+  const {
+    mutateAsync: deleteStatus,
+    isPending: isDeletingStatus,
+  } = useDeleteStatus();
   const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
     currentUserStory.project_id ?? '',
     {
@@ -313,7 +330,21 @@ export const UserStoryDetailDrawer = ({
     colors.avatarAmber,
     colors.avatarIndigo,
   ];
+  const handleDeleteStatus = async (status: CustomStatus) => {
+    if (!status.id) return;
 
+    try {
+      await deleteStatus({
+        projectId: currentUserStory.project_id ?? '',
+        statusId: status.id,
+      });
+
+      setShowStatusMenu(false);
+      onUpdate?.();
+    } catch (error) {
+      logger.log('Failed to delete custom status', error);
+    }
+  };
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
@@ -327,7 +358,7 @@ export const UserStoryDetailDrawer = ({
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -353,7 +384,20 @@ export const UserStoryDetailDrawer = ({
     { key: 'comments', label: 'Comments' },
     { key: 'history', label: 'History' },
   ];
+  const allStatusOptions = [...customStatuses]
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((status) => ({
+      value: status.id,
+      label: status.name,
+      color: status.color,
+      bg: `${status.color}18`,
+      dot: status.color,
+      display_order: status.display_order,
+    }));
 
+  const allStatusConfig = Object.fromEntries(
+    allStatusOptions.map((option) => [option.value, option])
+  );
   return (
     <>
       <div
@@ -421,21 +465,19 @@ export const UserStoryDetailDrawer = ({
           <div className="flex sm:hidden border-b border-gray-200 shrink-0">
             <button
               onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'content'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-              }`}
+                }`}
             >
               Content
             </button>
             <button
               onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'details'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-              }`}
+                }`}
             >
               Details
             </button>
@@ -453,9 +495,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
-                mobileTab === 'details' ? 'hidden sm:block' : 'block'
-              }`}
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                }`}
             >
               {editingTitle ? (
                 <div className="mb-5">
@@ -649,11 +690,11 @@ export const UserStoryDetailDrawer = ({
                                     initials={
                                       task.assignee_name
                                         ? task.assignee_name
-                                            .split(' ')
-                                            .map((name) => name[0])
-                                            .join('')
-                                            .slice(0, 2)
-                                            .toUpperCase()
+                                          .split(' ')
+                                          .map((name) => name[0])
+                                          .join('')
+                                          .slice(0, 2)
+                                          .toUpperCase()
                                         : 'UN'
                                     }
                                     color={getMemberColor(task.assignee_id)}
@@ -702,9 +743,8 @@ export const UserStoryDetailDrawer = ({
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
-                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-                        tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                        }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
                       }}
@@ -769,9 +809,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 ${
-                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-              }`}
+              className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+                }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
@@ -782,9 +821,10 @@ export const UserStoryDetailDrawer = ({
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
                     style={{
-                      color: STATUS_CONFIG[userStoryData.status]?.color || colors.colTodo,
-                      backgroundColor: STATUS_CONFIG[userStoryData.status]?.bg || colors.colTodoBg,
-                      borderColor: `${STATUS_CONFIG[userStoryData.status]?.dot || colors.colTodo}55`,
+                      color: allStatusConfig[userStoryData.status]?.color || colors.colTodo,
+                      backgroundColor:
+                        allStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
+                      borderColor: `${allStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
                     }}
                   >
                     <span className="flex items-center gap-2">
@@ -792,18 +832,20 @@ export const UserStoryDetailDrawer = ({
                         className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{
                           backgroundColor:
-                            STATUS_CONFIG[userStoryData.status]?.dot || colors.colTodo,
+                            allStatusConfig[userStoryData.status]?.dot || colors.colTodo,
                         }}
                       />
-                      {STATUS_CONFIG[userStoryData.status]?.label || 'To Do'}
+                      {allStatusConfig[userStoryData.status]?.label || 'To Do'}
                     </span>
                     <ChevronDown size={14} />
                   </button>
                   {showStatusMenu && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
-                      {STATUS_OPTIONS.map((option) => (
+                      {/* Status Options */}
+                      {allStatusOptions.map((option) => (
                         <button
                           key={option.value}
+                          type="button"
                           onClick={() => {
                             setShowStatusMenu(false);
                             handleUpdate({ status: option.value });
@@ -820,12 +862,101 @@ export const UserStoryDetailDrawer = ({
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: option.dot }}
                           />
+
                           {option.label}
+
                           {option.value === userStoryData.status && (
                             <Check size={13} className="ml-auto" />
                           )}
                         </button>
                       ))}
+
+                      {/* Divider */}
+                      <div className="my-1 border-t border-gray-200" />
+
+                      {/* Add Task */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowStatusMenu(false);
+                          setSelectedStatus(null);
+                          setStatusModalMode('add');
+                          setShowStatusModal(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Add Status
+                      </button>
+
+                      {/* Edit Task */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowStatusMenu(false);
+                          let statusToEdit = customStatuses.find(
+                            (status) => status.id === userStoryData.status
+                          );
+                          if (!statusToEdit) {
+                            const currentStatus = String(userStoryData.status)
+                              .toLowerCase()
+                              .replace(/[_-]/g, ' ')
+                              .trim();
+
+                            statusToEdit = customStatuses.find((status) => {
+                              const statusName = status.name
+                                .toLowerCase()
+                                .replace(/[_-]/g, ' ')
+                                .trim();
+
+                              return statusName === currentStatus;
+                            });
+                          }
+
+                          if (!statusToEdit) {
+                            statusToEdit = customStatuses.find((status) => status.is_default);
+                          }
+
+                          // Final fallback
+                          if (!statusToEdit && customStatuses.length > 0) {
+                            statusToEdit = customStatuses[0];
+                          }
+
+                          if (!statusToEdit) {
+                            return;
+                          }
+
+                          setSelectedStatus(statusToEdit);
+                          setStatusModalMode('edit');
+                          setShowStatusModal(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Edit Status
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowStatusMenu(false);
+
+                          setSelectedStatus(null);
+                          setStatusModalMode('delete');
+                          setShowStatusModal(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Delete Status
+                      </button>
+                      {/* View Workflow */}
+                      {/* <button
+                        type="button"
+                        onClick={() => {
+                          setShowStatusMenu(false);
+                          setShowWorkflowModal(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        View workflow
+                      </button> */}
                     </div>
                   )}
                 </div>
@@ -957,7 +1088,7 @@ export const UserStoryDetailDrawer = ({
                         {selectedSprintName ||
                           (userStoryData.sprintId
                             ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
-                                ?.name || 'Sprint assigned'
+                              ?.name || 'Sprint assigned'
                             : 'No sprint')}
                       </span>
 
@@ -1023,10 +1154,10 @@ export const UserStoryDetailDrawer = ({
                   <span className="text-sm text-gray-700">
                     {userStoryData.start_date
                       ? new Date(userStoryData.start_date).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })
                       : 'None'}
                   </span>
                 </DetailRow>
@@ -1050,14 +1181,17 @@ export const UserStoryDetailDrawer = ({
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl mx-4">
             <h3 className="text-lg font-bold text-gray-900">Delete User Story</h3>
+
             <p className="mt-2 text-sm text-gray-500">
               Are you sure you want to delete this user story? This action cannot be undone and will
               also affect all associated tasks.
             </p>
+
             <div className="mt-6 flex justify-end gap-3">
               <WpButton variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </WpButton>
+
               <WpButton
                 variant="primary"
                 size="sm"
@@ -1074,18 +1208,32 @@ export const UserStoryDetailDrawer = ({
           </div>
         </div>
       )}
-
-      {/* Task Detail Drawer */}
       {selectedTask && (
-        <TaskDetailDrawer
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onUpdate={() => {
-            setSelectedTask(null);
-            onUpdate?.();
+        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
+      {/* Add Status Modal */}
+      {showStatusModal && (
+        <StatusModal
+          projectId={currentUserStory.project_id ?? ''}
+          mode={statusModalMode}
+          status={selectedStatus}
+          statuses={customStatuses}
+          onClose={() => {
+            setShowStatusModal(false);
+            setSelectedStatus(null);
           }}
         />
       )}
+
+      {/* {showWorkflowModal && (
+        <WorkflowModal
+          statuses={customStatuses}
+          currentStatus={userStoryData.status}
+          onClose={() => setShowWorkflowModal(false)}
+        />
+      )} */}
     </>
   );
 };
+
+export default UserStoryDetailDrawer;
