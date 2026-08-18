@@ -30,7 +30,6 @@ import { useAppSelector } from '@/src/store';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { KanbanTask } from '@/src/types/board';
-import { ProjectDetailMember } from '@/src/types/project';
 import { UserStoryResponse } from '@/src/types/userstories';
 import CreateUserStoryModal from '../components/createUserStoryModal';
 import { SprintDropZone } from '../components/SprintDropZone';
@@ -199,7 +198,16 @@ export const BacklogTemplate = () => {
   );
 
   const handleDragOver = useCallback(() => {
-    // Optional: Add any drag over logic here if needed
+    // Drag over handler
+  }, []);
+
+  // Track mouse position for manual backlog drop detection
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      (window as Window & { __lastMouseEvent?: MouseEvent }).__lastMouseEvent = e;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const handleDragEnd = useCallback(
@@ -207,10 +215,34 @@ export const BacklogTemplate = () => {
       const { active, over } = event;
       setActiveStory(null);
 
-      if (!over) return;
+      // Check if we should force backlog drop
+      const backlogElement = document.querySelector('[data-backlog-drop="true"]');
+      let finalOver: typeof over = over;
+      
+      if (!over && backlogElement && active) {
+        // Get last mouse position
+        const lastMouseEvent = (window as Window & { __lastMouseEvent?: MouseEvent }).__lastMouseEvent;
+        if (lastMouseEvent) {
+          const rect = backlogElement.getBoundingClientRect();
+          const isInside = 
+            lastMouseEvent.clientX >= rect.left &&
+            lastMouseEvent.clientX <= rect.right &&
+            lastMouseEvent.clientY >= rect.top &&
+            lastMouseEvent.clientY <= rect.bottom;
+          
+          if (isInside) {
+            finalOver = {
+              id: 'backlog-unassigned',
+              data: { current: { sprintId: null } },
+            } as NonNullable<typeof over>;
+          }
+        }
+      }
+
+      if (!finalOver) return;
 
       const storyId = active.data.current?.storyId;
-      const targetSprintId = over.data.current?.sprintId;
+      const targetSprintId = finalOver.data.current?.sprintId;
 
       if (!storyId || !selectedProject) return;
 
@@ -268,7 +300,17 @@ export const BacklogTemplate = () => {
     disabled: false,
   });
 
-  // Custom collision detection - prioritize pointer position and handle nested droppables
+  // Debug: Log droppable setup
+  useEffect(() => {
+    // Track droppable registration
+  }, [unassignedStories.length, isOverBacklog, selectedProject]);
+
+  // Create a ref callback for the backlog droppable
+  const backlogRefCallback = useCallback((node: HTMLDivElement | null) => {
+    setBacklogNodeRef(node);
+  }, [setBacklogNodeRef]);
+
+  // Custom collision detection with DOM-based fallback for backlog
   const collisionDetectionStrategy = useCallback((args: Parameters<typeof pointerWithin>[0]) => {
     const { droppableContainers, pointerCoordinates, active } = args;
 
@@ -276,25 +318,49 @@ export const BacklogTemplate = () => {
       return closestCorners(args);
     }
 
-    // Get all potential collisions using pointer detection
+    const droppableArray = Array.from(droppableContainers.values());
+    const backlogDroppable = droppableArray.find(d => d.id === 'backlog-unassigned');
+
+    // WORKAROUND: If backlog droppable not found in containers, manually check DOM
+    if (!backlogDroppable) {
+      const backlogElement = document.querySelector('[data-backlog-drop="true"]');
+      if (backlogElement) {
+        const rect = backlogElement.getBoundingClientRect();
+        const isInside = 
+          pointerCoordinates.x >= rect.left &&
+          pointerCoordinates.x <= rect.right &&
+          pointerCoordinates.y >= rect.top &&
+          pointerCoordinates.y <= rect.bottom;
+
+        if (isInside) {
+          return [{ id: 'backlog-unassigned' }];
+        }
+      }
+    } else if (backlogDroppable.rect.current) {
+      // Normal check if droppable is registered
+      const rect = backlogDroppable.rect.current;
+      const isInside = 
+        pointerCoordinates.x >= rect.left &&
+        pointerCoordinates.x <= rect.right &&
+        pointerCoordinates.y >= rect.top &&
+        pointerCoordinates.y <= rect.bottom;
+
+      if (isInside) {
+        return [{ id: 'backlog-unassigned' }];
+      }
+    }
+
+    // Try pointer detection
     const pointerCollisions = pointerWithin(args);
-
     if (pointerCollisions.length > 0) {
-      // When dragging from a sprint, check if we're over the backlog
-      const isFromSprint = active.data.current?.storyId;
       const backlogCollision = pointerCollisions.find(({ id }) => id === 'backlog-unassigned');
-
-      // If we're over the backlog droppable, return only that
-      // This ensures backlog takes priority when cursor is over it
-      if (backlogCollision && isFromSprint) {
+      if (backlogCollision) {
         return [backlogCollision];
       }
-
-      // Otherwise return all pointer collisions (for sprint-to-sprint moves)
       return pointerCollisions;
     }
 
-    // Fallback to closest corners if no pointer collisions
+    // Fallback
     return closestCorners(args);
   }, []);
 
@@ -356,95 +422,98 @@ export const BacklogTemplate = () => {
               <>
                 {/* Unassigned User Stories Section - Full droppable area */}
                 <div
-                  className={`rounded-xl border bg-white overflow-hidden mb-3 transition-all duration-200 ${
+                  ref={backlogRefCallback}
+                  data-backlog-drop="true"
+                  className={`rounded-xl border bg-white overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
                     isOverBacklog
                       ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div ref={setBacklogNodeRef} className="min-h-[400px] w-full">
-                    <div
-                      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
-                        isOverBacklog ? 'border-green-200 bg-green-100' : 'border-gray-100'
+                  <div
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
+                      isOverBacklog ? 'border-green-200 bg-green-100' : 'border-gray-100'
+                    }`}
+                  >
+                    <span
+                      className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700' : 'text-gray-900'}`}
+                    >
+                      User Stories
+                    </span>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
+                        isOverBacklog
+                          ? 'bg-green-200 text-green-800 scale-110'
+                          : 'bg-gray-100 text-gray-500'
                       }`}
                     >
-                      <span
-                        className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700' : 'text-gray-900'}`}
-                      >
-                        User Stories
-                      </span>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-                          isOverBacklog
-                            ? 'bg-green-200 text-green-800 scale-110'
-                            : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {unassignedStories.length}{' '}
-                        {unassignedStories.length === 1 ? 'story' : 'stories'}
-                      </span>
-                    </div>
-                    {isOverBacklog && (
-                      <div className="px-3 sm:px-4 pt-2 pb-1">
-                        <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
-                          <div className="flex items-center justify-center gap-2">
-                            <svg
-                              className="w-5 h-5 text-green-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            <p className="text-sm text-green-700 font-semibold">
-                              Drop here to remove from sprint
-                            </p>
-                          </div>
+                      {unassignedStories.length}{' '}
+                      {unassignedStories.length === 1 ? 'story' : 'stories'}
+                    </span>
+                  </div>
+
+                  {isOverBacklog && (
+                    <div className="px-3 sm:px-4 pt-2 pb-1">
+                      <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
+                        <div className="flex items-center justify-center gap-2">
+                          <svg
+                            className="w-5 h-5 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <p className="text-sm text-green-700 font-semibold">
+                            Drop here to remove from sprint
+                          </p>
                         </div>
                       </div>
-                    )}
-                    {unassignedStories.length === 0 && !isOverBacklog ? (
-                      <div className="flex flex-col items-center justify-center py-12 px-4">
-                        <svg
-                          className="w-8 h-8 text-gray-300 mb-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                        <p className="text-sm text-gray-500 text-center">
-                          {!selectedProject
-                            ? 'Select a project to view stories'
-                            : 'No unassigned user stories'}
-                        </p>
-                        {selectedProject && (
-                          <p className="text-xs text-gray-400 mt-1 text-center">
-                            Create one or drag stories from sprints
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      unassignedStories.map((story) => (
-                        <DraggableUserStory
-                          key={story.id}
-                          story={story}
-                          projectId={selectedProject}
-                          onStoryClick={(story) => setSelectedUserStory(story)}
+                    </div>
+                  )}
+
+                  {/* Empty state or user stories */}
+                  {unassignedStories.length === 0 && !isOverBacklog ? (
+                    <div className="flex flex-col items-center justify-center py-12 px-4">
+                      <svg
+                        className="w-8 h-8 text-gray-300 mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
-                      ))
-                    )}
-                  </div>
+                      </svg>
+                      <p className="text-sm text-gray-500 text-center">
+                        {!selectedProject
+                          ? 'Select a project to view stories'
+                          : 'No unassigned user stories'}
+                      </p>
+                      {selectedProject && (
+                        <p className="text-xs text-gray-400 mt-1 text-center">
+                          Create one or drag stories from sprints
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    unassignedStories.map((story) => (
+                      <DraggableUserStory
+                        key={story.id}
+                        story={story}
+                        projectId={selectedProject}
+                        onStoryClick={(story) => setSelectedUserStory(story)}
+                      />
+                    ))
+                  )}
                 </div>
 
                 {/* Backlog Tasks Section */}

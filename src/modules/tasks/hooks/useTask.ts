@@ -12,6 +12,9 @@ import {
 const QUERY_KEYS = {
   tasks: 'tasks',
   task: 'task',
+  userStory: 'user-story',
+  userStories: 'user-stories',
+  storyRelationship:'task-story-relationship'
 };
 
 export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, enabled = true) => {
@@ -46,16 +49,16 @@ export const useCreateTask = (projectId: string) => {
       if (variables.user_story_id) {
         // Invalidate the specific user story to refresh its tasks array
         queryClient.invalidateQueries({
-          queryKey: ['user-story', projectId, variables.user_story_id],
+          queryKey: [QUERY_KEYS.userStory, projectId, variables.user_story_id],
         });
 
         // Also invalidate the user stories list to update counters
         queryClient.invalidateQueries({
-          queryKey: ['user-stories', projectId],
+          queryKey: [QUERY_KEYS.userStories, projectId],
         });
 
         queryClient.invalidateQueries({
-          queryKey: ['task-story-relationship', projectId, variables.user_story_id],
+          queryKey: [QUERY_KEYS.storyRelationship, projectId, variables.user_story_id],
         });
       }
     },
@@ -97,18 +100,18 @@ export const useDeleteTask = (projectId: string) => {
 
       // Invalidate user stories to update task counts and lists
       queryClient.invalidateQueries({
-        queryKey: ['user-stories', projectId],
+        queryKey: [QUERY_KEYS.userStories, projectId],
       });
 
       // Invalidate all user story details (we don't know which specific ones were affected)
       queryClient.invalidateQueries({
-        queryKey: ['user-story', projectId],
+        queryKey: [QUERY_KEYS.userStory, projectId],
         exact: false,
       });
 
       // Invalidate task-story-relationship queries (covers all user stories)
       queryClient.invalidateQueries({
-        queryKey: ['task-story-relationship', projectId],
+        queryKey: [QUERY_KEYS.storyRelationship, projectId],
       });
 
       // Remove individual task queries
@@ -196,6 +199,21 @@ export const useCloneTask = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, variables.projectId],
+      });
+            // Invalidate user stories to update task counts and lists
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userStories, variables.projectId],
+      });
+
+      // Invalidate all user story details (we don't know which specific ones were affected)
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userStory, variables.projectId],
+        exact: false,
+      });
+
+      // Invalidate task-story-relationship queries (covers all user stories)
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.storyRelationship, variables.projectId],
       });
     },
   });
