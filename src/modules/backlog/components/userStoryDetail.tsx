@@ -75,7 +75,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
     projectId: task.project_id ?? '',
     title: task.title ?? '',
     columnId: task.status as ColumnId,
-    status : task.status ?? '',
+    status: task.status ?? '',
     description: '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +

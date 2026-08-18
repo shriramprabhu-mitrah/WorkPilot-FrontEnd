@@ -14,7 +14,7 @@ const QUERY_KEYS = {
   task: 'task',
   userStory: 'user-story',
   userStories: 'user-stories',
-  storyRelationship:'task-story-relationship'
+  storyRelationship: 'task-story-relationship',
 };
 
 export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, enabled = true) => {
@@ -200,7 +200,7 @@ export const useCloneTask = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
-            // Invalidate user stories to update task counts and lists
+      // Invalidate user stories to update task counts and lists
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.userStories, variables.projectId],
       });

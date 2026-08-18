@@ -15,9 +15,7 @@ export interface AssignColorToTaskResponse {
 
 export const customStatusService = {
   // GET - Get all custom colors/statuses
-  getCustomStatuses: async (
-    projectId: string
-  ): Promise<CustomStatus[]> => {
+  getCustomStatuses: async (projectId: string): Promise<CustomStatus[]> => {
     const response = await apiService.get<CustomStatus[]>(
       ApiEndpoints.Colors.getCustomStatuses.withParams(projectId).url
     );
@@ -53,10 +51,7 @@ export const customStatusService = {
   },
 
   // DELETE - Delete custom color/status
-  deleteCustomStatus: async (
-    projectId: string,
-    statusId: string
-  ) => {
+  deleteCustomStatus: async (projectId: string, statusId: string) => {
     const response = await apiService.delete(
       ApiEndpoints.Colors.deleteCustomStatus(projectId, statusId)
     );

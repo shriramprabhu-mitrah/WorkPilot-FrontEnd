@@ -33,12 +33,11 @@ export async function middleware(req: NextRequest) {
 
   // Public routes that don't require authentication
   const isPublicRoute =
-    pathname === '/' || 
-    pathname.startsWith('/signin') || 
-    pathname.startsWith('/signup');
+    pathname === '/' || pathname.startsWith('/signin') || pathname.startsWith('/signup');
 
   // Organization-protected routes (anything under /{orgSlug}/)
-  const orgSlugPattern = /^\/[^\/]+\/(dashboard|projects|backlog|tasks|boards|settings|profile|teams|calendar|reports|analytics|issues|members|sprint)/;
+  const orgSlugPattern =
+    /^\/[^\/]+\/(dashboard|projects|backlog|tasks|boards|settings|profile|teams|calendar|reports|analytics|issues|members|sprint)/;
   const isOrgProtectedRoute = orgSlugPattern.test(pathname);
 
   const isSetupRoute = pathname.startsWith('/setup');
@@ -75,7 +74,11 @@ export async function middleware(req: NextRequest) {
   }
 
   // No tokens at all on a protected route
-  if (!accessToken && !refreshToken && (isOrgProtectedRoute || (pathname === '/' && !isPublicRoute))) {
+  if (
+    !accessToken &&
+    !refreshToken &&
+    (isOrgProtectedRoute || (pathname === '/' && !isPublicRoute))
+  ) {
     return NextResponse.redirect(new URL(DEFAULT_PUBLIC, req.url));
   }
 

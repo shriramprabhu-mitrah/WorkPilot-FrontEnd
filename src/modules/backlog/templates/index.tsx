@@ -218,18 +218,19 @@ export const BacklogTemplate = () => {
       // Check if we should force backlog drop
       const backlogElement = document.querySelector('[data-backlog-drop="true"]');
       let finalOver: typeof over = over;
-      
+
       if (!over && backlogElement && active) {
         // Get last mouse position
-        const lastMouseEvent = (window as Window & { __lastMouseEvent?: MouseEvent }).__lastMouseEvent;
+        const lastMouseEvent = (window as Window & { __lastMouseEvent?: MouseEvent })
+          .__lastMouseEvent;
         if (lastMouseEvent) {
           const rect = backlogElement.getBoundingClientRect();
-          const isInside = 
+          const isInside =
             lastMouseEvent.clientX >= rect.left &&
             lastMouseEvent.clientX <= rect.right &&
             lastMouseEvent.clientY >= rect.top &&
             lastMouseEvent.clientY <= rect.bottom;
-          
+
           if (isInside) {
             finalOver = {
               id: 'backlog-unassigned',
@@ -306,9 +307,12 @@ export const BacklogTemplate = () => {
   }, [unassignedStories.length, isOverBacklog, selectedProject]);
 
   // Create a ref callback for the backlog droppable
-  const backlogRefCallback = useCallback((node: HTMLDivElement | null) => {
-    setBacklogNodeRef(node);
-  }, [setBacklogNodeRef]);
+  const backlogRefCallback = useCallback(
+    (node: HTMLDivElement | null) => {
+      setBacklogNodeRef(node);
+    },
+    [setBacklogNodeRef]
+  );
 
   // Custom collision detection with DOM-based fallback for backlog
   const collisionDetectionStrategy = useCallback((args: Parameters<typeof pointerWithin>[0]) => {
@@ -319,14 +323,14 @@ export const BacklogTemplate = () => {
     }
 
     const droppableArray = Array.from(droppableContainers.values());
-    const backlogDroppable = droppableArray.find(d => d.id === 'backlog-unassigned');
+    const backlogDroppable = droppableArray.find((d) => d.id === 'backlog-unassigned');
 
     // WORKAROUND: If backlog droppable not found in containers, manually check DOM
     if (!backlogDroppable) {
       const backlogElement = document.querySelector('[data-backlog-drop="true"]');
       if (backlogElement) {
         const rect = backlogElement.getBoundingClientRect();
-        const isInside = 
+        const isInside =
           pointerCoordinates.x >= rect.left &&
           pointerCoordinates.x <= rect.right &&
           pointerCoordinates.y >= rect.top &&
@@ -339,7 +343,7 @@ export const BacklogTemplate = () => {
     } else if (backlogDroppable.rect.current) {
       // Normal check if droppable is registered
       const rect = backlogDroppable.rect.current;
-      const isInside = 
+      const isInside =
         pointerCoordinates.x >= rect.left &&
         pointerCoordinates.x <= rect.right &&
         pointerCoordinates.y >= rect.top &&

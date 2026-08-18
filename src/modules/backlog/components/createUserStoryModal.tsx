@@ -37,9 +37,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
     queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
     onClose();
   };
-  const handleAttachmentChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
 
     if (!files.length) return;
@@ -94,9 +92,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
           </div>
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">
-                Attachments
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Attachments</label>
 
               <input
                 ref={attachmentInputRef}
@@ -124,9 +120,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
 
                 <p className="text-sm text-gray-500">No attachments</p>
 
-                <p className="mt-1 text-xs text-gray-400">
-                  Add files to this story
-                </p>
+                <p className="mt-1 text-xs text-gray-400">Add files to this story</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -140,10 +134,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p
-                        className="truncate text-sm font-medium text-gray-700"
-                        title={file.name}
-                      >
+                      <p className="truncate text-sm font-medium text-gray-700" title={file.name}>
                         {file.name}
                       </p>
 

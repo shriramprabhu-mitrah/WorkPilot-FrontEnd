@@ -14,11 +14,10 @@ export interface CreateCustomStatusPayload {
 }
 
 export interface UpdateCustomStatusPayload {
-  display_name?: string;
+  name?: string;
   color?: string;
   display_order?: number;
 }
-
 export interface AssignColorToTaskPayload {
   title: string;
   description: string;

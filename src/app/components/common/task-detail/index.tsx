@@ -321,10 +321,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       event.target.value = '';
     }
   };
-  
+
   const handleClone = async () => {
     if (!task.projectId || !task.taskId) return;
-    
+
     try {
       await cloneTaskAsync({
         projectId: task.projectId,
@@ -340,7 +340,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
   const handleDeleteTask = async () => {
     if (!task.projectId || !task.taskId) return;
-    
+
     try {
       await deleteTask([task.taskId]);
       toast.success('Task deleted successfully');
@@ -423,7 +423,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </div>
               )}
             </div>
-            
+
             {/* Close button */}
             <button
               onClick={onClose}

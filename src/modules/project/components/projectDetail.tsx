@@ -65,11 +65,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
   const { updateProjectRole, isUpdatingProjectRole, updateProjectRoleAsync } =
     useUpdateProjectRole();
-  const {
-    sprints: apiSprints,
-    isLoadingSprints,
-    refetchSprints,
-  } = useGetSprints(project.id || '');
+  const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
 

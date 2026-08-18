@@ -38,7 +38,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Show loading state only while organization is being fetched
   if (isOrganizationLoading || !organization.slug) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ backgroundColor: colors.gray50 }}>
+      <div
+        className="flex h-screen items-center justify-center"
+        style={{ backgroundColor: colors.gray50 }}
+      >
         <div className="text-gray-500">Loading...</div>
       </div>
     );
