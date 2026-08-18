@@ -9,6 +9,7 @@ import { PRIORITY_TYPE, priorityOptions } from '@/src/app/components/common/enum
 import { useCreateUserStory } from '@/src/modules/tasks/hooks/useUserStory';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector } from '@/src/store';
+import { useUploadUserStoryAttachment } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
 
 interface CreateUserStoryModalProps {
   onClose: () => void;
@@ -24,18 +25,40 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const projectId = selectedProject?.id ?? '';
   const queryClient = useQueryClient();
   const { createUserStoryAsync, isCreatingUserStory } = useCreateUserStory(projectId);
+  const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
+    useUploadUserStoryAttachment(projectId);
   const [attachments, setAttachments] = useState<File[]>([]);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const handleCreate = async () => {
     if (!title.trim() || !projectId) return;
-    await createUserStoryAsync({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      priority: priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical',
-      story_points: storyPoints ? Number(storyPoints) : undefined,
-    });
-    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-    onClose();
+
+    try {
+      const response = await createUserStoryAsync({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        priority: priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical',
+        story_points: storyPoints ? Number(storyPoints) : undefined,
+      });
+
+      const userStoryId = response?.data?.id;
+
+      if (!userStoryId) {
+        return;
+      }
+
+      for (const file of attachments) {
+        await uploadUserStoryAttachmentAsync({
+          userStoryId,
+          file,
+        });
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['user-stories', projectId],
+      });
+
+      onClose();
+    } catch (error) {}
   };
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -183,8 +206,8 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
           <WpButton
             type="button"
             onClick={handleCreate}
-            disabled={!title.trim() || isCreatingUserStory}
-            isLoading={isCreatingUserStory}
+            disabled={!title.trim() || isCreatingUserStory || isUploadingUserStoryAttachment}
+            isLoading={isCreatingUserStory || isUploadingUserStoryAttachment}
           >
             Create Story
           </WpButton>

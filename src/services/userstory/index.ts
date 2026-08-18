@@ -129,7 +129,7 @@ class UserStoryService {
     });
     const formData = new FormData();
     formData.append('file', file);
-    return apiService.post<UserStoryAttachmentResponse>(url, formData);
+    return apiService.postFormData<UserStoryAttachmentResponse>(url, formData);
   }
 
   async getUserStoryAttachments(

@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Download,
 } from 'lucide-react';
 import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
@@ -38,6 +39,13 @@ import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from '../task-detail/components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
+import {
+  useUploadUserStoryAttachment,
+  useGetUserStoryAttachments,
+  useDownloadUserStoryAttachment,
+  useDeleteUserStoryAttachment,
+} from '@/src/modules/tasks/hooks/useUserStoryAttachment';
+
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -146,7 +154,22 @@ export const UserStoryDetailDrawer = ({
 
   // Use fetched data if available, otherwise fall back to initial prop
   const currentUserStory = fetchedUserStory || initialUserStory;
+  const projectId = currentUserStory.project_id ?? '';
+  const userStoryId = currentUserStory.id;
 
+  const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
+
+  const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
+    useUploadUserStoryAttachment(projectId);
+  const { downloadAttachment, isDownloadingAttachment } = useDownloadUserStoryAttachment(
+    projectId,
+    userStoryId
+  );
+
+  const { deleteAttachmentAsync, isDeletingAttachment } = useDeleteUserStoryAttachment(
+    projectId,
+    userStoryId
+  );
   // Only keep editable fields in local state to avoid cascading renders
   const [editableFields, setEditableFields] = useState({
     title: currentUserStory.title,
@@ -392,6 +415,19 @@ export const UserStoryDetailDrawer = ({
   const allStatusConfig = Object.fromEntries(
     allStatusOptions.map((option) => [option.value, option])
   );
+  const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      await uploadUserStoryAttachmentAsync({ userStoryId, file });
+    } catch (error) {
+      logger.log('Failed to upload user story attachment', error);
+    } finally {
+      event.target.value = '';
+    }
+  };
   return (
     <>
       <div
@@ -600,16 +636,107 @@ export const UserStoryDetailDrawer = ({
               </section>
 
               {/* Attachments Section - Placeholder */}
+              {/* Attachments Section */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-700">Attachments</p>
+
+                  <label
+                    htmlFor="user-story-attachment"
+                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors ${
+                      isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
+                    }`}
+                  >
+                    <Plus size={14} />
+                    {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
+                  </label>
+
+                  <input
+                    id="user-story-attachment"
+                    type="file"
+                    className="hidden"
+                    onChange={handleAttachmentUpload}
+                    disabled={isUploadingUserStoryAttachment}
+                  />
                 </div>
-                <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
-                  <p className="text-sm text-gray-500">No attachments</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Attachments coming soon for user stories
-                  </p>
-                </div>
+
+                {isLoadingAttachments ? (
+                  <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center">
+                    <p className="text-sm text-gray-500">Loading attachments...</p>
+                  </div>
+                ) : attachments.length === 0 ? (
+                  <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
+                    <p className="text-sm text-gray-500">No attachments</p>
+
+                    <p className="text-xs text-gray-400 mt-1">Add files to this user story</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {attachments.map((attachment) => (
+                      <div
+                        key={attachment.id}
+                        className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText size={18} className="text-blue-600 shrink-0" />
+
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-700 truncate">
+                              {attachment.original_filename}
+                            </p>
+
+                            <p className="text-xs text-gray-400">
+                              {attachment.file_size
+                                ? `${Math.round(attachment.file_size / 1024)} KB`
+                                : ''}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            disabled={isDownloadingAttachment}
+                            onClick={async () => {
+                              try {
+                                const blob = await downloadAttachment.mutateAsync(attachment.id);
+
+                                const url = window.URL.createObjectURL(blob);
+
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = attachment.original_filename;
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+
+                                window.URL.revokeObjectURL(url);
+                              } catch (error) {
+                                logger.log('Failed to download attachment', error);
+                              }
+                            }}
+                            className="rounded-lg px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                          >
+                            Download
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={isDeletingAttachment}
+                            onClick={async () => {
+                              try {
+                                await deleteAttachmentAsync(attachment.id);
+                              } catch (error) {}
+                            }}
+                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-50"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Child Tickets Section */}

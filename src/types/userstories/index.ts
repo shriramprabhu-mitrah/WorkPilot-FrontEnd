@@ -79,7 +79,6 @@ export interface ReorderUserStoriesPayload {
   user_story_ids: string[];
 }
 
-
 export interface UserStoryAttachment {
   id: string;
   user_story_id: string;
