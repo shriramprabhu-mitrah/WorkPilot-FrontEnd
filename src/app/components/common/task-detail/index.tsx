@@ -3,14 +3,15 @@ import {
   ChevronDown,
   Check,
   FileText,
-  Link2,
-  MoreHorizontal,
+  MoreVertical,
   Plus,
   X,
   User,
   Paperclip,
   Download,
   Trash2,
+  Pencil,
+  Copy,
 } from 'lucide-react';
 import type { ColumnId, KanbanTask, Priority, SubTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
@@ -25,13 +26,9 @@ import {
   EditablePriority,
   EditableText,
 } from './components/editable-fields';
-import { SubtasksSection } from './components/subtasks-section';
 import { useResize } from '@/src/hooks/useResize';
 import { taskService } from '@/src/services/tasks';
-import { projectService } from '@/src/services/project';
 import { logger } from '@/src/lib/utils/logger';
-import type { ProjectMember } from '@/src/types/project';
-import { formatISODateTime } from '@/src/app/components/common/format';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { WpButton } from '../button';
@@ -48,11 +45,14 @@ interface CustomStatus {
   display_order: number;
   is_default: boolean;
 }
+import { useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
+import toast from 'react-hot-toast';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
   onClose: () => void;
   onUpdate?: (updated: Partial<KanbanTask>) => void;
+  onDelete?: () => void;
 }
 
 const useResizable = (initial: number, min: number, max: number) => {
@@ -87,7 +87,7 @@ const useResizable = (initial: number, min: number, max: number) => {
   return { width, onMouseDown };
 };
 
-export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerProps) => {
+export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDetailDrawerProps) => {
   const [taskData, setTaskData] = useState({
     subtasks: task.subtasks ?? [],
     status: task.status ?? task.columnId ?? '',
@@ -107,6 +107,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   // const [members, setMembers] = useState<ProjectMember[]>([]);
 
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [showActionMenu, setShowActionMenu] = useState(false);
+  const [showCloneModal, setShowCloneModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [keepAssignee, setKeepAssignee] = useState(true);
   const [assigneeSearch, setAssigneeSearch] = useState('');
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
@@ -119,6 +123,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     showAssigneeMenu
   );
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -141,6 +146,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   }));
 
   const selectedStatus = statuses.find((status) => status.id === taskData.status);
+  const { cloneTaskAsync, isCloningTask } = useCloneTask();
+  const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
@@ -253,6 +260,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
       if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
         setShowAssigneeMenu(false);
       }
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
+        setShowActionMenu(false);
+      }
     };
 
     document.addEventListener('mousedown', handler);
@@ -311,6 +321,36 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
       event.target.value = '';
     }
   };
+  
+  const handleClone = async () => {
+    if (!task.projectId || !task.taskId) return;
+    
+    try {
+      await cloneTaskAsync({
+        projectId: task.projectId,
+        taskId: task.taskId,
+        payload: { keep_assignee: keepAssignee },
+      });
+      setShowCloneModal(false);
+      onClose();
+    } catch (error) {
+      toast.error('Failed to clone task');
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!task.projectId || !task.taskId) return;
+    
+    try {
+      await deleteTask([task.taskId]);
+      toast.success('Task deleted successfully');
+      setShowDeleteConfirm(false);
+      onDelete?.();
+      onClose();
+    } catch (error) {
+      toast.error('Failed to delete task');
+    }
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -336,6 +376,55 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
             )}
           </div>
           <div className="flex items-center gap-1">
+            {/* Three-dot menu */}
+            <div className="relative" ref={actionMenuRef}>
+              <button
+                onClick={() => setShowActionMenu(!showActionMenu)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+              >
+                <MoreVertical size={17} />
+              </button>
+
+              {showActionMenu && (
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowActionMenu(false);
+                      // Update is handled inline in the drawer
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil size={14} />
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowActionMenu(false);
+                      setShowCloneModal(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Copy size={14} />
+                    Clone
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowActionMenu(false);
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Close button */}
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
@@ -884,6 +973,89 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
           </div>
         </div>
       </div>
+
+      {/* Clone Modal */}
+      {showCloneModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+          onClick={() => setShowCloneModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Clone Task</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Create a copy of this task with the same details.
+            </p>
+
+            <label className="flex items-center gap-2 mb-6">
+              <input
+                type="checkbox"
+                checked={keepAssignee}
+                onChange={(e) => setKeepAssignee(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Keep assignee</span>
+            </label>
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowCloneModal(false)}
+                disabled={isCloningTask}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClone}
+                disabled={isCloningTask}
+                className="px-4 py-2 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
+                style={{ backgroundColor: colors.primary }}
+              >
+                {isCloningTask ? 'Cloning...' : 'Clone'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Delete Task</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this task? This action cannot be undone.
+            </p>
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeletingTask}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTask}
+                disabled={isDeletingTask}
+                className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60"
+              >
+                {isDeletingTask ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
