@@ -46,6 +46,7 @@ import {
   useDeleteUserStoryAttachment,
 } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
 
+import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -176,6 +177,8 @@ export const UserStoryDetailDrawer = ({
     description: currentUserStory.description ?? '',
   });
 
+  
+
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
     const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
@@ -219,6 +222,8 @@ export const UserStoryDetailDrawer = ({
 
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [childAssigneeTaskId, setChildAssigneeTaskId] = useState<string | null>(null);
+  const [childAssigneeSearch, setChildAssigneeSearch] = useState('');
   const [assigneeSearch, setAssigneeSearch] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -235,9 +240,12 @@ export const UserStoryDetailDrawer = ({
   const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const debouncedChildAssigneeSearch = useDebounce(childAssigneeSearch, 500);
   const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
   const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
+  const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     currentUserStory.project_id ?? '',
     { page: 1, page_size: 10, name: debouncedAssigneeSearch },
@@ -260,6 +268,22 @@ export const UserStoryDetailDrawer = ({
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
+  const childAssigneeMenuRef = useRef<HTMLDivElement>(null);
+  const {
+    members: childAssigneeMembers,
+    isLoadingMembers: isLoadingChildAssignees,
+    isFetchingMembers: isFetchingChildAssignees,
+  } = useGetProjectMembers(
+    currentUserStory.project_id ?? '',
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedChildAssigneeSearch,
+    },
+    !!childAssigneeTaskId
+  );
+
+  const { updateTaskAsync, isUpdatingTask } = useUpdateTask();
 
   const { width: screenWidth } = useResize();
   const isMobile = screenWidth < 640;
@@ -762,7 +786,8 @@ export const UserStoryDetailDrawer = ({
                     <p className="text-xs text-gray-400 mt-1">Create tasks to track work</p>
                   </div>
                 ) : (
-                  <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                  <div className="border border-gray-200 rounded-xl overflow-visible bg-white">
+                    {' '}
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -808,46 +833,284 @@ export const UserStoryDetailDrawer = ({
 
                             {/* Assignee Column */}
                             <td className="px-4 py-3">
-                              {task.assignee_id ? (
-                                <div className="flex items-center gap-2">
-                                  <AssigneeAvatar
-                                    initials={
-                                      task.assignee_name
-                                        ? task.assignee_name
-                                            .split(' ')
-                                            .map((name) => name[0])
-                                            .join('')
-                                            .slice(0, 2)
-                                            .toUpperCase()
-                                        : 'UN'
+                              <div
+                                className="relative"
+                                ref={
+                                  childAssigneeTaskId === task.id ? childAssigneeMenuRef : undefined
+                                }
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    if (childAssigneeTaskId === task.id) {
+                                      setChildAssigneeTaskId(null);
+                                      setChildAssigneeSearch('');
+                                    } else {
+                                      setChildAssigneeTaskId(task.id ?? null);
+                                      setChildAssigneeSearch('');
                                     }
-                                    color={getMemberColor(task.assignee_id)}
-                                    size="sm"
-                                  />
-                                  <span className="text-gray-700 truncate">
+                                  }}
+                                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                                >
+                                  {task.assignee_id ? (
+                                    <AssigneeAvatar
+                                      initials={
+                                        task.assignee_name
+                                          ? task.assignee_name
+                                              .split(' ')
+                                              .map((name) => name[0])
+                                              .join('')
+                                              .slice(0, 2)
+                                              .toUpperCase()
+                                          : 'UN'
+                                      }
+                                      color={getMemberColor(task.assignee_id)}
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                                      <User size={12} className="text-gray-400" />
+                                    </span>
+                                  )}
+
+                                  <span className="text-sm text-gray-700 truncate">
                                     {task.assignee_name || 'Unassigned'}
                                   </span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-500">Unassigned</span>
-                              )}
+
+                                  <ChevronDown
+                                    size={12}
+                                    className="ml-auto text-gray-400 shrink-0"
+                                  />
+                                </button>
+
+                                {childAssigneeTaskId === task.id && (
+                                  <div
+                                    className="absolute left-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-[99999] overflow-hidden"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {/* Search */}
+                                    <div className="p-2 border-b border-gray-200">
+                                      <WpInput
+                                        value={childAssigneeSearch}
+                                        onChange={(e) => setChildAssigneeSearch(e.target.value)}
+                                        placeholder="Search assignee..."
+                                        autoFocus
+                                      />
+                                    </div>
+
+                                    {/* Loading */}
+                                    {(isLoadingChildAssignees || isFetchingChildAssignees) && (
+                                      <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                                        Searching...
+                                      </div>
+                                    )}
+
+                                    {/* Members */}
+                                    {!isLoadingChildAssignees &&
+                                      !isFetchingChildAssignees &&
+                                      childAssigneeMembers?.map((m) => {
+                                        const name = m.full_name ?? m.user?.name ?? '';
+
+                                        const displayName =
+                                          name ||
+                                          m.user?.email?.split('@')[0] ||
+                                          m.user?.email ||
+                                          'Unknown User';
+
+                                        const initials = getInitials(
+                                          name || m.user?.email?.split('@')[0] || 'U'
+                                        );
+
+                                        const color = getMemberColor(m.user_id);
+
+                                        return (
+                                          <WpButton
+                                            key={m.user_id}
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              try {
+                                                await updateTaskAsync({
+                                                  projectId: currentUserStory.project_id ?? '',
+                                                  taskId: task.id ?? '',
+                                                  payload: {
+                                                    assignee_id: m.user_id,
+                                                  },
+                                                });
+
+                                                setChildAssigneeTaskId(null);
+                                                setChildAssigneeSearch('');
+                                              } catch (error) {
+                                                logger.log(
+                                                  'Failed to update child ticket assignee',
+                                                  error
+                                                );
+                                              }
+                                            }}
+                                            disabled={isUpdatingTask}
+                                            className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 text-gray-900"
+                                          >
+                                            <AssigneeAvatar
+                                              initials={initials}
+                                              color={color}
+                                              size="sm"
+                                            />
+
+                                            <span className="truncate">{displayName}</span>
+
+                                            {m.user_id === task.assignee_id && (
+                                              <Check
+                                                size={12}
+                                                className="ml-auto text-blue-600 shrink-0"
+                                              />
+                                            )}
+                                          </WpButton>
+                                        );
+                                      })}
+
+                                    {/* Unassigned */}
+                                    {!isLoadingChildAssignees &&
+                                      !isFetchingChildAssignees &&
+                                      !childAssigneeSearch && (
+                                        <WpButton
+                                          type="button"
+                                          variant="ghost"
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+
+                                            // Use your existing task update API here
+                                            // await updateTask(...)
+
+                                            setChildAssigneeTaskId(null);
+                                            setChildAssigneeSearch('');
+                                          }}
+                                          className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 hover:bg-gray-50"
+                                        >
+                                          <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                                            <User size={11} className="text-gray-400" />
+                                          </span>
+                                          Unassigned
+                                        </WpButton>
+                                      )}
+
+                                    {/* No results */}
+                                    {!isLoadingChildAssignees &&
+                                      !isFetchingChildAssignees &&
+                                      childAssigneeSearch &&
+                                      childAssigneeMembers?.length === 0 && (
+                                        <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                                          No users found
+                                        </div>
+                                      )}
+                                  </div>
+                                )}
+                              </div>
                             </td>
 
                             {/* Status Column */}
                             <td className="px-4 py-3">
-                              <select
-                                value={task.status || 'todo'}
-                                onChange={(e) => e.stopPropagation()}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-sm border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                              >
-                                <option value="todo">To Do</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="in_review">In Review</option>
-                                <option value="testing">Testing</option>
-                                <option value="done">Done</option>
-                                <option value="blocked">Blocked</option>
-                              </select>
+                              <div className="relative">
+                                {(() => {
+                                  const currentStatus = allStatusConfig[task.status];
+                                  return (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (childStatusTaskId === task.id) {
+                                            setChildStatusTaskId(null);
+                                          } else {
+                                            setChildStatusTaskId(task.id ?? null)
+                                          }
+                                        }}
+                                        disabled={isUpdatingTask}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border"
+                                        style={{
+                                          color: currentStatus?.color || colors.colTodo,
+                                          backgroundColor: currentStatus?.bg || colors.colTodoBg,
+                                          borderColor: `${currentStatus?.dot || colors.colTodo}55`,
+                                        }}
+                                      >
+                                        <span className="flex items-center gap-2 min-w-0">
+                                          <span
+                                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                                            style={{
+                                              backgroundColor: currentStatus?.dot || colors.colTodo,
+                                            }}
+                                          />
+
+                                          <span className="truncate">
+                                            {currentStatus?.label || 'To Do'}
+                                          </span>
+                                        </span>
+
+                                        <ChevronDown size={13} className="shrink-0" />
+                                      </button>
+                                      {childStatusTaskId === task.id && (
+                                        <div
+                                          className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-[99999] overflow-hidden"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {allStatusOptions.map((option) => (
+                                            <button
+                                              key={option.value}
+                                              type="button"
+                                              disabled={isUpdatingTask}
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+
+                                                try {
+                                                  await updateTaskAsync({
+                                                    projectId: currentUserStory.project_id ?? '',
+                                                    taskId: task.id ?? '',
+                                                    payload: {
+                                                      status_id: option.value,
+                                                    },
+                                                  });
+
+                                                  setChildStatusTaskId(null);
+                                                } catch (error) {
+                                                  logger.log(
+                                                    'Failed to update child ticket status',
+                                                    error
+                                                  );
+                                                }
+                                              }}
+                                              className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 disabled:opacity-50"
+                                              style={{
+                                                fontWeight:
+                                                  option.value === task.status ? 700 : 500,
+                                                color: option.color,
+                                                backgroundColor:
+                                                  option.value === task.status
+                                                    ? option.bg
+                                                    : undefined,
+                                              }}
+                                            >
+                                              <span
+                                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                                style={{
+                                                  backgroundColor: option.dot,
+                                                }}
+                                              />
+
+                                              <span className="truncate">{option.label}</span>
+
+                                              {option.value === task.status && (
+                                                <Check size={13} className="ml-auto shrink-0" />
+                                              )}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </div>
                             </td>
                           </tr>
                         ))}

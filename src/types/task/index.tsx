@@ -47,6 +47,7 @@ export interface TaskResponse {
   priority?: string;
   status: string;
   status_id?: string;
+  user_story_title? : string;
   status_color?: string;
   story_points?: number;
   estimated_hours: number;
