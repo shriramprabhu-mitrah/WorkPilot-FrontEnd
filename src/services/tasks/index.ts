@@ -28,8 +28,8 @@ class TaskService {
     if (params?.sprint_id) {
       searchParams.append('sprint_id', params.sprint_id);
     }
-    if (params?.fieldName) {
-      searchParams.append('fieldName', params.fieldName);
+    if (params?.fields) {
+      searchParams.append('fields', params.fields);
     }
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.Task.getTasks.withNamedParams({ projectId });

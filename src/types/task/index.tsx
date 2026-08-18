@@ -100,7 +100,7 @@ export interface GetTasksQueryParams {
   page?: number;
   page_size?: number;
   sprint_id?: string;
-  fieldName?: string;
+  fields?: string;
 }
 
 export interface TaskAttachment {

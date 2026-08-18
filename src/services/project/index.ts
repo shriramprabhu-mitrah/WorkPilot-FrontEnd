@@ -40,8 +40,8 @@ class ProjectService {
       searchParams.append('status', params.status);
     }
 
-    if (params?.fieldName) {
-      searchParams.append('fieldName', params.fieldName);
+    if (params?.fields) {
+      searchParams.append('fields', params.fields);
     }
 
     if (params?.include_sprints) {
