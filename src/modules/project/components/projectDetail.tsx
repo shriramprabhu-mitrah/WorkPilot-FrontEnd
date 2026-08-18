@@ -69,7 +69,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     sprints: apiSprints,
     isLoadingSprints,
     refetchSprints,
-  } = useGetSprints(project.id || '', !!project.id);
+  } = useGetSprints(project.id || '');
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
 

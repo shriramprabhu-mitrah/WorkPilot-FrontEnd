@@ -34,6 +34,7 @@ export interface KanbanTask {
   taskId?: string;
   projectId?: string;
   title: string;
+  status?: string;
   priority: Priority;
   labels: string[];
   assigneeInitials: string;

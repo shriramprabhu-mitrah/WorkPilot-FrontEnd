@@ -4,9 +4,20 @@ import { ApiResponse } from '@/src/types/core';
 import { SprintDetail, SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 
 class SprintService {
-  async getSprints(projectId: string, fieldName?: string): Promise<ApiResponse<SprintDetail[]>> {
+  async getSprints(
+    projectId: string,
+    params?: {
+      page?: number;
+      page_size?: number;
+      status?: string;
+      search?: string;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+      fieldName?: string;
+    }
+  ): Promise<ApiResponse<SprintDetail[]>> {
     const endpoint = ApiEndpoints.Sprint.getSprints.withNamedParams({ projectId });
-    const url = fieldName ? endpoint.withQuery({ fieldName }) : endpoint.url;
+    const url = params ? endpoint.withQuery(params) : endpoint.url;
     return apiService.get<SprintDetail[]>(url);
   }
 

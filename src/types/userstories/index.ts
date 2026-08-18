@@ -24,6 +24,8 @@ export interface UserStoryResponse {
   assignee_name?: string;
   reporter_id?: string;
   reporter_name?: string;
+  due_date?: string;
+  start_date?: string;
   assignee?: {
     id: string;
     name: string;

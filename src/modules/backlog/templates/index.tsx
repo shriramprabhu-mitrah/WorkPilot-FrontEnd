@@ -114,6 +114,7 @@ export const BacklogTemplate = () => {
 
   const { sprints, isLoadingSprints, refetchSprints } = useGetSprints(
     selectedProject,
+    undefined,
     !!selectedProject
   );
 

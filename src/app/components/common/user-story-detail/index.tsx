@@ -16,7 +16,11 @@ import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
 import { DetailRow } from '../task-detail/components/detail-row';
-import { EditableNumber, EditablePriority } from '../task-detail/components/editable-fields';
+import {
+  EditableDate,
+  EditableNumber,
+  EditablePriority,
+} from '../task-detail/components/editable-fields';
 import { useResize } from '@/src/hooks/useResize';
 import { userStoryService } from '@/src/services/userstory';
 import { logger } from '@/src/lib/utils/logger';
@@ -29,6 +33,8 @@ import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
 import { TaskDetailDrawer } from '../task-detail';
 import { KanbanTask, ColumnId } from '@/src/types/board';
+import WpRichTextEditor from '../htmlEditor';
+import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -167,6 +173,8 @@ export const UserStoryDetailDrawer = ({
       assigneeName: assigneeName,
       assigneeInitials: assigneeInitials,
       sprintId: currentUserStory.sprint_id ?? '',
+      due_date: currentUserStory.due_date ?? currentUserStory.tasks?.[0]?.due_date ?? '',
+      start_date: currentUserStory.start_date ?? currentUserStory.tasks?.[0]?.created_at ?? '',
     };
   }, [currentUserStory, editableFields]);
 
@@ -191,6 +199,12 @@ export const UserStoryDetailDrawer = ({
   const [editingDesc, setEditingDesc] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [comment, setComment] = useState('');
+  const [sprintSearch, setSprintSearch] = useState('');
+  const [showSprintMenu, setShowSprintMenu] = useState(false);
+  const [selectedSprintName, setSelectedSprintName] = useState('');
+
+  const debouncedSprintSearch = useDebounce(sprintSearch, 500);
 
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
@@ -198,10 +212,20 @@ export const UserStoryDetailDrawer = ({
     { page: 1, page_size: 10, name: debouncedAssigneeSearch },
     showAssigneeMenu
   );
+  const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
+    currentUserStory.project_id ?? '',
+    {
+      page: 1,
+      page_size: 10,
+      search: debouncedSprintSearch,
+    },
+    true
+  );
 
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  const sprintMenuRef = useRef<HTMLDivElement>(null);
 
   const { width: screenWidth } = useResize();
   const isMobile = screenWidth < 640;
@@ -231,6 +255,12 @@ export const UserStoryDetailDrawer = ({
       if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
       if (patch.assigneeId !== undefined) payload.assignee_id = patch.assigneeId || undefined;
       if (patch.sprintId !== undefined) payload.sprint_id = patch.sprintId || null;
+      if (patch.start_date !== undefined) {
+        payload.start_date = patch.start_date || null;
+      }
+      if (patch.due_date !== undefined) {
+        payload.due_date = patch.due_date || null;
+      }
 
       try {
         setIsSaving(true);
@@ -292,6 +322,7 @@ export const UserStoryDetailDrawer = ({
     taskId: task.id ?? '',
     projectId: task.project_id ?? '',
     title: task.title ?? '',
+    status: task.status ?? '',
     columnId: (task.status ?? 'todo') as ColumnId,
     description: task.description ?? '',
     priority: task.priority
@@ -338,10 +369,10 @@ export const UserStoryDetailDrawer = ({
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-purple-600 flex items-center justify-center shrink-0">
+              <span className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
                 <FileText size={13} className="text-white" />
               </span>
-              <span className="text-base font-bold text-purple-600">User Story</span>
+              <span className="text-base font-bold text-blue-600">User Story</span>
             </div>
             <div className="flex items-center gap-1">
               {/* Three-dot menu */}
@@ -470,20 +501,25 @@ export const UserStoryDetailDrawer = ({
                 <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
                 {editingDesc ? (
                   <div>
-                    <textarea
-                      autoFocus
+                    <WpRichTextEditor
                       value={userStoryData.description}
-                      onChange={(event) =>
-                        setEditableFields((prev) => ({ ...prev, description: event.target.value }))
+                      onChange={(value) =>
+                        setEditableFields((prev) => ({
+                          ...prev,
+                          description: value,
+                        }))
                       }
-                      rows={4}
-                      className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
+                      placeholder="Add a description..."
+                      minHeight="180px"
                     />
-                    <div className="flex gap-2 mt-2">
+
+                    <div className="flex gap-2 mt-3">
                       <button
                         onClick={() => {
                           setEditingDesc(false);
-                          handleUpdate({ description: userStoryData.description });
+                          handleUpdate({
+                            description: userStoryData.description,
+                          });
                         }}
                         disabled={isSaving}
                         className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
@@ -491,6 +527,7 @@ export const UserStoryDetailDrawer = ({
                       >
                         Save
                       </button>
+
                       <button
                         onClick={() => {
                           setEditableFields((prev) => ({
@@ -510,7 +547,14 @@ export const UserStoryDetailDrawer = ({
                     onClick={() => setEditingDesc(true)}
                     className="text-sm text-gray-600 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 transition-colors min-h-[48px]"
                   >
-                    {userStoryData.description || (
+                    {userStoryData.description ? (
+                      <div
+                        className="prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: userStoryData.description,
+                        }}
+                      />
+                    ) : (
                       <span className="text-gray-400">Add a description…</span>
                     )}
                   </div>
@@ -575,13 +619,15 @@ export const UserStoryDetailDrawer = ({
                         {tasks.map((task) => (
                           <tr
                             key={task.id}
-                            onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                             className="hover:bg-gray-50 cursor-pointer transition-colors"
                           >
                             {/* Work Column */}
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <span className="shrink-0 text-blue-600 hover:underline font-medium">
+                                <span
+                                  className="shrink-0 text-blue-600 hover:underline font-medium"
+                                  onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
+                                >
                                   {task.key}
                                 </span>
                                 <span className="text-gray-900 truncate">{task.title}</span>
@@ -676,8 +722,31 @@ export const UserStoryDetailDrawer = ({
                 )}
 
                 {tab === 'comments' && (
-                  <div className="text-sm text-gray-500">
-                    <p>No comments yet.</p>
+                  <div className="space-y-4">
+                    <WpRichTextEditor
+                      value={comment}
+                      onChange={setComment}
+                      placeholder="Write a comment..."
+                      minHeight="120px"
+                    />
+
+                    <div className="flex items-center justify-end gap-2">
+                      <WpButton type="button" variant="secondary" onClick={() => setComment('')}>
+                        Cancel
+                      </WpButton>
+
+                      <WpButton
+                        type="button"
+                        variant="primary"
+                        disabled={!comment.trim()}
+                        onClick={() => {
+                          if (!comment.trim()) return;
+                          setComment('');
+                        }}
+                      >
+                        Add Comment
+                      </WpButton>
+                    </div>
                   </div>
                 )}
 
@@ -878,9 +947,97 @@ export const UserStoryDetailDrawer = ({
                 </DetailRow>
 
                 <DetailRow label="Sprint">
+                  <div className="relative" ref={sprintMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowSprintMenu((v) => !v)}
+                      className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 w-full text-left"
+                    >
+                      <span className="text-sm text-gray-700 truncate">
+                        {selectedSprintName ||
+                          (userStoryData.sprintId
+                            ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
+                                ?.name || 'Sprint assigned'
+                            : 'No sprint')}
+                      </span>
+
+                      <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                    </button>
+
+                    {showSprintMenu && (
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                        {/* Search */}
+                        <div className="p-2 border-b border-gray-200">
+                          <WpInput
+                            value={sprintSearch}
+                            onChange={(e) => setSprintSearch(e.target.value)}
+                            placeholder="Search sprint..."
+                          />
+                        </div>
+
+                        {/* Loading */}
+                        {(isLoadingSprints || isFetchingSprints) && (
+                          <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                            Searching...
+                          </div>
+                        )}
+
+                        {/* Sprint list */}
+                        {!isLoadingSprints &&
+                          !isFetchingSprints &&
+                          sprints?.map((sprint) => (
+                            <button
+                              key={sprint.id}
+                              type="button"
+                              onClick={async () => {
+                                setShowSprintMenu(false);
+                                setSprintSearch('');
+
+                                setSelectedSprintName(sprint.name);
+
+                                await handleUpdate({
+                                  sprintId: sprint.id,
+                                });
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <span className="truncate">{sprint.name}</span>
+
+                              {sprint.id === userStoryData.sprintId && (
+                                <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                              )}
+                            </button>
+                          ))}
+
+                        {/* No results */}
+                        {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
+                          <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                            No sprints found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </DetailRow>
+                <DetailRow label="Start Date">
                   <span className="text-sm text-gray-700">
-                    {userStoryData.sprintId ? 'Sprint assigned' : 'No sprint'}
+                    {userStoryData.start_date
+                      ? new Date(userStoryData.start_date).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : 'None'}
                   </span>
+                </DetailRow>
+
+                <DetailRow label="Due Date">
+                  <EditableDate
+                    value={userStoryData.due_date}
+                    onChange={(dueDate) => handleUpdate({ due_date: dueDate })}
+                    placeholder="Set due date"
+                    includeTime={true}
+                  />
                 </DetailRow>
               </div>
             </div>

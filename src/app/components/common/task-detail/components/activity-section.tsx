@@ -6,6 +6,8 @@ import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../../task';
 import { taskService } from '@/src/services/tasks';
 import { logger } from '@/src/lib/utils/logger';
+import { WpButton } from '../../button';
+import WpRichTextEditor from '../../htmlEditor';
 
 type ActivityTab = 'all' | 'comments' | 'history';
 
@@ -346,30 +348,36 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
       </div>
 
       {(tab === 'all' || tab === 'comments') && (
-        <div className="flex gap-2 items-end">
+        <div className="flex gap-2 items-start">
           <AssigneeAvatar initials="Y" color={colors.avatarIndigo} size="md" />
-          <div className="flex-1 relative">
-            <textarea
+
+          <div className="flex-1 min-w-0">
+            <WpRichTextEditor
               value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault();
-                  submitComment(comment, undefined, () => setComment(''));
-                }
-              }}
-              placeholder="Add a comment…"
-              rows={2}
-              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 pr-10 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
+              onChange={setComment}
+              placeholder="Add a comment..."
+              minHeight="120px"
             />
-            <button
-              onClick={() => submitComment(comment, undefined, () => setComment(''))}
-              disabled={!comment.trim() || isSubmitting}
-              className="absolute right-2 bottom-2 p-1 rounded-lg transition-colors disabled:opacity-30"
-              style={{ color: colors.primary }}
-            >
-              <Send size={14} />
-            </button>
+            <div className="flex justify-end gap-2 mt-2">
+              <WpButton
+                type="button"
+                variant="secondary"
+                onClick={() => setComment('')}
+                disabled={!comment}
+              >
+                Cancel
+              </WpButton>
+              <WpButton
+                type="button"
+                variant="primary"
+                disabled={!comment.trim() || isSubmitting}
+                onClick={() => {
+                  submitComment(comment, undefined, () => setComment(''));
+                }}
+              >
+                {isSubmitting ? 'Posting...' : 'Add Comment'}
+              </WpButton>
+            </div>
           </div>
         </div>
       )}

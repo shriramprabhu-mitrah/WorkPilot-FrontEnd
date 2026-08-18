@@ -2,16 +2,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sprintService } from '@/src/services/sprint';
 import { SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 
-export const useGetSprints = (projectId: string, enabled = true) => {
+export const useGetSprints = (
+  projectId: string,
+  params?: {
+    page?: number;
+    page_size?: number;
+    status?: string;
+    search?: string;
+    sort_by?: string;
+    sort_order?: 'ASC' | 'DESC';
+    fieldName?: string;
+  },
+  enabled = true
+) => {
   const query = useQuery({
-    queryKey: ['sprints', projectId],
-    queryFn: () => sprintService.getSprints(projectId),
+    queryKey: ['sprints', projectId, params],
+    queryFn: () => sprintService.getSprints(projectId, params),
     enabled: enabled && !!projectId,
   });
 
   return {
     sprints: query.data?.data,
     isLoadingSprints: query.isLoading,
+    isFetchingSprints: query.isFetching,
     isError: query.isError,
     error: query.error,
     refetchSprints: query.refetch,
