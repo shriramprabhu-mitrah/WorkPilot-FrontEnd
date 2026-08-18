@@ -37,6 +37,17 @@ import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { WpButton } from '../button';
 import { WpInput } from '../input';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
+import WpRichTextEditor from '../htmlEditor';
+import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
+
+interface CustomStatus {
+  id: string;
+  project_id: string;
+  name: string;
+  color: string;
+  display_order: number;
+  is_default: boolean;
+}
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -79,7 +90,7 @@ const useResizable = (initial: number, min: number, max: number) => {
 export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerProps) => {
   const [taskData, setTaskData] = useState({
     subtasks: task.subtasks ?? [],
-    status: task.columnId,
+    status: task.status ?? task.columnId ?? '',
     description: task.description ?? '',
     priority: task.priority,
     labels: task.labels,
@@ -94,6 +105,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     assigneeName: '',
   });
   // const [members, setMembers] = useState<ProjectMember[]>([]);
+
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState('');
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
@@ -110,6 +122,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [savedDescription, setSavedDescription] = useState('');
   const hasFetched = useRef<string | null>(null);
   const {
     attachments,
@@ -120,6 +133,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     deleteAttachment,
   } = useTaskAttachments(task.projectId ?? '', task.taskId ?? '');
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(task.projectId ?? '');
+  const statusOptions = statuses.map((status) => ({
+    value: status.id,
+    label: status.name,
+    color: status.color,
+  }));
+
+  const selectedStatus = statuses.find((status) => status.id === taskData.status);
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
@@ -142,7 +163,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
           done: 'completed',
           blocked: 'blocked',
         };
-        payload.status = STATUS_MAP[patch.status] ?? patch.status;
+        payload.status_id = STATUS_MAP[patch.status] ?? patch.status;
       }
       if (patch.dueDate !== undefined) {
         payload.due_date = patch.dueDate ? patch.dueDate + 'Z' : null;
@@ -176,6 +197,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
         const taskRes = await taskService.getTaskById(task.projectId, task.taskId);
         if (taskRes.data) {
           const d = taskRes.data;
+          const apiDescription = d.description ?? '';
           const assigneeName = d.assignee_name ?? '';
           const initials = assigneeName
             ? assigneeName
@@ -192,7 +214,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
               ? ((d.priority.charAt(0).toUpperCase() +
                   d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
-            status: (d.status as ColumnId) ?? (prev.status as ColumnId),
+            status: d.status ?? prev.status,
             dueDate: d.due_date ? d.due_date?.replace(/Z$/, '') : '',
             storyPoints: d.story_points ?? prev.storyPoints,
             sprint: d.sprint_name ?? prev.sprint,
@@ -201,6 +223,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
             assigneeId: d.assignee_id ?? '',
             assigneeName: assigneeName,
           }));
+          setSavedDescription(apiDescription);
         }
       } catch (error) {
         logger.log('Failed to fetch task detail', error);
@@ -251,7 +274,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
     colors.avatarAmber,
     colors.avatarIndigo,
   ];
-
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
@@ -267,28 +289,21 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
   const handleAttachmentDownload = async (attachmentId: string, fileName: string) => {
     try {
       const blob = await downloadAttachment.mutateAsync(attachmentId);
-
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-
       link.href = url;
       link.download = fileName;
-
       document.body.appendChild(link);
       link.click();
-
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
-
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       await uploadAttachment.mutateAsync(formData);
     } catch (error) {
@@ -378,22 +393,32 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
 
             <section className="mb-6 pb-6 border-b border-gray-200">
               <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
+
               {uiState.editingDesc ? (
                 <div>
-                  <textarea
-                    autoFocus
+                  <WpRichTextEditor
                     value={taskData.description}
-                    onChange={(event) =>
-                      setTaskData((prev) => ({ ...prev, description: event.target.value }))
+                    onChange={(value) =>
+                      setTaskData((prev) => ({
+                        ...prev,
+                        description: value,
+                      }))
                     }
-                    rows={4}
-                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:border-blue-500"
+                    placeholder="Add a description..."
+                    minHeight="120px"
                   />
+
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={() => {
-                        setUiState((prev) => ({ ...prev, editingDesc: false }));
-                        handleUpdate({ description: taskData.description });
+                        setUiState((prev) => ({
+                          ...prev,
+                          editingDesc: false,
+                        }));
+
+                        handleUpdate({
+                          description: taskData.description,
+                        });
                       }}
                       disabled={isSaving}
                       className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
@@ -401,10 +426,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
                     >
                       Save
                     </button>
+
                     <button
                       onClick={() => {
-                        setTaskData((prev) => ({ ...prev, description: task.description ?? '' }));
-                        setUiState((prev) => ({ ...prev, editingDesc: false }));
+                        setTaskData((prev) => ({
+                          ...prev,
+                          description: savedDescription,
+                        }));
+                        setUiState((prev) => ({
+                          ...prev,
+                          editingDesc: false,
+                        }));
                       }}
                       className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                     >
@@ -414,10 +446,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
                 </div>
               ) : (
                 <div
-                  onClick={() => setUiState((prev) => ({ ...prev, editingDesc: true }))}
-                  className="text-sm text-gray-600 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 transition-colors min-h-[48px]"
+                  onClick={() => {
+                    setUiState((prev) => ({
+                      ...prev,
+                      editingDesc: true,
+                    }));
+                  }}
+                  className="w-full min-h-[48px] cursor-text"
                 >
-                  {taskData.description || (
+                  {taskData.description ? (
+                    <div
+                      className="pointer-events-none"
+                      dangerouslySetInnerHTML={{
+                        __html: taskData.description,
+                      }}
+                    />
+                  ) : (
                     <span className="text-gray-400">Add a description…</span>
                   )}
                 </div>
@@ -548,52 +592,81 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate }: TaskDetailDrawerPr
           >
             <div className="px-5 py-5 border-b border-gray-300">
               <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
+
               <div className="relative" ref={statusMenuRef}>
                 <button
+                  type="button"
                   onClick={() =>
-                    setUiState((prev) => ({ ...prev, showStatusMenu: !prev.showStatusMenu }))
+                    setUiState((prev) => ({
+                      ...prev,
+                      showStatusMenu: !prev.showStatusMenu,
+                    }))
                   }
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
                   style={{
-                    color: COLUMN_CONFIG[taskData?.status]?.color,
-                    backgroundColor: COLUMN_CONFIG[taskData?.status]?.bg,
-                    borderColor: `${COLUMN_CONFIG[taskData?.status]?.dot}55`,
+                    color: selectedStatus?.color ?? '#6B7280',
+                    backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
+                    borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
                   }}
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: COLUMN_CONFIG[taskData.status]?.dot }}
+                      style={{
+                        backgroundColor: selectedStatus?.color ?? '#9CA3AF',
+                      }}
                     />
-                    {COLUMN_CONFIG[taskData.status]?.label}
+
+                    {selectedStatus?.name ?? 'Select status'}
                   </span>
+
                   <ChevronDown size={14} />
                 </button>
+
                 {uiState.showStatusMenu && (
                   <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
-                    {COLUMN_ORDER.map((column) => (
-                      <button
-                        key={column}
-                        onClick={() => {
-                          setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-                          handleUpdate({ status: column });
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50"
-                        style={{
-                          fontWeight: column === taskData.status ? 700 : 500,
-                          color: COLUMN_CONFIG[column].color,
-                          backgroundColor:
-                            column === taskData.status ? COLUMN_CONFIG[column].bg : undefined,
-                        }}
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: COLUMN_CONFIG[column].dot }}
-                        />
-                        {COLUMN_CONFIG[column].label}
-                        {column === taskData.status && <Check size={13} className="ml-auto" />}
-                      </button>
-                    ))}
+                    {isLoadingStatus ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                        Loading statuses...
+                      </div>
+                    ) : statusOptions.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                        No statuses found
+                      </div>
+                    ) : (
+                      statusOptions.map((status) => {
+                        const isSelected = taskData.status === status.value;
+
+                        return (
+                          <button
+                            key={status.value}
+                            type="button"
+                            onClick={() => {
+                              setUiState((prev) => ({
+                                ...prev,
+                                showStatusMenu: false,
+                              }));
+
+                              handleUpdate({
+                                status: status.value,
+                              });
+                            }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{
+                                backgroundColor: status.color,
+                              }}
+                            />
+
+                            <span className="flex-1 truncate">{status.label}</span>
+
+                            {isSelected && <Check size={14} className="text-blue-600 shrink-0" />}
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 )}
               </div>

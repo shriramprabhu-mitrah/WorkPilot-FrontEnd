@@ -73,24 +73,24 @@ export const ProjectSprintDropdowns = ({
 
   useEffect(() => {
     if (selectedProject) {
-      sprintService
-        .getSprints(selectedProject, 'id,name')
-        .then((res) => {
-          const data = res.data || [];
-          const actualData = Array.isArray(data)
-            ? data
-            : (data as { data?: SprintDetail[] }).data || [];
-          setSprints(actualData);
-          // Only reset sprint if it's no longer in the list
-          if (
-            selectedSprint &&
-            actualData.length > 0 &&
-            !actualData.find((s: SprintDetail) => s.id === selectedSprint)
-          ) {
-            setSelectedSprint('');
-          }
-        })
-        .catch((err) => logger.error('Error fetching sprints', err));
+       sprintService
+         .getSprints(selectedProject, { fieldName: 'id,name' })
+         .then((res) => {
+           const data = res.data || [];
+           const actualData = Array.isArray(data)
+             ? data
+             : (data as { data?: SprintDetail[] }).data || [];
+           setSprints(actualData);
+           // Only reset sprint if it's no longer in the list
+           if (
+             selectedSprint &&
+             actualData.length > 0 &&
+             !actualData.find((s: SprintDetail) => s.id === selectedSprint)
+           ) {
+             setSelectedSprint('');
+           }
+         })
+         .catch((err) => logger.error('Error fetching sprints', err));
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSprints([]);

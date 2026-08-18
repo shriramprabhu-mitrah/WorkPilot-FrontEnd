@@ -68,7 +68,6 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
     }
   };
 
-  // Status UI
   const getStatusStyle = (status?: string | null) => {
     switch (status?.toLowerCase()) {
       case 'done':
@@ -117,54 +116,98 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       {...attributes}
       {...listeners}
       className={`
-        flex items-center gap-2 sm:gap-3
-        px-3 sm:px-4 py-2.5
-        border-b last:border-0
-        hover:bg-gray-50
-        transition-all duration-200
-        ${isDragging ? 'bg-blue-50 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50' : ''}
-      `}
+      flex items-center gap-3
+      px-4 py-3
+      border-b border-gray-100 last:border-0
+      bg-white
+      hover:bg-gray-50
+      transition-colors duration-150
+      ${isDragging ? 'bg-blue-50 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50' : ''}
+    `}
     >
-      {/* Drag Handle */}
-      <span className={`shrink-0 ${isDragging ? 'text-blue-500' : 'text-gray-300'}`}>
+      {/* Drag Handle - UNCHANGED */}
+      <span
+        className={`
+        shrink-0 p-1 rounded
+        ${isDragging ? 'text-blue-500 bg-blue-100' : 'text-gray-300 group-hover:text-gray-500'}
+      `}
+      >
         <GripVertical size={15} />
       </span>
 
-      {/* Story title */}
+      {/* Story Title */}
       <div onClick={handleClick} className="flex-1 min-w-0 cursor-pointer">
-        <span
-          className="text-sm truncate block"
-          style={{
-            color: isDragging ? colors.primary : colors.gray800,
-          }}
-        >
-          {story.title}
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <span
+              className="text-sm font-semibold truncate block"
+              style={{
+                color: isDragging ? colors.primary : colors.gray800,
+              }}
+            >
+              {story.title}
+            </span>
+          </div>
+        </div>
       </div>
+
       {/* Priority */}
       <span
-        className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0 font-medium w-16 text-center"
+        className="
+        text-[11px]
+        px-3 py-1
+        rounded-full
+        capitalize
+        shrink-0
+        font-semibold
+        min-w-[70px]
+        text-center
+      "
         style={priorityStyle}
       >
         {story.priority ?? 'medium'}
       </span>
 
-      {/* Story points */}
+      {/* Story Points */}
       <span
-        className="flex items-center gap-0.5 text-xs w-10 shrink-0"
-        style={{ color: colors.gray400 }}
+        className="
+        flex items-center justify-center
+        gap-1
+        text-xs
+        min-w-[48px]
+        px-2 py-1
+        rounded-md
+        bg-gray-50
+        border border-gray-100
+        shrink-0
+      "
+        style={{ color: colors.gray500 }}
         title="Story points"
       >
-        <Hash size={11} />
+        <Hash size={10} />
         {story.story_points ?? 0}
       </span>
 
       {/* Status */}
       <span
-        className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0 font-medium w-20 text-center"
+        className="
+        flex items-center justify-center
+        text-[11px]
+        px-3 py-1
+        rounded-full
+        shrink-0
+        font-semibold
+        min-w-[90px]
+      "
         style={statusStyle}
       >
-        {story.status ?? 'todo'}
+        <span
+          className="w-1.5 h-1.5 rounded-full mr-1.5"
+          style={{
+            backgroundColor: statusStyle.color,
+          }}
+        />
+        {story.status ? story.status.replace(/_/g, ' ') : 'todo'}
       </span>
     </div>
   );
