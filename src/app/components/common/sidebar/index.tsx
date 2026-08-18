@@ -464,7 +464,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                             setShowManageProject(false);
                             dispatch(setSelectedSprint(s));
                             router.push(
-                              `/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
+                              `/${orgSlug}/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
                             );
                           }}
                           className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"

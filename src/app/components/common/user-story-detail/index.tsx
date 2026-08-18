@@ -139,6 +139,7 @@ export const UserStoryDetailDrawer = ({
   onDelete,
 }: UserStoryDetailDrawerProps) => {
   const [tab, setTab] = useState<ActivityTab>('all');
+  const [showCommentEditor, setShowCommentEditor] = useState(true);
 
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
   const { userStory: fetchedUserStory, isLoadingUserStory } = useGetUserStoryById(
@@ -763,30 +764,53 @@ export const UserStoryDetailDrawer = ({
 
                 {tab === 'comments' && (
                   <div className="space-y-4">
-                    <WpRichTextEditor
-                      value={comment}
-                      onChange={setComment}
-                      placeholder="Write a comment..."
-                      minHeight="120px"
-                    />
+                    {/* Show editor only when true */}
+                    {showCommentEditor && (
+                      <>
+                        <WpRichTextEditor
+                          value={comment}
+                          onChange={setComment}
+                          placeholder="Write a comment..."
+                          minHeight="120px"
+                        />
 
-                    <div className="flex items-center justify-end gap-2">
-                      <WpButton type="button" variant="secondary" onClick={() => setComment('')}>
-                        Cancel
-                      </WpButton>
+                        <div className="flex items-center justify-end gap-2">
+                          <WpButton
+                            type="button"
+                            variant="secondary"
+                            onClick={() => {
+                              setShowCommentEditor(false);
+                            }}
+                          >
+                            Cancel
+                          </WpButton>
 
-                      <WpButton
+                          <WpButton
+                            type="button"
+                            variant="primary"
+                            disabled={!comment.trim()}
+                            onClick={() => {
+                              if (!comment.trim()) return;
+                              setComment('');
+                              setShowCommentEditor(false);
+                            }}
+                          >
+                            Add Comment
+                          </WpButton>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Show this when editor is hidden */}
+                    {!showCommentEditor && (
+                      <button
                         type="button"
-                        variant="primary"
-                        disabled={!comment.trim()}
-                        onClick={() => {
-                          if (!comment.trim()) return;
-                          setComment('');
-                        }}
+                        onClick={() => setShowCommentEditor(true)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-left text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500"
                       >
-                        Add Comment
-                      </WpButton>
-                    </div>
+                        Write a comment...
+                      </button>
+                    )}
                   </div>
                 )}
 

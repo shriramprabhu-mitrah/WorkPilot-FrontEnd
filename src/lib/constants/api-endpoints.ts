@@ -258,6 +258,24 @@ export const ApiEndpoints = {
     deleteCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
     assignCustomStatusToTask: createEndpoint('/projects/{projectId}/tasks'),
   },
+
+  UserStoryAttachment : {
+     uploadUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments'),
+     getUserStoryAttachments: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments'),
+    downloadUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}/download'),
+    deleteUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}'),
+  },
+
+  UserStoryComment: {
+  createComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments'),
+  getComments: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments'),
+  getCommentById: createEndpoint( '/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+  getReplies: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/replies/{commentId}'),
+  updateComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+  deleteComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+},
+
+
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

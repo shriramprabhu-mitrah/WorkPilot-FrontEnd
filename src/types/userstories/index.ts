@@ -77,3 +77,83 @@ export interface UpdateUserStoryPayload {
 export interface ReorderUserStoriesPayload {
   user_story_ids: string[];
 }
+
+
+export interface UserStoryAttachment {
+  id: string;
+  user_story_id: string;
+  original_filename: string;
+  mime_type: string;
+  file_size: number;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
+export interface UserStoryAttachmentResponse {
+  success: boolean;
+  status_code: number;
+  message: string;
+  data: UserStoryAttachment[];
+}
+
+export interface CreateUserStoryCommentPayload {
+  content: string;
+  parent_comment_id?: string;
+}
+
+export interface UserStoryCommentResponse {
+  id: string;
+  user_story_id: string;
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  email: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+}
+
+export interface GetUserStoryCommentsQueryParams {
+  page?: number;
+  page_size?: number;
+}
+
+export interface UserStoryParentComment {
+  id: string;
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  email: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+}
+
+export interface UserStoryReplyResponse {
+  id: string;
+  user_story_id: string;
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  email: string;
+  content: string;
+  parent_comment_id: string;
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+  parent_comment: UserStoryParentComment;
+}
+
+export interface GetUserStoryRepliesQueryParams {
+  page?: number;
+  page_size?: number;
+}
+
+export interface UpdateUserStoryCommentPayload {
+  content: string;
+}
+export interface DeleteUserStoryCommentResponse {
+  comment_id: string;
+}

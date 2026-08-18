@@ -41,6 +41,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
   const [replyContent, setReplyContent] = useState('');
   const [loadingRepliesFor, setLoadingRepliesFor] = useState<string | null>(null);
   const hasFetched = useRef(false);
+  const [showCommentEditor, setShowCommentEditor] = useState(true);
 
   useEffect(() => {
     if (!taskId || hasFetched.current) return;
@@ -352,32 +353,51 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
           <AssigneeAvatar initials="Y" color={colors.avatarIndigo} size="md" />
 
           <div className="flex-1 min-w-0">
-            <WpRichTextEditor
-              value={comment}
-              onChange={setComment}
-              placeholder="Add a comment..."
-              minHeight="120px"
-            />
-            <div className="flex justify-end gap-2 mt-2">
-              <WpButton
+            {showCommentEditor ? (
+              <>
+                <WpRichTextEditor
+                  value={comment}
+                  onChange={setComment}
+                  placeholder="Add a comment..."
+                  minHeight="120px"
+                />
+
+                <div className="flex justify-end gap-2 mt-2">
+                  <WpButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setComment('');
+                      setShowCommentEditor(false);
+                    }}
+                  >
+                    Cancel
+                  </WpButton>
+
+                  <WpButton
+                    type="button"
+                    variant="primary"
+                    disabled={!comment.trim() || isSubmitting}
+                    onClick={() => {
+                      submitComment(comment, undefined, () => {
+                        setComment('');
+                        setShowCommentEditor(false);
+                      });
+                    }}
+                  >
+                    {isSubmitting ? 'Posting...' : 'Add Comment'}
+                  </WpButton>
+                </div>
+              </>
+            ) : (
+              <button
                 type="button"
-                variant="secondary"
-                onClick={() => setComment('')}
-                disabled={!comment}
+                onClick={() => setShowCommentEditor(true)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-left text-sm text-gray-400 hover:border-gray-300 hover:text-gray-500"
               >
-                Cancel
-              </WpButton>
-              <WpButton
-                type="button"
-                variant="primary"
-                disabled={!comment.trim() || isSubmitting}
-                onClick={() => {
-                  submitComment(comment, undefined, () => setComment(''));
-                }}
-              >
-                {isSubmitting ? 'Posting...' : 'Add Comment'}
-              </WpButton>
-            </div>
+                Add a comment...
+              </button>
+            )}
           </div>
         </div>
       )}

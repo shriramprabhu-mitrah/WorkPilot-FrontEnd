@@ -1,0 +1,121 @@
+import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
+import { apiService, PaginatedApiResponse } from '../axios';
+import { ApiResponse } from '@/src/types/core';
+import {
+  CreateUserStoryCommentPayload,
+  DeleteUserStoryCommentResponse,
+  GetUserStoryCommentsQueryParams,
+  GetUserStoryRepliesQueryParams,
+  UpdateUserStoryCommentPayload,
+  UserStoryCommentResponse,
+  UserStoryReplyResponse,
+} from '@/src/types/userstories';
+
+class UserStoryCommentService {
+  async createComment(
+    projectId: string,
+    userStoryId: string,
+    payload: CreateUserStoryCommentPayload
+  ): Promise<ApiResponse<UserStoryCommentResponse>> {
+    const url = ApiEndpoints.UserStoryComment.createComment.withParams({
+      projectId,
+      userStoryId,
+    });
+    return apiService.post<UserStoryCommentResponse>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Comment created successfully',
+    });
+  }
+
+  async getComments(
+    projectId: string,
+    userStoryId: string,
+    params?: GetUserStoryCommentsQueryParams
+  ): Promise<PaginatedApiResponse<UserStoryCommentResponse[]>> {
+    const endpoint = ApiEndpoints.UserStoryComment.getComments.withNamedParams({
+      projectId,
+      userStoryId,
+    });
+    const searchParams = new URLSearchParams();
+    if (params?.page) {
+      searchParams.append('page', String(params.page));
+    }
+    if (params?.page_size) {
+      searchParams.append('page_size', String(params.page_size));
+    }
+    const query = searchParams.toString();
+    const url = `${endpoint.url}${query ? `?${query}` : ''}`;
+    return apiService.getPaginated<UserStoryCommentResponse[]>(url);
+  }
+
+  async getCommentById(
+    projectId: string,
+    userStoryId: string,
+    commentId: string
+  ): Promise<ApiResponse<UserStoryCommentResponse>> {
+    const url = ApiEndpoints.UserStoryComment.getCommentById.withParams({
+      projectId,
+      userStoryId,
+      commentId,
+    });
+    return apiService.get<UserStoryCommentResponse>(url);
+  }
+
+  async getReplies(
+    projectId: string,
+    userStoryId: string,
+    commentId: string,
+    params?: GetUserStoryRepliesQueryParams
+  ): Promise<PaginatedApiResponse<UserStoryReplyResponse[]>> {
+    const endpoint = ApiEndpoints.UserStoryComment.getReplies.withNamedParams({
+      projectId,
+      userStoryId,
+      commentId,
+    });
+    const searchParams = new URLSearchParams();
+    if (params?.page) {
+      searchParams.append('page', String(params.page));
+    }
+    if (params?.page_size) {
+      searchParams.append('page_size', String(params.page_size));
+    }
+    const query = searchParams.toString();
+    const url = `${endpoint.url}${query ? `?${query}` : ''}`;
+    return apiService.getPaginated<UserStoryReplyResponse[]>(url);
+  }
+
+  async updateComment(
+    projectId: string,
+    userStoryId: string,
+    commentId: string,
+    payload: UpdateUserStoryCommentPayload
+  ): Promise<ApiResponse<UserStoryCommentResponse>> {
+    const url = ApiEndpoints.UserStoryComment.updateComment.withParams({
+      projectId,
+      userStoryId,
+      commentId,
+    });
+    return apiService.patch<UserStoryCommentResponse>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Comment updated successfully',
+    });
+  }
+
+  async deleteComment(
+    projectId: string,
+    userStoryId: string,
+    commentId: string
+  ): Promise<ApiResponse<DeleteUserStoryCommentResponse>> {
+    const url = ApiEndpoints.UserStoryComment.deleteComment.withParams({
+      projectId,
+      userStoryId,
+      commentId,
+    });
+    return apiService.delete<DeleteUserStoryCommentResponse>(url, {
+      showSuccessToast: true,
+      successMessage: 'Comment deleted successfully',
+    });
+  }
+}
+
+export const userStoryCommentService = new UserStoryCommentService();
