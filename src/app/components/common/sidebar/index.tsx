@@ -34,11 +34,12 @@ import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProjec
 
 const navItemsBase = [
   { label: 'Dashboard', path: 'dashboard', icon: LayoutDashboard },
-  //   { label: 'Projects', path: 'projects', icon: FolderKanban },
   { label: 'Boards', path: 'boards', icon: KanbanSquareDashedIcon },
   { label: 'Backlog', path: 'backlog', icon: BarChart2 },
-  { label: 'Tasks', path: 'tasks', icon: ClipboardList },
-  { label: 'Reports', path: 'reports', icon: Flag },
+  // Comment for future purpose
+  // { label: 'Projects', path: 'projects', icon: FolderKanban },
+  // { label: 'Tasks', path: 'tasks', icon: ClipboardList },
+  // { label: 'Reports', path: 'reports', icon: Flag },
   { label: 'Teams', path: 'teams', icon: User },
   { label: 'Calendar', path: 'calendar', icon: Calendar },
   { label: 'Settings', path: 'settings', icon: Settings },
@@ -344,17 +345,15 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         setTempProject(p);
                         setTempSprint(null);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                        tempProject?.id === p.id
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${tempProject?.id === p.id
                           ? 'bg-blue-50 border border-blue-200'
                           : 'hover:bg-gray-50 border border-transparent'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            tempProject?.id === p.id ? 'border-blue-600' : 'border-gray-300'
-                          }`}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempProject?.id === p.id ? 'border-blue-600' : 'border-gray-300'
+                            }`}
                         >
                           {tempProject?.id === p.id && (
                             <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -415,16 +414,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
                   <button
                     onClick={() => setTempSprint(null)}
-                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                      tempSprint === null
+                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${tempSprint === null
                         ? 'bg-blue-50 border border-blue-200'
                         : 'hover:bg-gray-50 border border-transparent'
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        tempSprint === null ? 'border-blue-600' : 'border-gray-300'
-                      }`}
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint === null ? 'border-blue-600' : 'border-gray-300'
+                        }`}
                     >
                       {tempSprint === null && <div className="w-2 h-2 rounded-full bg-blue-600" />}
                     </div>
@@ -437,17 +434,15 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       <div
                         key={s.id}
                         onClick={() => setTempSprint(s)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
-                          tempSprint?.id === s.id
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${tempSprint?.id === s.id
                             ? 'bg-blue-50 border border-blue-200'
                             : 'hover:bg-gray-50 border border-transparent'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              tempSprint?.id === s.id ? 'border-blue-600' : 'border-gray-300'
-                            }`}
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint?.id === s.id ? 'border-blue-600' : 'border-gray-300'
+                              }`}
                           >
                             {tempSprint?.id === s.id && (
                               <div className="w-2 h-2 rounded-full bg-blue-600" />
