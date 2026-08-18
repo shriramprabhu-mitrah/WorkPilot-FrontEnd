@@ -5,10 +5,13 @@ import {
   GetUserStoriesQueryParams,
   ReorderUserStoriesPayload,
   UpdateUserStoryPayload,
+  UserStoryAttachment,
+  UserStoryAttachmentResponse,
   UserStoryPayload,
   UserStoryResponse,
 } from '@/src/types/userstories';
 import { ApiResponse } from '@/src/types/core';
+import { axiosInstance } from '@/src/lib/config/axios-client';
 class UserStoryService {
   async getUserStories(
     projectId: string,
@@ -112,6 +115,63 @@ class UserStoryService {
     return apiService.patch<unknown>(url, payload, {
       showSuccessToast: true,
       successMessage: 'User stories reordered successfully',
+    });
+  }
+
+  async uploadUserStoryAttachment(
+    projectId: string,
+    userStoryId: string,
+    file: File
+  ): Promise<ApiResponse<UserStoryAttachmentResponse>> {
+    const url = ApiEndpoints.UserStoryAttachment.uploadUserStoryAttachment.withParams({
+      projectId,
+      userStoryId,
+    });
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiService.post<UserStoryAttachmentResponse>(url, formData);
+  }
+
+  async getUserStoryAttachments(
+    projectId: string,
+    userStoryId: string
+  ): Promise<ApiResponse<UserStoryAttachment[]>> {
+    const url = ApiEndpoints.UserStoryAttachment.getUserStoryAttachments.withParams({
+      projectId,
+      userStoryId,
+    });
+    return apiService.get<UserStoryAttachment[]>(url);
+  }
+
+  async downloadUserStoryAttachment(
+    projectId: string,
+    userStoryId: string,
+    attachmentId: string
+  ): Promise<Blob> {
+    const url = ApiEndpoints.UserStoryAttachment.downloadUserStoryAttachment.withParams({
+      projectId,
+      userStoryId,
+      attachmentId,
+    });
+    const response = await axiosInstance.get<Blob>(url, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async deleteUserStoryAttachment(
+    projectId: string,
+    userStoryId: string,
+    attachmentId: string
+  ): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.UserStoryAttachment.deleteUserStoryAttachment.withParams({
+      projectId,
+      userStoryId,
+      attachmentId,
+    });
+    return apiService.delete<unknown>(url, {
+      showSuccessToast: true,
+      successMessage: 'Attachment deleted successfully',
     });
   }
 }

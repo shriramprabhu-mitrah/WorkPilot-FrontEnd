@@ -145,7 +145,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     color: status.color,
   }));
 
-  const selectedStatus = statuses.find((status) => status.id === taskData.status);
+  const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
 
@@ -706,7 +706,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       }}
                     />
 
-                    {selectedStatus?.name ?? 'Select status'}
+                    {selectedStatus?.label ?? taskData.status ?? 'Select status'}
                   </span>
 
                   <ChevronDown size={14} />
