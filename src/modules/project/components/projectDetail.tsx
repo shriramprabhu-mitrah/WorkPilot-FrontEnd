@@ -68,7 +68,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
@@ -171,9 +170,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   };
 
   const handleSprintClick = (sprint: Sprint) => {
-    router.push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${project.id}`);
+    push(
+      `/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${project.id}`
+    );
   };
-
   const confirmDeleteProject = async () => {
     if (!project.id) {
       showToast.error('Project ID is missing');
@@ -209,7 +209,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           })
         );
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const getInitials = (name: string) => {
@@ -309,6 +309,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       setIsRefreshingSprints(false);
     }
   };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm">

@@ -25,20 +25,22 @@ const CustomEvent = ({ event }: Props) => {
 
   return (
     <div
-      className="flex h-full w-full flex-col justify-center overflow-hidden rounded-md px-2 py-1"
+      className="flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md px-2"
       style={{
-        backgroundColor: style.bg,
-        color: style.color,
+        backgroundColor: '#f3f4f6',
+        color: '#292727',
       }}
     >
-      <span className="truncate text-[10px] font-medium">
-        {event.start.toLocaleTimeString([], {
-          hour: 'numeric',
-          minute: '2-digit',
-        })}
-      </span>
+      <span
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{
+          backgroundColor: style.color,
+        }}
+      />
 
-      <span className="truncate text-xs font-semibold">{event.title}</span>
+      <span className="truncate text-[11px] font-semibold">
+        {event.title}
+      </span>
     </div>
   );
 };

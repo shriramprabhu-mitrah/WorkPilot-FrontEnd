@@ -195,10 +195,15 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           {/* Project selector */}
           <div className="px-3 py-3">
             <div
-              className="flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors 
+                ${!selectedProject
+                  ? 'border border-red-500'
+                  : 'border border-transparent hover:bg-gray-100'
+                }`}
               style={{ backgroundColor: colors.workspaceBg }}
               onClick={openManageProject}
             >
+
               <div className="flex items-center gap-2 min-w-0">
                 <div
                   className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
@@ -346,8 +351,8 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         setTempSprint(null);
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${tempProject?.id === p.id
-                          ? 'bg-blue-50 border border-blue-200'
-                          : 'hover:bg-gray-50 border border-transparent'
+                        ? 'bg-blue-50 border border-blue-200'
+                        : 'hover:bg-gray-50 border border-transparent'
                         }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -415,8 +420,8 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   <button
                     onClick={() => setTempSprint(null)}
                     className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${tempSprint === null
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50 border border-transparent'
+                      ? 'bg-blue-50 border border-blue-200'
+                      : 'hover:bg-gray-50 border border-transparent'
                       }`}
                   >
                     <div
@@ -435,8 +440,8 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         key={s.id}
                         onClick={() => setTempSprint(s)}
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${tempSprint?.id === s.id
-                            ? 'bg-blue-50 border border-blue-200'
-                            : 'hover:bg-gray-50 border border-transparent'
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50 border border-transparent'
                           }`}
                       >
                         <div className="flex items-center gap-2.5">

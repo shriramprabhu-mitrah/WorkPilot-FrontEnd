@@ -5,19 +5,11 @@ const legends = [
     label: 'Sprint',
     color: colors.colInReview,
   },
-  {
-    label: 'Meeting',
-    color: colors.priorityHighText,
-  },
-  {
-    label: 'Task',
-    color: colors.colTodo,
-  },
 ];
 
 const EventLegends = () => {
   return (
-    <div className="mt-6 flex flex-wrap gap-6">
+    <div className="mt-3 flex flex-wrap gap-5">
       {legends.map((item) => (
         <div key={item.label} className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />

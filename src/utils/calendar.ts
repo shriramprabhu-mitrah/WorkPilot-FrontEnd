@@ -21,7 +21,7 @@ export const expandMultiDayEvents = (events: CalendarEvent[]): CalendarEvent[] =
 
       expanded.push({
         ...event,
-        id: Number(`${event.id}${expanded.length + 1}`),
+        id: `${event.id}-${expanded.length + 1}`,
         start: eventStart,
         end: eventEnd,
       });
