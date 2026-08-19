@@ -21,14 +21,14 @@ import { getInitials } from '../format';
 import { removeTokens } from '@/src/lib/utils/cookies';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import { useEffect, useRef, useState } from 'react';
-
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 interface NavbarProps {
   onMenuClick?: () => void;
 }
 
 export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const pathname = usePathname();
-  const router = useRouter();
+  const { push } = useOrgNavigation();
   const segments = pathname.split('/').filter(Boolean);
   const title = segments[1] ? segments[1].charAt(0).toUpperCase() + segments[1].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
@@ -89,6 +89,11 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         </div>
 
         {/* Search - hidden on small mobile */}
+
+      </div>
+
+      {/* Right side */}
+      <div className="flex items-center gap-1 md:gap-2">
         <WpInput
           type="text"
           placeholder="Search tasks, projects..."
@@ -96,10 +101,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
           wrapperClassName="hidden sm:block sm:w-48 md:w-64 lg:w-80"
           className="bg-white/70 text-[12px] !h-8"
         />
-      </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-1 md:gap-2">
         {/* Mobile search button */}
         <WpButton
           variant="ghost"
@@ -123,7 +125,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
           variant="ghost"
           size="sm"
           className="!p-1.5 text-gray-500 hidden md:flex"
-          onClick={() => router.push('/settings')}
+          onClick={() => push('/settings')}
         >
           <Settings size={17} />
         </WpButton>
@@ -152,9 +154,8 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
 
             <ChevronDown
               size={13}
-              className={`text-gray-400 hidden md:inline transition-transform ${
-                showProfileMenu ? 'rotate-180' : ''
-              }`}
+              className={`text-gray-400 hidden md:inline transition-transform ${showProfileMenu ? 'rotate-180' : ''
+                }`}
             />
           </button>
 
@@ -177,34 +178,30 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               "
             >
               {/* My Account */}
-              <Link
-                href="/profile"
-                onClick={() => setShowProfileMenu(false)}
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  px-4
-                  py-2.5
-                  text-[13px]
-                  text-gray-700
-                  hover:bg-gray-50
-                  transition-colors
-                "
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  push('/profile');
+                }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors text-left"
               >
                 <User size={16} className="text-gray-500" />
                 <span>My Account</span>
-              </Link>
+              </button>
 
               {/* Change Password */}
-              <Link
-                href="/profile?changePassword=true"
-                onClick={() => setShowProfileMenu(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50"
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  push('/profile?changePassword=true');
+                }}
+                className="flex items-center gap-3  w-full px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors  text-left"
               >
                 <Lock size={16} className="text-gray-500" />
                 <span>Change Password</span>
-              </Link>
+              </button>
 
               {/* Divider */}
               <div className="border-t border-gray-100" />

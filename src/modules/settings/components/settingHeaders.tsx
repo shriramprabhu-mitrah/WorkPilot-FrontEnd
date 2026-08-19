@@ -12,7 +12,7 @@ const tabs: SettingsTab[] = [
   'General',
   'Roles & Permissions',
   'Permissions Matrix',
-  'Notifications',
+  // 'Notifications',
   'Security',
 ];
 

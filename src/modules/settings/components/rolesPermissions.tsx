@@ -121,9 +121,9 @@ export default function RolePermission() {
                 </div>
               </div>
 
-              <button className="text-xs font-bold text-blue-600 hover:text-blue-700">
+              {/* <button className="text-xs font-bold text-blue-600 hover:text-blue-700">
                 Edit role
-              </button>
+              </button> */}
             </div>
             <p className="mt-2 ml-2 text-xs text-gray-500">{selectedRole.description}</p>
           </div>
