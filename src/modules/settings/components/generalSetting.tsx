@@ -13,7 +13,7 @@ import {
 import { WpDropdown, WpDropdownOption } from '@/src/app/components/common/dropdown';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
-import { INDUSTRY_TYPE } from '@/src/app/components/common/enum';
+import { INDUSTRY_TYPE, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { ImagePlus, Upload } from 'lucide-react';
 import Image from 'next/image';
 
@@ -49,10 +49,11 @@ const teamSizeOptions: WpDropdownOption[] = [
 
 export default function GeneralSettings() {
   const organization = useAppSelector((state) => state.organization);
+  const user = useAppSelector((state) => state.user);
+  const canEditOrganization = user?.role === ROLE_TYPE.ORG_ADMIN;
   const { updateOrg, isUpdatingOrg } = useUpdateOrganization();
   const { refetchOrganization } = useGetOrganization();
   const { countries } = useGetCountries();
-
   const countryOptions: WpDropdownOption[] =
     countries?.data?.map((c) => ({
       label: c.name,
@@ -102,7 +103,7 @@ export default function GeneralSettings() {
         country_id: data.country,
       });
       await refetchOrganization();
-    } catch (error) {}
+    } catch (error) { }
   };
 
   return (
@@ -115,6 +116,7 @@ export default function GeneralSettings() {
           showRequired
           error={errors.name?.message}
           {...register('name')}
+          disabled={!canEditOrganization}
         />
 
         <div className="mb-5">
@@ -141,6 +143,7 @@ export default function GeneralSettings() {
           placeholder="example.com"
           error={errors.domain?.message}
           {...register('domain')}
+          disabled={!canEditOrganization}
         />
 
         <Controller
@@ -154,7 +157,7 @@ export default function GeneralSettings() {
               value={field.value}
               onChange={field.onChange}
               error={errors.industry?.message}
-              disabled={true}
+              disabled={!canEditOrganization}
             />
           )}
         />
@@ -170,6 +173,7 @@ export default function GeneralSettings() {
               value={field.value}
               onChange={field.onChange}
               error={errors.team_size?.message}
+              disabled={!canEditOrganization}
             />
           )}
         />
@@ -185,6 +189,7 @@ export default function GeneralSettings() {
               value={field.value}
               onChange={field.onChange}
               error={errors.country?.message}
+              disabled={!canEditOrganization}
             />
           )}
         />
@@ -192,10 +197,16 @@ export default function GeneralSettings() {
         <div className="mb-6">
           <label className="mb-2 block text-sm font-bold text-gray-700">Organization Logo</label>
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              if (canEditOrganization) {
+                fileInputRef.current?.click();
+              }
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
+
+              if (!canEditOrganization) return;
               const file = e.dataTransfer.files?.[0];
               if (file) {
                 setValue('logo', file, {
@@ -203,7 +214,10 @@ export default function GeneralSettings() {
                 });
               }
             }}
-            className="cursor-pointer rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 transition hover:border-blue-500 hover:bg-blue-50"
+            className={`rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 transition ${canEditOrganization
+              ? 'cursor-pointer hover:border-blue-500 hover:bg-blue-50'
+              : 'cursor-not-allowed opacity-60'
+              }`}
           >
             <div className="flex items-center gap-5">
               {/* Avatar Preview */}
@@ -251,6 +265,7 @@ export default function GeneralSettings() {
             type="file"
             accept="image/*"
             className="hidden"
+            disabled={!canEditOrganization}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
@@ -264,7 +279,7 @@ export default function GeneralSettings() {
 
         <div className="border-t border-[var(--color-gray-200)] pt-5">
           <div className="flex justify-end">
-            <WpButton type="submit" isLoading={isUpdatingOrg} loadingText="Saving...">
+            <WpButton type="submit" isLoading={isUpdatingOrg} loadingText="Saving..." disabled={!canEditOrganization}>
               Save Changes
             </WpButton>
           </div>
