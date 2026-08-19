@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { refreshAccessToken } from '@/src/lib/auth/refresh-access-token';
 import { getRefreshToken, setTokens } from '@/src/lib/utils/cookies';
 import { showToast } from '@/src/utils/toast';
 import { getAuthSource } from '../utils/auth';
+import { signupService } from '@/src/services/signup';
 
 export const axiosInstance = axios.create({
   baseURL: '/api/v1',
@@ -19,6 +19,7 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
+let isLoggingOut = false; 
 let failedQueue: Array<{
   resolve: () => void;
   reject: (error: unknown) => void;
@@ -36,7 +37,7 @@ const processQueue = (error: unknown | null) => {
 };
 
 const redirectToSignIn = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !isLoggingOut) {
     showToast.error('Session expired. Please sign in again.');
 
     setTimeout(() => {
@@ -52,7 +53,14 @@ const attemptTokenRefresh = async () => {
     throw new Error('No refresh token available');
   }
 
-  const tokens = await refreshAccessToken(refreshToken);
+  // Use the service method for refresh
+  const response = await signupService.refreshToken(refreshToken);
+  
+  if (!response.data) {
+    throw new Error('Failed to refresh access token');
+  }
+
+  const tokens = response.data;
   setTokens(tokens.access_token, tokens.refresh_token, tokens.expires_in);
 };
 
@@ -69,9 +77,14 @@ axiosInstance.interceptors.response.use(
       requestUrl.includes('/auth/signin') ||
       requestUrl.includes('/auth/signup') ||
       requestUrl.includes('/auth/refresh') ||
+      requestUrl.includes('/auth/logout') || 
       requestUrl.includes('/auth/password-reset/request') ||
       requestUrl.includes('/auth/password-reset/confirm')
     ) {
+      return Promise.reject(error);
+    }
+
+    if (isLoggingOut) {
       return Promise.reject(error);
     }
 
@@ -109,3 +122,8 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export helper to set logout state
+export const setIsLoggingOut = (value: boolean) => {
+  isLoggingOut = value;
+};

@@ -104,18 +104,21 @@ export const useSignin = () => {
     onSuccess: () => {
       dispatch(clearUser());
       dispatch(clearSelectedProject());
-      queryClient.clear();
       // Clear org slug cookie
       Cookies.remove('org_slug', { path: '/' });
-      router.push('/signin');
+      
+      // Cancel all queries
+      queryClient.cancelQueries();
+      
+      // Use window.location for full page reload to prevent layout queries
+      window.location.href = '/signin';
     },
     onError: () => {
       dispatch(clearUser());
       dispatch(clearSelectedProject());
-      queryClient.clear();
-      // Clear org slug cookie
       Cookies.remove('org_slug', { path: '/' });
-      router.push('/signin');
+      queryClient.cancelQueries();
+      window.location.href = '/signin';
     },
   });
 
