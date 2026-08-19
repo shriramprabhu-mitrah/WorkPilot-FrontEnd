@@ -13,7 +13,12 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
   return (
     <>
       {/* Title */}
-      <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">{task.title}</p>
+      <p
+        className="text-sm font-semibold text-gray-800 leading-snug mb-2 truncate"
+        title={task.title}
+      >
+        {task.title}
+      </p>
 
       {/* Due date */}
       {task.dueDate &&

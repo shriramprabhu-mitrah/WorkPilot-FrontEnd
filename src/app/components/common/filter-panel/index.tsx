@@ -10,12 +10,16 @@ export interface FilterState {
   priorities: Priority[];
   assignees: string[];
   labels: string[];
+  types: string[];
+  statuses: string[];
 }
 
 interface Props {
   filters: FilterState;
   allAssignees: string[];
   allLabels: string[];
+  allTypes: string[];
+  allStatuses: Array<{ id: string; name: string; color: string }>;
   onChange: (filters: FilterState) => void;
   onClose: () => void;
 }
@@ -32,9 +36,21 @@ const priorityColors: Record<Priority, string> = {
 const toggle = <T,>(arr: T[], val: T): T[] =>
   arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
 
-export const FilterPanel = ({ filters, allAssignees, allLabels, onChange, onClose }: Props) => {
+export const FilterPanel = ({
+  filters,
+  allAssignees,
+  allLabels,
+  allTypes,
+  allStatuses,
+  onChange,
+  onClose,
+}: Props) => {
   const hasActive =
-    filters.priorities.length > 0 || filters.assignees.length > 0 || filters.labels.length > 0;
+    filters.priorities.length > 0 ||
+    filters.assignees.length > 0 ||
+    filters.labels.length > 0 ||
+    filters.types.length > 0 ||
+    filters.statuses.length > 0;
 
   return (
     <div
@@ -50,7 +66,9 @@ export const FilterPanel = ({ filters, allAssignees, allLabels, onChange, onClos
             <WpButton
               variant="ghost"
               size="sm"
-              onClick={() => onChange({ priorities: [], assignees: [], labels: [] })}
+              onClick={() =>
+                onChange({ priorities: [], assignees: [], labels: [], types: [], statuses: [] })
+              }
             >
               Clear all
             </WpButton>
@@ -132,6 +150,51 @@ export const FilterPanel = ({ filters, allAssignees, allLabels, onChange, onClos
                 label={l}
                 active={filters.labels.includes(l)}
                 onClick={() => onChange({ ...filters, labels: toggle(filters.labels, l) })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allTypes.length > 0 && (
+        <div>
+          <p
+            className="text-xs font-semibold mb-2 uppercase tracking-wide"
+            style={{ color: colors.gray600 }}
+          >
+            Type
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {allTypes.map((type) => (
+              <Chip
+                key={type}
+                label={type}
+                active={filters.types.includes(type)}
+                onClick={() => onChange({ ...filters, types: toggle(filters.types, type) })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allStatuses.length > 0 && (
+        <div>
+          <p
+            className="text-xs font-semibold mb-2 uppercase tracking-wide"
+            style={{ color: colors.gray600 }}
+          >
+            Status
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {allStatuses.map((status) => (
+              <Chip
+                key={status.id}
+                label={status.name}
+                active={filters.statuses.includes(status.id)}
+                color={status.color}
+                onClick={() =>
+                  onChange({ ...filters, statuses: toggle(filters.statuses, status.id) })
+                }
               />
             ))}
           </div>
