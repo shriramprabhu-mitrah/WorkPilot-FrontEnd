@@ -5,15 +5,27 @@ import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import {
   $getRoot,
   $getSelection,
+  $getNodeByKey,
   $insertNodes,
   $isRangeSelection,
   COMMAND_PRIORITY_LOW,
+  COMMAND_PRIORITY_EDITOR,
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
   SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
+  createCommand,
+  DecoratorNode,
+  type DOMConversionMap,
+  type DOMConversionOutput,
+  type DOMExportOutput,
   type EditorState,
+  type LexicalCommand,
   type LexicalEditor,
+  type LexicalNode,
+  type NodeKey,
+  type SerializedLexicalNode,
+  type Spread,
 } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -34,7 +46,6 @@ import {
 import { TOGGLE_LINK_COMMAND, LinkNode, AutoLinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { $patchStyleText } from '@lexical/selection';
-import { $setBlocksType } from '@lexical/selection';
 import {
   Bold,
   Italic,
@@ -48,12 +59,13 @@ import {
   MoreHorizontal,
   Image as ImageIcon,
   Code2,
-  Plus,
   Mic,
   ChevronDown,
   Check,
   Minus,
+  X,
 } from 'lucide-react';
+
 interface WpRichTextEditorProps {
   value?: string;
   onChange?: (html: string) => void;
@@ -61,7 +73,218 @@ interface WpRichTextEditorProps {
   minHeight?: string;
   disabled?: boolean;
   className?: string;
+  /** Called when the user picks an image file. Must resolve to the uploaded image's public URL. */
+  onImageUpload?: (file: File) => Promise<string>;
 }
+
+
+export interface InsertImagePayload {
+  src: string;
+  altText: string;
+}
+
+export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
+  createCommand('INSERT_IMAGE_COMMAND');
+
+type SerializedImageNode = Spread<
+  { src: string; altText: string; type: 'image'; version: 1 },
+  SerializedLexicalNode
+>;
+
+function convertImageElement(domNode: HTMLElement): DOMConversionOutput | null {
+  if (domNode instanceof HTMLImageElement) {
+    const { src, alt } = domNode;
+    const node = $createImageNode({ src, altText: alt || '' });
+    return { node };
+  }
+  return null;
+}
+
+function ImageComponent({
+  src,
+  altText,
+  nodeKey,
+}: {
+  src: string;
+  altText: string;
+  nodeKey: NodeKey;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const [hovered, setHovered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const handleRemove = () => {
+    editor.update(() => {
+      const node = $getNodeByKey(nodeKey);
+
+      if (node) {
+        node.remove();
+      }
+    });
+  };
+
+  return (
+    <span
+      className="relative my-2 inline-block max-w-full align-top"
+      contentEditable={false}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {!loaded && !hasError && (
+        <div className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-md border border-gray-200 bg-gray-50">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+            Loading image...
+          </div>
+        </div>
+      )}
+
+      {hasError ? (
+        <div className="flex min-h-[100px] min-w-[220px] flex-col items-center justify-center rounded-md border border-red-200 bg-red-50 px-4 py-3 text-center">
+          <ImageIcon size={24} className="mb-2 text-red-400" />
+
+          <p className="text-sm font-medium text-red-600">Unable to load image</p>
+
+          <p className="mt-1 max-w-[280px] break-all text-xs text-red-500">{src}</p>
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={altText}
+          draggable={false}
+          onLoad={() => {
+            setLoaded(true);
+            setHasError(false);
+          }}
+          onError={() => {
+            setLoaded(false);
+            setHasError(true);
+          }}
+          className={`max-w-full rounded-md border border-gray-200 ${loaded ? 'block' : 'hidden'}`}
+          style={{
+            maxHeight: 320,
+            width: 'auto',
+            height: 'auto',
+          }}
+        />
+      )}
+
+      {hovered && (
+        <button
+          type="button"
+          title="Remove image"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={handleRemove}
+          className="
+            absolute right-1.5 top-1.5
+            flex h-6 w-6 items-center justify-center
+            rounded-full bg-black/60 text-white
+            transition-colors hover:bg-black/80
+          "
+        >
+          <X size={14} />
+        </button>
+      )}
+    </span>
+  );
+}
+
+export class ImageNode extends DecoratorNode<React.ReactNode> {
+  __src: string;
+  __altText: string;
+
+  static getType(): string {
+    return 'image';
+  }
+
+  static clone(node: ImageNode): ImageNode {
+    return new ImageNode(node.__src, node.__altText, node.__key);
+  }
+
+  static importJSON(serializedNode: SerializedImageNode): ImageNode {
+    const { src, altText } = serializedNode;
+    return $createImageNode({ src, altText });
+  }
+
+  exportJSON(): SerializedImageNode {
+    return {
+      src: this.__src,
+      altText: this.__altText,
+      type: 'image',
+      version: 1,
+    };
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return {
+      img: () => ({
+        conversion: convertImageElement,
+        priority: 0,
+      }),
+    };
+  }
+
+  exportDOM(): DOMExportOutput {
+    const element = document.createElement('img');
+    element.setAttribute('src', this.__src);
+    element.setAttribute('alt', this.__altText);
+    return { element };
+  }
+
+  constructor(src: string, altText: string, key?: NodeKey) {
+    super(key);
+    this.__src = src;
+    this.__altText = altText;
+  }
+
+  createDOM(): HTMLElement {
+    return document.createElement('span');
+  }
+
+  updateDOM(): false {
+    return false;
+  }
+
+  decorate(): React.ReactNode {
+    return (
+      <ImageComponent src={this.__src} altText={this.__altText} nodeKey={this.getKey()} />
+    );
+  }
+}
+
+export function $createImageNode({ src, altText }: InsertImagePayload): ImageNode {
+  return new ImageNode(src, altText);
+}
+
+export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {
+  return node instanceof ImageNode;
+}
+
+function ImagesPlugin(): null {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (!editor.hasNodes([ImageNode])) {
+      throw new Error('ImagesPlugin: ImageNode not registered on editor');
+    }
+
+    return editor.registerCommand<InsertImagePayload>(
+      INSERT_IMAGE_COMMAND,
+      (payload) => {
+        const imageNode = $createImageNode(payload);
+        $insertNodes([imageNode]);
+        return true;
+      },
+      COMMAND_PRIORITY_EDITOR
+    );
+  }, [editor]);
+
+  return null;
+}
+
+/* -------------------------------------------------------------------------- */
+
 const theme = {
   paragraph: 'mb-1',
   text: {
@@ -89,7 +312,7 @@ const initialConfig = {
   namespace: 'WpRichTextEditor',
   theme,
   onError(error: Error) {},
-  nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode],
+  nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, ImageNode],
 };
 
 interface ToolbarButtonProps {
@@ -138,6 +361,7 @@ function ToolbarButton({
 function ToolbarDivider() {
   return <div className="mx-1 h-5 w-px shrink-0 bg-gray-200" />;
 }
+
 function TextColorPicker({
   editor,
   open,
@@ -152,60 +376,26 @@ function TextColorPicker({
   }
 
   const colors = [
-    '#242629',
-    '#2563eb',
-    '#28758c',
-    '#247552',
-    '#e66a00',
-    '#b8322a',
-    '#8142a3',
-
-    '#8b9098',
-    '#3979e6',
-    '#289bc0',
-    '#22a36b',
-    '#ffad00',
-    '#d7372f',
-    '#aa4fce',
-
-    '#ffffff',
-    '#c5d9f5',
-    '#b9e0ec',
-    '#b8e8d1',
-    '#f2e68b',
-    '#f8c9c5',
-    '#e4cdf0',
+    '#242629', '#2563eb', '#28758c', '#247552', '#e66a00', '#b8322a', '#8142a3',
+    '#8b9098', '#3979e6', '#289bc0', '#22a36b', '#ffad00', '#d7372f', '#aa4fce',
+    '#ffffff', '#c5d9f5', '#b9e0ec', '#b8e8d1', '#f2e68b', '#f8c9c5', '#e4cdf0',
   ];
 
   const applyColor = (color: string) => {
     editor.update(() => {
       const selection = $getSelection();
-
-      if (!$isRangeSelection(selection)) {
-        return;
-      }
-
-      $patchStyleText(selection, {
-        color,
-      });
+      if (!$isRangeSelection(selection)) return;
+      $patchStyleText(selection, { color });
     });
-
     onClose();
   };
 
   const removeColor = () => {
     editor.update(() => {
       const selection = $getSelection();
-
-      if (!$isRangeSelection(selection)) {
-        return;
-      }
-
-      $patchStyleText(selection, {
-        color: null,
-      });
+      if (!$isRangeSelection(selection)) return;
+      $patchStyleText(selection, { color: null });
     });
-
     onClose();
   };
 
@@ -228,9 +418,7 @@ function TextColorPicker({
             key={`${color}-${index}`}
             type="button"
             title={color}
-            onMouseDown={(event) => {
-              event.preventDefault();
-            }}
+            onMouseDown={(event) => event.preventDefault()}
             onClick={() => applyColor(color)}
             className="
               relative flex h-6 w-6
@@ -239,9 +427,7 @@ function TextColorPicker({
               transition-transform
               hover:scale-110
             "
-            style={{
-              backgroundColor: color,
-            }}
+            style={{ backgroundColor: color }}
           >
             {index === 0 && <Check size={14} className="text-white" />}
           </button>
@@ -250,9 +436,7 @@ function TextColorPicker({
 
       <button
         type="button"
-        onMouseDown={(event) => {
-          event.preventDefault();
-        }}
+        onMouseDown={(event) => event.preventDefault()}
         onClick={removeColor}
         className="
           mt-3 flex h-9 w-full
@@ -271,9 +455,7 @@ function TextColorPicker({
 }
 
 function CodeSnippetToolbar({
-  editor,
   open,
-  onClose,
 }: {
   editor: LexicalEditor;
   open: boolean;
@@ -334,6 +516,7 @@ function CodeSnippetToolbar({
     </div>
   );
 }
+
 function InitialValuePlugin({ value }: { value?: string }) {
   const [editor] = useLexicalComposerContext();
   const initialized = useRef(false);
@@ -365,7 +548,11 @@ function InitialValuePlugin({ value }: { value?: string }) {
   return null;
 }
 
-function EditorToolbar() {
+function EditorToolbar({
+  onImageUpload,
+}: {
+  onImageUpload?: (file: File) => Promise<string>;
+}) {
   const [editor] = useLexicalComposerContext();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -377,6 +564,8 @@ function EditorToolbar() {
   const [isUnderline, setIsUnderline] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showCodeToolbar, setShowCodeToolbar] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const handleInsertLink = () => {
     const url = linkUrl.trim();
@@ -409,6 +598,7 @@ function EditorToolbar() {
 
     return removeListener;
   }, [editor]);
+
   const formatText = (format: 'bold' | 'italic' | 'underline') => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
   };
@@ -424,6 +614,47 @@ function EditorToolbar() {
     setShowEmojiPicker(false);
   };
 
+  const handleImageFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // allow re-selecting the same file later
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Please select an image file.');
+      return;
+    }
+
+    const MAX_SIZE_MB = 5;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      setImageError(`Image must be smaller than ${MAX_SIZE_MB}MB.`);
+      return;
+    }
+
+    if (!onImageUpload) {
+      setImageError('Image upload is not configured.');
+      return;
+    }
+
+    setImageError(null);
+    setIsUploadingImage(true);
+
+    try {
+      const url = await onImageUpload(file);
+
+      editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+        src: url,
+        altText: file.name,
+      });
+    } catch (err) {
+      setImageError('Image upload failed, please try again.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   return (
     <div
       className="
@@ -437,57 +668,45 @@ function EditorToolbar() {
     >
       <ToolbarButton title="Text style" onClick={() => {}}>
         <span className="text-sm font-medium">T</span>
-
         <ChevronDown size={12} className="ml-0.5" />
       </ToolbarButton>
 
-      {/* Bold */}
       <ToolbarButton title="Bold" active={isBold} onClick={() => formatText('bold')}>
         <Bold size={16} />
       </ToolbarButton>
 
-      {/* Italic */}
       <ToolbarButton title="Italic" active={isItalic} onClick={() => formatText('italic')}>
         <Italic size={16} />
       </ToolbarButton>
 
-      {/* Underline */}
       <ToolbarButton title="Underline" active={isUnderline} onClick={() => formatText('underline')}>
         <Underline size={16} />
       </ToolbarButton>
 
       <ToolbarDivider />
 
-      {/* Bullet */}
       <ToolbarButton
         title="Bullet list"
-        onClick={() => {
-          editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-        }}
+        onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
       >
         <List size={17} />
       </ToolbarButton>
 
-      {/* Number */}
       <ToolbarButton
         title="Numbered list"
-        onClick={() => {
-          editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-        }}
+        onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}
       >
         <ListOrdered size={17} />
       </ToolbarButton>
 
       <ToolbarDivider />
 
-      {/* TEXT COLOR */}
       <div className="relative">
         <ToolbarButton
           title="Text color"
           active={showColorPicker}
           onClick={() => {
             setShowColorPicker((previous) => !previous);
-
             setShowCodeToolbar(false);
           }}
         >
@@ -511,38 +730,52 @@ function EditorToolbar() {
       </div>
 
       {/* IMAGE */}
-      <>
+      <div className="relative">
         <input
           ref={imageInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (!file) {
-              return;
-            }
-            event.target.value = '';
-          }}
+          onChange={handleImageFileChange}
         />
         <ToolbarButton
           title="Image"
+          disabled={isUploadingImage}
           onClick={() => {
+            setImageError(null);
             imageInputRef.current?.click();
           }}
         >
-          <ImageIcon size={16} />
+          {isUploadingImage ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          ) : (
+            <ImageIcon size={16} />
+          )}
         </ToolbarButton>
-      </>
 
-      {/* CODE SNIPPET */}
+        {imageError && (
+          <div
+            className="
+              absolute left-1/2 top-full z-[100]
+              mt-2 w-[220px]
+              -translate-x-1/2
+              rounded-md border border-red-200
+              bg-red-50 px-3 py-2
+              text-xs text-red-600
+              shadow-lg
+            "
+          >
+            {imageError}
+          </div>
+        )}
+      </div>
+
       <div className="relative">
         <ToolbarButton
           title="Code snippet"
           active={showCodeToolbar}
           onClick={() => {
             setShowCodeToolbar((previous) => !previous);
-
             setShowColorPicker(false);
           }}
         >
@@ -554,14 +787,12 @@ function EditorToolbar() {
           onClose={() => setShowCodeToolbar(false)}
         />
       </div>
-      {/* EMOJI */}
+
       <div className="relative">
         <ToolbarButton
           title="Emoji"
           active={showEmojiPicker}
-          onClick={() => {
-            setShowEmojiPicker((prev) => !prev);
-          }}
+          onClick={() => setShowEmojiPicker((prev) => !prev)}
         >
           <Smile size={16} />
         </ToolbarButton>
@@ -584,20 +815,18 @@ function EditorToolbar() {
               height={450}
               searchDisabled={false}
               skinTonesDisabled={false}
-              previewConfig={{
-                showPreview: true,
-              }}
+              previewConfig={{ showPreview: true }}
             />
           </div>
         )}
       </div>
+
       <div className="relative">
         <ToolbarButton
           title="Link"
           active={showLinkPopup}
           onClick={() => {
             setShowLinkPopup((previous) => !previous);
-
             setShowColorPicker(false);
             setShowCodeToolbar(false);
           }}
@@ -622,10 +851,8 @@ function EditorToolbar() {
         shadow-xl
       "
           >
-            {/* URL */}
             <div className="mb-3">
               <label className="mb-1.5 block text-sm text-gray-600">Paste or search for link</label>
-
               <input
                 autoFocus
                 type="text"
@@ -636,7 +863,6 @@ function EditorToolbar() {
                     event.preventDefault();
                     handleInsertLink();
                   }
-
                   if (event.key === 'Escape') {
                     setShowLinkPopup(false);
                   }
@@ -658,10 +884,8 @@ function EditorToolbar() {
               />
             </div>
 
-            {/* Display text */}
             <div className="mb-3">
               <label className="mb-1.5 block text-sm text-gray-600">Display text (optional)</label>
-
               <input
                 type="text"
                 value={linkText}
@@ -671,7 +895,6 @@ function EditorToolbar() {
                     event.preventDefault();
                     handleInsertLink();
                   }
-
                   if (event.key === 'Escape') {
                     setShowLinkPopup(false);
                   }
@@ -692,7 +915,6 @@ function EditorToolbar() {
               />
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
@@ -736,34 +958,20 @@ function EditorToolbar() {
         )}
       </div>
 
-      {/* UNDO */}
-      <ToolbarButton
-        title="Undo"
-        onClick={() => {
-          editor.dispatchCommand(UNDO_COMMAND, undefined);
-        }}
-      >
+      <ToolbarButton title="Undo" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>
         <Undo2 size={16} />
       </ToolbarButton>
 
-      {/* REDO */}
-      <ToolbarButton
-        title="Redo"
-        onClick={() => {
-          editor.dispatchCommand(REDO_COMMAND, undefined);
-        }}
-      >
+      <ToolbarButton title="Redo" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>
         <Redo2 size={16} />
       </ToolbarButton>
 
-      {/* MORE */}
       <ToolbarButton title="More" onClick={() => {}}>
         <MoreHorizontal size={17} />
       </ToolbarButton>
 
       <div className="flex-1" />
 
-      {/* MICROPHONE */}
       <ToolbarButton title="Voice input" onClick={() => {}}>
         <Mic size={16} />
       </ToolbarButton>
@@ -784,6 +992,7 @@ function EditorPlaceholder({ text }: { text: string }) {
     </div>
   );
 }
+
 export default function WpRichTextEditor({
   value = '',
   onChange,
@@ -791,14 +1000,15 @@ export default function WpRichTextEditor({
   minHeight = '150px',
   disabled = false,
   className = '',
+  onImageUpload,
 }: WpRichTextEditorProps) {
   const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
     editorState.read(() => {
       const html = $generateHtmlFromNodes(editor);
-
       onChange?.(html);
     });
   };
+
   return (
     <div
       className={`
@@ -815,7 +1025,7 @@ export default function WpRichTextEditor({
       `}
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <EditorToolbar />
+        <EditorToolbar onImageUpload={onImageUpload} />
         <div className="relative z-10">
           <RichTextPlugin
             contentEditable={
@@ -841,9 +1051,7 @@ export default function WpRichTextEditor({
                   [&_pre]:font-mono
                   [&_pre]:text-sm
                 "
-                style={{
-                  minHeight,
-                }}
+                style={{ minHeight }}
               />
             }
             placeholder={<EditorPlaceholder text={placeholder} />}
@@ -852,6 +1060,7 @@ export default function WpRichTextEditor({
           <HistoryPlugin />
           <ListPlugin />
           <LinkPlugin />
+          <ImagesPlugin />
           <InitialValuePlugin value={value} />
           <OnChangePlugin onChange={handleChange} />
         </div>

@@ -10,6 +10,7 @@ import { useCreateUserStory } from '@/src/modules/tasks/hooks/useUserStory';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector } from '@/src/store';
 import { useUploadUserStoryAttachment } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
+import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
 
 interface CreateUserStoryModalProps {
   onClose: () => void;
@@ -20,7 +21,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
-
+const [isEditingDescription, setIsEditingDescription] = useState(false);
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
   const queryClient = useQueryClient();
@@ -105,13 +106,23 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
           />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter story description"
-              rows={4}
-              className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
+
+            {!isEditingDescription ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onClick={() => setIsEditingDescription(true)}
+                placeholder="Enter story description"
+                rows={4}
+                className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none transition cursor-text focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+            ) : (
+              <WpRichTextEditor
+                value={description}
+                onChange={(value) => setDescription(value)}
+                placeholder="Enter story description"
+              />
+            )}
           </div>
           <div>
             <div className="mb-1.5 flex items-center justify-between">
