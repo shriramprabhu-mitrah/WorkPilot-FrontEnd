@@ -19,6 +19,7 @@ import { WpInput } from '@/src/app/components/common/input';
 import { useAppSelector } from '@/src/store';
 import { getInitials } from '../format';
 import { removeTokens } from '@/src/lib/utils/cookies';
+import { setIsLoggingOut } from '@/src/lib/config/axios-client';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import { useEffect, useRef, useState } from 'react';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
@@ -52,13 +53,21 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const handleLogoutClick = async () => {
     if (logOut.isLoading) return;
 
-    removeTokens();
     setShowProfileMenu(false);
+    setIsLoggingOut(true);
 
     try {
+      // 1. Call logout API FIRST (with valid tokens)
       await handleLogOutAsync();
-    } catch {
+      
+      // 2. THEN remove tokens after API succeeds
+      removeTokens();
+    } catch (error) {
+      // Even if logout API fails, still remove tokens locally
+      removeTokens();
       // onError in useSignin handles redirect
+    } finally {
+      setIsLoggingOut(false); 
     }
   };
   return (
