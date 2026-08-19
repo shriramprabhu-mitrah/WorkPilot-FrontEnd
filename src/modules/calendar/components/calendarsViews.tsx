@@ -12,7 +12,7 @@ import CustomEvent from './customsEvents';
 import CustomDateHeader from './customsDatesHeaders';
 import { eventStyleGetter } from './calendarsViewStyle';
 import { View } from 'react-big-calendar';
-
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { useResize } from '@/src/hooks/useResize';
 
 const localizer = momentLocalizer(moment);
@@ -23,9 +23,9 @@ interface CalendarViewProps {
   currentView: View;
   onViewChange: (view: View) => void;
   onNavigate: (date: Date) => void;
-
-  selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
-  onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
+  // selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
+  // onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
+  projectId: string;
 }
 
 const formats: Formats = {
@@ -40,14 +40,16 @@ const CalendarView = ({
   currentView,
   onViewChange,
   onNavigate,
-  selectedType,
-  onTypeChange,
+  projectId,
+  // selectedType,
+  // onTypeChange,
+
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const { width: screenWidth } = useResize();
   const isMobile = screenWidth > 0 && screenWidth < 640;
-
+  const { push } = useOrgNavigation();
   return (
     <>
       <Calendar<CalendarEvent>
@@ -77,10 +79,22 @@ const CalendarView = ({
           }
         }}
         onSelectEvent={(event) => {
+          if (event.type === 'Sprint') {
+            push(
+              `/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`
+            );
+            return;
+          }
+
           setSelectedEvent(event);
         }}
         style={{
-          height: isMobile ? 'calc(100vh - 300px)' : 'calc(100vh - 320px)',
+          height:
+            screenWidth < 640
+              ? '420px'
+              : screenWidth < 1024
+                ? '500px'
+                : '540px',
         }}
         eventPropGetter={eventStyleGetter}
         components={{
@@ -91,8 +105,8 @@ const CalendarView = ({
               onDateChange={onNavigate}
               currentView={currentView}
               onViewChange={onViewChange}
-              selectedType={selectedType}
-              onTypeChange={onTypeChange}
+            // selectedType={selectedType}
+            // onTypeChange={onTypeChange}
             />
           ),
           event: CustomEvent,

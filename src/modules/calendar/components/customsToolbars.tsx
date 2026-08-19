@@ -10,8 +10,8 @@ interface CustomToolbarProps extends ToolbarProps<CalendarEvent> {
   currentView: View;
   onViewChange: (view: View) => void;
 
-  selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
-  onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
+  // selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
+  // onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
 }
 const CustomToolbar = ({
   label,
@@ -20,8 +20,8 @@ const CustomToolbar = ({
   onDateChange,
   currentView,
   onViewChange,
-  selectedType,
-  onTypeChange,
+  // selectedType,
+  // onTypeChange,
 }: CustomToolbarProps) => {
   return (
     <div className="mb-2 sm:mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -37,7 +37,7 @@ const CustomToolbar = ({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <select
+        {/* <select
           value={selectedType}
           onChange={(e) => onTypeChange(e.target.value as 'All' | 'Sprint' | 'Meeting' | 'Task')}
           className="h-9 sm:h-9 rounded-lg border border-gray-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50"
@@ -46,7 +46,7 @@ const CustomToolbar = ({
           <option value="Sprint">Sprint</option>
           <option value="Meeting">Meeting</option>
           <option value="Task">Task</option>
-        </select>
+        </select> */}
 
         <WpButton
           variant="secondary"

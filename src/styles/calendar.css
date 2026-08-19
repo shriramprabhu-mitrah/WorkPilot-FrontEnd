@@ -10,7 +10,7 @@
   color: #64748b;
   font-size: 13px;
   font-weight: 500;
-  padding: 14px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f3f5f8 !important;
 }
 
@@ -19,9 +19,8 @@
 }
 
 .rbc-month-row {
-   min-height: 100px;
+  min-height: 68px;
   border-top: 1px solid #f3f5f8 !important;
-  
 }
 
 .rbc-day-bg + .rbc-day-bg {
@@ -33,7 +32,7 @@
 }
 
 .rbc-date-cell {
-  padding: 8px 10px;
+  padding: 4px 8px;
   text-align: right;
   font-size: 13px;
   font-weight: 500;
@@ -45,7 +44,7 @@
 }
 
 .rbc-row-segment {
-  padding: 3px 4px;
+  padding: 1px 3px;
 }
 
 .rbc-allday-cell {
@@ -59,9 +58,39 @@
 .rbc-event {
   border: none;
   border-radius: 4px;
-  padding: 1px 4px;
+  padding: 0;
+  min-height: 20px;
+  line-height: 20px;
 }
 
+/* Tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .rbc-month-row {
+    min-height: 58px;
+  }
+
+  .rbc-header {
+    font-size: 12px;
+    padding: 7px 0;
+  }
+
+  .rbc-date-cell {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .rbc-row-segment {
+    padding: 1px 3px;
+  }
+
+  .rbc-event {
+    min-height: 19px;
+    line-height: 19px;
+    font-size: 10px;
+  }
+}
+
+/* Mobile */
 @media (max-width: 639px) {
   .rbc-month-row {
     min-height: 52px;
@@ -69,7 +98,7 @@
 
   .rbc-header {
     font-size: 10px;
-    padding: 6px 0;
+    padding: 5px 0;
   }
 
   .rbc-date-cell {
@@ -78,11 +107,13 @@
   }
 
   .rbc-row-segment {
-    padding: 1px 1px;
+    padding: 1px;
   }
 
   .rbc-event {
-    padding: 0px 2px;
+    min-height: 17px;
+    line-height: 17px;
+    padding: 0 2px;
     font-size: 9px;
     border-radius: 3px;
   }
