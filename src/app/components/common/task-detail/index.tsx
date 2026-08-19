@@ -172,6 +172,28 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
 
+interface Attachment {
+  url?: string;
+  file_url?: string;
+  file_path?: string;
+  path?: string;
+}
+
+const handleEditorImageUpload = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const result = await uploadAttachment.mutateAsync(formData);
+  const attachment = result?.data?.[0] as Attachment | undefined;
+  if (!attachment) {
+    throw new Error('No attachment returned from upload API');
+  }
+  const imageUrl = attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+  if (!imageUrl) {
+    throw new Error('Uploaded attachment does not contain an image URL');
+  }
+  return imageUrl;
+};
+
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
       if (!task.projectId || !task.taskId) {
@@ -584,15 +606,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     value={editTaskDescription}
                     onChange={(value) => {
                       setEditTaskDescription(value);
-
-                      // Keep normal task state in sync for the editor
-                      setTaskData((prev) => ({
-                        ...prev,
-                        description: value,
-                      }));
+                      setTaskData((prev) => ({ ...prev, description: value }));
                     }}
                     placeholder="Add a description..."
                     minHeight="120px"
+                    onImageUpload={handleEditorImageUpload}
                   />
 
                   {isEditingTask ? (
@@ -722,8 +740,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               ) : (
                 <div
                   onClick={() => {
-                    setSavedDescription(taskData.description);
-
+                    setEditTaskDescription(taskData.description ?? '');
+                    setSavedDescription(taskData.description ?? '');
                     setUiState((prev) => ({
                       ...prev,
                       editingDesc: true,
