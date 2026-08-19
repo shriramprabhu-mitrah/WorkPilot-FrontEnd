@@ -54,10 +54,10 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     sprint_count: apiProject.sprint_count ?? 0,
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -74,7 +74,7 @@ export const PROJECT_STATUS_API_MAP = {
 
 const ProjectPage = () => {
   const router = useRouter();
-  const { push } = useOrgNavigation();
+  const { push, replace } = useOrgNavigation();
   const searchParams = useSearchParams();
   const { hasPermission } = usePermissions();
 
@@ -146,18 +146,25 @@ const ProjectPage = () => {
         description: description || undefined,
       };
 
-      await createProjectAsync(payload);
+      const response = await createProjectAsync(payload);
       setIsModalOpen(false);
 
       setProjectName('');
       setDescription('');
-    } catch (error) {}
+
+      const createdProject = response?.data as { project_id?: string };
+
+      if (createdProject?.project_id) {
+        replace(`/projects/sprints?projectId=${createdProject.project_id}`);
+      }
+    } catch (error) { }
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {
     if (!apiProject.id) return;
     dispatch(setProjectLoading(true));
-    push('/projects/sprints');
+
+    replace(`/projects/sprints?projectId=${apiProject.id}`);
     try {
       const res = await queryClient.fetchQuery({
         queryKey: ['projectDetail', apiProject.id],
