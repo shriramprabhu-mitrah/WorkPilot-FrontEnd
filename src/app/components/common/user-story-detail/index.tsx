@@ -14,7 +14,7 @@ import {
   Download,
   CornerDownRight,
 } from 'lucide-react';
-import type { Priority } from '@/src/types/board';
+import type { Priority, SubTask } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
 import { DetailRow } from '../task-detail/components/detail-row';
@@ -57,6 +57,7 @@ import {
 } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
 
 import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
+import { useQueryClient } from '@tanstack/react-query';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -182,53 +183,91 @@ export const UserStoryDetailDrawer = ({
     userStoryId
   );
   // Only keep editable fields in local state to avoid cascading renders
-  const [editableFields, setEditableFields] = useState({
-    title: currentUserStory.title,
-    description: currentUserStory.description ?? '',
-  });
+ type EditableUserStoryFields = {
+   title: string;
+   description: string;
+   priority: Priority;
+   status: string;
+   storyPoints: number;
+   assigneeId: string;
+   assigneeName: string;
+   sprintId: string;
+   sprintName: string;
+   start_date: string;
+   due_date: string;
+ };
 
+ const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
+   const assigneeName = story.assignee_name ?? story.reporter_name ?? '';
 
+   const priority = story.priority
+     ? ((story.priority.charAt(0).toUpperCase() +
+         story.priority.slice(1).toLowerCase()) as Priority)
+     : ('Medium' as Priority);
+
+   const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
+
+   return {
+     title: story.title ?? '',
+     description: story.description ?? '',
+     priority,
+     status: story.status_id ?? '',
+     storyPoints: story.story_points ?? 0,
+     assigneeId: story.assignee_id ?? '',
+     assigneeName,  
+     sprintId: story.sprint_id ?? '',
+     sprintName,
+     start_date: story.start_date ?? story.tasks?.[0]?.created_at ?? '',
+     due_date: story.due_date ?? story.tasks?.[0]?.due_date ?? '',
+   };
+ };
+
+ const [editableFields, setEditableFields] = useState<EditableUserStoryFields>(() =>
+   createEditableFields(currentUserStory)
+ );
 
   // Derive non-editable fields directly from currentUserStory - no state needed
-  const userStoryData = useMemo(() => {
-    const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
-    const assigneeInitials = assigneeName
-      ? assigneeName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-      : '';
+ const userStoryData = useMemo(() => {
+   const assigneeName =
+     editableFields.assigneeName ||
+     currentUserStory.assignee_name ||
+     currentUserStory.reporter_name ||
+     '';
 
-    return {
-      ...editableFields, // Use local state for editable fields
-      priority: currentUserStory.priority
-        ? ((currentUserStory.priority.charAt(0).toUpperCase() +
-          currentUserStory.priority.slice(1).toLowerCase()) as Priority)
-        : ('Medium' as Priority),
-      status: currentUserStory.status ?? '',
-      storyPoints: currentUserStory.story_points ?? 0,
-      assigneeId: currentUserStory.assignee_id ?? '',
-      assigneeName: assigneeName,
-      assigneeInitials: assigneeInitials,
-      sprintId: currentUserStory.sprint_id ?? '',
-      due_date: currentUserStory.due_date ?? currentUserStory.tasks?.[0]?.due_date ?? '',
-      start_date: currentUserStory.start_date ?? currentUserStory.tasks?.[0]?.created_at ?? '',
-    };
-  }, [currentUserStory, editableFields]);
+   const assigneeInitials = assigneeName
+     ? assigneeName
+         .split(' ')
+         .map((n: string) => n[0])
+         .join('')
+         .toUpperCase()
+         .slice(0, 2)
+     : '';
+
+   return {
+     title: editableFields.title,
+     description: editableFields.description,
+     priority: editableFields.priority,
+     status: editableFields.status,
+     storyPoints: editableFields.storyPoints,
+     assigneeId: editableFields.assigneeId,
+     assigneeName,
+     assigneeInitials,
+     sprintId: editableFields.sprintId,
+     sprintName: editableFields.sprintName,
+     start_date: editableFields.start_date,
+     due_date: editableFields.due_date,
+   };
+ }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name]);
 
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
   useEffect(() => {
     if (userStoryIdRef.current !== currentUserStory.id) {
       userStoryIdRef.current = currentUserStory.id;
-      setEditableFields({
-        title: currentUserStory.title,
-        description: currentUserStory.description ?? '',
-      });
+
+      setEditableFields(createEditableFields(currentUserStory));
     }
-  }, [currentUserStory.id, currentUserStory.title, currentUserStory.description]);
+  }, [currentUserStory]);
 
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
@@ -245,7 +284,6 @@ export const UserStoryDetailDrawer = ({
   const [sprintSearch, setSprintSearch] = useState('');
   const [showSprintMenu, setShowSprintMenu] = useState(false);
   const [selectedSprintName, setSelectedSprintName] = useState('');
-
   const debouncedSprintSearch = useDebounce(sprintSearch, 500);
   const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
@@ -255,6 +293,10 @@ export const UserStoryDetailDrawer = ({
   const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
   const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+ const [childTasks, setChildTasks] = useState<TaskResponse[]>(() => currentUserStory.tasks ?? []);
+  const queryClient = useQueryClient();
+  const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);
+  const childStatusMenuRef = useRef<HTMLDivElement>(null);
 
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     currentUserStory.project_id ?? '',
@@ -263,10 +305,7 @@ export const UserStoryDetailDrawer = ({
   );
 
   const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
-  const {
-    mutateAsync: deleteStatus,
-    isPending: isDeletingStatus,
-  } = useDeleteStatus();
+  const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
   // Comment hooks
   const { createCommentAsync, isCreatingComment } = useCreateUserStoryComment(
@@ -306,16 +345,18 @@ export const UserStoryDetailDrawer = ({
   const [deletingReplyId, setDeletingReplyId] = useState<string | null>(null);
 
   // Hooks for reply update/delete
-  const { updateCommentAsync: updateReplyAsync, isUpdatingComment: isUpdatingReply } = useUpdateUserStoryComment(
-    currentUserStory.project_id ?? '',
-    currentUserStory.id,
-    editingReplyId ?? ''
-  );
-  const { deleteCommentAsync: deleteReplyAsync, isDeletingComment: isDeletingReply } = useDeleteUserStoryComment(
-    currentUserStory.project_id ?? '',
-    currentUserStory.id,
-    deletingReplyId ?? ''
-  );
+  const { updateCommentAsync: updateReplyAsync, isUpdatingComment: isUpdatingReply } =
+    useUpdateUserStoryComment(
+      currentUserStory.project_id ?? '',
+      currentUserStory.id,
+      editingReplyId ?? ''
+    );
+  const { deleteCommentAsync: deleteReplyAsync, isDeletingComment: isDeletingReply } =
+    useDeleteUserStoryComment(
+      currentUserStory.project_id ?? '',
+      currentUserStory.id,
+      deletingReplyId ?? ''
+    );
 
   const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
     currentUserStory.project_id ?? '',
@@ -353,53 +394,101 @@ export const UserStoryDetailDrawer = ({
   const [mobileTab, setMobileTab] = useState<'content' | 'details'>('content');
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        childAssigneeTaskId !== null &&
+        childAssigneeMenuRef.current &&
+        !childAssigneeMenuRef.current.contains(target)
+      ) {
+        setChildAssigneeTaskId(null);
+        setChildAssigneeSearch('');
+      }
+      if (
+        childStatusTaskId !== null &&
+        childStatusMenuRef.current &&
+        !childStatusMenuRef.current.contains(target)
+      ) {
+        setChildStatusTaskId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [childAssigneeTaskId, childStatusTaskId]);
+
   const handleUpdate = useCallback(
-    async (patch: Partial<typeof userStoryData>) => {
+    async (patch: Partial<EditableUserStoryFields>) => {
       if (!currentUserStory.project_id || !currentUserStory.id) return;
 
-      const previousEditableFields = { ...editableFields };
+      const previousFields = { ...editableFields };
 
-      // Update local editable fields immediately for optimistic updates
-      if (patch.title !== undefined || patch.description !== undefined) {
-        setEditableFields((prev) => ({
-          ...prev,
-          ...(patch.title !== undefined && { title: patch.title }),
-          ...(patch.description !== undefined && { description: patch.description }),
-        }));
-      }
+      // Optimistic UI update
+      setEditableFields((prev) => ({
+        ...prev,
+        ...patch,
+      }));
 
       const payload: Record<string, unknown> = {};
-      if (patch.title !== undefined) payload.title = patch.title;
-      if (patch.description !== undefined) payload.description = patch.description;
-      if (patch.priority !== undefined) payload.priority = patch.priority.toLowerCase();
-      if (patch.status !== undefined) payload.status_id = patch.status;
-      if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
-      if (patch.assigneeId !== undefined) payload.assignee_id = patch.assigneeId || undefined;
-      if (patch.sprintId !== undefined) payload.sprint_id = patch.sprintId || null;
+
+      if (patch.title !== undefined) {
+        payload.title = patch.title;
+      }
+
+      if (patch.description !== undefined) {
+        payload.description = patch.description;
+      }
+
+      if (patch.priority !== undefined) {
+        payload.priority = patch.priority.toLowerCase();
+      }
+
+      if (patch.status !== undefined) {
+        payload.status_id = patch.status;
+      }
+
+      if (patch.storyPoints !== undefined) {
+        payload.story_points = patch.storyPoints;
+      }
+
+      if (patch.assigneeId !== undefined) {
+        payload.assignee_id = patch.assigneeId || null;
+      }
+
+      if (patch.sprintId !== undefined) {
+        payload.sprint_id = patch.sprintId || null;
+      }
+
       if (patch.start_date !== undefined) {
         payload.start_date = patch.start_date || null;
       }
+
       if (patch.due_date !== undefined) {
         payload.due_date = patch.due_date || null;
       }
 
       try {
         setIsSaving(true);
+
         await userStoryService.updateUserStory(
           currentUserStory.project_id,
           currentUserStory.id,
           payload
         );
-        onUpdate?.();
+        await queryClient.invalidateQueries({
+          queryKey: ['user-story', currentUserStory.project_id, currentUserStory.id],
+        });
       } catch (error) {
         logger.log('Failed to update user story', error);
-        // Revert editable fields on error
-        setEditableFields(previousEditableFields);
+        setEditableFields(previousFields);
+        toast.error('Failed to update user story');
       } finally {
         setIsSaving(false);
       }
     },
-    [currentUserStory.project_id, currentUserStory.id, onUpdate, editableFields]
+    [currentUserStory.project_id, currentUserStory.id, editableFields, queryClient]
   );
 
   useEffect(() => {
@@ -534,7 +623,7 @@ export const UserStoryDetailDrawer = ({
     try {
       await createCommentAsync({
         content: replyContent,
-        parent_comment_id: parentCommentId
+        parent_comment_id: parentCommentId,
       });
       setReplyContent('');
       setReplyingToCommentId(null); // Close the reply editor
@@ -644,7 +733,7 @@ export const UserStoryDetailDrawer = ({
     activity: [],
   });
 
-  const tasks = currentUserStory.tasks ?? [];
+  const tasks = childTasks;
   const totalTasks = currentUserStory.total_tasks ?? 0;
   const completedTasks = currentUserStory.completed_tasks ?? 0;
 
@@ -1156,7 +1245,35 @@ export const UserStoryDetailDrawer = ({
                                             variant="ghost"
                                             onClick={async (e) => {
                                               e.stopPropagation();
+
+                                              const previousAssigneeId = task.assignee_id;
+                                              const previousAssigneeName = task.assignee_name;
+
+                                              const updatedAssigneeName =
+                                                m.full_name ??
+                                                m.user?.name ??
+                                                m.user?.email?.split('@')[0] ??
+                                                'Unknown User';
+
+                                              // Optimistic UI update
+                                              setChildTasks((prevTasks) =>
+                                                prevTasks.map((childTask) =>
+                                                  childTask.id === task.id
+                                                    ? {
+                                                        ...childTask,
+                                                        assignee_id: m.user_id,
+                                                        assignee_name: updatedAssigneeName,
+                                                      }
+                                                    : childTask
+                                                )
+                                              );
+
+                                              // Close dropdown immediately
+                                              setChildAssigneeTaskId(null);
+                                              setChildAssigneeSearch('');
+
                                               try {
+                                                // API call
                                                 await updateTaskAsync({
                                                   projectId: currentUserStory.project_id ?? '',
                                                   taskId: task.id ?? '',
@@ -1164,13 +1281,33 @@ export const UserStoryDetailDrawer = ({
                                                     assignee_id: m.user_id,
                                                   },
                                                 });
-
-                                                setChildAssigneeTaskId(null);
-                                                setChildAssigneeSearch('');
+                                                await queryClient.invalidateQueries({
+                                                  queryKey: [
+                                                    'user-story',
+                                                    currentUserStory.project_id,
+                                                  ],
+                                                });
                                               } catch (error) {
+                                                // Rollback if API fails
+                                                setChildTasks((prevTasks) =>
+                                                  prevTasks.map((childTask) =>
+                                                    childTask.id === task.id
+                                                      ? {
+                                                          ...childTask,
+                                                          assignee_id: previousAssigneeId,
+                                                          assignee_name: previousAssigneeName,
+                                                        }
+                                                      : childTask
+                                                  )
+                                                );
+
                                                 logger.log(
                                                   'Failed to update child ticket assignee',
                                                   error
+                                                );
+
+                                                toast.error(
+                                                  'Failed to update child ticket assignee'
                                                 );
                                               }
                                             }}
@@ -1236,20 +1373,28 @@ export const UserStoryDetailDrawer = ({
 
                             {/* Status Column */}
                             <td className="px-4 py-3">
-                              <div className="relative">
+                              <div
+                                className="relative"
+                                ref={childStatusTaskId === task.id ? childStatusMenuRef : undefined}
+                              >
                                 {(() => {
-                                  const currentStatus = allStatusConfig[task.status];
+                                  const currentStatus =
+                                    allStatusConfig[task.status] ||
+                                    allStatusOptions.find(
+                                      (option) =>
+                                        option.label.toLowerCase() === task.status?.toLowerCase()
+                                    );
+
                                   return (
                                     <>
                                       <button
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (childStatusTaskId === task.id) {
-                                            setChildStatusTaskId(null);
-                                          } else {
-                                            setChildStatusTaskId(task.id ?? null)
-                                          }
+
+                                          setChildStatusTaskId(
+                                            childStatusTaskId === task.id ? null : (task.id ?? null)
+                                          );
                                         }}
                                         disabled={isUpdatingTask}
                                         className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border"
@@ -1268,67 +1413,114 @@ export const UserStoryDetailDrawer = ({
                                           />
 
                                           <span className="truncate">
-                                            {currentStatus?.label || 'To Do'}
+                                            {currentStatus?.label || task.status || 'To Do'}
                                           </span>
                                         </span>
 
                                         <ChevronDown size={13} className="shrink-0" />
                                       </button>
+
                                       {childStatusTaskId === task.id && (
                                         <div
                                           className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-[99999] overflow-hidden"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          {allStatusOptions.map((option) => (
-                                            <button
-                                              key={option.value}
-                                              type="button"
-                                              disabled={isUpdatingTask}
-                                              onClick={async (e) => {
-                                                e.stopPropagation();
+                                          {allStatusOptions.map((option) => {
+                                            const isSelected =
+                                              option.label.toLowerCase() ===
+                                              task.status?.toLowerCase();
 
-                                                try {
-                                                  await updateTaskAsync({
-                                                    projectId: currentUserStory.project_id ?? '',
-                                                    taskId: task.id ?? '',
-                                                    payload: {
-                                                      status_id: option.value,
-                                                    },
-                                                  });
+                                            return (
+                                              <button
+                                                key={option.value}
+                                                type="button"
+                                                disabled={isUpdatingTask}
+                                                onClick={async (e) => {
+                                                  e.stopPropagation();
+
+                                                  if (isSelected) {
+                                                    setChildStatusTaskId(null);
+                                                    return;
+                                                  }
+
+                                                  const previousStatus = task.status;
+                                                  const newStatusName = option.label;
+
+                                                  // Immediate UI update
+                                                  setChildTasks((prev) =>
+                                                    prev.map((childTask) =>
+                                                      childTask.id === task.id
+                                                        ? {
+                                                            ...childTask,
+                                                            status: newStatusName,
+                                                            status_id: option.value,
+                                                            status_color: option.color,
+                                                          }
+                                                        : childTask
+                                                    )
+                                                  );
 
                                                   setChildStatusTaskId(null);
-                                                } catch (error) {
-                                                  logger.log(
-                                                    'Failed to update child ticket status',
-                                                    error
-                                                  );
-                                                }
-                                              }}
-                                              className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 disabled:opacity-50"
-                                              style={{
-                                                fontWeight:
-                                                  option.value === task.status ? 700 : 500,
-                                                color: option.color,
-                                                backgroundColor:
-                                                  option.value === task.status
+
+                                                  try {
+                                                    await updateTaskAsync({
+                                                      projectId: currentUserStory.project_id ?? '',
+                                                      taskId: task.id ?? '',
+                                                      payload: {
+                                                        status_id: option.value,
+                                                      },
+                                                    });
+
+                                                    await queryClient.invalidateQueries({
+                                                      queryKey: [
+                                                        'user-story',
+                                                        currentUserStory.project_id,
+                                                        currentUserStory.id,
+                                                      ],
+                                                    });
+                                                  } catch (error) {
+                                                    logger.log(
+                                                      'Failed to update child ticket status',
+                                                      error
+                                                    );
+
+                                                    // Rollback
+                                                    setChildTasks((prev) =>
+                                                      prev.map((childTask) =>
+                                                        childTask.id === task.id
+                                                          ? {
+                                                              ...childTask,
+                                                              status: previousStatus,
+                                                            }
+                                                          : childTask
+                                                      )
+                                                    );
+                                                  }
+                                                }}
+                                                className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 disabled:opacity-50"
+                                                style={{
+                                                  fontWeight: isSelected ? 700 : 500,
+                                                  color: option.color,
+                                                  backgroundColor: isSelected
                                                     ? option.bg
                                                     : undefined,
-                                              }}
-                                            >
-                                              <span
-                                                className="w-2.5 h-2.5 rounded-full shrink-0"
-                                                style={{
-                                                  backgroundColor: option.dot,
                                                 }}
-                                              />
+                                              >
+                                                <span
+                                                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                                                  style={{
+                                                    backgroundColor: option.dot,
+                                                  }}
+                                                />
 
-                                              <span className="truncate">{option.label}</span>
+                                                <span className="truncate">{option.label}</span>
 
-                                              {option.value === task.status && (
-                                                <Check size={13} className="ml-auto shrink-0" />
-                                              )}
-                                            </button>
-                                          ))}
+                                                {isSelected && (
+                                                  <Check size={13} className="ml-auto shrink-0" />
+                                                )}
+                                              </button>
+                                            );
+                                          })}
                                         </div>
                                       )}
                                     </>
@@ -1472,7 +1664,9 @@ export const UserStoryDetailDrawer = ({
                                         type="button"
                                         variant="primary"
                                         size="sm"
-                                        disabled={!editingCommentContent.trim() || isUpdatingComment}
+                                        disabled={
+                                          !editingCommentContent.trim() || isUpdatingComment
+                                        }
                                         onClick={() => handleUpdateComment(commentItem.id)}
                                       >
                                         {isUpdatingComment ? 'Saving...' : 'Save'}
@@ -1523,7 +1717,12 @@ export const UserStoryDetailDrawer = ({
                                     {/* Reply Button */}
                                     <div className="mt-2">
                                       <button
-                                        onClick={() => handleToggleReplies(commentItem.id, commentItem.user_name || 'User')}
+                                        onClick={() =>
+                                          handleToggleReplies(
+                                            commentItem.id,
+                                            commentItem.user_name || 'User'
+                                          )
+                                        }
                                         className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
                                       >
                                         <CornerDownRight size={14} />
@@ -1542,106 +1741,134 @@ export const UserStoryDetailDrawer = ({
                                 {showRepliesForComment.has(commentItem.id) && (
                                   <div className="mt-4 ml-4 border-l-2 border-gray-200 pl-4 space-y-4">
                                     {/* Display Replies First */}
-                                    {repliesMap.get(commentItem.id) && repliesMap.get(commentItem.id)!.length > 0 && (
-                                      <div className="space-y-3">
-                                        {repliesMap.get(commentItem.id)!.map((reply: UserStoryReplyResponse) => (
-                                          <div key={reply.id} className="flex gap-2">
-                                            <AssigneeAvatar
-                                              initials={
-                                                reply.user_name
-                                                  ? reply.user_name
-                                                    .split(' ')
-                                                    .map((n: string) => n[0])
-                                                    .join('')
-                                                    .toUpperCase()
-                                                    .slice(0, 2)
-                                                  : 'UN'
-                                              }
-                                              color={getMemberColor(reply.user_id)}
-                                              size='md'
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-semibold text-gray-900">
-                                                  {reply.user_name || 'Unknown User'}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                  {new Date(reply.created_at).toLocaleString()}
-                                                </span>
+                                    {repliesMap.get(commentItem.id) &&
+                                      repliesMap.get(commentItem.id)!.length > 0 && (
+                                        <div className="space-y-3">
+                                          {repliesMap
+                                            .get(commentItem.id)!
+                                            .map((reply: UserStoryReplyResponse) => (
+                                              <div key={reply.id} className="flex gap-2">
+                                                <AssigneeAvatar
+                                                  initials={
+                                                    reply.user_name
+                                                      ? reply.user_name
+                                                          .split(' ')
+                                                          .map((n: string) => n[0])
+                                                          .join('')
+                                                          .toUpperCase()
+                                                          .slice(0, 2)
+                                                      : 'UN'
+                                                  }
+                                                  color={getMemberColor(reply.user_id)}
+                                                  size="md"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-xs font-semibold text-gray-900">
+                                                      {reply.user_name || 'Unknown User'}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                      {new Date(reply.created_at).toLocaleString()}
+                                                    </span>
+                                                  </div>
+
+                                                  {editingReplyId === reply.id ? (
+                                                    <div className="space-y-2">
+                                                      <WpRichTextEditor
+                                                        value={editingReplyContent}
+                                                        onChange={setEditingReplyContent}
+                                                        placeholder="Edit reply..."
+                                                        minHeight="80px"
+                                                      />
+                                                      <div className="flex items-center gap-2">
+                                                        <WpButton
+                                                          type="button"
+                                                          variant="primary"
+                                                          size="sm"
+                                                          disabled={
+                                                            !editingReplyContent.trim() ||
+                                                            isUpdatingReply
+                                                          }
+                                                          onClick={() =>
+                                                            handleUpdateReply(
+                                                              reply.id,
+                                                              commentItem.id
+                                                            )
+                                                          }
+                                                        >
+                                                          {isUpdatingReply ? 'Saving...' : 'Save'}
+                                                        </WpButton>
+                                                        <WpButton
+                                                          type="button"
+                                                          variant="secondary"
+                                                          size="sm"
+                                                          onClick={() => {
+                                                            setEditingReplyId(null);
+                                                            setEditingReplyContent('');
+                                                          }}
+                                                        >
+                                                          Cancel
+                                                        </WpButton>
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="bg-white rounded-lg px-3 py-2 border border-gray-200 relative group">
+                                                      <div
+                                                        className="text-xs text-gray-700 prose prose-sm max-w-none"
+                                                        dangerouslySetInnerHTML={{
+                                                          __html: reply.content,
+                                                        }}
+                                                      />
+                                                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                        <button
+                                                          onClick={() => {
+                                                            setEditingReplyId(reply.id);
+                                                            setEditingReplyContent(reply.content);
+                                                          }}
+                                                          className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                                          title="Edit reply"
+                                                        >
+                                                          <Pencil
+                                                            size={12}
+                                                            className="text-gray-600"
+                                                          />
+                                                        </button>
+                                                        <button
+                                                          onClick={() =>
+                                                            handleDeleteReply(
+                                                              reply.id,
+                                                              commentItem.id
+                                                            )
+                                                          }
+                                                          className="p-1 rounded hover:bg-red-100 transition-colors"
+                                                          title="Delete reply"
+                                                          disabled={deletingReplyId === reply.id}
+                                                        >
+                                                          <Trash2
+                                                            size={12}
+                                                            className="text-red-600"
+                                                          />
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
                                               </div>
-
-                                              {editingReplyId === reply.id ? (
-                                                <div className="space-y-2">
-                                                  <WpRichTextEditor
-                                                    value={editingReplyContent}
-                                                    onChange={setEditingReplyContent}
-                                                    placeholder="Edit reply..."
-                                                    minHeight="80px"
-                                                  />
-                                                  <div className="flex items-center gap-2">
-                                                    <WpButton
-                                                      type="button"
-                                                      variant="primary"
-                                                      size="sm"
-                                                      disabled={!editingReplyContent.trim() || isUpdatingReply}
-                                                      onClick={() => handleUpdateReply(reply.id, commentItem.id)}
-                                                    >
-                                                      {isUpdatingReply ? 'Saving...' : 'Save'}
-                                                    </WpButton>
-                                                    <WpButton
-                                                      type="button"
-                                                      variant="secondary"
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        setEditingReplyId(null);
-                                                        setEditingReplyContent('');
-                                                      }}
-                                                    >
-                                                      Cancel
-                                                    </WpButton>
-                                                  </div>
-                                                </div>
-                                              ) : (
-                                                <div className="bg-white rounded-lg px-3 py-2 border border-gray-200 relative group">
-                                                  <div
-                                                    className="text-xs text-gray-700 prose prose-sm max-w-none"
-                                                    dangerouslySetInnerHTML={{ __html: reply.content }}
-                                                  />
-
-                                                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                                    <button
-                                                      onClick={() => {
-                                                        setEditingReplyId(reply.id);
-                                                        setEditingReplyContent(reply.content);
-                                                      }}
-                                                      className="p-1 rounded hover:bg-gray-200 transition-colors"
-                                                      title="Edit reply"
-                                                    >
-                                                      <Pencil size={12} className="text-gray-600" />
-                                                    </button>
-                                                    <button
-                                                      onClick={() => handleDeleteReply(reply.id, commentItem.id)}
-                                                      className="p-1 rounded hover:bg-red-100 transition-colors"
-                                                      title="Delete reply"
-                                                      disabled={deletingReplyId === reply.id}
-                                                    >
-                                                      <Trash2 size={12} className="text-red-600" />
-                                                    </button>
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
+                                            ))}
+                                        </div>
+                                      )}
 
                                     {/* Reply Input After existing replies */}
                                     {replyingToCommentId === commentItem.id && (
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-1 text-xs text-gray-500">
                                           <CornerDownRight size={12} />
-                                          <span>Replying to <span className="font-semibold text-gray-700">{commentItem.user_name || 'User'}</span></span>
+                                          <span>
+                                            Replying to{' '}
+                                            <span className="font-semibold text-gray-700">
+                                              {commentItem.user_name || 'User'}
+                                            </span>
+                                          </span>
                                         </div>
                                         <WpRichTextEditor
                                           value={replyContent}
@@ -1736,9 +1963,12 @@ export const UserStoryDetailDrawer = ({
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => {
+                          onClick={async () => {
                             setShowStatusMenu(false);
-                            handleUpdate({ status: option.value });
+
+                            await handleUpdate({
+                              status: option.value,
+                            });
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-900 transition-colors flex items-center gap-2.5 hover:bg-gray-50"
                           style={{
@@ -1968,10 +2198,18 @@ export const UserStoryDetailDrawer = ({
 
                 <DetailRow label="Sprint">
                   <div className="relative" ref={sprintMenuRef}>
+                    {/* Selected Sprint */}
                     <button
                       type="button"
-                      onClick={() => setShowSprintMenu((v) => !v)}
-                      className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 w-full text-left"
+                      disabled={isUpdatingSprint}
+                      onClick={() => {
+                        if (isUpdatingSprint) return;
+
+                        setShowSprintMenu((v) => !v);
+                      }}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
+                        isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                      }`}
                     >
                       <span className="text-sm text-gray-700 truncate">
                         {selectedSprintName ||
@@ -1984,7 +2222,8 @@ export const UserStoryDetailDrawer = ({
                       <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
                     </button>
 
-                    {showSprintMenu && (
+                    {/* Sprint Dropdown */}
+                    {showSprintMenu && !isUpdatingSprint && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
                         {/* Search */}
                         <div className="p-2 border-b border-gray-200">
@@ -2002,34 +2241,59 @@ export const UserStoryDetailDrawer = ({
                           </div>
                         )}
 
-                        {/* Sprint list */}
                         {!isLoadingSprints &&
                           !isFetchingSprints &&
-                          sprints?.map((sprint) => (
-                            <button
-                              key={sprint.id}
-                              type="button"
-                              onClick={async () => {
-                                setShowSprintMenu(false);
-                                setSprintSearch('');
+                          sprints?.map((sprint) => {
+                            const isSelected = sprint.id === userStoryData.sprintId;
+                            return (
+                              <button
+                                key={sprint.id}
+                                type="button"
+                                disabled={isUpdatingSprint}
+                                onClick={async () => {
+                                  if (isUpdatingSprint) return;
+                                  if (isSelected) {
+                                    setShowSprintMenu(false);
+                                    setSprintSearch('');
+                                    return;
+                                  }
+                                  const previousSprintName =
+                                    selectedSprintName ||
+                                    (userStoryData.sprintId
+                                      ? sprints?.find((s) => s.id === userStoryData.sprintId)
+                                          ?.name || 'Sprint assigned'
+                                      : 'No sprint');
 
-                                setSelectedSprintName(sprint.name);
+                                  try {
+                                    setIsUpdatingSprint(true);
+                                    setShowSprintMenu(false);
+                                    setSprintSearch('');
+                                    setSelectedSprintName(sprint.name);
+                                    await handleUpdate({
+                                      sprintId: sprint.id,
+                                    });
+                                  } catch (error) {
+                                    setSelectedSprintName(previousSprintName);
+                                  } finally {
+                                    setIsUpdatingSprint(false);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${
+                                  isUpdatingSprint
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'hover:bg-gray-50'
+                                }`}
+                              >
+                                <span className="truncate">{sprint.name}</span>
 
-                                await handleUpdate({
-                                  sprintId: sprint.id,
-                                });
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                            >
-                              <span className="truncate">{sprint.name}</span>
+                                {isSelected && (
+                                  <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                                )}
+                              </button>
+                            );
+                          })}
 
-                              {sprint.id === userStoryData.sprintId && (
-                                <Check size={13} className="ml-auto text-blue-600 shrink-0" />
-                              )}
-                            </button>
-                          ))}
-
-                        {/* No results */}
+                        {/* No Results */}
                         {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
                           <div className="px-3 py-3 text-sm text-gray-500 text-center">
                             No sprints found

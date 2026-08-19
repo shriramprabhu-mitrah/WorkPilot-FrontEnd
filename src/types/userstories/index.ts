@@ -20,6 +20,8 @@ export interface UserStoryResponse {
   title: string;
   description?: string;
   status?: string;
+  status_id?:string
+  sprint_name ?:string
   priority?: string;
   assignee_id?: string;
   assignee_name?: string;

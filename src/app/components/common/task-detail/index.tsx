@@ -90,16 +90,17 @@ const useResizable = (initial: number, min: number, max: number) => {
 
 export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDetailDrawerProps) => {
   const [taskData, setTaskData] = useState({
+    title: task.title ?? '',
     subtasks: task.subtasks ?? [],
     status: task.status ?? task.columnId ?? '',
-    project_id : task.projectId ?? '',
+    project_id: task.projectId ?? '',
     description: task.description ?? '',
     priority: task.priority,
     labels: task.labels,
     dueDate: task.dueDate ?? '',
     startDate: task.startDate ?? '',
-    user_story_title:task.user_story_title ?? '' ,
-    user_story_id : task.user_story_id ?? '',
+    user_story_title: task.user_story_title ?? '',
+    user_story_id: task.user_story_id ?? '',
     storyPoints: task.storyPoints,
     sprint: task.sprint ?? '',
     parent: task.parent ?? '',
@@ -120,6 +121,12 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [userStorySearch, setUserStorySearch] = useState('');
   const [showUserStoryMenu, setShowUserStoryMenu] = useState(false);
   const debouncedUserStorySearch = useDebounce(userStorySearch, 500);
+  const [isUpdatingUserStory, setIsUpdatingUserStory] = useState(false);
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [editTaskTitle, setEditTaskTitle] = useState('');
+  const [editTaskDescription, setEditTaskDescription] = useState('');
+  const [originalTaskTitle, setOriginalTaskTitle] = useState('');
+  const [originalTaskDescription, setOriginalTaskDescription] = useState('');
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     task.projectId ?? '',
     {
@@ -167,46 +174,85 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
-      if (!task.projectId || !task.taskId) return;
+      if (!task.projectId || !task.taskId) {
+        throw new Error('Project ID or Task ID is missing');
+      }
 
       const previousState = { ...taskData };
-      setTaskData((prev) => ({ ...prev, ...patch }));
-      onUpdate?.(patch as Partial<KanbanTask>);
 
-      // Then update on server
-      const payload: Record<string, unknown> = {};
-      if (patch.description !== undefined) payload.description = patch.description;
-      if (patch.priority !== undefined) payload.priority = patch.priority.toLowerCase();
-      if (patch.status !== undefined) {
-        const STATUS_MAP: Record<string, string> = {
-          todo: 'todo',
-          in_progress: 'in_progress',
-          inreview: 'inreview',
-          testing: 'testing',
-          done: 'completed',
-          blocked: 'blocked',
-        };
-        payload.status_id = STATUS_MAP[patch.status] ?? patch.status;
-      }
-      if (patch.dueDate !== undefined) {
-        payload.due_date = patch.dueDate ? patch.dueDate + 'Z' : null;
-      }
-      if (patch.startDate !== undefined) payload.start_date = patch.startDate || null;
-      if (patch.storyPoints !== undefined) payload.story_points = patch.storyPoints;
-      if (patch.user_story_id !== undefined) payload.user_story_id = patch.user_story_id ;
-        try {
-          setIsSaving(true);
-          await taskService.updateTask(task.projectId, task.taskId, payload);
-        } catch (error) {
-          logger.log('Failed to update task', error);
-          // Revert on error
-          setTaskData(previousState);
-          onUpdate?.(previousState as Partial<KanbanTask>);
-        } finally {
-          setIsSaving(false);
+      // Optimistic UI update
+      setTaskData((prev) => ({
+        ...prev,
+        ...patch,
+      }));
+
+      try {
+        const payload: Record<string, unknown> = {};
+
+        if (patch.title !== undefined) {
+          payload.title = patch.title;
         }
+
+        if (patch.description !== undefined) {
+          payload.description = patch.description;
+        }
+
+        if (patch.priority !== undefined) {
+          payload.priority = patch.priority.toLowerCase();
+        }
+
+        if (patch.status !== undefined) {
+          const STATUS_MAP: Record<string, string> = {
+            todo: 'todo',
+            in_progress: 'in_progress',
+            inreview: 'inreview',
+            testing: 'testing',
+            done: 'completed',
+            blocked: 'blocked',
+          };
+
+          payload.status_id = STATUS_MAP[patch.status] ?? patch.status;
+        }
+
+        if (patch.dueDate !== undefined) {
+          payload.due_date = patch.dueDate ? patch.dueDate + 'Z' : null;
+        }
+
+        if (patch.startDate !== undefined) {
+          payload.start_date = patch.startDate || null;
+        }
+
+        if (patch.storyPoints !== undefined) {
+          payload.story_points = patch.storyPoints;
+        }
+
+        if (patch.user_story_id !== undefined) {
+          payload.user_story_id = patch.user_story_id;
+        }
+
+        if (patch.assigneeId !== undefined) {
+          payload.assignee_id = patch.assigneeId || null;
+        }
+
+        setIsSaving(true);
+
+        await taskService.updateTask(task.projectId, task.taskId, payload);
+
+        onUpdate?.(patch as Partial<KanbanTask>);
+
+        return true;
+      } catch (error) {
+        logger.log('Failed to update task', error);
+
+        // Rollback UI
+        setTaskData(previousState);
+
+        throw error;
+      } finally {
+        setIsSaving(false);
+      }
     },
-    [task.projectId, task.taskId, onUpdate, taskData]
+    [task.projectId, task.taskId, taskData, onUpdate]
   );
 
   useEffect(() => {
@@ -409,7 +455,23 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     type="button"
                     onClick={() => {
                       setShowActionMenu(false);
-                      // Update is handled inline in the drawer
+
+                      // Store original values for Cancel
+                      setOriginalTaskTitle(taskData.title || task.title || '');
+                      setOriginalTaskDescription(taskData.description || '');
+
+                      // Initialize edit values
+                      setEditTaskTitle(taskData.title || task.title || '');
+                      setEditTaskDescription(taskData.description || '');
+
+                      // Enable edit mode
+                      setIsEditingTask(true);
+
+                      // Open description editor
+                      setUiState((prev) => ({
+                        ...prev,
+                        editingDesc: true,
+                      }));
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
@@ -486,7 +548,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               mobileTab === 'details' ? 'hidden sm:block' : 'block'
             }`}
           >
-            <h1 className="text-2xl font-bold text-gray-900 mb-5 leading-snug">{task.title}</h1>
+            {isEditingTask ? (
+              <div className="mb-5">
+                <input
+                  type="text"
+                  value={editTaskTitle}
+                  onChange={(e) => setEditTaskTitle(e.target.value)}
+                  placeholder="Task name"
+                  autoFocus
+                  className="w-full px-3 py-2.5 text-2xl font-bold text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            ) : (
+              <h1 className="text-2xl font-bold text-gray-900 mb-5 leading-snug">
+                {taskData.title || task.title}
+              </h1>
+            )}
 
             {/* future purpose
              <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -504,56 +581,149 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               {uiState.editingDesc ? (
                 <div>
                   <WpRichTextEditor
-                    value={taskData.description}
-                    onChange={(value) =>
+                    value={editTaskDescription}
+                    onChange={(value) => {
+                      setEditTaskDescription(value);
+
+                      // Keep normal task state in sync for the editor
                       setTaskData((prev) => ({
                         ...prev,
                         description: value,
-                      }))
-                    }
+                      }));
+                    }}
                     placeholder="Add a description..."
                     minHeight="120px"
                   />
 
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setUiState((prev) => ({
-                          ...prev,
-                          editingDesc: false,
-                        }));
+                  {isEditingTask ? (
+                    <div className="flex gap-2 mt-3">
+                      {/* Cancel */}
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => {
+                          // Restore original values
+                          setEditTaskTitle(originalTaskTitle);
+                          setEditTaskDescription(originalTaskDescription);
 
-                        handleUpdate({
-                          description: taskData.description,
-                        });
-                      }}
-                      disabled={isSaving}
-                      className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
-                      style={{ backgroundColor: colors.primary }}
-                    >
-                      Save
-                    </button>
+                          setTaskData((prev) => ({
+                            ...prev,
+                            title: originalTaskTitle,
+                            description: originalTaskDescription,
+                          }));
 
-                    <button
-                      onClick={() => {
-                        setTaskData((prev) => ({
-                          ...prev,
-                          description: savedDescription,
-                        }));
-                        setUiState((prev) => ({
-                          ...prev,
-                          editingDesc: false,
-                        }));
-                      }}
-                      className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                          setUiState((prev) => ({
+                            ...prev,
+                            editingDesc: false,
+                          }));
+
+                          setIsEditingTask(false);
+                        }}
+                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+
+                      {/* Save */}
+                      <button
+                        type="button"
+                        disabled={isSaving || !editTaskTitle.trim()}
+                        onClick={async () => {
+                          if (isSaving) return;
+
+                          const title = editTaskTitle.trim();
+                          const description = editTaskDescription;
+
+                          try {
+                            await handleUpdate({
+                              title,
+                              description,
+                            });
+
+                            // Update local UI after successful API
+                            setTaskData((prev) => ({
+                              ...prev,
+                              title,
+                              description,
+                            }));
+
+                            // Save current values as the new original values
+                            setOriginalTaskTitle(title);
+                            setOriginalTaskDescription(description);
+
+                            // Exit edit mode
+                            setUiState((prev) => ({
+                              ...prev,
+                              editingDesc: false,
+                            }));
+
+                            setIsEditingTask(false);
+
+                            toast.success('Task updated successfully');
+                          } catch (error) {
+                            logger.log('Failed to update task', error);
+
+                            toast.error('Failed to update task');
+                          }
+                        }}
+                        className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        {isSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTaskData((prev) => ({
+                            ...prev,
+                            description: savedDescription,
+                          }));
+
+                          setUiState((prev) => ({
+                            ...prev,
+                            editingDesc: false,
+                          }));
+                        }}
+                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={async () => {
+                          try {
+                            await handleUpdate({
+                              description: taskData.description,
+                            });
+
+                            setSavedDescription(taskData.description);
+
+                            setUiState((prev) => ({
+                              ...prev,
+                              editingDesc: false,
+                            }));
+                          } catch (error) {
+                            logger.log('Failed to update description', error);
+                          }
+                        }}
+                        className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        {isSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div
                   onClick={() => {
+                    setSavedDescription(taskData.description);
+
                     setUiState((prev) => ({
                       ...prev,
                       editingDesc: true,
@@ -953,8 +1123,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setShowUserStoryMenu((v) => !v)}
-                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                    disabled={isUpdatingUserStory}
+                    onClick={() => {
+                      if (isUpdatingUserStory) return;
+
+                      setShowUserStoryMenu((v) => !v);
+                    }}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      isUpdatingUserStory ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                    }`}
                   >
                     <span className="text-sm text-gray-700 truncate">
                       {taskData.user_story_title || 'No user story'}
@@ -963,7 +1140,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
                   </button>
 
-                  {showUserStoryMenu && (
+                  {showUserStoryMenu && !isUpdatingUserStory && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-[100] overflow-hidden">
                       {/* Search */}
                       <div className="p-2 border-b border-gray-200">
@@ -981,36 +1158,66 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                           Searching...
                         </div>
                       )}
-                      {/* User Stories */}
+
                       {/* User Stories */}
                       {!isLoadingUserStories &&
                         !isFetchingUserStories &&
-                        userStories?.map((story) => (
-                          <button
-                            key={story.id}
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                await handleUpdate({
-                                  user_story_id: story.id,
-                                });
+                        userStories?.map((story) => {
+                          const isSelected = story.id === taskData.user_story_id;
 
-                                setTaskData((prev) => ({
-                                  ...prev,
-                                  user_story_title: story.title,
-                                }));
+                          return (
+                            <button
+                              key={story.id}
+                              type="button"
+                              disabled={isUpdatingUserStory}
+                              onClick={async () => {
+                                if (isUpdatingUserStory) return;
+                                if (isSelected) {
+                                  setShowUserStoryMenu(false);
+                                  setUserStorySearch('');
+                                  return;
+                                }
 
-                                setShowUserStoryMenu(false);
-                                setUserStorySearch('');
-                              } catch (error) {
-                                logger.log('Failed to update user story', error);
-                              }
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50"
-                          >
-                            <span className="truncate">{story.title}</span>
-                          </button>
-                        ))}
+                                const previousTitle = taskData.user_story_title || 'No user story';
+
+                                try {
+                                  setIsUpdatingUserStory(true);
+                                  setTaskData((prev) => ({
+                                    ...prev,
+                                    user_story_id: story.id,
+                                    user_story_title: story.title,
+                                  }));
+                                  setShowUserStoryMenu(false);
+                                  setUserStorySearch('');
+                                  await handleUpdate({
+                                    user_story_id: story.id,
+                                  });
+                                } catch (error) {
+                                  logger.log('Failed to update user story', error);
+                                  setTaskData((prev) => ({
+                                    ...prev,
+                                    user_story_title: previousTitle,
+                                  }));
+                                } finally {
+                                  setIsUpdatingUserStory(false);
+                                }
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                                isUpdatingUserStory
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <span className="truncate">{story.title}</span>
+
+                              {isSelected && (
+                                <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+
+                      {/* No Results */}
                       {!isLoadingUserStories &&
                         !isFetchingUserStories &&
                         userStories?.length === 0 && (
