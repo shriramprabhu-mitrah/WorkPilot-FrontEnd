@@ -23,7 +23,12 @@ export const KanbanCardPreview = ({ task }: { task: KanbanTask }) => {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-xl opacity-95">
-      <p className="text-sm font-semibold text-gray-800 leading-snug mb-2">{task.title}</p>
+      <p
+        className="text-sm font-semibold text-gray-800 leading-snug mb-2 truncate"
+        title={task.title}
+      >
+        {task.title}
+      </p>
       {task.dueDate && (
         <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
           <Calendar size={11} className="text-gray-400" />

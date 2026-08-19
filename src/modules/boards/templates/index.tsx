@@ -1,12 +1,17 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Filter, UserCircle2 } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
 import { useAppSelector } from '@/src/store';
+import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
+import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { taskService } from '@/src/services/tasks';
+import { useQueryClient } from '@tanstack/react-query';
+import { GetTasksQueryParams, Task } from '@/src/types/task';
+import { taskTypeOptions } from '@/src/app/components/common/enum';
 import {
   DndContext,
   DragEndEvent,
@@ -32,7 +37,6 @@ import { FilterPanel, FilterState } from '@/src/app/components/common/filter-pan
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 import { WpButton } from '@/src/app/components/common/button';
 import BoardSkeleton from '../components/boardSkeleton';
-import { ASSIGNEE_AVATARS } from '../data';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { KanbanCardContent } from '../components/kanbannCardContent';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
@@ -138,12 +142,14 @@ const UserStoryRow = ({
   overCell,
   onUserStoryClick,
   onRefetch,
+  collapsedStatuses,
 }: {
   story: UserStoryResponse & { tasksByStatus: Map<string, KanbanTask[]> };
   statuses: CustomStatus[];
   overCell: { storyId: string; statusId: string } | null;
   onUserStoryClick: (story: UserStoryResponse) => void;
   onRefetch: () => void;
+  collapsedStatuses: Set<string>;
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -193,12 +199,17 @@ const UserStoryRow = ({
         </div>
 
         {/* Empty status columns for header row */}
-        {statuses.map((status) => (
-          <div
-            key={status.id}
-            className="w-[240px] sm:w-[260px] flex-shrink-0 border-r border-gray-200"
-          />
-        ))}
+        {statuses.map((status) => {
+          const isCollapsed = collapsedStatuses.has(status.id);
+          return (
+            <div
+              key={status.id}
+              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
+                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+              }`}
+            />
+          );
+        })}
       </div>
 
       {/* Task rows - Only visible when expanded */}
@@ -211,18 +222,28 @@ const UserStoryRow = ({
           {statuses.map((status) => {
             const tasks = story.tasksByStatus.get(status.id) || [];
             const isOver = overCell?.storyId === story.id && overCell?.statusId === status.id;
+            const isCollapsed = collapsedStatuses.has(status.id);
+
             return (
               <div
                 key={status.id}
-                className="w-[240px] sm:w-[260px] flex-shrink-0 border-r border-gray-200"
+                className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
+                  isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                }`}
               >
-                <StatusCell
-                  storyId={story.id}
-                  statusId={status.id}
-                  tasks={tasks}
-                  isOver={isOver}
-                  onRefetch={onRefetch}
-                />
+                {!isCollapsed ? (
+                  <StatusCell
+                    storyId={story.id}
+                    statusId={status.id}
+                    tasks={tasks}
+                    isOver={isOver}
+                    onRefetch={onRefetch}
+                  />
+                ) : (
+                  <div className="min-h-[100px] p-2 flex items-center justify-center">
+                    <span className="text-xs font-medium text-gray-500">{tasks.length}</span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -239,6 +260,20 @@ export const KanbanBoardTemplate = () => {
     Map<string, { statusId: string; storyId?: string }>
   >(new Map());
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
+  const [collapsedStatuses, setCollapsedStatuses] = useState<Set<string>>(new Set());
+  const [showFilter, setShowFilter] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    priorities: [],
+    assignees: [],
+    labels: [],
+    types: [],
+    statuses: [],
+  });
+  const [assigneeIdFilter, setAssigneeIdFilter] = useState<string[]>([]);
+
+  const queryClient = useQueryClient();
+
+  const filterRef = useRef<HTMLDivElement>(null);
 
   const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector(
     (state) => state.project
@@ -246,8 +281,48 @@ export const KanbanBoardTemplate = () => {
   const selectedProject = storeProject?.id ?? '';
   const selectedSprint = storeSprint?.id ?? '';
 
-  // Fetch user stories with tasks
-  const { userStories, isLoadingUserStories, refetchUserStories } = useGetUserStories(
+  // Fetch project members for assignee filtering
+  const { members } = useGetProjectMembers(selectedProject, { page: 1, page_size: 100 });
+
+  useOutsideClick(filterRef, () => setShowFilter(false));
+
+  // Build query params from filters
+  const queryParams = useMemo((): GetTasksQueryParams => {
+    const params: GetTasksQueryParams = {};
+
+    if (selectedSprint) {
+      params.sprint_id = selectedSprint;
+    }
+
+    // Add priority filter
+    if (filters.priorities.length > 0) {
+      params.priority = filters.priorities[0].toLowerCase();
+    }
+
+    // Add assignee filter
+    if (assigneeIdFilter.length > 0) {
+      params.assignee_id = assigneeIdFilter[0];
+    }
+
+    // Add type filter
+    if (filters.types.length > 0) {
+      params.type = filters.types[0].toLowerCase();
+    }
+
+    // Add status filter
+    if (filters.statuses.length > 0) {
+      params.status_id = filters.statuses[0];
+    }
+
+    logger.log('Board query params updated:', params);
+    return params;
+  }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
+
+  // Fetch tasks directly with filters
+  const { tasksList, isLoadingTasks, refetchTasks } = useGetTasks(selectedProject, queryParams);
+
+  // Also fetch user stories for grouping (without filters)
+  const { userStories, isLoadingUserStories } = useGetUserStories(
     selectedProject,
     selectedSprint ? { sprint_id: selectedSprint } : {}
   );
@@ -255,22 +330,12 @@ export const KanbanBoardTemplate = () => {
   // Fetch status columns
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
 
-  const [showFilter, setShowFilter] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
-    priorities: [],
-    assignees: [],
-    labels: [],
-  });
-
-  const filterRef = useRef<HTMLDivElement>(null);
-  useOutsideClick(filterRef, () => setShowFilter(false));
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   );
 
-  const boardLoading = isLoadingUserStories || isLoadingStatus;
+  const boardLoading = isLoadingTasks || isLoadingUserStories || isLoadingStatus;
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
@@ -280,139 +345,193 @@ export const KanbanBoardTemplate = () => {
     easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
   };
 
-  // Process user stories and organize tasks by status
+  const hasActiveFilter =
+    filters.priorities.length > 0 ||
+    assigneeIdFilter.length > 0 ||
+    filters.labels.length > 0 ||
+    filters.types.length > 0 ||
+    filters.statuses.length > 0;
+
+  // Process tasks and organize by user story and status
   const processedStories = useMemo(() => {
-    return userStories.map((story) => {
-      const tasksByStatus = new Map<string, KanbanTask[]>();
+    // Group filtered tasks by user story
+    const tasksByStory = new Map<string, Map<string, KanbanTask[]>>();
 
-      story.tasks?.forEach((task) => {
-        // Check if there's an optimistic update for this task
-        const taskKey = task.key ?? task.id ?? '';
-        const optimisticUpdate = optimisticUpdates.get(taskKey);
+    tasksList?.forEach((task) => {
+      // Check if there's an optimistic update for this task
+      const taskKey = task.key ?? task.id ?? '';
+      const optimisticUpdate = optimisticUpdates.get(taskKey);
 
-        // If task was moved to a different story, skip it in the original story
-        if (optimisticUpdate?.storyId && optimisticUpdate.storyId !== story.id) {
-          return;
-        }
+      // Use optimistic update for both storyId and statusId if available
+      const storyId = optimisticUpdate?.storyId ?? task.user_story_id ?? 'no-story';
+      const statusId = optimisticUpdate?.statusId ?? task.status_id ?? '';
 
-        const statusId = optimisticUpdate?.statusId ?? task.status_id ?? '';
+      if (!tasksByStory.has(storyId)) {
+        tasksByStory.set(storyId, new Map());
+      }
 
-        if (!tasksByStatus.has(statusId)) {
-          tasksByStatus.set(statusId, []);
-        }
+      const storyTasks = tasksByStory.get(storyId)!;
+      if (!storyTasks.has(statusId)) {
+        storyTasks.set(statusId, []);
+      }
 
-        tasksByStatus.get(statusId)?.push({
-          id: taskKey,
-          taskId: task.id ?? '',
-          projectId: selectedProject,
-          title: task.title ?? '',
-          priority: task.priority
-            ? ((task.priority.charAt(0).toUpperCase() +
-                task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
-            : 'Medium',
-          labels: [],
-          assigneeInitials: task.assignee_name
-            ? task.assignee_name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
-            : '',
-          assigneeColor: colors.avatarBlue,
-          storyPoints: task.story_points ?? 0,
-          dueDate: task.due_date ? task.due_date.split('T')[0] : '',
-          columnId: statusId,
-          sprint: '',
-          parent: story.id ?? '',
-        });
+      storyTasks.get(statusId)?.push({
+        id: taskKey,
+        taskId: task.id ?? '',
+        projectId: selectedProject,
+        title: task.title ?? '',
+        priority: task.priority
+          ? ((task.priority.charAt(0).toUpperCase() +
+              task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+          : 'Medium',
+        labels: [],
+        assigneeInitials: task.assignee_name
+          ? task.assignee_name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
+          : '',
+        assigneeColor: colors.avatarBlue,
+        storyPoints: task.story_points ?? 0,
+        dueDate: task.due_date ? task.due_date.split('T')[0] : '',
+        columnId: statusId,
+        sprint: task.sprint_name ?? '',
+        parent: storyId,
       });
-
-      // Add tasks that were moved TO this story from other stories (optimistic updates)
-      userStories.forEach((otherStory) => {
-        if (otherStory.id === story.id) return; // Skip same story
-
-        otherStory.tasks?.forEach((task) => {
-          const taskKey = task.key ?? task.id ?? '';
-          const optimisticUpdate = optimisticUpdates.get(taskKey);
-
-          // If this task was optimistically moved to the current story
-          if (optimisticUpdate?.storyId === story.id) {
-            const statusId = optimisticUpdate.statusId;
-
-            if (!tasksByStatus.has(statusId)) {
-              tasksByStatus.set(statusId, []);
-            }
-
-            // Check if task is not already added
-            const alreadyExists = tasksByStatus.get(statusId)?.some((t) => t.id === taskKey);
-            if (!alreadyExists) {
-              tasksByStatus.get(statusId)?.push({
-                id: taskKey,
-                taskId: task.id ?? '',
-                projectId: selectedProject,
-                title: task.title ?? '',
-                priority: task.priority
-                  ? ((task.priority.charAt(0).toUpperCase() +
-                      task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
-                  : 'Medium',
-                labels: [],
-                assigneeInitials: task.assignee_name
-                  ? task.assignee_name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2)
-                  : '',
-                assigneeColor: colors.avatarBlue,
-                storyPoints: task.story_points ?? 0,
-                dueDate: task.due_date ? task.due_date.split('T')[0] : '',
-                columnId: statusId,
-                sprint: '',
-                parent: story.id ?? '',
-              });
-            }
-          }
-        });
-      });
-
-      return {
-        ...story,
-        tasksByStatus,
-      };
     });
-  }, [userStories, selectedProject, optimisticUpdates]);
+
+    // Map user stories with their filtered tasks
+    return userStories
+      .map((story) => {
+        const tasksByStatus = tasksByStory.get(story.id ?? '') || new Map();
+        return {
+          ...story,
+          tasksByStatus,
+          total_tasks: Array.from(tasksByStatus.values()).reduce(
+            (sum, tasks) => sum + tasks.length,
+            0
+          ),
+        };
+      })
+      .filter((story) => story.total_tasks > 0 || !hasActiveFilter); // Hide empty stories when filtering
+  }, [tasksList, userStories, selectedProject, optimisticUpdates, hasActiveFilter]);
 
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
-  // Derive unique assignees & labels from all tasks
+  // Derive unique assignees from project members instead of task initials
   const allAssignees = useMemo(() => {
-    const set = new Set<string>();
-    processedStories.forEach((story) =>
-      story.tasksByStatus.forEach((tasks) => tasks.forEach((t) => set.add(t.assigneeInitials)))
-    );
-    return Array.from(set).sort();
-  }, [processedStories]);
+    if (!members || members.length === 0) return [];
+    return members
+      .map((m) => m.full_name || m.user?.full_name || '')
+      .filter((name) => name !== '')
+      .sort();
+  }, [members]);
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
     processedStories.forEach((story) =>
       story.tasksByStatus.forEach((tasks) =>
-        tasks.forEach((t) => t.labels.forEach((l) => set.add(l)))
+        tasks.forEach((task: KanbanTask) => task.labels.forEach((label: string) => set.add(label)))
       )
     );
     return Array.from(set).sort();
   }, [processedStories]);
 
-  const hasActiveFilter =
-    filters.priorities.length > 0 || filters.assignees.length > 0 || filters.labels.length > 0;
+  // Use predefined task type options
+  const allTypes = useMemo(() => {
+    return taskTypeOptions.map((option) => option.label);
+  }, []);
+
+  // Map assignee names to IDs
+  const handleFilterChange = useCallback(
+    (newFilters: FilterState) => {
+      setFilters(newFilters);
+
+      // Convert selected assignee names to user IDs
+      const assigneeIds = newFilters.assignees
+        .map((assigneeName) => {
+          const member = members?.find((m) => {
+            const name = m.full_name || m.user?.full_name || '';
+            return name === assigneeName;
+          });
+          return member?.user_id || member?.user?.id || member?.id;
+        })
+        .filter((id): id is string => !!id);
+
+      setAssigneeIdFilter(assigneeIds);
+    },
+    [members]
+  );
+
+  // Helper to get avatar color based on name
+  const getAvatarColor = (name: string) => {
+    const avatarColors = [
+      colors.avatarIndigo,
+      colors.avatarBlue,
+      colors.avatarPink,
+      colors.avatarGreen,
+      colors.avatarAmber,
+    ];
+    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return avatarColors[index % avatarColors.length];
+  };
+
+  // Helper to get initials from full name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Toggle assignee filter
+  const toggleAssigneeFilter = (memberId: string, memberName: string) => {
+    logger.log('Toggle assignee filter:', { memberId, memberName });
+    const isSelected = assigneeIdFilter.includes(memberId);
+    const newAssigneeIds = isSelected
+      ? assigneeIdFilter.filter((id) => id !== memberId)
+      : [memberId]; // Replace with single selection instead of multi
+
+    const newAssigneeNames = isSelected ? [] : [memberName]; // Replace with single selection
+
+    logger.log('New assignee filter state:', { newAssigneeIds, newAssigneeNames });
+    setAssigneeIdFilter(newAssigneeIds);
+    setFilters({ ...filters, assignees: newAssigneeNames });
+  };
+
+  // Toggle status column collapse/expand
+  const toggleStatusCollapse = useCallback((statusId: string) => {
+    setCollapsedStatuses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(statusId)) {
+        newSet.delete(statusId);
+      } else {
+        newSet.add(statusId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Count tasks per status across all stories
+  const taskCountsByStatus = useMemo(() => {
+    const counts = new Map<string, number>();
+    processedStories.forEach((story) => {
+      story.tasksByStatus.forEach((tasks, statusId) => {
+        counts.set(statusId, (counts.get(statusId) || 0) + tasks.length);
+      });
+    });
+    return counts;
+  }, [processedStories]);
 
   const onDragStart = ({ active }: DragStartEvent) => {
     // Find the task across all stories
     for (const story of processedStories) {
       for (const tasks of story.tasksByStatus.values()) {
-        const task = tasks.find((t) => t.id === active.id);
+        const task = tasks.find((t: Task) => t.id === active.id);
         if (task) {
           setActiveTask(task);
           return;
@@ -485,7 +604,7 @@ export const KanbanBoardTemplate = () => {
 
       for (const story of processedStories) {
         for (const [statusId, tasks] of story.tasksByStatus.entries()) {
-          const foundTask = tasks.find((t) => t.id === activeId);
+          const foundTask = tasks.find((t: Task) => t.id === activeId);
           if (foundTask) {
             sourceStory = story;
             sourceStatusId = statusId;
@@ -526,13 +645,67 @@ export const KanbanBoardTemplate = () => {
         updatePayload.user_story_id = targetStoryId;
       }
 
-      // Call the API
+      // Call the API and update cache manually (no refetch)
       if (task.taskId) {
         taskService
           .updateTask(task.projectId ?? '', task.taskId, updatePayload)
           .then(() => {
-            // API succeeded - keep the optimistic update in place
-            // The optimistic update IS the correct state now
+            // API succeeded - update the cache manually without refetching
+            const projectId = task.projectId ?? '';
+
+            // Update tasks cache
+            queryClient.setQueryData(
+              ['tasks', projectId, queryParams],
+              (oldData: { data: Task[] } | undefined) => {
+                if (!oldData) return oldData;
+                return {
+                  ...oldData,
+                  data: oldData.data.map((t) =>
+                    t.id === task.taskId
+                      ? {
+                          ...t,
+                          status_id: targetStatusId,
+                          ...(storyChanged && { user_story_id: targetStoryId }),
+                        }
+                      : t
+                  ),
+                };
+              }
+            );
+
+            // Update user stories cache to reflect task counts
+            queryClient.setQueryData(
+              ['user-stories', projectId, selectedSprint ? { sprint_id: selectedSprint } : {}],
+              (oldData: { data: UserStoryResponse[] } | undefined) => {
+                if (!oldData) return oldData;
+                return {
+                  ...oldData,
+                  data: oldData.data.map((story) => {
+                    // Recalculate task counts if this story was affected
+                    if (story.id === sourceStoryId || story.id === targetStoryId) {
+                      const taskCount = story.total_tasks ?? 0;
+                      return {
+                        ...story,
+                        total_tasks:
+                          story.id === sourceStoryId && storyChanged
+                            ? Math.max(0, taskCount - 1)
+                            : story.id === targetStoryId && storyChanged
+                              ? taskCount + 1
+                              : taskCount,
+                      };
+                    }
+                    return story;
+                  }),
+                };
+              }
+            );
+
+            // Clear the optimistic update
+            setOptimisticUpdates((prev) => {
+              const newMap = new Map(prev);
+              newMap.delete(task.id);
+              return newMap;
+            });
           })
           .catch((err: Error) => {
             logger.log('Failed to update task', err);
@@ -545,7 +718,7 @@ export const KanbanBoardTemplate = () => {
           });
       }
     },
-    [processedStories]
+    [processedStories, queryClient, queryParams, selectedSprint]
   );
 
   return (
@@ -576,7 +749,11 @@ export const KanbanBoardTemplate = () => {
               <span>Filter</span>
               {hasActiveFilter && (
                 <span className="w-4 h-4 rounded-full bg-white text-blue-600 text-[10px] font-bold flex items-center justify-center">
-                  {filters.priorities.length + filters.assignees.length + filters.labels.length}
+                  {filters.priorities.length +
+                    assigneeIdFilter.length +
+                    filters.labels.length +
+                    filters.types.length +
+                    filters.statuses.length}
                 </span>
               )}
             </WpButton>
@@ -586,26 +763,44 @@ export const KanbanBoardTemplate = () => {
                 filters={filters}
                 allAssignees={allAssignees}
                 allLabels={allLabels}
-                onChange={setFilters}
+                allTypes={allTypes}
+                allStatuses={statuses}
+                onChange={handleFilterChange}
                 onClose={() => setShowFilter(false)}
               />
             )}
           </div>
 
-          <WpButton variant="secondary" size="sm" leftIcon={<UserCircle2 size={15} />}>
-            <span className="hidden xs:inline">Assignee</span>
-          </WpButton>
+          {/* <WpButton variant="secondary" size="sm" leftIcon={<UserCircle2 size={15} />}>
+            <span className="hidden xs:inline">Team</span>
+          </WpButton> */}
 
           <div className="flex -space-x-2">
-            {ASSIGNEE_AVATARS.map((a) => (
-              <div
-                key={a.initials}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: a.color }}
-              >
-                {a.initials}
-              </div>
-            ))}
+            {members && members.length > 0 ? (
+              members.slice(0, 5).map((member) => {
+                const memberName = member.full_name || member.user?.full_name || 'Unknown';
+                const userId = member.user_id || member.user?.id || member.id;
+                const initials = getInitials(memberName);
+                const avatarColor = getAvatarColor(memberName);
+                const isSelected = assigneeIdFilter.includes(userId);
+
+                return (
+                  <button
+                    key={member.id}
+                    onClick={() => toggleAssigneeFilter(userId, memberName)}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
+                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+                    }`}
+                    style={{ backgroundColor: avatarColor }}
+                    title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
+                  >
+                    {initials}
+                  </button>
+                );
+              })
+            ) : (
+              <span className="text-xs text-gray-400">No team members</span>
+            )}
           </div>
         </div>
       </div>
@@ -643,22 +838,94 @@ export const KanbanBoardTemplate = () => {
                 <div className="sticky left-0 z-30 bg-gray-100 border-r border-gray-200 w-[200px] sm:w-[250px] flex-shrink-0 p-3">
                   <span className="text-sm font-semibold text-gray-700">User Stories</span>
                 </div>
-                {statuses.map((status) => (
-                  <div
-                    key={status.id}
-                    className="w-[240px] sm:w-[260px] flex-shrink-0 p-3 border-r border-gray-200"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: status.color }}
-                      />
-                      <span className="text-sm font-semibold text-gray-700 truncate">
-                        {status.name}
-                      </span>
+                {statuses.map((status) => {
+                  const isCollapsed = collapsedStatuses.has(status.id);
+                  const taskCount = taskCountsByStatus.get(status.id) || 0;
+
+                  return (
+                    <div
+                      key={status.id}
+                      className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
+                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                      }`}
+                    >
+                      {!isCollapsed ? (
+                        <div className="p-3 flex items-center gap-2">
+                          <button
+                            onClick={() => toggleStatusCollapse(status.id)}
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
+                            title="Collapse column"
+                          >
+                            <svg
+                              className="w-4 h-4 text-gray-600 transition-transform rotate-90"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </button>
+                          <span
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: status.color }}
+                          />
+                          <span className="text-sm font-semibold text-gray-700 truncate">
+                            {status.name}
+                          </span>
+                          <span className="ml-auto text-xs text-gray-500 font-medium">
+                            {taskCount}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="h-full flex flex-col items-center justify-start py-3 px-2">
+                          <button
+                            onClick={() => toggleStatusCollapse(status.id)}
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 rounded transition-colors mb-2"
+                            title="Expand column"
+                          >
+                            <svg
+                              className="w-4 h-4 text-gray-600 transition-transform"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </button>
+                          <div
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0 mb-2"
+                            style={{ backgroundColor: status.color }}
+                          />
+                          <div className="flex-1 flex items-center justify-center overflow-hidden">
+                            <span
+                              className="text-xs font-semibold text-gray-700 whitespace-nowrap"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                textOrientation: 'mixed',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              {status.name}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium mt-2">
+                            {taskCount}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* User Story Rows */}
@@ -669,7 +936,8 @@ export const KanbanBoardTemplate = () => {
                   statuses={statuses}
                   overCell={overCell}
                   onUserStoryClick={setSelectedUserStory}
-                  onRefetch={refetchUserStories}
+                  onRefetch={refetchTasks}
+                  collapsedStatuses={collapsedStatuses}
                 />
               ))}
             </div>

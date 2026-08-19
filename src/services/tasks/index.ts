@@ -28,6 +28,21 @@ class TaskService {
     if (params?.sprint_id) {
       searchParams.append('sprint_id', params.sprint_id);
     }
+    if (params?.status_id) {
+      searchParams.append('status_id', params.status_id);
+    }
+    if (params?.priority) {
+      searchParams.append('priority', params.priority);
+    }
+    if (params?.assignee_id) {
+      searchParams.append('assignee_id', params.assignee_id);
+    }
+    if (params?.search) {
+      searchParams.append('search', params.search);
+    }
+    if (params?.type) {
+      searchParams.append('type', params.type);
+    }
     if (params?.fields) {
       searchParams.append('fields', params.fields);
     }

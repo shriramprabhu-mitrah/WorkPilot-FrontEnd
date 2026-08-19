@@ -47,7 +47,7 @@ export interface TaskResponse {
   priority?: string;
   status: string;
   status_id?: string;
-  user_story_title? : string;
+  user_story_title?: string;
   status_color?: string;
   story_points?: number;
   estimated_hours: number;
@@ -101,6 +101,11 @@ export interface GetTasksQueryParams {
   page?: number;
   page_size?: number;
   sprint_id?: string;
+  status_id?: string;
+  priority?: string;
+  assignee_id?: string;
+  search?: string;
+  type?: string;
   fields?: string;
 }
 
