@@ -247,7 +247,7 @@ const SprintDetail = () => {
     (tasksList || []).length > 0 && selectedUserStoryIds.length === (tasksList || []).length;
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm">
+      {/* <div className="flex items-center gap-2 text-sm">
         <button
           type="button"
           onClick={() => push('/projects')}
@@ -266,8 +266,8 @@ const SprintDetail = () => {
         </button>
         <span className="text-gray-400">/</span>
         <span className="font-medium text-gray-900">{sprint.name}</span>
-      </div>
-      <WpButton
+      </div> */}
+      {/* <WpButton
         type="button"
         variant="ghost"
         size="sm"
@@ -276,7 +276,7 @@ const SprintDetail = () => {
         className="text-gray-500"
       >
         Sprints
-      </WpButton>
+      </WpButton> */}
       <div className="relative rounded-2xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between">
           <div>

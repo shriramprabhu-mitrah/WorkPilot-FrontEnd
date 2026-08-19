@@ -79,7 +79,9 @@ const CalendarView = ({
         onSelectEvent={(event) => {
           setSelectedEvent(event);
         }}
-        style={{ height: isMobile ? 500 : 750 }}
+        style={{
+          height: isMobile ? 'calc(100vh - 300px)' : 'calc(100vh - 320px)',
+        }}
         eventPropGetter={eventStyleGetter}
         components={{
           toolbar: (props) => (
@@ -103,7 +105,6 @@ const CalendarView = ({
       {selectedEvent && (
         <>
           <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSelectedEvent(null)} />
-
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="w-[calc(100vw-2rem)] sm:w-[420px] rounded-2xl bg-white p-5 sm:p-6 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">

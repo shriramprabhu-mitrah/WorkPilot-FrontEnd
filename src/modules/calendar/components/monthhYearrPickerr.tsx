@@ -39,14 +39,14 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
     <div className="relative" ref={ref}>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-lg font-semibold shadow-sm hover:bg-gray-50"
+        className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-lg font-semibold shadow-sm hover:bg-gray-50"
       >
         {moment(value).format('MMMM YYYY')}
-        <ChevronDown size={18} />
+        <ChevronDown size={16} />
       </button>
 
       {open && (
-        <div className="absolute left-0 top-14 z-50 w-72 sm:w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
+        <div className="absolute left-0 top-11 z-50 w-72 sm:w-80 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
           <div className="mb-4 flex items-center justify-between">
             <button onClick={() => setYear(year - 1)} className="rounded-lg p-2 hover:bg-gray-100">
               <ChevronLeft size={18} />
@@ -70,9 +70,8 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
                     onChange(new Date(year, index, 1));
                     setOpen(false);
                   }}
-                  className={`rounded-lg p-3 text-sm transition ${
-                    selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
-                  }`}
+                  className={`rounded-lg p-3 text-sm transition ${selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
+                    }`}
                 >
                   {month.substring(0, 3)}
                 </button>

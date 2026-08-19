@@ -187,25 +187,25 @@ export const UserStoryDetailDrawer = ({
     description: currentUserStory.description ?? '',
   });
 
-  
+
 
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
     const assigneeName = currentUserStory.assignee_name ?? currentUserStory.reporter_name ?? '';
     const assigneeInitials = assigneeName
       ? assigneeName
-          .split(' ')
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
       : '';
 
     return {
       ...editableFields, // Use local state for editable fields
       priority: currentUserStory.priority
         ? ((currentUserStory.priority.charAt(0).toUpperCase() +
-            currentUserStory.priority.slice(1).toLowerCase()) as Priority)
+          currentUserStory.priority.slice(1).toLowerCase()) as Priority)
         : ('Medium' as Priority),
       status: currentUserStory.status ?? '',
       storyPoints: currentUserStory.story_points ?? 0,
@@ -255,7 +255,7 @@ export const UserStoryDetailDrawer = ({
   const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
   const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
-  
+
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     currentUserStory.project_id ?? '',
     { page: 1, page_size: 10, name: debouncedAssigneeSearch },
@@ -279,7 +279,7 @@ export const UserStoryDetailDrawer = ({
     { page: 1, page_size: 50 },
     true
   );
-  
+
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentContent, setEditingCommentContent] = useState('');
   const { updateCommentAsync, isUpdatingComment } = useUpdateUserStoryComment(
@@ -299,12 +299,12 @@ export const UserStoryDetailDrawer = ({
   const [replyContent, setReplyContent] = useState('');
   const [showRepliesForComment, setShowRepliesForComment] = useState<Set<string>>(new Set());
   const [repliesMap, setRepliesMap] = useState<Map<string, UserStoryReplyResponse[]>>(new Map());
-  
+
   // Reply edit/delete state
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editingReplyContent, setEditingReplyContent] = useState('');
   const [deletingReplyId, setDeletingReplyId] = useState<string | null>(null);
-  
+
   // Hooks for reply update/delete
   const { updateCommentAsync: updateReplyAsync, isUpdatingComment: isUpdatingReply } = useUpdateUserStoryComment(
     currentUserStory.project_id ?? '',
@@ -455,7 +455,7 @@ export const UserStoryDetailDrawer = ({
   // Comment handlers
   const handleAddComment = async () => {
     if (!comment.trim()) return;
-    
+
     try {
       await createCommentAsync({ content: comment });
       setComment('');
@@ -469,7 +469,7 @@ export const UserStoryDetailDrawer = ({
 
   const handleUpdateComment = async (commentId: string) => {
     if (!editingCommentContent.trim()) return;
-    
+
     try {
       await updateCommentAsync({ content: editingCommentContent });
       setEditingCommentId(null);
@@ -504,11 +504,11 @@ export const UserStoryDetailDrawer = ({
     } else {
       newShowReplies.add(commentId);
       setReplyingToCommentId(commentId);
-      
+
       // Set initial mention with @username
       const mention = `<span class="mention" data-type="mention" data-id="${userName}">@${userName}</span>&nbsp;`;
       setReplyContent(mention);
-      
+
       // Fetch replies for this comment if not already fetched
       if (!repliesMap.has(commentId)) {
         try {
@@ -530,16 +530,16 @@ export const UserStoryDetailDrawer = ({
 
   const handleAddReply = async (parentCommentId: string) => {
     if (!replyContent.trim()) return;
-    
+
     try {
-      await createCommentAsync({ 
+      await createCommentAsync({
         content: replyContent,
-        parent_comment_id: parentCommentId 
+        parent_comment_id: parentCommentId
       });
       setReplyContent('');
       setReplyingToCommentId(null); // Close the reply editor
       toast.success('Reply added successfully');
-      
+
       // Refetch replies for this comment
       try {
         const response = await userStoryCommentService.getReplies(
@@ -566,13 +566,13 @@ export const UserStoryDetailDrawer = ({
   // Reply edit/delete handlers
   const handleUpdateReply = async (replyId: string, parentCommentId: string) => {
     if (!editingReplyContent.trim()) return;
-    
+
     try {
       await updateReplyAsync({ content: editingReplyContent });
       setEditingReplyId(null);
       setEditingReplyContent('');
       toast.success('Reply updated successfully');
-      
+
       // Refetch replies for this comment
       try {
         const response = await userStoryCommentService.getReplies(
@@ -597,7 +597,7 @@ export const UserStoryDetailDrawer = ({
       await deleteReplyAsync();
       toast.success('Reply deleted successfully');
       setDeletingReplyId(null);
-      
+
       // Refetch replies for this comment
       try {
         const response = await userStoryCommentService.getReplies(
@@ -627,7 +627,7 @@ export const UserStoryDetailDrawer = ({
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -747,21 +747,19 @@ export const UserStoryDetailDrawer = ({
           <div className="flex sm:hidden border-b border-gray-200 shrink-0">
             <button
               onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'content'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-              }`}
+                }`}
             >
               Content
             </button>
             <button
               onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'details'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-              }`}
+                }`}
             >
               Details
             </button>
@@ -779,9 +777,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
-                mobileTab === 'details' ? 'hidden sm:block' : 'block'
-              }`}
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                }`}
             >
               {editingTitle ? (
                 <div className="mb-5">
@@ -895,9 +892,8 @@ export const UserStoryDetailDrawer = ({
 
                   <label
                     htmlFor="user-story-attachment"
-                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors ${
-                      isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
-                    }`}
+                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors ${isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
+                      }`}
                   >
                     <Plus size={14} />
                     {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
@@ -978,7 +974,7 @@ export const UserStoryDetailDrawer = ({
                             onClick={async () => {
                               try {
                                 await deleteAttachmentAsync(attachment.id);
-                              } catch (error) {}
+                              } catch (error) { }
                             }}
                             className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-50"
                           >
@@ -1087,11 +1083,11 @@ export const UserStoryDetailDrawer = ({
                                       initials={
                                         task.assignee_name
                                           ? task.assignee_name
-                                              .split(' ')
-                                              .map((name) => name[0])
-                                              .join('')
-                                              .slice(0, 2)
-                                              .toUpperCase()
+                                            .split(' ')
+                                            .map((name) => name[0])
+                                            .join('')
+                                            .slice(0, 2)
+                                            .toUpperCase()
                                           : 'UN'
                                       }
                                       color={getMemberColor(task.assignee_id)}
@@ -1358,9 +1354,8 @@ export const UserStoryDetailDrawer = ({
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
-                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-                        tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                        }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
                       }}
@@ -1443,11 +1438,11 @@ export const UserStoryDetailDrawer = ({
                                 initials={
                                   commentItem.user_name
                                     ? commentItem.user_name
-                                        .split(' ')
-                                        .map((n) => n[0])
-                                        .join('')
-                                        .toUpperCase()
-                                        .slice(0, 2)
+                                      .split(' ')
+                                      .map((n) => n[0])
+                                      .join('')
+                                      .toUpperCase()
+                                      .slice(0, 2)
                                     : 'UN'
                                 }
                                 color={getMemberColor(commentItem.user_id)}
@@ -1555,11 +1550,11 @@ export const UserStoryDetailDrawer = ({
                                               initials={
                                                 reply.user_name
                                                   ? reply.user_name
-                                                      .split(' ')
-                                                      .map((n: string) => n[0])
-                                                      .join('')
-                                                      .toUpperCase()
-                                                      .slice(0, 2)
+                                                    .split(' ')
+                                                    .map((n: string) => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                    .slice(0, 2)
                                                   : 'UN'
                                               }
                                               color={getMemberColor(reply.user_id)}
@@ -1574,7 +1569,7 @@ export const UserStoryDetailDrawer = ({
                                                   {new Date(reply.created_at).toLocaleString()}
                                                 </span>
                                               </div>
-                                              
+
                                               {editingReplyId === reply.id ? (
                                                 <div className="space-y-2">
                                                   <WpRichTextEditor
@@ -1612,7 +1607,7 @@ export const UserStoryDetailDrawer = ({
                                                     className="text-xs text-gray-700 prose prose-sm max-w-none"
                                                     dangerouslySetInnerHTML={{ __html: reply.content }}
                                                   />
-                                                  
+
                                                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                                     <button
                                                       onClick={() => {
@@ -1705,9 +1700,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 ${
-                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-              }`}
+              className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+                }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
@@ -1716,9 +1710,8 @@ export const UserStoryDetailDrawer = ({
                 <div className="relative" ref={statusMenuRef}>
                   <button
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900"
                     style={{
-                      color: allStatusConfig[userStoryData.status]?.color || colors.colTodo,
                       backgroundColor:
                         allStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
                       borderColor: `${allStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
@@ -1747,10 +1740,9 @@ export const UserStoryDetailDrawer = ({
                             setShowStatusMenu(false);
                             handleUpdate({ status: option.value });
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50"
+                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-900 transition-colors flex items-center gap-2.5 hover:bg-gray-50"
                           style={{
                             fontWeight: option.value === userStoryData.status ? 700 : 500,
-                            color: option.color,
                             backgroundColor:
                               option.value === userStoryData.status ? option.bg : undefined,
                           }}
@@ -1839,7 +1831,7 @@ export const UserStoryDetailDrawer = ({
                           setStatusModalMode('delete');
                           setShowStatusModal(true);
                         }}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 transition-colors"
                       >
                         Delete Status
                       </button>
@@ -1985,7 +1977,7 @@ export const UserStoryDetailDrawer = ({
                         {selectedSprintName ||
                           (userStoryData.sprintId
                             ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
-                                ?.name || 'Sprint assigned'
+                              ?.name || 'Sprint assigned'
                             : 'No sprint')}
                       </span>
 
@@ -2051,10 +2043,10 @@ export const UserStoryDetailDrawer = ({
                   <span className="text-sm text-gray-700">
                     {userStoryData.start_date
                       ? new Date(userStoryData.start_date).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })
                       : 'None'}
                   </span>
                 </DetailRow>

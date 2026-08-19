@@ -26,6 +26,7 @@ export const SecuritySetting = () => {
   };
   return (
     <div className="space-y-5">
+      {/* future purpose
       <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -80,8 +81,8 @@ export const SecuritySetting = () => {
             </div>
           </div>
         )}
-      </div>
-      <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
+      </div> */}
+      {/* <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock3 size={15} className="text-gray-500" />
@@ -143,8 +144,8 @@ export const SecuritySetting = () => {
             </div>
           ))}
         </div>
-      </div>
-      <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
+      </div> */}
+      {/* <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
         <div className="flex items-center gap-2">
           <Clock3 size={15} className="text-gray-500" />
           <h3 className="text-xs font-semibold text-gray-900">Auto sign-out</h3>
@@ -166,7 +167,7 @@ export const SecuritySetting = () => {
             ))}
           </select>
         </div>
-      </div>
+      </div> */}
       <div className="w-2xl rounded-xl border border-gray-100 bg-white px-5 py-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <CircleAlert size={15} className="text-gray-500" />
@@ -181,9 +182,8 @@ export const SecuritySetting = () => {
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`mt-1.5 h-2 w-2 rounded-full ${
-                    activity.success ? 'bg-green-500' : 'bg-red-500'
-                  }`}
+                  className={`mt-1.5 h-2 w-2 rounded-full ${activity.success ? 'bg-green-500' : 'bg-red-500'
+                    }`}
                 />
                 <div>
                   <p className="text-xs font-medium text-gray-800">{activity.device}</p>
@@ -196,9 +196,8 @@ export const SecuritySetting = () => {
                 <p className="text-[11px] text-gray-500">{activity.date}</p>
 
                 <p
-                  className={`mt-1 text-[10px] font-medium ${
-                    activity.success ? 'text-green-500' : 'text-red-500'
-                  }`}
+                  className={`mt-1 text-[10px] font-medium ${activity.success ? 'text-green-500' : 'text-red-500'
+                    }`}
                 >
                   {activity.status}
                 </p>
@@ -207,12 +206,13 @@ export const SecuritySetting = () => {
           ))}
         </div>
       </div>
-      <div className="flex w-2xl justify-end">
+      {/* furuture purpose
+       <div className="flex w-2xl justify-end">
         <WpButton type="button" variant="primary" size="md" className="px-5 py-2.5 text-xs">
           Save changes
         </WpButton>
-      </div>
-      {showRevokeModal && (
+      </div> */}
+      {/* {showRevokeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -253,7 +253,7 @@ export const SecuritySetting = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
