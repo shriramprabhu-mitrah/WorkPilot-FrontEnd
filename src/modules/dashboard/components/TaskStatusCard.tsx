@@ -1,7 +1,27 @@
 'use client';
+
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { statusData } from '../../reports/data';
-export default function TaskStatusCard() {
+import { colors } from '@/src/styles/colors';
+interface TaskStatusCardProps {
+  taskStatus: Record<string, number>;
+}
+
+const statusColors: Record<string, string> = {
+  Completed: colors.colDone,
+  'In Progress': colors.colInProgress,
+  Todo: colors.colTodo,
+  Backlog: colors.colBacklog,
+  'In Review': colors.colInReview,
+  Testing: colors.colTesting,
+};
+
+export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
+  const statusData = Object.entries(taskStatus).map(([name, value]) => ({
+    name,
+    value,
+    color: statusColors[name] || colors.gray400,
+  }));
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <h3 className="text-lg font-semibold">Task Status</h3>
@@ -25,6 +45,7 @@ export default function TaskStatusCard() {
             </Pie>
 
             <Tooltip />
+
             <Legend
               verticalAlign="bottom"
               height={60}

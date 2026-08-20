@@ -182,8 +182,9 @@ export const SecuritySetting = () => {
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`mt-1.5 h-2 w-2 rounded-full ${activity.success ? 'bg-green-500' : 'bg-red-500'
-                    }`}
+                  className={`mt-1.5 h-2 w-2 rounded-full ${
+                    activity.success ? 'bg-green-500' : 'bg-red-500'
+                  }`}
                 />
                 <div>
                   <p className="text-xs font-medium text-gray-800">{activity.device}</p>
@@ -196,8 +197,9 @@ export const SecuritySetting = () => {
                 <p className="text-[11px] text-gray-500">{activity.date}</p>
 
                 <p
-                  className={`mt-1 text-[10px] font-medium ${activity.success ? 'text-green-500' : 'text-red-500'
-                    }`}
+                  className={`mt-1 text-[10px] font-medium ${
+                    activity.success ? 'text-green-500' : 'text-red-500'
+                  }`}
                 >
                   {activity.status}
                 </p>

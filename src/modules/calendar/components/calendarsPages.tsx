@@ -20,23 +20,16 @@ const CalendarPage = () => {
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
   const { sprints, isLoadingSprints } = useGetSprints(projectId);
-  const sprintEvents: CalendarEvent[] = (sprints ?? []).map(
-    (sprint: SprintDetail) => ({
-      id: sprint.id,
-      title: sprint.name,
-      start: new Date(sprint.start_date),
-      end: new Date(sprint.end_date),
-      type: 'Sprint',
-    })
-  );
-  const allEvents = [
-    ...sprintEvents,
-  ];
+  const sprintEvents: CalendarEvent[] = (sprints ?? []).map((sprint: SprintDetail) => ({
+    id: sprint.id,
+    title: sprint.name,
+    start: new Date(sprint.start_date),
+    end: new Date(sprint.end_date),
+    type: 'Sprint',
+  }));
+  const allEvents = [...sprintEvents];
 
-  const displayEvents =
-    currentView === Views.MONTH
-      ? allEvents
-      : expandMultiDayEvents(allEvents);
+  const displayEvents = currentView === Views.MONTH ? allEvents : expandMultiDayEvents(allEvents);
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-gray-50 px-3 pb-3 pt-0 sm:px-6 sm:pb-6 sm:pt-1">
@@ -68,7 +61,6 @@ const CalendarPage = () => {
           <UpcomingEvents events={allEvents} currentDate={currentDate} />
 
           <TodayCard events={allEvents} currentDate={currentDate} />
-
         </div>
       </div>
     </div>

@@ -10,20 +10,38 @@ import StatCardsSection from '../../reports/components/StatCardsSection';
 // import TaskStatusCard from "../components/TaskStatusCard";
 import BurndownCard from '../../reports/components/BurndownCard';
 import SprintProgressCard from '../../reports/components/SprintProgressCard';
-// import TeamWorkloadCard from "../components/TeamWorkLoadCard";
-// import { assignedTasks, completedTasks, teamLabels } from "../data/teamWorkLoadData";
+import { assignedTasks, completedTasks, teamLabels } from '../data/teamWorkLoadData';
 import RecentActivityCard from '../components/RecentActivites';
 import TaskStatusCard from '../components/TaskStatusCard';
 import TeamWorkloadCard from '../components/TeamWorkLoadCard';
-import { assignedTasks, completedTasks, teamLabels } from '../data/teamWorkLoadData';
 import UpcomingDeadlines from '../components/UpcomingDeadlines';
 import { STATS, weekLabels, weeklyCompleted, weeklyPlanned } from '../../reports/data';
 import { useGetOrganization } from '../../organization/hooks/useOrganization';
 import { useEffect, useState } from 'react';
 import DashboardSkeleton from '../components/dashboardSkeletons';
-
+import { useGetDashboard, useGetRecentActivities } from '../hooks/useDashboard';
+import { useAppSelector } from '@/src/store';
 export const DashBoardTemplate = () => {
-  useGetOrganization();
+  const taskStatus = {
+    Completed: 1,
+    'In Progress': 1,
+    Todo: 5,
+  };
+  const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(1, 10);
+
+  const { selectedProject, selectedSprint } = useAppSelector((state) => state.project);
+
+  const { organization, isOrganizationLoading } = useGetOrganization();
+
+  // const { dashboard, isLoadingDashboard } = useGetDashboard(
+  //   organization?.data?.id ?? '',
+  //   selectedSprint?.id
+  // );
+  const { dashboard, isLoadingDashboard } = useGetDashboard(
+    organization?.data?.id ?? '',
+    selectedSprint?.id,
+    false
+  );
   // temp loading
   const [loading, setLoading] = useState(true);
 
@@ -35,18 +53,67 @@ export const DashBoardTemplate = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  // if (
+  //   loading ||
+  //   isOrganizationLoading ||
+  //   isLoadingDashboard ||
+  //   isLoadingActivities
+  // ) {
+  //   if (
+  //   loading ||
+  //   isOrganizationLoading ||
+  //   isLoadingActivities
+  // ) {
+  //     return <DashboardSkeleton />;
+  //   }
+  // const taskStatus = dashboard?.task_status ?? {};
+  const teamWorkload = dashboard?.team_workload ?? [];
+
+  const teamLabels = teamWorkload.map((member) => member.full_name);
+  const assignedTasks = teamWorkload.map((member) => member.task_count);
+  const points = teamWorkload.map((member) => member.points);
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
+      {/* <StatCardsSection
+        stats={[
+          {
+            ...STATS[0],
+            value: dashboard?.overview.total_tasks ?? 0,
+          },
+          {
+            ...STATS[1],
+            value: dashboard?.overview.completed ?? 0,
+          },
+          {
+            ...STATS[2],
+            value: dashboard?.overview.pending ?? 0,
+          },
+          {
+            ...STATS[3],
+            value: dashboard?.overview.overdue ?? 0,
+          },
+          {
+            ...STATS[4],
+            label: 'Due Soon',
+            value: dashboard?.overview.due_soon ?? 0,
+          },
+        ]}
+      /> */}
       <StatCardsSection stats={STATS} />
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 w-full max-w-full">
         <div className="lg:col-span-2">
-          <TaskStatusCard />
+          {/* <TaskStatusCard
+            taskStatus={taskStatus}
+          /> */}
+          {/* <TaskStatusCard /> */}
+          <TaskStatusCard taskStatus={taskStatus} />
         </div>
 
         <div className="lg:col-span-3 w-full">
+          {/* <BurndownCard
+            chartHeight={300}
+            burndownData={dashboard?.sprint_burndown ?? []}
+          /> */}
           <BurndownCard chartHeight={300} />
         </div>
         <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
@@ -59,6 +126,12 @@ export const DashBoardTemplate = () => {
             title="Weekly Progress"
             subtitle="Planned vs completed tasks by weekday"
           />
+          {/* <TeamWorkloadCard
+            chartHeight={200}
+            labels={teamLabels}
+            assigned={assignedTasks}
+            completed={points}
+          /> */}
           <TeamWorkloadCard
             chartHeight={200}
             labels={teamLabels}
@@ -67,7 +140,7 @@ export const DashBoardTemplate = () => {
           />
         </div>
         <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
-          <RecentActivityCard />
+          <RecentActivityCard activities={activities} user={activityUser} />
           <UpcomingDeadlines />
         </div>
       </div>

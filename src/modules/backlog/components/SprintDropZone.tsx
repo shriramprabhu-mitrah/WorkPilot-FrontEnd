@@ -9,7 +9,6 @@ import { UserStoryResponse } from '@/src/types/userstories';
 import { DraggableUserStory } from './DraggableUserStory';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
-
 interface SprintDropZoneProps {
   sprint: SprintDetail;
   userStories: UserStoryResponse[];
@@ -28,7 +27,7 @@ export const SprintDropZone = ({
     id: `sprint-${sprint.id}`,
     data: { sprintId: sprint.id },
   });
-const { push } = useOrgNavigation();
+  const { push } = useOrgNavigation();
   const sprintStories = userStories.filter((story) => story.sprint_id === sprint.id);
 
   return (

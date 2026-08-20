@@ -20,8 +20,8 @@ export interface UserStoryResponse {
   title: string;
   description?: string;
   status?: string;
-  status_id?:string
-  sprint_name ?:string
+  status_id?: string;
+  sprint_name?: string;
   priority?: string;
   assignee_id?: string;
   assignee_name?: string;
@@ -29,7 +29,7 @@ export interface UserStoryResponse {
   reporter_name?: string;
   due_date?: string;
   start_date?: string;
-  is_closed?:boolean;
+  is_closed?: boolean;
   assignee?: {
     id: string;
     name: string;
@@ -115,7 +115,7 @@ export interface UserStoryCommentResponse {
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
-  replies_count:number;
+  replies_count: number;
 }
 
 export interface GetUserStoryCommentsQueryParams {

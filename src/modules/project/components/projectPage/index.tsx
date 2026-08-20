@@ -54,10 +54,10 @@ const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
     sprint_count: apiProject.sprint_count ?? 0,
     date: apiProject.created_at
       ? new Date(apiProject.created_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : '',
     owner: String(apiProject?.creator) || 'Unassigned',
   };
@@ -157,7 +157,7 @@ const ProjectPage = () => {
       if (createdProject?.project_id) {
         replace(`/projects/sprints?projectId=${createdProject.project_id}`);
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {

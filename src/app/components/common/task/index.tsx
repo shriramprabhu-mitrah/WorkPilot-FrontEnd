@@ -74,7 +74,7 @@ export const StatusBadge = ({ status }: { status: string | TaskStatus }) => {
 interface AvatarProps {
   initials: string;
   color: string;
-  size?: 'sm' | 'md' | 'lg' |'xs';
+  size?: 'sm' | 'md' | 'lg' | 'xs';
 }
 
 export const AssigneeAvatar = ({ initials, color, size = 'sm' }: AvatarProps) => {

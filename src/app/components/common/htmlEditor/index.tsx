@@ -77,7 +77,6 @@ interface WpRichTextEditorProps {
   onImageUpload?: (file: File) => Promise<string>;
 }
 
-
 export interface InsertImagePayload {
   src: string;
   altText: string;
@@ -247,9 +246,7 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   }
 
   decorate(): React.ReactNode {
-    return (
-      <ImageComponent src={this.__src} altText={this.__altText} nodeKey={this.getKey()} />
-    );
+    return <ImageComponent src={this.__src} altText={this.__altText} nodeKey={this.getKey()} />;
   }
 }
 
@@ -376,9 +373,27 @@ function TextColorPicker({
   }
 
   const colors = [
-    '#242629', '#2563eb', '#28758c', '#247552', '#e66a00', '#b8322a', '#8142a3',
-    '#8b9098', '#3979e6', '#289bc0', '#22a36b', '#ffad00', '#d7372f', '#aa4fce',
-    '#ffffff', '#c5d9f5', '#b9e0ec', '#b8e8d1', '#f2e68b', '#f8c9c5', '#e4cdf0',
+    '#242629',
+    '#2563eb',
+    '#28758c',
+    '#247552',
+    '#e66a00',
+    '#b8322a',
+    '#8142a3',
+    '#8b9098',
+    '#3979e6',
+    '#289bc0',
+    '#22a36b',
+    '#ffad00',
+    '#d7372f',
+    '#aa4fce',
+    '#ffffff',
+    '#c5d9f5',
+    '#b9e0ec',
+    '#b8e8d1',
+    '#f2e68b',
+    '#f8c9c5',
+    '#e4cdf0',
   ];
 
   const applyColor = (color: string) => {
@@ -548,11 +563,7 @@ function InitialValuePlugin({ value }: { value?: string }) {
   return null;
 }
 
-function EditorToolbar({
-  onImageUpload,
-}: {
-  onImageUpload?: (file: File) => Promise<string>;
-}) {
+function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Promise<string> }) {
   const [editor] = useLexicalComposerContext();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);

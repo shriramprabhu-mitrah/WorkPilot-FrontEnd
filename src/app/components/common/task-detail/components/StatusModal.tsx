@@ -28,9 +28,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
 
   const [statusName, setStatusName] = useState(status?.name ?? '');
   const [color, setColor] = useState(status?.color ?? '#8A2BE2');
-
-  const [displayOrder, setDisplayOrder] = useState(String(status?.display_order ?? 0));
-
+  const [isFinal, setIsFinal] = useState(status?.is_final ?? false);
   const [selectedStatusId, setSelectedStatusId] = useState(status?.id ?? '');
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -43,7 +41,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
 
   const isPending = isCreating || isUpdating || isDeletingStatus;
 
-  const sortedStatuses = [...statuses].sort((a, b) => a.display_order - b.display_order);
+  const sortedStatuses = [...statuses];
   const selectedStatus =
     sortedStatuses.find((item) => item.id === selectedStatusId) || sortedStatuses[0];
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -54,7 +52,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
     setSelectedStatusId(selected.id);
     setStatusName(selected.name);
     setColor(selected.color);
-    setDisplayOrder(String(selected.display_order));
+    setIsFinal(selected.is_final ?? false);
   };
 
   const handleSubmit = async () => {
@@ -70,7 +68,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
           payload: {
             name: statusName.trim(),
             color,
-            display_order: Number(displayOrder),
+            is_final: isFinal,
           },
         });
       } else {
@@ -79,7 +77,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
           payload: {
             name: statusName.trim(),
             color,
-            display_order: Number(displayOrder),
+            is_final: isFinal,
           },
         });
       }
@@ -202,16 +200,21 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
                     </div>
                   </div>
                 </div>
+                <div className="flex items-center justify-between rounded-lg border border-[var(--color-gray-300)] px-3 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--color-text-body)]">Final status</p>
+                    <p className="text-xs text-[var(--color-gray-500)]">
+                      Mark this status as a final status.
+                    </p>
+                  </div>
 
-                {/* Display Order */}
-                <WpInput
-                  label="Display order"
-                  type="number"
-                  min={0}
-                  value={displayOrder}
-                  onChange={(event) => setDisplayOrder(event.target.value)}
-                  placeholder="Enter display order"
-                />
+                  <input
+                    type="checkbox"
+                    checked={isFinal}
+                    onChange={(event) => setIsFinal(event.target.checked)}
+                    className="h-4 w-4 cursor-pointer"
+                  />
+                </div>
               </>
             )}
           </div>

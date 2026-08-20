@@ -42,9 +42,9 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
 
   // Hooks for comments
   const { comments, isLoadingComments, isErrorComments, commentsError } = useGetTaskComments(
-    taskId ?? '', 
-    1, 
-    50, 
+    taskId ?? '',
+    1,
+    50,
     !!taskId
   );
   const { createCommentAsync, isCreatingComment } = useCreateTaskComment(taskId ?? '');
@@ -73,7 +73,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
     const textContent = tempDiv.textContent || tempDiv.innerText || '';
-    
+
     if (!taskId || !textContent.trim()) {
       return;
     }
@@ -144,7 +144,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
       await updateCommentAsync({ content: editContent.trim() });
       setEditingId(null);
       setEditContent('');
-      
+
       // Refetch replies if it's a reply
       if (parentCommentId) {
         const { taskService } = await import('@/src/services/tasks');
@@ -153,7 +153,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
           setRepliesMap(new Map(repliesMap.set(parentCommentId, res.data)));
         }
       }
-      
+
       toast.success('Comment updated successfully');
     } catch (error) {
       toast.error('Failed to update comment');
@@ -167,7 +167,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     try {
       setDeletingId(commentId);
       await deleteCommentAsync();
-      
+
       // Refetch replies if it's a reply
       if (parentCommentId) {
         const { taskService } = await import('@/src/services/tasks');
@@ -176,7 +176,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
           setRepliesMap(new Map(repliesMap.set(parentCommentId, res.data)));
         }
       }
-      
+
       toast.success('Comment deleted successfully');
       setDeletingId(null);
     } catch (error) {
@@ -202,7 +202,11 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     return (
       <div key={c.id} className={`${isReply ? '' : 'mb-4'}`}>
         <div className="flex gap-3">
-          <AssigneeAvatar initials={initials} color={colors.avatarBlue} size={isReply ? 'xs' : 'sm'} />
+          <AssigneeAvatar
+            initials={initials}
+            color={colors.avatarBlue}
+            size={isReply ? 'xs' : 'sm'}
+          />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className={`${isReply ? 'text-xs' : 'text-sm'} font-semibold text-gray-900`}>
@@ -244,7 +248,9 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
               </div>
             ) : (
               <>
-                <div className={`${isReply ? 'bg-white border border-gray-200' : 'bg-gray-50'} rounded-lg px-3 py-2 relative group`}>
+                <div
+                  className={`${isReply ? 'bg-white border border-gray-200' : 'bg-gray-50'} rounded-lg px-3 py-2 relative group`}
+                >
                   <div
                     className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700 prose prose-sm max-w-none`}
                     dangerouslySetInnerHTML={{ __html: c.content }}
@@ -299,9 +305,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
             {/* Display Replies */}
             {repliesMap.get(c.id) && repliesMap.get(c.id)!.length > 0 && (
               <div className="space-y-3">
-                {repliesMap.get(c.id)!.map((reply: Comment) =>
-                  renderComment(reply, true, c.id)
-                )}
+                {repliesMap.get(c.id)!.map((reply: Comment) => renderComment(reply, true, c.id))}
               </div>
             )}
 
@@ -381,7 +385,9 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
             ) : isErrorComments ? (
               <div className="text-center py-8">
                 <p className="text-sm text-red-500">Failed to load comments</p>
-                <p className="text-xs text-gray-400 mt-1">{commentsError?.message || 'Unknown error'}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {commentsError?.message || 'Unknown error'}
+                </p>
               </div>
             ) : comments.length === 0 ? (
               tab === 'comments' && (

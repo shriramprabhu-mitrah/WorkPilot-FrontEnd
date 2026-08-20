@@ -1,0 +1,70 @@
+export interface DashboardOverview {
+  total_tasks: number;
+  completed: number;
+  pending: number;
+  overdue: number;
+  due_soon: number;
+}
+
+export interface DashboardTaskStatus {
+  [status: string]: number;
+}
+
+export interface SprintBurndown {
+  day: number;
+  date: string;
+  ideal_points: number;
+  remaining_points: number;
+}
+
+export interface TeamWorkload {
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  avatar_url: string;
+  task_count: number;
+  points: number;
+}
+
+export interface DashboardActivityUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  role: string;
+}
+
+export interface DashboardActivity {
+  id: string;
+  project_id: string;
+  project_name: string;
+  organization_id: string;
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  created_at: string;
+  title: string;
+  type: string;
+  details?: string;
+  task_key?: string;
+}
+export interface DashboardActivityMeta {
+  page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+export interface DashboardData {
+  overview: DashboardOverview;
+  task_status: DashboardTaskStatus;
+  sprint_burndown: SprintBurndown[];
+  team_workload: TeamWorkload[];
+}
+
+export interface DashboardActivitiesResponse {
+  user: DashboardActivityUser;
+  activities: DashboardActivity[];
+}

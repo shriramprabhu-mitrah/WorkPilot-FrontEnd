@@ -368,9 +368,10 @@ export const SignIn = () => {
               type="button"
               variant="secondary"
               fullWidth
+              className="mt-2"
               onClick={() => {
                 resetForgotPasswordFlow();
-                setShowForgotSidebar(true);
+                setShowForgotSidebar(false);
               }}
             >
               Back to Login

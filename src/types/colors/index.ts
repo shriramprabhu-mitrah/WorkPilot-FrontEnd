@@ -3,20 +3,19 @@ export interface CustomStatus {
   project_id: string;
   name: string;
   color: string;
-  display_order: number;
-  is_default?: boolean;
+  is_default: boolean;
+  is_final: boolean;
 }
-
 export interface CreateCustomStatusPayload {
   name: string;
   color: string;
-  display_order: number;
+  is_final: boolean;
 }
 
 export interface UpdateCustomStatusPayload {
   name?: string;
   color?: string;
-  display_order?: number;
+  is_final?: boolean;
 }
 export interface AssignColorToTaskPayload {
   title: string;
