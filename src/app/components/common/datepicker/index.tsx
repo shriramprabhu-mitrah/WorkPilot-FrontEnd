@@ -8,6 +8,7 @@ import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 interface WpDatePickerProps {
   label?: string;
   value?: string; // "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss"
+  required?: boolean;
   placeholder?: string;
   error?: string;
   hint?: string;
@@ -45,6 +46,7 @@ function formatDisplay(iso: string, showTime?: boolean) {
 
 export const WpDatePicker = ({
   label,
+  required = false,
   value = '',
   placeholder = 'Select a date',
   error,
@@ -134,6 +136,7 @@ export const WpDatePicker = ({
       {label && (
         <label className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
           {label}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <div className="relative">

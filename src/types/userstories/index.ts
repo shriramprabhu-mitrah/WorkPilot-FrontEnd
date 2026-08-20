@@ -90,6 +90,7 @@ export interface UserStoryAttachment {
   file_size: number;
   uploaded_by: string;
   uploaded_at: string;
+  url?:string
 }
 
 export interface UserStoryAttachmentResponse {

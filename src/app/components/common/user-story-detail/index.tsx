@@ -763,6 +763,29 @@ export const UserStoryDetailDrawer = ({
   const allStatusConfig = Object.fromEntries(
     allStatusOptions.map((option) => [option.value, option])
   );
+
+  interface UploadedAttachment {
+    url?: string;
+    file_url?: string;
+    file_path?: string;
+    path?: string;
+  }
+
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    const result = await uploadUserStoryAttachmentAsync({ userStoryId, file });
+    const attachment = result?.data?.data?.[0] as unknown as UploadedAttachment;
+    
+    if (!attachment) {
+      throw new Error('No attachment returned from upload API');
+    }
+    const imageUrl =
+      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+    if (!imageUrl) {
+      throw new Error('Uploaded attachment does not contain an image URL');
+    }
+    return imageUrl;
+  };
+
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -914,7 +937,7 @@ export const UserStoryDetailDrawer = ({
                 </div>
               ) : (
                 <h1
-                  className="mb-5 max-w-[500px] truncate text-2xl font-bold leading-snug text-gray-900"
+                  className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900"
                   title={userStoryData.title}
                 >
                   {userStoryData.title}
@@ -936,8 +959,8 @@ export const UserStoryDetailDrawer = ({
                       }
                       placeholder="Add a description..."
                       minHeight="180px"
+                      onImageUpload={handleEditorImageUpload}
                     />
-
                     <div className="flex gap-2 mt-3">
                       <button
                         onClick={() => {
@@ -1138,7 +1161,7 @@ export const UserStoryDetailDrawer = ({
                           >
                             {/* Work Column */}
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
                                 <span
                                   className={`shrink-0 font-medium hover:underline ${
                                     task.is_final
@@ -1524,7 +1547,7 @@ export const UserStoryDetailDrawer = ({
                                                 className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 disabled:opacity-50"
                                                 style={{
                                                   fontWeight: isSelected ? 700 : 500,
-                                                  color: option.color,
+                                                  color: '#000000',
                                                   backgroundColor: isSelected
                                                     ? option.bg
                                                     : undefined,
@@ -1599,6 +1622,7 @@ export const UserStoryDetailDrawer = ({
                           onChange={setComment}
                           placeholder="Write a comment..."
                           minHeight="120px"
+                          onImageUpload={handleEditorImageUpload}
                         />
 
                         <div className="flex items-center justify-end gap-2">
