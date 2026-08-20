@@ -74,8 +74,9 @@ export const useSignin = () => {
       const orgSlug = data?.organization?.slug;
 
       if (isMobile && token) {
-        window.location.href = `workpilot://auth?token=${encodeURIComponent(token)}`;
+        const mobileToken = token;
         await signupService.logOut();
+        window.location.href = `workpilot://auth?token=${encodeURIComponent(mobileToken)}`;
       } else {
         // Redirect to organization dashboard or setup if no organization
         if (orgSlug) {
