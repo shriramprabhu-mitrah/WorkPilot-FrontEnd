@@ -42,6 +42,11 @@ import { KanbanCardContent } from '../components/kanbannCardContent';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { CustomStatus } from '@/src/types/colors';
+import { ScrollIndicator } from '../components/scrollIndicator';
+import AddTaskModal from '@/src/modules/project/components/addTaskModel';
+import { useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import toast from 'react-hot-toast';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 // Task card component for the swimlane
 const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void }) => {
@@ -188,7 +193,10 @@ const UserStoryRow = ({
               }}
             />
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-gray-800 truncate" title={story.title}>
+              <h3
+                className={`text-sm font-semibold text-gray-800 truncate ${story.is_closed ? 'line-through' : ''}`}
+                title={story.title}
+              >
                 {story.title}
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -262,6 +270,8 @@ export const KanbanBoardTemplate = () => {
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
   const [collapsedStatuses, setCollapsedStatuses] = useState<Set<string>>(new Set());
   const [showFilter, setShowFilter] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [taskUserStoryId, setTaskUserStoryId] = useState<string>('');
   const [filters, setFilters] = useState<FilterState>({
     priorities: [],
     assignees: [],
@@ -270,8 +280,12 @@ export const KanbanBoardTemplate = () => {
     statuses: [],
   });
   const [assigneeIdFilter, setAssigneeIdFilter] = useState<string[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [memberSearch, setMemberSearch] = useState('');
+  const debouncedMemberSearch = useDebounce(memberSearch, 500);
 
   const queryClient = useQueryClient();
+  const deleteUserStoryMutation = useDeleteUserStory();
 
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -284,6 +298,28 @@ export const KanbanBoardTemplate = () => {
   // Fetch project members for assignee filtering
   const { members } = useGetProjectMembers(selectedProject, { page: 1, page_size: 100 });
 
+  // Get project members with search for task modal
+  const {
+    members: projectMembers,
+    isLoadingMembers: isLoadingProjectMembers,
+    isFetchingMembers: isFetchingProjectMembers,
+  } = useGetProjectMembers(
+    selectedProject,
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedMemberSearch,
+    },
+    showAddTaskModal // Only fetch when modal is open
+  );
+
+  // Generate assignee options from fetched members
+  const assigneeOptions =
+    projectMembers?.map((member) => ({
+      label: member.full_name || member.username,
+      value: member.user_id,
+    })) ?? [];
+
   useOutsideClick(filterRef, () => setShowFilter(false));
 
   // Build query params from filters
@@ -294,24 +330,24 @@ export const KanbanBoardTemplate = () => {
       params.sprint_id = selectedSprint;
     }
 
-    // Add priority filter
+    // Add priority filter - comma-separated for multiple selections
     if (filters.priorities.length > 0) {
-      params.priority = filters.priorities[0].toLowerCase();
+      params.priority = filters.priorities.map((p) => p.toLowerCase()).join(',');
     }
 
-    // Add assignee filter
+    // Add assignee filter - comma-separated for multiple selections
     if (assigneeIdFilter.length > 0) {
-      params.assignee_id = assigneeIdFilter[0];
+      params.assignee_id = assigneeIdFilter.join(',');
     }
 
-    // Add type filter
+    // Add type filter - comma-separated for multiple selections
     if (filters.types.length > 0) {
-      params.type = filters.types[0].toLowerCase();
+      params.type = filters.types.map((t) => t.toLowerCase()).join(',');
     }
 
-    // Add status filter
+    // Add status filter - comma-separated for multiple selections
     if (filters.statuses.length > 0) {
-      params.status_id = filters.statuses[0];
+      params.status_id = filters.statuses.join(',');
     }
 
     logger.log('Board query params updated:', params);
@@ -335,7 +371,8 @@ export const KanbanBoardTemplate = () => {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   );
 
-  const boardLoading = isLoadingTasks || isLoadingUserStories || isLoadingStatus;
+  const boardLoading =
+    !!selectedProject && (isLoadingTasks || isLoadingUserStories || isLoadingStatus);
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
@@ -494,9 +531,11 @@ export const KanbanBoardTemplate = () => {
     const isSelected = assigneeIdFilter.includes(memberId);
     const newAssigneeIds = isSelected
       ? assigneeIdFilter.filter((id) => id !== memberId)
-      : [memberId]; // Replace with single selection instead of multi
+      : [...assigneeIdFilter, memberId]; // Add to existing selections for multi-select
 
-    const newAssigneeNames = isSelected ? [] : [memberName]; // Replace with single selection
+    const newAssigneeNames = isSelected
+      ? filters.assignees.filter((name) => name !== memberName)
+      : [...filters.assignees, memberName]; // Add to existing selections for multi-select
 
     logger.log('New assignee filter state:', { newAssigneeIds, newAssigneeNames });
     setAssigneeIdFilter(newAssigneeIds);
@@ -831,7 +870,7 @@ export const KanbanBoardTemplate = () => {
           onDragOver={onDragOver}
           onDragEnd={onDragEnd}
         >
-          <div className="flex-1 overflow-x-auto overflow-y-auto -mx-3 sm:mx-0">
+          <div ref={scrollContainerRef} className="flex-1 overflow-x-auto overflow-y-auto -mx-3 sm:mx-0">
             <div className="inline-block min-w-full px-3 sm:px-0">
               {/* Status Headers */}
               <div className="sticky top-0 z-20 bg-white flex border-b-2 border-gray-300">
@@ -946,6 +985,13 @@ export const KanbanBoardTemplate = () => {
           <DragOverlay dropAnimation={dropAnimation}>
             {activeTask && <KanbanCardPreview task={activeTask} />}
           </DragOverlay>
+
+          {/* Scroll Indicator */}
+          <ScrollIndicator 
+            scrollContainerRef={scrollContainerRef} 
+            statuses={statuses}
+            userStoriesCount={processedStories.length}
+          />
         </DndContext>
       )}
 
@@ -954,6 +1000,62 @@ export const KanbanBoardTemplate = () => {
         <UserStoryDetailDrawer
           userStory={selectedUserStory}
           onClose={() => setSelectedUserStory(null)}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+            refetchTasks();
+          }}
+          onCreateTask={() => {
+            // Keep user story drawer open, task modal will appear on top
+            setTaskUserStoryId(selectedUserStory.id);
+            setShowAddTaskModal(true);
+          }}
+          onDelete={async () => {
+            try {
+              await deleteUserStoryMutation.mutateAsync({
+                projectId: selectedProject,
+                userStoryId: selectedUserStory.id,
+              });
+              queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+              queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+              refetchTasks();
+              setSelectedUserStory(null);
+            } catch (error) {
+              // Error is already handled by the mutation
+            }
+          }}
+        />
+      )}
+
+      {/* Add Task Modal */}
+      {showAddTaskModal && (
+        <AddTaskModal
+          projectId={selectedProject}
+          sprintId={taskUserStoryId ? '' : selectedSprint}
+          userStoryId={taskUserStoryId || undefined}
+          assigneeOptions={assigneeOptions}
+          memberSearch={memberSearch}
+          onMemberSearchChange={setMemberSearch}
+          isLoadingMembers={isLoadingProjectMembers || isFetchingProjectMembers}
+          onClose={() => {
+            setShowAddTaskModal(false);
+            setTaskUserStoryId('');
+            setMemberSearch(''); // Clear search on close
+          }}
+          onCreate={() => {
+            setShowAddTaskModal(false);
+            // Invalidate both user stories list and the specific user story detail
+            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+            if (taskUserStoryId) {
+              queryClient.invalidateQueries({
+                queryKey: ['user-story', selectedProject, taskUserStoryId],
+              });
+            }
+            refetchTasks();
+            setTaskUserStoryId('');
+            setMemberSearch(''); // Clear search after creation
+          }}
         />
       )}
     </div>

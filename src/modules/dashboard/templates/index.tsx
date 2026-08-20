@@ -21,6 +21,12 @@ import { useEffect, useState } from 'react';
 import DashboardSkeleton from '../components/dashboardSkeletons';
 import { useGetDashboard, useGetRecentActivities } from '../hooks/useDashboard';
 import { useAppSelector } from '@/src/store';
+import { ProjectSelectionPopover } from '@/src/app/components/common/project-selection-popover';
+import { useGetProjectsWithSprints } from '../../project/hooks/useProject';
+
+const POPOVER_DISMISSED_KEY = 'project-selection-popover-dismissed';
+const CREATE_PROJECT_POPOVER_DISMISSED_KEY = 'create-project-popover-dismissed';
+
 export const DashBoardTemplate = () => {
   const taskStatus = {
     Completed: 1,
@@ -30,8 +36,13 @@ export const DashBoardTemplate = () => {
   const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(1, 10);
 
   const { selectedProject, selectedSprint } = useAppSelector((state) => state.project);
+  const user = useAppSelector((state) => state.user);
+  const isOrgAdmin = user.role === 'org_admin';
 
   const { organization, isOrganizationLoading } = useGetOrganization();
+
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+  const hasProjects = projectsWithSprints && projectsWithSprints.length > 0;
 
   // const { dashboard, isLoadingDashboard } = useGetDashboard(
   //   organization?.data?.id ?? '',
@@ -45,6 +56,21 @@ export const DashBoardTemplate = () => {
   // temp loading
   const [loading, setLoading] = useState(true);
 
+  // Track if popovers have been dismissed - initialize from localStorage
+  const [hasBeenDismissed, setHasBeenDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(POPOVER_DISMISSED_KEY) === 'true';
+    }
+    return false;
+  });
+
+  const [createProjectPopoverDismissed, setCreateProjectPopoverDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(CREATE_PROJECT_POPOVER_DISMISSED_KEY) === 'true';
+    }
+    return false;
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -52,6 +78,33 @@ export const DashBoardTemplate = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Determine which popover to show
+  // Show create project popover if: no projects exist, user is org_admin, not dismissed, not loading
+  const showCreateProjectPopover =
+    !loading &&
+    !isLoadingProjectsWithSprints &&
+    !hasProjects &&
+    isOrgAdmin &&
+    !createProjectPopoverDismissed;
+
+  // Show select project popover if: projects exist, no project selected, not dismissed, not loading
+  const showSelectProjectPopover =
+    !loading &&
+    !isLoadingProjectsWithSprints &&
+    hasProjects &&
+    !selectedProject &&
+    !hasBeenDismissed;
+
+  const handleDismissSelectPopover = () => {
+    setHasBeenDismissed(true);
+    localStorage.setItem(POPOVER_DISMISSED_KEY, 'true');
+  };
+
+  const handleDismissCreateProjectPopover = () => {
+    setCreateProjectPopoverDismissed(true);
+    localStorage.setItem(CREATE_PROJECT_POPOVER_DISMISSED_KEY, 'true');
+  };
 
   // if (
   //   loading ||
@@ -73,7 +126,18 @@ export const DashBoardTemplate = () => {
   const assignedTasks = teamWorkload.map((member) => member.task_count);
   const points = teamWorkload.map((member) => member.points);
   return (
-    <div className="space-y-4 md:space-y-6 w-full max-w-full">
+    <>
+      <ProjectSelectionPopover
+        show={showSelectProjectPopover}
+        onDismiss={handleDismissSelectPopover}
+        variant="select"
+      />
+      <ProjectSelectionPopover
+        show={showCreateProjectPopover}
+        onDismiss={handleDismissCreateProjectPopover}
+        variant="create"
+      />
+      <div className="space-y-4 md:space-y-6 w-full max-w-full">
       {/* <StatCardsSection
         stats={[
           {
@@ -145,5 +209,6 @@ export const DashBoardTemplate = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
