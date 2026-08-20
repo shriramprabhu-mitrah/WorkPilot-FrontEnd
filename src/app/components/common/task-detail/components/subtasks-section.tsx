@@ -66,7 +66,7 @@ export const SubtasksSection = ({
           className="flex items-center gap-1.5 text-base font-semibold text-gray-800 hover:text-gray-600 transition-colors"
         >
           {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          Child Tickets
+          Tasks
           <span className="text-sm font-normal text-gray-400 ml-1">
             ({doneCount}/{subtasks.length})
           </span>

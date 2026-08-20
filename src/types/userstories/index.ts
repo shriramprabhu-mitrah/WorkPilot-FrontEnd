@@ -29,6 +29,7 @@ export interface UserStoryResponse {
   reporter_name?: string;
   due_date?: string;
   start_date?: string;
+  is_closed?:boolean;
   assignee?: {
     id: string;
     name: string;

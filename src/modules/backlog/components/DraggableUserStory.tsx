@@ -140,9 +140,15 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
         <div className="flex items-center gap-2">
           <div className="min-w-0">
             <span
-              className="text-sm font-semibold truncate block"
+              className={`text-sm font-semibold truncate block ${
+                story.is_closed 
+                  ? 'line-through text-gray-500 opacity-60' 
+                  : ''
+              }`}
               style={{
-                color: isDragging ? colors.primary : colors.gray800,
+                color: story.is_closed 
+                  ? undefined 
+                  : (isDragging ? colors.primary : colors.gray800),
               }}
             >
               {story.title}
@@ -169,7 +175,7 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       </span>
 
       {/* Story Points */}
-      <span
+      {/* <span
         className="
         flex items-center justify-center
         gap-1
@@ -186,7 +192,7 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       >
         <Hash size={10} />
         {story.story_points ?? 0}
-      </span>
+      </span> */}
 
       {/* Status */}
       <span
