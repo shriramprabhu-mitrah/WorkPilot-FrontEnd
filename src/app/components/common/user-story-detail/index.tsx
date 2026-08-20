@@ -1173,7 +1173,8 @@ export const UserStoryDetailDrawer = ({
                                   {task.key}
                                 </span>
                                 <span
-                                  className={`truncate ${
+                                  title={task.title}
+                                  className={`max-w-[80px] truncate ${
                                     task.is_final
                                       ? 'line-through text-gray-400 opacity-60'
                                       : 'text-gray-900'

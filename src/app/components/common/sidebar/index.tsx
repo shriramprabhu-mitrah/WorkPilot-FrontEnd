@@ -366,7 +366,12 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                             <div className="w-2 h-2 rounded-full bg-blue-600" />
                           )}
                         </div>
-                        <span className="font-medium text-gray-800">{p.name}</span>
+                        <span
+                          title={p.name}
+                          className="font-medium text-gray-800 truncate max-w-[130px]"
+                        >
+                          {p.name}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400 font-medium">{p.key}</span>

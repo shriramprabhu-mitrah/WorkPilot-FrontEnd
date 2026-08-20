@@ -140,7 +140,8 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
         <div className="flex items-center gap-2 min-w-0">
           <div className="min-w-0 max-w-[200px]">
             <span
-              className={`text-sm font-semibold truncate block ${
+              title={story.title}
+              className={`block truncate text-sm font-semibold ${
                 story.is_closed ? 'line-through text-gray-500 opacity-60' : ''
               }`}
               style={{
