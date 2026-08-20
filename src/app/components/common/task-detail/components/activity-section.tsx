@@ -14,12 +14,19 @@ import {
   useDeleteTaskComment,
 } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
+import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 
 type ActivityTab = 'all' | 'comments' | 'history';
-
+ interface UploadedAttachment {
+   url?: string;
+   file_url?: string;
+   file_path?: string;
+   path?: string;
+ }
 interface ActivitySectionProps {
   items: ActivityItem[];
   taskId?: string;
+  projectId?: string;
 }
 
 const getInitials = (name: string) =>
@@ -35,7 +42,7 @@ const formatTime = (iso: string) => {
   return isNaN(d.getTime()) ? iso : d.toLocaleString();
 };
 
-export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
+export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionProps) => {
   const [tab, setTab] = useState<ActivityTab>('all');
   const [comment, setComment] = useState('');
   const [showCommentEditor, setShowCommentEditor] = useState(false);
@@ -56,6 +63,23 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
     taskId ?? '',
     editingId ?? ''
   );
+ const { uploadAttachment } = useTaskAttachments(projectId ?? '', taskId ?? '');
+
+ const handleEditorImageUpload = async (file: File): Promise<string> => {
+   const formData = new FormData();
+   formData.append('file', file);
+   const result = await uploadAttachment.mutateAsync(formData);
+   const attachment = result?.data?.[0] as UploadedAttachment | undefined;
+   if (!attachment) {
+     throw new Error('No attachment returned from upload API');
+   }
+   const imageUrl =
+     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+   if (!imageUrl) {
+     throw new Error('Uploaded attachment does not contain an image URL');
+   }
+   return imageUrl;
+ };
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -222,6 +246,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
                   onChange={setEditContent}
                   placeholder="Edit comment..."
                   minHeight={isReply ? '80px' : '100px'}
+                  onImageUpload={handleEditorImageUpload}
                 />
                 <div className="flex items-center gap-2">
                   <WpButton
@@ -323,6 +348,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
                   onChange={setReplyContent}
                   placeholder="Write a reply..."
                   minHeight="80px"
+                  onImageUpload={handleEditorImageUpload}
                 />
                 <div className="flex items-center gap-2">
                   <WpButton
@@ -438,6 +464,7 @@ export const ActivitySection = ({ items, taskId }: ActivitySectionProps) => {
                   onChange={setComment}
                   placeholder="Add a comment..."
                   minHeight="120px"
+                  onImageUpload={handleEditorImageUpload}
                 />
 
                 <div className="flex justify-end gap-2">

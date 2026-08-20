@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector } from '@/src/store';
 import { useUploadUserStoryAttachment } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
 import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
+import { userStoryService } from '@/src/services/userstory';
 
 interface CreateUserStoryModalProps {
   onClose: () => void;
@@ -21,7 +22,8 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
+const [isEditingDescription, setIsEditingDescription] = useState(false);
+const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
   const queryClient = useQueryClient();
@@ -30,6 +32,13 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
     useUploadUserStoryAttachment(projectId);
   const [attachments, setAttachments] = useState<File[]>([]);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    const blobUrl = URL.createObjectURL(file);
+    setPendingImages((prev) => new Map(prev).set(blobUrl, file));
+    return blobUrl;
+  };
+
   const handleCreate = async () => {
     if (!title.trim() || !projectId) return;
 
@@ -42,16 +51,39 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       });
 
       const userStoryId = response?.data?.id;
-
       if (!userStoryId) {
         return;
       }
-
       for (const file of attachments) {
         await uploadUserStoryAttachmentAsync({
           userStoryId,
           file,
         });
+      }
+      if (pendingImages.size > 0) {
+        let finalDescription = description;
+        for (const [blobUrl, file] of pendingImages.entries()) {
+          try {
+            const result = await uploadUserStoryAttachmentAsync({
+              userStoryId,
+              file,
+            });
+            const uploaded = result?.data?.data?.[0] as
+              { url?: string; file_url?: string; file_path?: string; path?: string }| undefined;
+            const realUrl =
+              uploaded?.url ?? uploaded?.file_url ?? uploaded?.file_path ?? uploaded?.path;
+            if (realUrl) {
+              finalDescription = finalDescription.split(blobUrl).join(realUrl);
+            }
+          } finally {
+            URL.revokeObjectURL(blobUrl);
+          }
+        }
+        if (finalDescription !== description) {
+          await userStoryService.updateUserStory(projectId, userStoryId, {
+            description: finalDescription,
+          });
+        }
       }
 
       await queryClient.invalidateQueries({
@@ -70,6 +102,8 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
 
     event.target.value = '';
   };
+
+  
 
   const handleRemoveAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -121,6 +155,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
                 value={description}
                 onChange={(value) => setDescription(value)}
                 placeholder="Enter story description"
+                onImageUpload={handleEditorImageUpload}
               />
             )}
           </div>

@@ -19,7 +19,7 @@ export const useUploadUserStoryAttachment = (projectId: string) => {
     uploadUserStoryAttachment: mutation.mutate,
     uploadUserStoryAttachmentAsync: mutation.mutateAsync,
     isUploadingUserStoryAttachment: mutation.isPending,
-    uploadUserStoryAttachmentData: mutation.data,
+    uploadUserStoryAttachmentData: mutation?.data,
     uploadUserStoryAttachmentError: mutation.error,
     resetUploadUserStoryAttachment: mutation.reset,
   };

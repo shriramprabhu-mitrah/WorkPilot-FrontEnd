@@ -389,7 +389,16 @@ export const BacklogTemplate = () => {
               </p>
             )}
           </div>
-
+          <div className='ml-210'>
+            <WpInput
+              type="text"
+              placeholder="Search tasks..."
+              icon={<Search size={14} />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              wrapperClassName="w-full sm:w-40"
+            />
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             <WpButton
               size="sm"
@@ -400,15 +409,6 @@ export const BacklogTemplate = () => {
               <span className="hidden sm:inline">Create User Story</span>
               <span className="sm:hidden">Create</span>
             </WpButton>
-            <WpInput
-              type="text"
-              placeholder="Search tasks..."
-              icon={<Search size={14} />}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              wrapperClassName="w-full sm:w-40"
-              className="!py-1.5"
-            />
           </div>
         </div>
 

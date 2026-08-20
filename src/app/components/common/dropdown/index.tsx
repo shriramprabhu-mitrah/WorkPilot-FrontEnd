@@ -18,6 +18,7 @@ interface WpDropdownProps {
   error?: string;
   hint?: string;
   disabled?: boolean;
+  showRequired?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -29,6 +30,7 @@ export const WpDropdown = ({
   error,
   hint,
   disabled = false,
+  showRequired = false,
   onChange,
 }: WpDropdownProps) => {
   const [open, setOpen] = useState(false);
@@ -43,6 +45,7 @@ export const WpDropdown = ({
       {label && (
         <label className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
           {label}
+          {showRequired && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <div className="relative">

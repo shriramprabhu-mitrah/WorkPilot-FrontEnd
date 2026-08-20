@@ -29,7 +29,7 @@ export interface TaskPayload {
   priority?: string;
   sprint_id?: string;
   user_story_id?: string; // Added for creating tasks under user stories
-  status: string;
+  status_id?: string;
   story_points?: number;
   estimated_hours?: number;
   actual_hours?: number;

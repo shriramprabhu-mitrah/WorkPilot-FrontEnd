@@ -36,15 +36,9 @@ import { WpInput } from '../input';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
-
-interface CustomStatus {
-  id: string;
-  project_id: string;
-  name: string;
-  color: string;
-  display_order: number;
-  is_default: boolean;
-}
+import StatusModal from './components/StatusModal';
+import { CustomStatus } from '@/src/types/colors';
+// adjust path to wherever StatusModal.tsx actually lives relative to this file
 import { useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
@@ -127,6 +121,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [editTaskDescription, setEditTaskDescription] = useState('');
   const [originalTaskTitle, setOriginalTaskTitle] = useState('');
   const [originalTaskDescription, setOriginalTaskDescription] = useState('');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
+  const [selecteddStatus, setSelecteddStatus] = useState<CustomStatus | null>(null);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     task.projectId ?? '',
     {
@@ -194,6 +191,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     }
     return imageUrl;
   };
+
+const resolveStatusToEdit = (currentStatusId: string): CustomStatus | null => {
+  const statusToEdit =
+    statuses.find((status) => status.id === currentStatusId) ??
+    statuses.find((status) => status.is_default) ??
+    (statuses.length > 0 ? statuses[0] : undefined);
+  return statusToEdit ?? null;
+};
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
@@ -583,7 +588,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 />
               </div>
             ) : (
-              <h1 className="text-2xl font-bold text-gray-900 mb-5 leading-snug">
+              <h1
+                className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900"
+                title={taskData.title || task.title}
+              >
                 {taskData.title || task.title}
               </h1>
             )}
@@ -869,9 +877,12 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </div>
               )}
             </div>
-            <ActivitySection items={task.activity ?? []} taskId={task.taskId ?? task.id} />
+            <ActivitySection
+              items={task.activity ?? []}
+              taskId={task.taskId ?? task.id}
+              projectId={task.projectId ?? ''}
+            />
           </div>
-
           <div
             onMouseDown={onDividerMouseDown}
             className="hidden sm:flex w-1.5 shrink-0 cursor-col-resize hover:bg-blue-100 active:bg-blue-200 transition-colors group items-center justify-center"
@@ -963,6 +974,55 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         );
                       })
                     )}
+
+                    {/* Divider */}
+                    <div className="my-1 border-t border-gray-200" />
+
+                    {/* Add Status */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+                        setSelecteddStatus(null);
+                        setStatusModalMode('add');
+                        setShowStatusModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Add Status
+                    </button>
+
+                    {/* Edit Status */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+
+                        const statusToEdit = resolveStatusToEdit(taskData.status);
+                        if (!statusToEdit) return;
+
+                        setSelecteddStatus(statusToEdit);
+                        setStatusModalMode('edit');
+                        setShowStatusModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Edit Status
+                    </button>
+
+                    {/* Delete Status */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+                        setSelecteddStatus(null);
+                        setStatusModalMode('delete');
+                        setShowStatusModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 transition-colors"
+                    >
+                      Delete Status
+                    </button>
                   </div>
                 )}
               </div>
@@ -1373,6 +1433,18 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             </div>
           </div>
         </div>
+      )}
+      {showStatusModal && (
+        <StatusModal
+          projectId={task.projectId ?? ''}
+          mode={statusModalMode}
+          status={selecteddStatus}
+          statuses={statuses}
+          onClose={() => {
+            setShowStatusModal(false);
+            setSelecteddStatus(null);
+          }}
+        />
       )}
     </div>
   );

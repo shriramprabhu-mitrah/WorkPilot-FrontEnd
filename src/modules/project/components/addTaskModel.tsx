@@ -14,6 +14,7 @@ import { formatISODateTime } from '@/src/app/components/common/format';
 import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
 import { WpTextarea } from '@/src/app/components/common/textarea';
+import { useGetStatus } from '../hooks/useLabels';
 
 export interface Task {
   title: string;
@@ -22,7 +23,7 @@ export interface Task {
   due_date?: string;
   priority?: string;
   sprint_id?: string;
-  status?: string;
+  status_id?: string;
   story_points?: number;
   estimated_hours?: number;
   actual_hours?: number;
@@ -51,7 +52,7 @@ interface FormValues {
   taskName: string;
   description: string;
   assignee: string;
-  status: string;
+  status_id: string;
   priority: string;
   type: string;
   dueDate: string;
@@ -84,7 +85,7 @@ const AddTaskModal = ({
       taskName: '',
       description: '',
       assignee: '',
-      status: 'todo',
+      status_id: 'todo',
       priority: 'low',
       type: 'task',
       dueDate: '',
@@ -95,6 +96,11 @@ const AddTaskModal = ({
   });
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const assigneeRef = useRef<HTMLDivElement>(null);
+  const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(projectId);
+   const statusOptions = statuses.map((status) => ({
+     label: status.name,
+     value: status.id,
+   }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,7 +120,7 @@ const AddTaskModal = ({
       taskName: 'Task name is required',
       type: 'Type is required',
       assignee: 'Assignee is required',
-      status: 'Status is required',
+      status_id: 'Status is required',
       priority: 'Priority is required',
       storyPoints: 'Story points are required',
       estimatedHours: 'Estimated hours are required',
@@ -199,7 +205,7 @@ const AddTaskModal = ({
       'taskName',
       'type',
       'assignee',
-      'status',
+      'status_id',
       'priority',
       'storyPoints',
       'estimatedHours',
@@ -215,7 +221,7 @@ const AddTaskModal = ({
       const data = getValues();
       const payload: TaskPayload = {
         title: data.taskName.trim(),
-        status: data.status,
+        status_id: data.status_id,
         type: data.type,
         priority: data.priority,
         estimated_hours: Number(data.estimatedHours),
@@ -249,7 +255,7 @@ const AddTaskModal = ({
           due_date: createdTask.due_date,
           priority: createdTask.priority,
           sprint_id: createdTask.sprint_id,
-          status: createdTask.status,
+          status_id: createdTask.status_id,
           story_points: createdTask.story_points,
           estimated_hours: createdTask.estimated_hours,
           actual_hours: createdTask.actual_hours,
@@ -309,6 +315,7 @@ const AddTaskModal = ({
                   }}
                   placeholder="Select type"
                   error={errors.type?.message}
+                  showRequired
                 />
               )}
             />
@@ -382,23 +389,25 @@ const AddTaskModal = ({
                 )}
               />
             </div>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <WpDropdown
-                  label="Status"
-                  options={statusOptions}
-                  value={field.value}
-                  onChange={(value) => {
-                    field.onChange(value);
-                    clearFieldError('status');
-                  }}
-                  placeholder="Select status"
-                  error={errors.status?.message}
-                />
-              )}
-            />
+              <Controller
+                name="status_id"
+                control={control}
+                render={({ field }) => (
+                  <WpDropdown
+                    label="Status"
+                    options={statusOptions}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      clearFieldError('status_id');
+                    }}
+                    placeholder={isLoadingStatus ? 'Loading statuses...' : 'Select status'}
+                    error={errors.status_id?.message}
+                    showRequired
+                    disabled={isLoadingStatus}
+                  />
+                )}
+              />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -408,6 +417,7 @@ const AddTaskModal = ({
               render={({ field }) => (
                 <WpDatePicker
                   label="Due Date"
+                  required
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
@@ -435,6 +445,7 @@ const AddTaskModal = ({
                   }}
                   placeholder="Select priority"
                   error={errors.priority?.message}
+                  showRequired
                 />
               )}
             />
@@ -452,6 +463,7 @@ const AddTaskModal = ({
                 storyPointsRegister.onChange(e);
                 clearFieldError('storyPoints');
               }}
+              showRequired
             />
             <WpInput
               id="estimatedHours"
@@ -466,6 +478,7 @@ const AddTaskModal = ({
                 estimatedHoursRegister.onChange(e);
                 clearFieldError('estimatedHours');
               }}
+              showRequired
             />
 
             <WpInput
@@ -481,6 +494,7 @@ const AddTaskModal = ({
                 actualHoursRegister.onChange(e);
                 clearFieldError('actualHours');
               }}
+              showRequired
             />
           </div>
         </div>
