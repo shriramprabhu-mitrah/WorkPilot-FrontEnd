@@ -1091,11 +1091,11 @@ useEffect(() => {
                 )}
               </div>
 
-              {/* Child Tickets Section */}
+              {/* Tasks Section */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-700">
-                    Child Tickets ({totalTasks})
+                    Tasks ({totalTasks})
                   </p>
                   {onCreateTask && (
                     <button
@@ -1143,12 +1143,24 @@ useEffect(() => {
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className="shrink-0 text-blue-600 hover:underline font-medium"
+                                  className={`shrink-0 font-medium hover:underline ${
+                                    task.is_final
+                                      ? 'line-through text-gray-400 opacity-60'
+                                      : 'text-blue-600'
+                                  }`}
                                   onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                                 >
                                   {task.key}
                                 </span>
-                                <span className="text-gray-900 truncate">{task.title}</span>
+                                <span 
+                                  className={`truncate ${
+                                    task.is_final
+                                      ? 'line-through text-gray-400 opacity-60'
+                                      : 'text-gray-900'
+                                  }`}
+                                >
+                                  {task.title}
+                                </span>
                               </div>
                             </td>
 

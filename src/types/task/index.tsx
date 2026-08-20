@@ -61,6 +61,7 @@ export interface TaskResponse {
   created_at?: string;
   updated_at?: string;
   start_date?: string;
+  is_final?: boolean;
 }
 
 export interface UpdateTaskPayload {
