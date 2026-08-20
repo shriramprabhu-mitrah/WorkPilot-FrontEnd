@@ -103,7 +103,7 @@ export default function GeneralSettings() {
         country_id: data.country,
       });
       await refetchOrganization();
-    } catch (error) { }
+    } catch (error) {}
   };
 
   return (
@@ -214,10 +214,11 @@ export default function GeneralSettings() {
                 });
               }
             }}
-            className={`rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 transition ${canEditOrganization
-              ? 'cursor-pointer hover:border-blue-500 hover:bg-blue-50'
-              : 'cursor-not-allowed opacity-60'
-              }`}
+            className={`rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 transition ${
+              canEditOrganization
+                ? 'cursor-pointer hover:border-blue-500 hover:bg-blue-50'
+                : 'cursor-not-allowed opacity-60'
+            }`}
           >
             <div className="flex items-center gap-5">
               {/* Avatar Preview */}
@@ -279,7 +280,12 @@ export default function GeneralSettings() {
 
         <div className="border-t border-[var(--color-gray-200)] pt-5">
           <div className="flex justify-end">
-            <WpButton type="submit" isLoading={isUpdatingOrg} loadingText="Saving..." disabled={!canEditOrganization}>
+            <WpButton
+              type="submit"
+              isLoading={isUpdatingOrg}
+              loadingText="Saving..."
+              disabled={!canEditOrganization}
+            >
               Save Changes
             </WpButton>
           </div>

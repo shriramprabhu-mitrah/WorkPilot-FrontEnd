@@ -170,9 +170,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   };
 
   const handleSprintClick = (sprint: Sprint) => {
-    push(
-      `/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${project.id}`
-    );
+    push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${project.id}`);
   };
   const confirmDeleteProject = async () => {
     if (!project.id) {
@@ -209,7 +207,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           })
         );
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getInitials = (name: string) => {

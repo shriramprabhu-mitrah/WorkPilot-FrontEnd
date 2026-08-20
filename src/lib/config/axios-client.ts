@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let isLoggingOut = false; 
+let isLoggingOut = false;
 let failedQueue: Array<{
   resolve: () => void;
   reject: (error: unknown) => void;
@@ -55,7 +55,7 @@ const attemptTokenRefresh = async () => {
 
   // Use the service method for refresh
   const response = await signupService.refreshToken(refreshToken);
-  
+
   if (!response.data) {
     throw new Error('Failed to refresh access token');
   }
@@ -77,7 +77,7 @@ axiosInstance.interceptors.response.use(
       requestUrl.includes('/auth/signin') ||
       requestUrl.includes('/auth/signup') ||
       requestUrl.includes('/auth/refresh') ||
-      requestUrl.includes('/auth/logout') || 
+      requestUrl.includes('/auth/logout') ||
       requestUrl.includes('/auth/password-reset/request') ||
       requestUrl.includes('/auth/password-reset/confirm')
     ) {

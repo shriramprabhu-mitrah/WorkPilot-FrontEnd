@@ -141,14 +141,10 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
           <div className="min-w-0">
             <span
               className={`text-sm font-semibold truncate block ${
-                story.is_closed 
-                  ? 'line-through text-gray-500 opacity-60' 
-                  : ''
+                story.is_closed ? 'line-through text-gray-500 opacity-60' : ''
               }`}
               style={{
-                color: story.is_closed 
-                  ? undefined 
-                  : (isDragging ? colors.primary : colors.gray800),
+                color: story.is_closed ? undefined : isDragging ? colors.primary : colors.gray800,
               }}
             >
               {story.title}

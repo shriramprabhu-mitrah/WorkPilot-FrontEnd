@@ -43,7 +43,6 @@ const CalendarView = ({
   projectId,
   // selectedType,
   // onTypeChange,
-
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -80,21 +79,14 @@ const CalendarView = ({
         }}
         onSelectEvent={(event) => {
           if (event.type === 'Sprint') {
-            push(
-              `/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`
-            );
+            push(`/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`);
             return;
           }
 
           setSelectedEvent(event);
         }}
         style={{
-          height:
-            screenWidth < 640
-              ? '420px'
-              : screenWidth < 1024
-                ? '500px'
-                : '540px',
+          height: screenWidth < 640 ? '420px' : screenWidth < 1024 ? '500px' : '540px',
         }}
         eventPropGetter={eventStyleGetter}
         components={{
@@ -105,8 +97,8 @@ const CalendarView = ({
               onDateChange={onNavigate}
               currentView={currentView}
               onViewChange={onViewChange}
-            // selectedType={selectedType}
-            // onTypeChange={onTypeChange}
+              // selectedType={selectedType}
+              // onTypeChange={onTypeChange}
             />
           ),
           event: CustomEvent,

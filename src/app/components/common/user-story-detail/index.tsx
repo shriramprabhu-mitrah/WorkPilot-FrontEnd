@@ -183,81 +183,81 @@ export const UserStoryDetailDrawer = ({
     userStoryId
   );
   // Only keep editable fields in local state to avoid cascading renders
- type EditableUserStoryFields = {
-   title: string;
-   description: string;
-   priority: Priority;
-   status: string;
-   storyPoints: number;
-   assigneeId: string;
-   assigneeName: string;
-   sprintId: string;
-   sprintName: string;
-   start_date: string;
-   due_date: string;
- };
+  type EditableUserStoryFields = {
+    title: string;
+    description: string;
+    priority: Priority;
+    status: string;
+    storyPoints: number;
+    assigneeId: string;
+    assigneeName: string;
+    sprintId: string;
+    sprintName: string;
+    start_date: string;
+    due_date: string;
+  };
 
- const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
-   const assigneeName = story.assignee_name ?? story.reporter_name ?? '';
+  const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
+    const assigneeName = story.assignee_name ?? story.reporter_name ?? '';
 
-   const priority = story.priority
-     ? ((story.priority.charAt(0).toUpperCase() +
-         story.priority.slice(1).toLowerCase()) as Priority)
-     : ('Medium' as Priority);
+    const priority = story.priority
+      ? ((story.priority.charAt(0).toUpperCase() +
+          story.priority.slice(1).toLowerCase()) as Priority)
+      : ('Medium' as Priority);
 
-   const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
+    const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
 
-   return {
-     title: story.title ?? '',
-     description: story.description ?? '',
-     priority,
-     status: story.status_id ?? '',
-     storyPoints: story.story_points ?? 0,
-     assigneeId: story.assignee_id ?? '',
-     assigneeName,  
-     sprintId: story.sprint_id ?? '',
-     sprintName,
-     start_date: story.start_date ?? story.tasks?.[0]?.created_at ?? '',
-     due_date: story.due_date ?? story.tasks?.[0]?.due_date ?? '',
-   };
- };
+    return {
+      title: story.title ?? '',
+      description: story.description ?? '',
+      priority,
+      status: story.status_id ?? '',
+      storyPoints: story.story_points ?? 0,
+      assigneeId: story.assignee_id ?? '',
+      assigneeName,
+      sprintId: story.sprint_id ?? '',
+      sprintName,
+      start_date: story.start_date ?? story.tasks?.[0]?.created_at ?? '',
+      due_date: story.due_date ?? story.tasks?.[0]?.due_date ?? '',
+    };
+  };
 
- const [editableFields, setEditableFields] = useState<EditableUserStoryFields>(() =>
-   createEditableFields(currentUserStory)
- );
+  const [editableFields, setEditableFields] = useState<EditableUserStoryFields>(() =>
+    createEditableFields(currentUserStory)
+  );
 
   // Derive non-editable fields directly from currentUserStory - no state needed
- const userStoryData = useMemo(() => {
-   const assigneeName =
-     editableFields.assigneeName ||
-     currentUserStory.assignee_name ||
-     currentUserStory.reporter_name ||
-     '';
+  const userStoryData = useMemo(() => {
+    const assigneeName =
+      editableFields.assigneeName ||
+      currentUserStory.assignee_name ||
+      currentUserStory.reporter_name ||
+      '';
 
-   const assigneeInitials = assigneeName
-     ? assigneeName
-         .split(' ')
-         .map((n: string) => n[0])
-         .join('')
-         .toUpperCase()
-         .slice(0, 2)
-     : '';
+    const assigneeInitials = assigneeName
+      ? assigneeName
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : '';
 
-   return {
-     title: editableFields.title,
-     description: editableFields.description,
-     priority: editableFields.priority,
-     status: editableFields.status,
-     storyPoints: editableFields.storyPoints,
-     assigneeId: editableFields.assigneeId,
-     assigneeName,
-     assigneeInitials,
-     sprintId: editableFields.sprintId,
-     sprintName: editableFields.sprintName,
-     start_date: editableFields.start_date,
-     due_date: editableFields.due_date,
-   };
- }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name]);
+    return {
+      title: editableFields.title,
+      description: editableFields.description,
+      priority: editableFields.priority,
+      status: editableFields.status,
+      storyPoints: editableFields.storyPoints,
+      assigneeId: editableFields.assigneeId,
+      assigneeName,
+      assigneeInitials,
+      sprintId: editableFields.sprintId,
+      sprintName: editableFields.sprintName,
+      start_date: editableFields.start_date,
+      due_date: editableFields.due_date,
+    };
+  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name]);
 
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
@@ -293,7 +293,7 @@ export const UserStoryDetailDrawer = ({
   const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
   const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
- const [childTasks, setChildTasks] = useState<TaskResponse[]>(() => currentUserStory.tasks ?? []);
+  const [childTasks, setChildTasks] = useState<TaskResponse[]>(() => currentUserStory.tasks ?? []);
   const queryClient = useQueryClient();
   const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);
   const childStatusMenuRef = useRef<HTMLDivElement>(null);
@@ -319,14 +319,14 @@ export const UserStoryDetailDrawer = ({
     true
   );
 
-useEffect(() => {
-  const latestTasks = currentUserStory.tasks ?? [];
-  const timer = setTimeout(() => {
-    setChildTasks(latestTasks);
-  }, 0);
-  return () => clearTimeout(timer);
-}, [currentUserStory.tasks]);
-  
+  useEffect(() => {
+    const latestTasks = currentUserStory.tasks ?? [];
+    const timer = setTimeout(() => {
+      setChildTasks(latestTasks);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [currentUserStory.tasks]);
+
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentContent, setEditingCommentContent] = useState('');
   const { updateCommentAsync, isUpdatingComment } = useUpdateUserStoryComment(
@@ -724,7 +724,7 @@ useEffect(() => {
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -750,16 +750,15 @@ useEffect(() => {
     { key: 'comments', label: 'Comments' },
     { key: 'history', label: 'History' },
   ];
-  const allStatusOptions = [...customStatuses]
-    .sort((a, b) => a.display_order - b.display_order)
-    .map((status) => ({
-      value: status.id,
-      label: status.name,
-      color: status.color,
-      bg: `${status.color}18`,
-      dot: status.color,
-      display_order: status.display_order,
-    }));
+
+  const allStatusOptions = customStatuses.map((status) => ({
+    value: status.id,
+    label: status.name,
+    color: status.color,
+    bg: `${status.color}18`,
+    dot: status.color,
+    is_final: status.is_final,
+  }));
 
   const allStatusConfig = Object.fromEntries(
     allStatusOptions.map((option) => [option.value, option])
@@ -1094,9 +1093,7 @@ useEffect(() => {
               {/* Tasks Section */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700">
-                    Tasks ({totalTasks})
-                  </p>
+                  <p className="text-sm font-semibold text-gray-700">Tasks ({totalTasks})</p>
                   {onCreateTask && (
                     <button
                       onClick={onCreateTask}
@@ -1152,7 +1149,7 @@ useEffect(() => {
                                 >
                                   {task.key}
                                 </span>
-                                <span 
+                                <span
                                   className={`truncate ${
                                     task.is_final
                                       ? 'line-through text-gray-400 opacity-60'

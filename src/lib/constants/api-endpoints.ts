@@ -186,6 +186,15 @@ export const ApiEndpoints = {
     updateSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
     deleteSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
   },
+
+  Dashboard: {
+    getDashboard: createQueryEndpoint('/{organizationId}/dashboard'),
+  },
+
+  Audit: {
+    getActivities: createQueryEndpoint('/audit/activity'),
+  },
+
   Task: {
     createTasks: createEndpoint('/projects/{projectId}/tasks'),
     getallTasks: createQueryEndpoint('/projects/{projectId}/tasks'),

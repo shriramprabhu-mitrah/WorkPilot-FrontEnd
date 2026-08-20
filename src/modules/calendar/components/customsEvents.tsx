@@ -38,9 +38,7 @@ const CustomEvent = ({ event }: Props) => {
         }}
       />
 
-      <span className="truncate text-[11px] font-semibold">
-        {event.title}
-      </span>
+      <span className="truncate text-[11px] font-semibold">{event.title}</span>
     </div>
   );
 };

@@ -21,7 +21,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
-const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
   const queryClient = useQueryClient();

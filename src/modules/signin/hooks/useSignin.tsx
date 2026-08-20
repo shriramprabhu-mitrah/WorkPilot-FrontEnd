@@ -107,10 +107,10 @@ export const useSignin = () => {
       dispatch(clearSelectedProject());
       // Clear org slug cookie
       Cookies.remove('org_slug', { path: '/' });
-      
+
       // Cancel all queries
       queryClient.cancelQueries();
-      
+
       // Use window.location for full page reload to prevent layout queries
       window.location.href = '/signin';
     },
@@ -132,11 +132,13 @@ export const useSignin = () => {
     handleResetPasswordConfirmAsync: resetPasswordConfirmMutation.mutateAsync,
     handleLogOut: logOutMutation.mutate,
     handleLogOutAsync: logOutMutation.mutateAsync,
-    isLoading:
-      signInMutation.isPending ||
-      forgotPasswordMutation.isPending ||
-      resetPasswordConfirmMutation.isPending ||
-      logOutMutation.isPending,
+
+    isLoading: signInMutation.isPending,
+    // isLoading:
+    //   signInMutation.isPending ||
+    //   forgotPasswordMutation.isPending ||
+    //   resetPasswordConfirmMutation.isPending ||
+    //   logOutMutation.isPending,
     error:
       signInMutation.error ||
       forgotPasswordMutation.error ||

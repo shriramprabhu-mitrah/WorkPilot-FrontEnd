@@ -59,7 +59,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
     try {
       // 1. Call logout API FIRST (with valid tokens)
       await handleLogOutAsync();
-      
+
       // 2. THEN remove tokens after API succeeds
       removeTokens();
     } catch (error) {
@@ -67,7 +67,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
       removeTokens();
       // onError in useSignin handles redirect
     } finally {
-      setIsLoggingOut(false); 
+      setIsLoggingOut(false);
     }
   };
   return (
@@ -98,7 +98,6 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         </div>
 
         {/* Search - hidden on small mobile */}
-
       </div>
 
       {/* Right side */}
@@ -163,8 +162,9 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
 
             <ChevronDown
               size={13}
-              className={`text-gray-400 hidden md:inline transition-transform ${showProfileMenu ? 'rotate-180' : ''
-                }`}
+              className={`text-gray-400 hidden md:inline transition-transform ${
+                showProfileMenu ? 'rotate-180' : ''
+              }`}
             />
           </button>
 

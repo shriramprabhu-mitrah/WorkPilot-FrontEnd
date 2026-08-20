@@ -70,8 +70,9 @@ const MonthYearPicker = ({ value, onChange }: Props) => {
                     onChange(new Date(year, index, 1));
                     setOpen(false);
                   }}
-                  className={`rounded-lg p-3 text-sm transition ${selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
-                    }`}
+                  className={`rounded-lg p-3 text-sm transition ${
+                    selected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
+                  }`}
                 >
                   {month.substring(0, 3)}
                 </button>
