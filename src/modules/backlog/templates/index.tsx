@@ -377,38 +377,41 @@ export const BacklogTemplate = () => {
       collisionDetection={collisionDetectionStrategy}
     >
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 flex-shrink-0">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
-              Backlog
-            </h1>
-            {selectedApiProject && (
-              <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
-                {selectedApiProject.name}
-                {selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
-              </p>
-            )}
-          </div>
-          <div className='ml-210'>
-            <WpInput
-              type="text"
-              placeholder="Search tasks..."
-              icon={<Search size={14} />}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              wrapperClassName="w-full sm:w-40"
-            />
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <WpButton
-              size="sm"
-              leftIcon={<Plus size={14} />}
-              disabled={!selectedProject}
-              onClick={() => setShowCreateStoryModal(true)}
-            >
-              <span className="hidden sm:inline">Create User Story</span>
-              <span className="sm:hidden">Create</span>
-            </WpButton>
+        <div className="flex flex-col gap-3 mb-6 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
+                  Backlog
+                </h1>
+                {selectedApiProject && (
+                  <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
+                    {selectedApiProject.name}
+                    {selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
+                  </p>
+                )}
+              </div>
+              <WpInput
+                type="text"
+                placeholder="Search User Story..."
+                icon={<Search size={14} />}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                wrapperClassName="w-full sm:w-64"
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <WpButton
+                size="sm"
+                leftIcon={<Plus size={14} />}
+                disabled={!selectedProject}
+                onClick={() => setShowCreateStoryModal(true)}
+                className="whitespace-nowrap"
+              >
+                <span className="hidden sm:inline">Create User Story</span>
+                <span className="sm:hidden">Create</span>
+              </WpButton>
+            </div>
           </div>
         </div>
 
