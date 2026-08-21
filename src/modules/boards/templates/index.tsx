@@ -12,6 +12,7 @@ import { taskService } from '@/src/services/tasks';
 import { useQueryClient } from '@tanstack/react-query';
 import { GetTasksQueryParams, Task } from '@/src/types/task';
 import { taskTypeOptions } from '@/src/app/components/common/enum';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
   DragEndEvent,
@@ -51,7 +52,6 @@ import { useDebounce } from '@/src/hooks/useDebounce';
 // Task card component for the swimlane
 const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void }) => {
   const [showModal, setShowModal] = useState(false);
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'card', task },
@@ -181,7 +181,8 @@ const UserStoryRow = ({
   collapsedStatuses: Set<string>;
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-
+  const [showStoryPopup, setShowStoryPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   return (
     <div className="border-b border-gray-200">
       {/* User Story Header - Always visible */}
@@ -203,7 +204,21 @@ const UserStoryRow = ({
           </button>
           <div
             onClick={() => onUserStoryClick(story)}
-            className="flex items-start gap-2 flex-1 min-w-0 cursor-pointer"
+            onMouseEnter={(e) => {
+              setShowStoryPopup(true);
+              setPopupPosition({
+                x: e.clientX,
+                y: e.clientY,
+              });
+            }}
+            onMouseMove={(e) => {
+              setPopupPosition({
+                x: e.clientX,
+                y: e.clientY,
+              });
+            }}
+            onMouseLeave={() => setShowStoryPopup(false)}
+            className="relative flex items-start gap-2 flex-1 min-w-0 cursor-pointer"
           >
             <div
               className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
@@ -218,8 +233,9 @@ const UserStoryRow = ({
             />
             <div className="flex-1 min-w-0">
               <h3
-                className={`text-sm font-semibold text-gray-800 truncate ${story.is_closed ? 'line-through' : ''}`}
-                title={story.title}
+                className={`text-sm font-semibold text-gray-800 truncate ${
+                  story.is_closed ? 'line-through' : ''
+                }`}
               >
                 {story.title}
               </h3>
@@ -227,6 +243,60 @@ const UserStoryRow = ({
                 {story.total_tasks ?? 0} tasks · {story.story_points ?? 0} pts
               </p>
             </div>
+            {showStoryPopup &&
+              typeof document !== 'undefined' &&
+              createPortal(
+                <div
+                  className="fixed z-[99999] w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+                  style={{
+                    left: popupPosition.x + 12,
+                    top: popupPosition.y + 12,
+                  }}
+                >
+                  <div className="space-y-3">
+                    {/* Status */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500">Status</span>
+                      <span className="text-sm font-medium text-gray-800 capitalize">
+                        {story.status?.replace('_', ' ') || '-'}
+                      </span>
+                    </div>
+
+                    {/* Assignee */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500">Assignee</span>
+                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800">
+                        {story.assignee_name || story.assignee?.name || 'Unassigned'}
+                      </span>
+                    </div>
+
+                    {/* Due Date */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500">Due Date</span>
+                      <span className="text-sm font-medium text-gray-800">
+                        {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
+                      </span>
+                    </div>
+
+                    {/* Reporter */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500">Reporter</span>
+                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800">
+                        {story.reporter_name || story.reporter?.name || '-'}
+                      </span>
+                    </div>
+
+                    {/* Priority */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500">Priority</span>
+                      <span className="text-sm font-medium text-gray-800 capitalize">
+                        {story.priority || '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
           </div>
         </div>
 

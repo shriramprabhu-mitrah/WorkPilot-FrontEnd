@@ -67,13 +67,15 @@ export default function RolePermission() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[180px_1fr]">
         <div className="w-60 rounded-xl p-3">
           <div className="mb-3">
+            {/* 
+            future purpose
             <input
               type="text"
               placeholder="Search roles..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-lg bg-white border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
-            />
+            /> */}
           </div>
 
           <div className="space-y-1">
@@ -175,6 +177,8 @@ export default function RolePermission() {
         </div>
       </div>
 
+      {/* 
+      future purpose
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="mb-5 flex items-center gap-2">
           <History size={17} className="text-gray-500" />
@@ -218,7 +222,7 @@ export default function RolePermission() {
             );
           })}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

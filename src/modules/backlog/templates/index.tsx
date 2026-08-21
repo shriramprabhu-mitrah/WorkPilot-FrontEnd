@@ -445,7 +445,7 @@ export const BacklogTemplate = () => {
                     <span
                       className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700' : 'text-gray-900'}`}
                     >
-                     Unassigned
+                      Unassigned
                     </span>
                     <span
                       className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${

@@ -10,7 +10,6 @@ export type SettingsTab =
   | 'Status'
   | 'Security';
 
-
 interface SettingsHeaderProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;

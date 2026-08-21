@@ -259,6 +259,14 @@ export const ApiEndpoints = {
     updateUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     deleteUserStory: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}'),
     reorderUserStories: createEndpoint('/projects/{projectId}/user-stories/reorder'),
+
+    getStatuses: createQueryEndpoint('/projects/{projectId}/user-story-statuses'),
+    createStatus: createEndpoint('/projects/{projectId}/user-story-statuses'),
+    updateStatus: createEndpoint('/projects/{projectId}/user-story-statuses/{statusId}'),
+    deleteStatus: createEndpoint('/projects/{projectId}/user-story-statuses/{statusId}'),
+
+    // User Story Status Transition
+    changeStatus: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/status'),
   },
 
   Colors: {

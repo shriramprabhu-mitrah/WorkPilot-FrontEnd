@@ -2,13 +2,17 @@ import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { PaginatedApiResponse } from '../axios';
 import { apiService } from '../axios';
 import {
+  ChangeUserStoryStatusPayload,
+  CreateUserStoryStatusPayload,
   GetUserStoriesQueryParams,
   ReorderUserStoriesPayload,
   UpdateUserStoryPayload,
+  UpdateUserStoryStatusPayload,
   UserStoryAttachment,
   UserStoryAttachmentResponse,
   UserStoryPayload,
   UserStoryResponse,
+  UserStoryStatus,
 } from '@/src/types/userstories';
 import { ApiResponse } from '@/src/types/core';
 import { axiosInstance } from '@/src/lib/config/axios-client';
@@ -172,6 +176,73 @@ class UserStoryService {
     return apiService.delete<unknown>(url, {
       showSuccessToast: true,
       successMessage: 'Attachment deleted successfully',
+    });
+  }
+
+  async getUserStoryStatuses(projectId: string): Promise<ApiResponse<UserStoryStatus[]>> {
+    const endpoint = ApiEndpoints.UserStory.getStatuses.withNamedParams({
+      projectId,
+    });
+
+    const url = endpoint.url;
+
+    return apiService.get<UserStoryStatus[]>(url);
+  }
+
+  async createUserStoryStatus(
+    projectId: string,
+    payload: CreateUserStoryStatusPayload
+  ): Promise<ApiResponse<UserStoryStatus>> {
+    const url = ApiEndpoints.UserStory.createStatus.withParams({
+      projectId,
+    });
+
+    return apiService.post<UserStoryStatus>(url, payload, {
+      showSuccessToast: true,
+    });
+  }
+
+  async updateUserStoryStatus(
+    projectId: string,
+    statusId: string,
+    payload: UpdateUserStoryStatusPayload
+  ): Promise<ApiResponse<UserStoryStatus>> {
+    const url = ApiEndpoints.UserStory.updateStatus.withParams({
+      projectId,
+      statusId,
+    });
+
+    return apiService.patch<UserStoryStatus>(url, payload, {
+      showSuccessToast: true,
+    });
+  }
+
+  async deleteUserStoryStatus(
+    projectId: string,
+    statusId: string
+  ): Promise<ApiResponse<{ status_id: string }>> {
+    const url = ApiEndpoints.UserStory.deleteStatus.withParams({
+      projectId,
+      statusId,
+    });
+
+    return apiService.delete<{ status_id: string }>(url, {
+      showSuccessToast: true,
+    });
+  }
+
+  async changeUserStoryStatus(
+    projectId: string,
+    userStoryId: string,
+    payload: ChangeUserStoryStatusPayload
+  ): Promise<ApiResponse<UserStoryResponse>> {
+    const url = ApiEndpoints.UserStory.changeStatus.withParams({
+      projectId,
+      userStoryId,
+    });
+
+    return apiService.patch<UserStoryResponse>(url, payload, {
+      showSuccessToast: true,
     });
   }
 }

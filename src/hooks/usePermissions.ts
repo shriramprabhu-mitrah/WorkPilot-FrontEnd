@@ -21,7 +21,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
-      ROLE_TYPE.TESTER,
+      ROLE_TYPE.QA,
       ROLE_TYPE.VIEWER,
     ],
   },
@@ -59,7 +59,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
-      ROLE_TYPE.TESTER,
+      ROLE_TYPE.QA,
     ],
   },
   TASK_EDIT: {
@@ -67,7 +67,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
-      ROLE_TYPE.TESTER,
+      ROLE_TYPE.QA,
     ],
   },
   TASK_DELETE: {
@@ -80,7 +80,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
-      ROLE_TYPE.TESTER,
+      ROLE_TYPE.QA,
     ],
   },
   USER_STORY_EDIT: {
@@ -88,7 +88,7 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
       ROLE_TYPE.ORG_ADMIN,
       ROLE_TYPE.PROJECT_MANAGER,
       ROLE_TYPE.DEVELOPER,
-      ROLE_TYPE.TESTER,
+      ROLE_TYPE.QA,
     ],
   },
   USER_STORY_DELETE: {

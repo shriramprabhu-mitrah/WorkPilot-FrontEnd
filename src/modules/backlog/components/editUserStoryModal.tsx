@@ -6,9 +6,11 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { priorityOptions } from '@/src/app/components/common/enum';
-import { useUpdateUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import {
+  useGetUserStoryStatuses,
+  useUpdateUserStory,
+} from '@/src/modules/tasks/hooks/useUserStory';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { statusOptions } from '@/src/modules/project/data/project';
 
 interface EditUserStoryModalProps {
   projectId: string;
@@ -25,13 +27,26 @@ const EditUserStoryModal = ({
 }: EditUserStoryModalProps) => {
   const [title, setTitle] = useState(userStory.title || '');
   const [description, setDescription] = useState(userStory.description || '');
+
   const [priority, setPriority] = useState<string>(userStory.priority?.toLowerCase() || 'medium');
-  const [status, setStatus] = useState(userStory.status || 'todo');
+
+  // Use status_id instead of the old status value
+  const [statusId, setStatusId] = useState<string>(userStory.status_id || '');
+
   const [storyPoints, setStoryPoints] = useState(
     userStory.story_points !== undefined ? String(userStory.story_points) : ''
   );
 
   const updateUserStoryMutation = useUpdateUserStory();
+
+  // Fetch User Story specific statuses
+  const { userStoryStatuses, isLoadingUserStoryStatuses } = useGetUserStoryStatuses(projectId);
+
+  // Convert API statuses to dropdown options
+  const statusOptions = userStoryStatuses.map((status) => ({
+    label: status.name,
+    value: status.id,
+  }));
 
   const handleUpdate = async () => {
     if (!title.trim()) return;
@@ -39,16 +54,21 @@ const EditUserStoryModal = ({
     try {
       await updateUserStoryMutation.mutateAsync({
         projectId,
-        userStoryId: userStory.id!,
+        userStoryId: userStory.id,
         payload: {
           title: title.trim(),
+
           description: description.trim() || undefined,
+
           priority: priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical',
-          status: status as
-            'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked',
+
+          // New User Story status API format
+          status_id: statusId || undefined,
+
           story_points: storyPoints ? Number(storyPoints) : undefined,
         },
       });
+
       onSuccess();
     } catch (error) {
       // Error is handled by toast
@@ -66,10 +86,12 @@ const EditUserStoryModal = ({
         className="w-full max-w-lg rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Edit User Story</h2>
           </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -80,7 +102,9 @@ const EditUserStoryModal = ({
           </button>
         </div>
 
+        {/* Body */}
         <div className="space-y-4 px-5 py-5">
+          {/* Title */}
           <WpInput
             label="Title"
             value={title}
@@ -88,8 +112,11 @@ const EditUserStoryModal = ({
             placeholder="Enter story title"
             disabled={isUpdating}
           />
+
+          {/* Description */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
+
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -100,15 +127,19 @@ const EditUserStoryModal = ({
             />
           </div>
 
+          {/* Status + Priority */}
           <div className="grid grid-cols-2 gap-3">
+            {/* User Story Status */}
             <WpDropdown
               label="Status"
               options={statusOptions}
-              value={status}
-              onChange={(value) => setStatus(value)}
-              placeholder="Select status"
-              disabled={isUpdating}
+              value={statusId}
+              onChange={(value) => setStatusId(value)}
+              placeholder={isLoadingUserStoryStatuses ? 'Loading statuses...' : 'Select status'}
+              disabled={isUpdating || isLoadingUserStoryStatuses}
             />
+
+            {/* Priority */}
             <WpDropdown
               label="Priority"
               options={priorityOptions}
@@ -119,16 +150,25 @@ const EditUserStoryModal = ({
             />
           </div>
 
+          {/* Story Points */}
           <WpInput
             label="Story Points"
             type="number"
+            min={0}
             value={storyPoints}
-            onChange={(e) => setStoryPoints(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              if (value === '' || Number(value) >= 0) {
+                setStoryPoints(value);
+              }
+            }}
             placeholder="Enter story points"
             disabled={isUpdating}
           />
         </div>
 
+        {/* Footer */}
         <div className="flex justify-end gap-2 border-t border-gray-200 px-5 py-4">
           <WpButton type="button" variant="secondary" onClick={onClose} disabled={isUpdating}>
             Cancel

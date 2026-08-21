@@ -21,6 +21,7 @@ export interface UserStoryResponse {
   description?: string;
   status?: string;
   status_id?: string;
+  status_color?: string;
   sprint_name?: string;
   priority?: string;
   assignee_id?: string;
@@ -72,7 +73,7 @@ export interface UpdateUserStoryPayload {
   title?: string;
   description?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
-  status?: 'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked';
+  status_id?: string;
   story_points?: number;
   assignee_id?: string;
   sprint_id?: string | null;
@@ -161,4 +162,32 @@ export interface UpdateUserStoryCommentPayload {
 }
 export interface DeleteUserStoryCommentResponse {
   comment_id: string;
+}
+
+export interface UserStoryStatus {
+  id: string;
+  project_id: string;
+  name: string;
+  color: string;
+  display_order: number;
+  is_default: boolean;
+  is_closed: boolean;
+}
+
+export interface CreateUserStoryStatusPayload {
+  name: string;
+  color: string;
+  display_order?: number;
+  is_closed?: boolean;
+}
+
+export interface UpdateUserStoryStatusPayload {
+  name?: string;
+  color?: string;
+  display_order?: number;
+  is_closed?: boolean;
+}
+
+export interface ChangeUserStoryStatusPayload {
+  status_id: string;
 }
