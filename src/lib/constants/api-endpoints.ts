@@ -269,12 +269,12 @@ export const ApiEndpoints = {
     changeStatus: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/status'),
   },
 
-  Colors: {
-    getCustomStatuses: createQueryEndpoint('/projects/{projectId}/custom-statuses'),
-    createCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses'),
-    updateCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
-    deleteCustomStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
-    assignCustomStatusToTask: createEndpoint('/projects/{projectId}/tasks'),
+  TaskStatus: {
+    getTaskStatuses: createQueryEndpoint('/projects/{projectId}/custom-statuses'),
+    createTaskStatus: createEndpoint('/projects/{projectId}/custom-statuses'),
+    updateTaskStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
+    deleteTaskStatus: createEndpoint('/projects/{projectId}/custom-statuses/{statusId}'),
+    assignTaskStatusToTask: createEndpoint('/projects/{projectId}/tasks'),
   },
 
   UserStoryAttachment: {

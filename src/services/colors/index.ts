@@ -17,7 +17,7 @@ export const customStatusService = {
   // GET - Get all custom colors/statuses
   getCustomStatuses: async (projectId: string): Promise<CustomStatus[]> => {
     const response = await apiService.get<CustomStatus[]>(
-      ApiEndpoints.Colors.getCustomStatuses.withParams(projectId).url
+      ApiEndpoints.TaskStatus.getTaskStatuses.withParams(projectId).url
     );
 
     return response.data ?? [];
@@ -29,7 +29,7 @@ export const customStatusService = {
     payload: CreateCustomStatusPayload
   ): Promise<CustomStatus> => {
     const response = await apiService.post<CustomStatus>(
-      ApiEndpoints.Colors.createCustomStatus(projectId),
+      ApiEndpoints.TaskStatus.createTaskStatus(projectId),
       payload
     );
 
@@ -43,7 +43,7 @@ export const customStatusService = {
     payload: UpdateCustomStatusPayload
   ): Promise<CustomStatus> => {
     const response = await apiService.patch<CustomStatus>(
-      ApiEndpoints.Colors.updateCustomStatus(projectId, statusId),
+      ApiEndpoints.TaskStatus.updateTaskStatus(projectId, statusId),
       payload
     );
 
@@ -53,7 +53,7 @@ export const customStatusService = {
   // DELETE - Delete custom color/status
   deleteCustomStatus: async (projectId: string, statusId: string) => {
     const response = await apiService.delete(
-      ApiEndpoints.Colors.deleteCustomStatus(projectId, statusId)
+      ApiEndpoints.TaskStatus.deleteTaskStatus(projectId, statusId)
     );
 
     return response.data;
@@ -65,7 +65,7 @@ export const customStatusService = {
     payload: AssignColorToTaskPayload
   ): Promise<AssignColorToTaskResponse> => {
     const response = await apiService.post<AssignColorToTaskResponse>(
-      ApiEndpoints.Colors.assignCustomStatusToTask(projectId),
+      ApiEndpoints.TaskStatus.assignTaskStatusToTask(projectId),
       payload
     );
 
