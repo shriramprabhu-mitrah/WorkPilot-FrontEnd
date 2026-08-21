@@ -48,39 +48,45 @@ export const useSignin = () => {
 
       // Fetch organization to get the slug
       let organizationData = null;
-      try {
-        const organizationResponse = await organizationService.getOrganization();
-        if (organizationResponse.data) {
-          organizationData = organizationResponse.data;
-          dispatch(setOrganization(organizationResponse.data));
+      if (userProfile.role !== 'super_admin') {
+        try {
+          const organizationResponse = await organizationService.getOrganization();
+          if (organizationResponse.data) {
+            organizationData = organizationResponse.data;
+            dispatch(setOrganization(organizationResponse.data));
 
-          // Store org slug in cookie for middleware access
-          if (organizationData.slug) {
-            Cookies.set('org_slug', organizationData.slug, {
-              expires: 365, // 1 year
-              path: '/',
-              sameSite: 'lax',
-            });
+            // Store org slug in cookie for middleware access
+            if (organizationData.slug) {
+              Cookies.set('org_slug', organizationData.slug, {
+                expires: 365, // 1 year
+                path: '/',
+                sameSite: 'lax',
+              });
+            }
           }
+        } catch (error) {
+          // console.error('Failed to fetch organization:', error);
         }
-      } catch (error) {
-        // console.error('Failed to fetch organization:', error);
       }
 
-      return { ...response, organization: organizationData };
+      return { ...response, organization: organizationData, userProfile };
     },
     onSuccess: async (data) => {
       const token = data?.data?.access_token;
       const orgSlug = data?.organization?.slug;
+      const userRole = data?.userProfile?.role;
 
       if (isMobile && token) {
         const mobileToken = token;
         await signupService.logOut();
         window.location.href = `workpilot://auth?token=${encodeURIComponent(mobileToken)}`;
       } else {
-        // Redirect to organization dashboard or setup if no organization
-        if (orgSlug) {
-          // Use router.push for fast client-side navigation
+        // Check if user is super_admin
+        if (userRole === 'super_admin') {
+          // Redirect super admin to super admin dashboard
+          router.push('/super-admin/dashboard');
+        } else if (orgSlug) {
+          // Regular users: redirect to organization dashboard
           // Organization data is already in Redux from mutationFn
           router.push(`/${orgSlug}/dashboard`);
         } else {
