@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Enable class-based dark mode for Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -26,9 +29,17 @@
   --color-error: #ef4444;
   --color-logo-icon-bg: #0d6efd;
   --color-right-pane: #3b49df;
-  --color-navbar-bg: #e2e2e3;
+  --color-navbar-bg: #ffffff;
   --color-navbar-border: #d1d1d2;
   --color-workspace-bg: #f4f5f7;
+
+  /* Sidebar */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e5e7eb;
+  --color-sidebar-text: #374151;
+  --color-sidebar-text-muted: #9ca3af;
+  --color-sidebar-hover: #f3f4f6;
+  --color-sidebar-active-bg: #eff6ff;
 
   /* Landing page - Slate */
   --color-slate-50: #f8fafc;
@@ -52,6 +63,44 @@
   --color-border-light: #eeeeee;
 }
 
+/* Dark mode overrides */
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+
+  /* Semantic */
+  --color-navbar-bg: #1e293b;
+  --color-navbar-border: #334155;
+  --color-workspace-bg: #0f172a;
+
+  /* Sidebar */
+  --color-sidebar-bg: #1e293b;
+  --color-sidebar-border: #334155;
+  --color-sidebar-text: #cbd5e1;
+  --color-sidebar-text-muted: #64748b;
+  --color-sidebar-hover: #334155;
+  --color-sidebar-active-bg: #1e3a5f;
+
+  /* Neutrals — override for dark surfaces */
+  --color-gray-50: #1e293b;
+  --color-gray-100: #334155;
+  --color-gray-200: #475569;
+  --color-gray-300: #64748b;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #cbd5e1;
+  --color-gray-600: #e2e8f0;
+  --color-gray-700: #f1f5f9;
+  --color-gray-900: #f8fafc;
+
+  /* Brand — keep primary the same, lighten light variant */
+  --color-primary-light: #1e3a5f;
+
+  /* Neutral text */
+  --color-text-body: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-border-light: #334155;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -59,25 +108,13 @@
   --font-mono: monospace;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
 html {
-  color-scheme: light;
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  /* font-family: Arial, Helvetica, sans-serif; */
   font-family: 'Inter', sans-serif;
 }
 
@@ -572,4 +609,135 @@ body {
 
 .animate-marquee {
   animation: marquee 8s linear infinite;
+}
+
+/* ---- Dark mode overrides for auth CSS classes ---- */
+.dark .leftPane {
+  background-color: var(--background);
+}
+
+.dark .signinContainer {
+  background-color: var(--background);
+}
+
+.dark .signinTitle {
+  color: var(--color-gray-900);
+}
+
+.dark .input {
+  background-color: #1e293b;
+  color: var(--foreground);
+  border-color: var(--color-gray-200);
+}
+
+.dark .input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.dark .googleBtn {
+  background-color: #1e293b;
+  border-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+}
+
+.dark .googleBtn:hover {
+  background-color: #334155;
+}
+
+.dark .sidebarContainer {
+  background-color: var(--color-sidebar-bg);
+}
+
+.dark .wipContainer {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* ---- react-big-calendar dark mode overrides ---- */
+.dark .rbc-calendar {
+  background-color: transparent;
+  color: #f1f5f9;
+}
+.dark .rbc-toolbar button {
+  color: #cbd5e1;
+  border-color: #475569;
+}
+.dark .rbc-toolbar button:hover {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+.dark .rbc-toolbar button.rbc-active {
+  background-color: #1e40af;
+  color: #fff;
+  border-color: #1e40af;
+}
+.dark .rbc-month-view,
+.dark .rbc-time-view,
+.dark .rbc-agenda-view {
+  border-color: #334155;
+  background-color: transparent;
+}
+.dark .rbc-header {
+  border-color: #334155;
+  color: #94a3b8;
+}
+.dark .rbc-header + .rbc-header {
+  border-left-color: #334155;
+}
+.dark .rbc-month-row {
+  border-color: #334155;
+}
+.dark .rbc-day-bg {
+  background-color: transparent;
+}
+.dark .rbc-day-bg.rbc-today {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+.dark .rbc-day-bg + .rbc-day-bg {
+  border-left-color: #334155;
+}
+.dark .rbc-off-range-bg {
+  background-color: rgba(15, 23, 42, 0.4);
+}
+.dark .rbc-date-cell {
+  color: #cbd5e1;
+}
+.dark .rbc-date-cell.rbc-off-range {
+  color: #475569;
+}
+.dark .rbc-show-more {
+  color: #60a5fa;
+}
+.dark .rbc-time-content {
+  border-color: #334155;
+}
+.dark .rbc-time-gutter,
+.dark .rbc-timeslot-group {
+  border-color: #334155;
+  color: #94a3b8;
+}
+.dark .rbc-time-slot {
+  color: #94a3b8;
+}
+.dark .rbc-time-header-content {
+  border-color: #334155;
+}
+.dark .rbc-day-slot .rbc-time-slot {
+  border-color: #1e293b;
+}
+.dark .rbc-agenda-table {
+  border-color: #334155;
+}
+.dark .rbc-agenda-table thead {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+.dark .rbc-agenda-date-cell,
+.dark .rbc-agenda-time-cell,
+.dark .rbc-agenda-event-cell {
+  color: #cbd5e1;
+  border-color: #334155;
+}
+.dark .rbc-agenda-empty {
+  color: #64748b;
 }

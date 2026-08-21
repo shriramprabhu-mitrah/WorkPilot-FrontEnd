@@ -156,20 +156,19 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       >
         <aside
           className={`
-          flex
-          flex-col
-          min-h-screen
-          bg-white
-          border-r
-          border-gray-200
-          shrink-0
-          transition-all
-          duration-300
-          ${isExpanded || (onClose && isOpen) ? 'w-[220px]' : 'w-[72px]'}
-        `}
+            flex
+            flex-col
+            min-h-screen
+            bg-white dark:bg-slate-900
+            border-r border-gray-200 dark:border-slate-700
+            shrink-0
+            transition-all
+            duration-300
+            ${isExpanded || (onClose && isOpen) ? 'w-[220px]' : 'w-[72px]'}
+          `}
         >
           {/* Logo */}
-          <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100 dark:border-slate-700">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
               style={{ backgroundColor: colors.primary }}
@@ -177,17 +176,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               <TrackrLogoSvg />
             </div>
             {showLabels && (
-              <span className="overflow-hidden whitespace-nowrap text-sm font-semibold text-gray-800">
+              <span className="overflow-hidden whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-white">
                 WorkPilot
               </span>
             )}
             {onClose && (
               <button
                 onClick={onClose}
-                className="ml-auto xl:hidden p-1 rounded hover:bg-gray-100"
+                className="ml-auto xl:hidden p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700"
                 aria-label="Close sidebar"
               >
-                <X size={20} className="text-gray-500" />
+                <X size={20} className="text-gray-500 dark:text-slate-300" />
               </button>
             )}
           </div>
@@ -195,13 +194,12 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           {/* Project selector */}
           <div className="px-3 py-3">
             <div
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors 
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors bg-[#f4f5f7] dark:bg-slate-800
                 ${
                   !selectedProject
                     ? 'border border-red-500'
-                    : 'border border-transparent hover:bg-gray-100'
+                    : 'border border-transparent hover:bg-gray-100 dark:hover:bg-slate-700'
                 }`}
-              style={{ backgroundColor: colors.workspaceBg }}
               onClick={openManageProject}
             >
               <div className="flex items-center gap-2 min-w-0">
@@ -213,22 +211,24 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 </div>
                 {showLabels && (
                   <div className="min-w-0">
-                    <div className="text-[13px] font-medium text-gray-700 truncate max-w-[120px]">
+                    <div className="text-[13px] font-medium text-gray-700 dark:text-slate-200 truncate max-w-[120px]">
                       {projectLabel}
                     </div>
-                    <div className="text-[11px] text-gray-400 truncate max-w-[120px]">
+                    <div className="text-[11px] text-gray-400 dark:text-slate-400 truncate max-w-[120px]">
                       {sprintLabel}
                     </div>
                   </div>
                 )}
               </div>
-              {showLabels && <ChevronDown size={13} className="text-gray-400 shrink-0" />}
+              {showLabels && (
+                <ChevronDown size={13} className="text-gray-400 dark:text-slate-400 shrink-0" />
+              )}
             </div>
           </div>
 
           {/* Menu label */}
           <p
-            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${showLabels ? 'opacity-100' : 'opacity-0'}`}
+            className={`px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500 transition-opacity duration-300 ${showLabels ? 'opacity-100' : 'opacity-0'}`}
           >
             Menu
           </p>
@@ -241,14 +241,22 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center px-3 py-2 rounded-lg text-[13px] font-medium transition-colors min-w-0"
-                  style={{
-                    backgroundColor: active ? colors.primaryLight : undefined,
-                    color: active ? colors.primary : colors.gray700,
-                  }}
+                  className={`flex items-center px-3 py-2 rounded-lg text-[13px] font-medium transition-colors min-w-0
+                    ${
+                      active
+                        ? 'bg-[#eff6ff] dark:bg-blue-900/40 text-[#155dfc] dark:text-blue-300'
+                        : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    }`}
                 >
                   <div className="w-6 flex items-center justify-center shrink-0">
-                    <Icon size={15} style={{ color: active ? colors.primary : colors.gray700 }} />
+                    <Icon
+                      size={15}
+                      className={
+                        active
+                          ? 'text-[#155dfc] dark:text-blue-300'
+                          : 'text-gray-500 dark:text-slate-400'
+                      }
+                    />
                   </div>
                   <span
                     className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${showLabels ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'}`}
@@ -261,7 +269,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           </nav>
 
           {/* Divider */}
-          <div className="mx-3 border-t border-gray-100" />
+          <div className="mx-3 border-t border-gray-100 dark:border-slate-700" />
 
           {/* User */}
           <div
@@ -270,12 +278,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             <Link
               href={`/${orgSlug}/profile`}
               className={`
-                flex
-                items-center
-                gap-2.5
-                min-w-0
-                group
-                cursor-pointer
+                flex items-center gap-2.5 min-w-0 group cursor-pointer
                 ${showLabels ? 'flex-1' : 'justify-center w-full'}
               `}
             >
@@ -287,10 +290,10 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               </div>
               {showLabels && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-gray-800 truncate">
+                  <p className="text-[13px] font-semibold text-gray-800 dark:text-white truncate">
                     {user.name || 'User Name'}
                   </p>
-                  <p className="text-[11px] text-gray-400 truncate">
+                  <p className="text-[11px] text-gray-400 dark:text-slate-400 truncate">
                     {user.email || 'user@email.com'}
                   </p>
                 </div>
@@ -303,17 +306,19 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       {/* Manage Project Modal */}
       {showManageProject && (
         <div className="fixed inset-0 z-[100] flex items-start justify-start">
-          <div className="fixed inset-0 bg-black/20" onClick={() => setShowManageProject(false)} />
+          <div className="fixed inset-0 bg-black/20 dark:bg-black/40" onClick={() => setShowManageProject(false)} />
           <div
             ref={modalRef}
-            className="relative z-10 mt-[60px] ml-[72px] w-[300px] rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
+            className="relative z-10 mt-[60px] ml-[72px] w-[300px] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
-              <h2 className="text-sm font-semibold text-gray-900">Manage Project</h2>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+                Manage Project
+              </h2>
               <button
                 onClick={() => setShowManageProject(false)}
-                className="w-6 h-6 rounded-full border border-red-300 flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors"
+                className="w-6 h-6 rounded-full border border-red-300 dark:border-red-700 flex items-center justify-center text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 <X size={12} />
               </button>
@@ -322,7 +327,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             <div className="px-5 pb-5 max-h-[70vh] overflow-y-auto">
               {/* Projects */}
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-700">
+                <p className="text-xs font-semibold text-gray-700 dark:text-slate-100">
                   Projects <span className="text-red-500">*</span>
                 </p>
                 {isOrgAdmin && (
@@ -331,7 +336,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       setShowManageProject(false);
                       router.push(`/${orgSlug}/projects?openCreate=true`);
                     }}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50 dark:hover:bg-slate-700"
                     style={{ color: colors.primary, borderColor: colors.primary }}
                   >
                     <Plus size={10} />
@@ -340,7 +345,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 )}
               </div>
               {isLoadingProjectsWithSprints ? (
-                <div className="text-xs text-gray-400 py-2">Loading projects...</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                  Loading projects...
+                </div>
               ) : (
                 <div className="space-y-1 mb-4">
                   {projectsWithSprints.map((p) => (
@@ -352,14 +359,16 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
                         tempProject?.id === p.id
-                          ? 'bg-blue-50 border border-blue-200'
-                          : 'hover:bg-gray-50 border border-transparent'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                          : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <div
                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            tempProject?.id === p.id ? 'border-blue-600' : 'border-gray-300'
+                            tempProject?.id === p.id
+                              ? 'border-blue-600'
+                              : 'border-gray-300 dark:border-gray-600'
                           }`}
                         >
                           {tempProject?.id === p.id && (
@@ -368,20 +377,22 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         </div>
                         <span
                           title={p.name}
-                          className="font-medium text-gray-800 truncate max-w-[130px]"
+                          className="font-medium text-gray-800 dark:text-slate-100 truncate max-w-[130px] "
                         >
                           {p.name}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400 font-medium">{p.key}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                          {p.key}
+                        </span>
                         <span
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowManageProject(false);
                             router.push(`/${orgSlug}/projects/sprints?projectId=${p.id}`);
                           }}
-                          className="p-0.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors"
+                          className="p-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 text-slate-100 hover:text-blue-600 transition-colors"
                         >
                           <Eye size={13} />
                         </span>
@@ -393,7 +404,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
               {/* Sprints */}
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-700">
+                <p className="text-xs font-semibold text-gray-700 dark:text-slate-100">
                   Sprints <span className="text-red-500">*</span>
                 </p>
                 {isOrgAdmin && (
@@ -410,7 +421,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                       );
                     }}
                     disabled={!tempProject}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium border transition-colors hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ color: colors.primary, borderColor: colors.primary }}
                   >
                     <Plus size={10} />
@@ -419,79 +430,88 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 )}
               </div>
               {isLoadingProjectsWithSprints ? (
-                <div className="text-xs text-gray-400 py-2">Loading sprints...</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                  Loading sprints...
+                </div>
               ) : (
                 <div className="space-y-1">
                   {/* All Sprints option */}
-
                   <button
                     onClick={() => setTempSprint(null)}
                     className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                       tempSprint === null
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50 border border-transparent'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
                     }`}
                   >
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        tempSprint === null ? 'border-blue-600' : 'border-gray-300'
+                        tempSprint === null
+                          ? 'border-blue-600'
+                          : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
                       {tempSprint === null && <div className="w-2 h-2 rounded-full bg-blue-600" />}
                     </div>
-
-                    <span className="font-medium text-gray-800">All Sprints</span>
+                    <span className="font-medium text-gray-800 dark:text-slate-100">
+                      All Sprints
+                    </span>
                   </button>
 
-                  {tempSprints?.map((s) => {
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={() => setTempSprint(s)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
-                          tempSprint?.id === s.id
-                            ? 'bg-blue-50 border border-blue-200'
-                            : 'hover:bg-gray-50 border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              tempSprint?.id === s.id ? 'border-blue-600' : 'border-gray-300'
-                            }`}
-                          >
-                            {tempSprint?.id === s.id && (
-                              <div className="w-2 h-2 rounded-full bg-blue-600" />
-                            )}
-                          </div>
-
-                          <span className="font-medium text-gray-800">{s.name}</span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowManageProject(false);
-                            dispatch(setSelectedSprint(s));
-                            router.push(
-                              `/${orgSlug}/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
-                            );
-                          }}
-                          className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                          title="View sprint"
+                  {tempSprints?.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => setTempSprint(s)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
+                        tempSprint?.id === s.id
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                          : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            tempSprint?.id === s.id
+                              ? 'border-blue-600'
+                              : 'border-gray-300 dark:border-gray-600'
+                          }`}
                         >
-                          <Eye size={15} />
-                        </button>
+                          {tempSprint?.id === s.id && (
+                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                          )}
+                        </div>
+                        <span className="font-medium text-gray-800 dark:text-slate-100">
+                          {s.name}
+                        </span>
                       </div>
-                    );
-                  })}
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowManageProject(false);
+                          dispatch(setSelectedSprint(s));
+                          router.push(
+                            `/${orgSlug}/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
+                          );
+                        }}
+                        className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-slate-100"
+                        title="View sprint"
+                      >
+                        <Eye size={15} />
+                      </button>
+                    </div>
+                  ))}
 
                   {!isLoadingProjectsWithSprints && tempSprints?.length === 0 && tempProject && (
-                    <p className="text-xs text-gray-400 px-3 py-2">No sprints found</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
+                      No sprints found
+                    </p>
                   )}
                   {!tempProject && (
-                    <p className="text-xs text-gray-400 px-3 py-2">Select a project first</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
+                      Select a project first
+                    </p>
                   )}
                 </div>
               )}

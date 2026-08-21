@@ -4,6 +4,7 @@ import { colors } from '@/src/styles/colors';
 import Panel from '@/src/app/components/common/panel/panel';
 import BarChart from '@/src/app/components/common/charts/barChart';
 import { EChartsOption } from 'echarts-for-react';
+import { useTheme } from 'next-themes';
 
 interface TeamWorkloadCardProps {
   chartHeight: number;
@@ -18,6 +19,15 @@ export default function TeamWorkloadCard({
   assigned,
   completed,
 }: TeamWorkloadCardProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const labelColor = isDark ? '#cbd5e1' : colors.gray500;
+  const splitLineColor = isDark ? '#334155' : colors.gray100;
+  const tooltipBg = isDark ? '#1e293b' : colors.white;
+  const tooltipBorder = isDark ? '#475569' : colors.gray200;
+  const tooltipText = isDark ? '#f1f5f9' : colors.gray900;
+
   const option: EChartsOption = {
     animation: true,
     animationDuration: 1200,
@@ -36,7 +46,7 @@ export default function TeamWorkloadCard({
       itemHeight: 12,
       textStyle: {
         fontSize: 11,
-        color: colors.gray500,
+        color: labelColor,
       },
       data: [
         { name: 'Tasks', icon: 'rect' },
@@ -46,10 +56,14 @@ export default function TeamWorkloadCard({
 
     tooltip: {
       trigger: 'axis',
+      backgroundColor: tooltipBg,
+      borderColor: tooltipBorder,
+      borderWidth: 1,
+      textStyle: { color: tooltipText, fontSize: 12 },
       axisPointer: {
         type: 'line',
         lineStyle: {
-          color: colors.gray400,
+          color: isDark ? '#475569' : colors.gray400,
           type: 'dashed',
           width: 1,
         },
@@ -63,11 +77,11 @@ export default function TeamWorkloadCard({
       interval: 20,
       splitLine: {
         lineStyle: {
-          color: colors.gray100,
+          color: splitLineColor,
         },
       },
       axisLabel: {
-        color: colors.gray500,
+        color: labelColor,
       },
     },
 
@@ -77,7 +91,7 @@ export default function TeamWorkloadCard({
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
-        color: colors.gray500,
+        color: labelColor,
       },
     },
 

@@ -18,23 +18,15 @@ interface InviteTeamModalProps {
 export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps) {
   const [members, setMembers] = useState<Member[]>([{ email: '' }]);
   const { inviteOrgUsers, isInvitingUsers } = useInviteUsers();
-  const addMember = () => {
-    setMembers([...members, { email: '' }]);
-  };
 
-  const removeMember = (index: number) => {
-    setMembers(members.filter((_, i) => i !== index));
-  };
-
-  const updateMember = <K extends keyof Member>(index: number, field: K, value: Member[K]) => {
-    setMembers(members.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
-  };
+  const addMember = () => setMembers([...members, { email: '' }]);
+  const removeMember = (i: number) => setMembers(members.filter((_, idx) => idx !== i));
+  const updateMember = <K extends keyof Member>(i: number, field: K, value: Member[K]) =>
+    setMembers(members.map((m, idx) => (idx === i ? { ...m, [field]: value } : m)));
 
   const handleSubmit = async () => {
-    const validMembers = members.filter((m) => m.email.trim() !== '');
-    if (validMembers.length > 0) {
-      await inviteOrgUsers({ members: validMembers });
-    }
+    const valid = members.filter((m) => m.email.trim() !== '');
+    if (valid.length > 0) await inviteOrgUsers({ members: valid });
     onClose();
   };
 
@@ -46,40 +38,46 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6">
+      <div className="w-full max-w-lg rounded-xl bg-white dark:bg-slate-800 shadow-2xl overflow-hidden border border-gray-200 dark:border-slate-700">
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-6 pb-4">
+        <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-slate-700">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Invite Team Members</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Members will receive an email invitation to join Acme Corp.
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              Invite Team Members
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+              Members will receive an email invitation to join.
             </p>
           </div>
           <button
             onClick={handleCancel}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md p-1"
+            className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md p-1 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 max-h-[55vh] overflow-y-auto">
+        <div className="px-6 py-4 max-h-[55vh] overflow-y-auto">
           {members.map((member, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 mb-3.5">
+            <div
+              key={index}
+              className="border border-gray-200 dark:border-slate-600 rounded-lg p-4 mb-3.5 bg-gray-50 dark:bg-slate-700/40"
+            >
               <div className="flex items-center justify-between mb-2.5">
-                <span className="text-sm font-semibold text-gray-700">Member {index + 1}</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                  Member {index + 1}
+                </span>
                 {members.length > 1 && (
                   <button
                     onClick={() => removeMember(index)}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 px-1.5 py-0.5 rounded"
+                    className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-1.5 py-0.5 rounded transition-colors"
                   >
                     <X size={12} /> Remove
                   </button>
                 )}
               </div>
-
               <WpInput
                 type="email"
                 placeholder="email@company.com"
@@ -95,30 +93,26 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
             fullWidth
             onClick={addMember}
             leftIcon={<Plus size={16} />}
-            className="mt-1 mb-4 border-[1.5px] border-dashed border-blue-300 bg-blue-50"
+            className="mt-1 mb-4 border-[1.5px] border-dashed border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400"
           >
-            Add
+            Add Member
           </WpButton>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-slate-700">
           <WpButton
             variant="ghost"
             onClick={handleCancel}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100"
           >
             Cancel
           </WpButton>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-slate-400">
               {members.length} member{members.length > 1 ? 's' : ''}
             </span>
-            <WpButton
-              onClick={handleSubmit}
-              isLoading={isInvitingUsers}
-              loadingText="Submitting..."
-            >
+            <WpButton onClick={handleSubmit} isLoading={isInvitingUsers} loadingText="Submitting...">
               Submit Invitations
             </WpButton>
           </div>

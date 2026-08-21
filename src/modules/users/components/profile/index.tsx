@@ -117,7 +117,7 @@ export default function Profile() {
 
   return (
     <div className="w-full px-3 sm:px-0">
-      <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900">My Profile</h1>
+      <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900 dark:text-slate-100">My Profile</h1>
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {/* Left Column */}
         <div className="w-full md:w-[320px] shrink-0 space-y-6">
@@ -217,7 +217,7 @@ export default function Profile() {
                 setSelectedAvatar(null);
                 setIsEditing(true);
               }}
-              className="mt-2 w-full border border-gray-200 !bg-white !text-gray-700"
+              className="mt-2 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
             >
               Edit Profile
             </WpButton>
@@ -237,7 +237,7 @@ export default function Profile() {
                   }, 100);
                 }
               }}
-              className="mt-2 w-full border border-gray-200 !bg-white !text-gray-700"
+              className="mt-2 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
             >
               {isChangingPwd ? 'Cancel' : 'Change password'}
             </WpButton>
@@ -377,8 +377,8 @@ export default function Profile() {
               </form>
             </div>
           )}
-          <div className="w-full rounded-xl border border-gray-200 bg-white p-6">
-            <h3 className="font-semibold text-gray-900">My Recent Tasks</h3>
+          <div className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-slate-100">My Recent Tasks</h3>
           </div>
         </div>
       </div>

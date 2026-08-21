@@ -9,10 +9,8 @@ interface CustomToolbarProps extends ToolbarProps<CalendarEvent> {
   onDateChange: (date: Date) => void;
   currentView: View;
   onViewChange: (view: View) => void;
-
-  // selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
-  // onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
 }
+
 const CustomToolbar = ({
   label,
   onNavigate,
@@ -20,38 +18,27 @@ const CustomToolbar = ({
   onDateChange,
   currentView,
   onViewChange,
-  // selectedType,
-  // onTypeChange,
 }: CustomToolbarProps) => {
   return (
     <div className="mb-2 sm:mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <MonthYearPicker value={currentDate} onChange={onDateChange} />
         {currentView === 'day' ? (
-          <p className="mt-3 text-lg font-semibold text-gray-900">{label}</p>
+          <p className="mt-3 text-lg font-semibold text-gray-900 dark:text-slate-100">{label}</p>
         ) : currentView === 'week' ? (
-          <p className="mt-2 text-lg font-semibold text-gray-900">{label}</p>
+          <p className="mt-2 text-lg font-semibold text-gray-900 dark:text-slate-100">{label}</p>
         ) : (
-          <p className="mt-1 text-xs text-gray-500">View and manage your project schedule</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            View and manage your project schedule
+          </p>
         )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {/* <select
-          value={selectedType}
-          onChange={(e) => onTypeChange(e.target.value as 'All' | 'Sprint' | 'Meeting' | 'Task')}
-          className="h-9 sm:h-9 rounded-lg border border-gray-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50"
-        >
-          <option value="All">All Types</option>
-          <option value="Sprint">Sprint</option>
-          <option value="Meeting">Meeting</option>
-          <option value="Task">Task</option>
-        </select> */}
-
         <WpButton
           variant="secondary"
           size="sm"
-          className="!rounded-xl !border !border-gray-200 !bg-white !text-gray-600 hover:!border-blue-200 hover:!bg-blue-50 hover:!text-blue-600"
+          className="!rounded-xl !border !border-gray-200 dark:!border-slate-600 !bg-white dark:!bg-slate-800 !text-gray-600 dark:!text-slate-300 hover:!border-blue-200 hover:!bg-blue-50 dark:hover:!bg-blue-900/20 hover:!text-blue-600"
           leftIcon={<ChevronLeft size={16} />}
           onClick={() => onNavigate(Navigate.PREVIOUS)}
         />
@@ -59,7 +46,7 @@ const CustomToolbar = ({
         <WpButton
           variant="secondary"
           size="sm"
-          className="!rounded-xl !border !border-blue-200 !bg-white !text-blue-600 hover:!bg-blue-50"
+          className="!rounded-xl !border !border-blue-200 dark:!border-blue-700 !bg-white dark:!bg-slate-800 !text-blue-600 dark:!text-blue-400 hover:!bg-blue-50 dark:hover:!bg-blue-900/20"
           onClick={() => onNavigate(Navigate.TODAY)}
         >
           Today
@@ -68,7 +55,7 @@ const CustomToolbar = ({
         <WpButton
           variant="secondary"
           size="sm"
-          className="!rounded-xl !border !border-gray-200 !bg-white !text-gray-600 hover:!border-blue-200 hover:!bg-blue-50 hover:!text-blue-600"
+          className="!rounded-xl !border !border-gray-200 dark:!border-slate-600 !bg-white dark:!bg-slate-800 !text-gray-600 dark:!text-slate-300 hover:!border-blue-200 hover:!bg-blue-50 dark:hover:!bg-blue-900/20 hover:!text-blue-600"
           rightIcon={<ChevronRight size={16} />}
           onClick={() => onNavigate(Navigate.NEXT)}
         />
@@ -76,7 +63,7 @@ const CustomToolbar = ({
         <select
           value={currentView}
           onChange={(e) => onViewChange(e.target.value as View)}
-          className="h-9 sm:h-9 rounded-lg border border-gray-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50"
+          className="h-9 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 outline-none"
         >
           <option value="month">Month</option>
           <option value="week">Week</option>
