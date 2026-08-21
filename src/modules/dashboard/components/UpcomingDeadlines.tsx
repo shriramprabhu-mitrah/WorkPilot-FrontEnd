@@ -13,14 +13,17 @@ export default function UpcomingDeadlines() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">{task.title}</p>
-
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
+                {task.title}
+              </p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-400">
                 {task.project} - {task.sprint}
               </p>
             </div>
 
-            <span className="shrink-0 text-xs font-medium text-red-500">{task.status}</span>
+            <span className="shrink-0 text-xs font-medium text-red-500 dark:text-red-400">
+              {task.status}
+            </span>
           </div>
         ))}
       </div>

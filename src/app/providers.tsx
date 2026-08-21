@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from 'next-themes';
 import { store, persistor } from '@/src/store';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -22,10 +23,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <QueryClientProvider client={queryClient}>
-          <Toaster
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <QueryClientProvider client={queryClient}>
+            <Toaster
             position="top-right"
             reverseOrder={false}
             gutter={8}
@@ -51,9 +53,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               },
             }}
           />
-          {children}
-        </QueryClientProvider>
-      </PersistGate>
-    </Provider>
+            {children}
+          </QueryClientProvider>
+        </PersistGate>
+      </Provider>
+    </ThemeProvider>
   );
 }

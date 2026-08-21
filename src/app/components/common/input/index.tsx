@@ -37,7 +37,7 @@ export const WpInput = forwardRef<HTMLInputElement, WpInputProps>(
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm font-bold mb-2 text-[var(--color-text-body)]"
+            className="block text-sm font-bold mb-2 text-[var(--color-text-body)] dark:text-slate-300"
           >
             {label}
             {showRequired && <span className="ml-1 text-red-500">*</span>}
@@ -66,7 +66,7 @@ export const WpInput = forwardRef<HTMLInputElement, WpInputProps>(
                 : '',
               props.disabled
                 ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
-                : 'bg-white',
+                : 'bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder:text-slate-400',
               className,
             ]
               .filter(Boolean)

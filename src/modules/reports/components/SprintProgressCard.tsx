@@ -1,8 +1,11 @@
+'use client';
+
 import { colors } from '@/src/styles/colors';
 import Panel from '@/src/app/components/common/panel/panel';
 import BarChart from '@/src/app/components/common/charts/barChart';
 import { EChartsOption } from 'echarts-for-react';
-// import { sprintLabels, sprintPlanned, sprintCompleted } from '@/src/modules/reports/data';
+import { useTheme } from 'next-themes';
+
 interface SprintProgressCardProps {
   isMobile: boolean;
   chartHeight: number;
@@ -22,6 +25,15 @@ export default function SprintProgressCard({
   title = 'Sprint Progress',
   subtitle = 'Planned vs completed story points per sprint',
 }: SprintProgressCardProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const labelColor = isDark ? '#cbd5e1' : colors.gray500;
+  const splitLineColor = isDark ? '#334155' : colors.gray100;
+  const tooltipBg = isDark ? '#1e293b' : colors.white;
+  const tooltipBorder = isDark ? '#475569' : colors.gray200;
+  const tooltipText = isDark ? '#f1f5f9' : colors.gray900;
+
   const sprintProgressOption: EChartsOption = {
     animation: true,
     animationDuration: 1200,
@@ -33,7 +45,7 @@ export default function SprintProgressCard({
       bottom: 4,
       itemWidth: 12,
       itemHeight: 12,
-      textStyle: { fontSize: 11, color: colors.gray500 },
+      textStyle: { fontSize: 11, color: labelColor },
       data: [
         { name: 'Planned', icon: 'rect' },
         { name: 'Completed', icon: 'rect' },
@@ -41,25 +53,25 @@ export default function SprintProgressCard({
     },
     tooltip: {
       trigger: 'axis',
-      backgroundColor: colors.white,
-      borderColor: colors.gray200,
+      backgroundColor: tooltipBg,
+      borderColor: tooltipBorder,
       borderWidth: 1,
-      textStyle: { color: colors.gray900, fontSize: 12 },
+      textStyle: { color: tooltipText, fontSize: 12 },
     },
     xAxis: {
       type: 'category',
       data: labels,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { fontSize: 11, color: colors.gray500 },
+      axisLabel: { fontSize: 11, color: labelColor },
     },
     yAxis: {
       type: 'value',
       min: 0,
       max: 60,
       interval: 15,
-      splitLine: { lineStyle: { color: colors.gray100 } },
-      axisLabel: { fontSize: 11, color: colors.gray500 },
+      splitLine: { lineStyle: { color: splitLineColor } },
+      axisLabel: { fontSize: 11, color: labelColor },
     },
     series: [
       {
@@ -79,6 +91,7 @@ export default function SprintProgressCard({
       },
     ],
   };
+
   return (
     <Panel title={title} subtitle={subtitle}>
       <BarChart option={sprintProgressOption} height={chartHeight} />

@@ -2,6 +2,8 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { colors } from '@/src/styles/colors';
+import { useTheme } from 'next-themes';
+
 interface TaskStatusCardProps {
   taskStatus: Record<string, number>;
 }
@@ -16,6 +18,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const statusData = Object.entries(taskStatus).map(([name, value]) => ({
     name,
     value,
@@ -23,10 +28,9 @@ export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
   }));
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="text-lg font-semibold">Task Status</h3>
-
-      <p className="mb-4 text-sm text-gray-500">Across all active projects</p>
+    <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Task Status</h3>
+      <p className="mb-4 text-sm text-gray-500 dark:text-slate-400">Across all active projects</p>
 
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
@@ -44,7 +48,13 @@ export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
               ))}
             </Pie>
 
-            <Tooltip />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                borderColor: isDark ? '#334155' : '#e5e7eb',
+                color: isDark ? '#f1f5f9' : '#111827',
+              }}
+            />
 
             <Legend
               verticalAlign="bottom"
@@ -57,7 +67,7 @@ export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
                         className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: entry.color }}
                       />
-                      <span className="text-gray-500">{entry.value}</span>
+                      <span className="text-gray-500 dark:text-slate-300">{entry.value}</span>
                     </div>
                   ))}
                 </div>
