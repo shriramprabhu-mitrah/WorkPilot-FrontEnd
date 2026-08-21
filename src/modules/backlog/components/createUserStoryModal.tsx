@@ -135,6 +135,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter story title"
+            showRequired
           />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
@@ -231,6 +232,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
               value={priority}
               onChange={(value) => setPriority(value as PRIORITY_TYPE)}
               placeholder="Select priority"
+              showRequired
             />
             <WpInput
               label="Story Points"
@@ -238,15 +240,14 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
               value={storyPoints}
               onChange={(e) => setStoryPoints(e.target.value)}
               placeholder="Enter story points"
+              showRequired
             />
           </div>
         </div>
-
         <div className="flex justify-end gap-2 border-t border-gray-200 px-5 py-4">
           <WpButton type="button" variant="secondary" onClick={onClose}>
             Cancel
           </WpButton>
-
           <WpButton
             type="button"
             onClick={handleCreate}

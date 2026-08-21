@@ -72,39 +72,89 @@ export const TeamTemplate = () => {
           </WpButton>
         )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
-        {visibleMembers?.map((member) => {
-          const memberData = {
-            id: member.id,
-            name: member.name,
-            role: member.role,
-            initials: member.name
-              .split(' ')
-              .map((word) => word[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 4),
-            avatarColor: colors.primary,
-            tasks: 0,
-            done: 0,
-          };
+      <div className="w-full flex-shrink-0">
+        {/* List Header */}
+        <div
+          className="hidden md:grid grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px] items-center gap-4 rounded-t-xl border border-b-0 bg-gray-50 px-5 py-3"
+          style={{ borderColor: colors.gray200 }}
+        >
+          <div
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: colors.gray500 }}
+          >
+            Member
+          </div>
 
-          return (
-            <MemberCard
-              key={member.id}
-              member={memberData}
-              canManageUsers={hasPermission('TEAMS_DELETE')}
-              onDelete={() => {
-                setSelectedMember(memberData);
-                setShowDeleteModal(true);
-              }}
-              onClick={() => {
-                setSelectedUserId(member.id);
-                setShowUserDetails(true);
-              }}
-            />
-          );
-        })}
+          <div
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: colors.gray500 }}
+          >
+            Progress
+          </div>
+
+          <div
+            className="text-center text-xs font-semibold uppercase tracking-wide"
+            style={{ color: colors.gray500 }}
+          >
+            Tasks
+          </div>
+
+          <div
+            className="text-center text-xs font-semibold uppercase tracking-wide"
+            style={{ color: colors.gray500 }}
+          >
+            Done
+          </div>
+
+          <div
+            className="text-center text-xs font-semibold uppercase tracking-wide"
+            style={{ color: colors.gray500 }}
+          >
+            Open
+          </div>
+
+          <div />
+        </div>
+
+        {/* Members */}
+        <div
+          className="w-full overflow-hidden rounded-xl border bg-white md:rounded-t-none"
+          style={{ borderColor: colors.gray200 }}
+        >
+          {visibleMembers?.map((member, index) => {
+            const memberData = {
+              id: member.id,
+              name: member.name,
+              role: member.role,
+              initials: member.name
+                .split(' ')
+                .map((word) => word[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 4),
+              avatarColor: colors.primary,
+              tasks: 0,
+              done: 0,
+            };
+
+            return (
+              <MemberCard
+                key={member.id}
+                member={memberData}
+                canManageUsers={hasPermission('TEAMS_DELETE')}
+                onDelete={() => {
+                  setSelectedMember(memberData);
+                  setShowDeleteModal(true);
+                }}
+                onClick={() => {
+                  setSelectedUserId(member.id);
+                  setShowUserDetails(true);
+                }}
+                isLast={index === visibleMembers.length - 1}
+              />
+            );
+          })}
+        </div>
       </div>
       {!showAll && teamMembers?.data && teamMembers.data.length > 4 && (
         <div className="mt-2 flex justify-center">
@@ -118,8 +168,8 @@ export const TeamTemplate = () => {
         </div>
       )}
 
-      {/* RBAC */}
-      <div className="flex-shrink-0">
+      {/* RBAC Comment for future purpose*/}
+      {/* <div className="flex-shrink-0">
         <h2 className="text-base font-bold mb-4" style={{ color: colors.gray900 }}>
           Role-Based Access Control
         </h2>
@@ -128,7 +178,7 @@ export const TeamTemplate = () => {
             <RoleCardView key={r.name} role={r} />
           ))}
         </div>
-      </div>
+      </div> */}
       {/* Invite Modal */}
       <InviteTeamModal open={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
       {showUserDetails && (

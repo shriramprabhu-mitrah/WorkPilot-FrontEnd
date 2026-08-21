@@ -1,7 +1,15 @@
 'use client';
 
 export type SettingsTab =
-  'General' | 'Roles & Permissions' | 'Permissions Matrix' | 'Notifications' | 'Security';
+  | 'General'
+  // | 'Roles & Permissions'
+  // | 'Permissions Matrix'
+  | 'Notifications'
+  | 'Members'
+  | 'Permissions'
+  | 'Status'
+  | 'Security';
+
 
 interface SettingsHeaderProps {
   activeTab: SettingsTab;
@@ -10,9 +18,12 @@ interface SettingsHeaderProps {
 
 const tabs: SettingsTab[] = [
   'General',
-  'Roles & Permissions',
-  'Permissions Matrix',
+  // 'Roles & Permissions',
+  // 'Permissions Matrix',
   // 'Notifications',
+  'Members',
+  'Permissions',
+  'Status',
   'Security',
 ];
 

@@ -183,27 +183,6 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                 />
               ))}
             </div>
-
-            <div className="px-5 pb-3">
-              <button
-                type="button"
-                onClick={() => {
-                  append({
-                    name: `Sprint ${fields.length + 1}`,
-                    goal: '',
-                    start_date: '',
-                    end_date: '',
-                  });
-
-                  setOpenSprint(fields.length);
-                }}
-                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                <Plus size={16} />
-                Add Sprint
-              </button>
-            </div>
-
             <div className="flex justify-end border-t border-gray-200 p-5">
               <WpButton type="submit" variant="primary" size="md" disabled={isCreatingSprint}>
                 {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
