@@ -120,11 +120,35 @@ const StatusCell = ({
   });
 
   const taskIds = tasks.map((task) => task.id);
+  const needsScroll = tasks.length > 3;
+
+  // Prevent outer scroll when scrolling inside the column
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!needsScroll) return;
+
+    const element = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = element;
+    const isScrollingDown = e.deltaY > 0;
+    const isScrollingUp = e.deltaY < 0;
+
+    // Check if we're at the boundaries
+    const isAtTop = scrollTop === 0;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+    // Prevent outer scroll only if we're not at the boundaries
+    if ((isScrollingDown && !isAtBottom) || (isScrollingUp && !isAtTop)) {
+      e.stopPropagation();
+    }
+  };
 
   return (
     <div
       ref={setNodeRef}
-      style={isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}}
+      onWheel={handleWheel}
+      style={{
+        ...(isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}),
+        ...(needsScroll ? { maxHeight: '400px', overflowY: 'scroll' } : {}),
+      }}
       className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${
         isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
       }`}
@@ -282,7 +306,9 @@ export const KanbanBoardTemplate = () => {
   const [assigneeIdFilter, setAssigneeIdFilter] = useState<string[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [memberSearch, setMemberSearch] = useState('');
+  const [filterMemberSearch, setFilterMemberSearch] = useState('');
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
+  const debouncedFilterMemberSearch = useDebounce(filterMemberSearch, 500);
 
   const queryClient = useQueryClient();
   const deleteUserStoryMutation = useDeleteUserStory();
@@ -295,8 +321,32 @@ export const KanbanBoardTemplate = () => {
   const selectedProject = storeProject?.id ?? '';
   const selectedSprint = storeSprint?.id ?? '';
 
-  // Fetch project members for assignee filtering
-  const { members } = useGetProjectMembers(selectedProject, { page: 1, page_size: 100 });
+  // Fetch project members for outer avatar display (always fetch all members, no search)
+  const { members: displayMembers, isLoadingMembers: isLoadingDisplayMembers } =
+    useGetProjectMembers(
+      selectedProject,
+      {
+        page: 1,
+        page_size: 50,
+        name: '', // No search filter for display members
+      },
+      true // Always fetch
+    );
+
+  // Fetch project members for assignee filtering with search
+  const {
+    members: filterMembers,
+    isLoadingMembers: isLoadingFilterMembers,
+    isFetchingMembers: isFetchingFilterMembers,
+  } = useGetProjectMembers(
+    selectedProject,
+    {
+      page: 1,
+      page_size: 50,
+      name: debouncedFilterMemberSearch,
+    },
+    showFilter // Only fetch when filter is open
+  );
 
   // Get project members with search for task modal
   const {
@@ -457,14 +507,14 @@ export const KanbanBoardTemplate = () => {
 
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
-  // Derive unique assignees from project members instead of task initials
+  // Derive unique assignees from filter members search results
   const allAssignees = useMemo(() => {
-    if (!members || members.length === 0) return [];
-    return members
+    if (!filterMembers || filterMembers.length === 0) return [];
+    return filterMembers
       .map((m) => m.full_name || m.user?.full_name || '')
       .filter((name) => name !== '')
       .sort();
-  }, [members]);
+  }, [filterMembers]);
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
@@ -489,7 +539,7 @@ export const KanbanBoardTemplate = () => {
       // Convert selected assignee names to user IDs
       const assigneeIds = newFilters.assignees
         .map((assigneeName) => {
-          const member = members?.find((m) => {
+          const member = filterMembers?.find((m) => {
             const name = m.full_name || m.user?.full_name || '';
             return name === assigneeName;
           });
@@ -499,7 +549,7 @@ export const KanbanBoardTemplate = () => {
 
       setAssigneeIdFilter(assigneeIds);
     },
-    [members]
+    [filterMembers]
   );
 
   // Helper to get avatar color based on name
@@ -541,6 +591,11 @@ export const KanbanBoardTemplate = () => {
     setAssigneeIdFilter(newAssigneeIds);
     setFilters({ ...filters, assignees: newAssigneeNames });
   };
+
+  // Handle assignee search in filter panel
+  const handleAssigneeSearch = useCallback((search: string) => {
+    setFilterMemberSearch(search);
+  }, []);
 
   // Toggle status column collapse/expand
   const toggleStatusCollapse = useCallback((statusId: string) => {
@@ -776,7 +831,7 @@ export const KanbanBoardTemplate = () => {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap sm:mr-18">
           {/* Filter button */}
           <div ref={filterRef} className="relative">
             <WpButton
@@ -806,6 +861,8 @@ export const KanbanBoardTemplate = () => {
                 allStatuses={statuses}
                 onChange={handleFilterChange}
                 onClose={() => setShowFilter(false)}
+                onAssigneeSearch={handleAssigneeSearch}
+                isLoadingAssignees={isLoadingFilterMembers || isFetchingFilterMembers}
               />
             )}
           </div>
@@ -815,8 +872,8 @@ export const KanbanBoardTemplate = () => {
           </WpButton> */}
 
           <div className="flex -space-x-2">
-            {members && members.length > 0 ? (
-              members.slice(0, 5).map((member) => {
+            {displayMembers && displayMembers.length > 0 ? (
+              displayMembers.slice(0, 5).map((member) => {
                 const memberName = member.full_name || member.user?.full_name || 'Unknown';
                 const userId = member.user_id || member.user?.id || member.id;
                 const initials = getInitials(memberName);
