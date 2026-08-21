@@ -1,88 +1,291 @@
 import { WpButton } from '@/src/app/components/common/button';
 import { colors } from '@/src/styles/colors';
 import { Member } from '@/src/types/teams';
-import { MoreVertical, Pencil, Trash2, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
+
 interface MemberCardProps {
   member: Member;
   canManageUsers: boolean;
   onDelete: () => void;
   onClick?: () => void;
+  isLast?: boolean;
 }
 
-export const MemberCard = ({ member, canManageUsers, onDelete, onClick }: MemberCardProps) => {
+export const MemberCard = ({
+  member,
+  canManageUsers,
+  onDelete,
+  onClick,
+  isLast = false,
+}: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
+
   const open = member.tasks - member.done;
+
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl border p-4 flex flex-col gap-3 hover:shadow-md transition-shadow"
-      style={{ borderColor: colors.gray200 }}
+      className={`
+        group
+        w-full
+        cursor-pointer
+        bg-white
+        px-5
+        py-4
+        transition-colors
+        hover:bg-gray-50
+        ${!isLast ? 'border-b' : ''}
+      `}
+      style={{
+        borderColor: colors.gray200,
+      }}
     >
-      <div className="flex items-center gap-3">
-        <span
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-          style={{ backgroundColor: member.avatarColor }}
-        >
-          {member.initials}
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: colors.gray900 }}>
-            {member.name}
-          </p>
-          <p
-            className="text-xs truncate"
+      {/* Desktop */}
+      <div className="hidden md:grid grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px] items-center gap-4">
+        {/* Member */}
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Avatar */}
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
             style={{
-              color: member.tasks > 0 && pct > 0 ? member.avatarColor : colors.gray500,
+              backgroundColor: member.avatarColor,
             }}
           >
-            {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
+            {member.initials}
+          </div>
+
+          {/* Name + Role */}
+          <div className="min-w-0">
+            <p
+              className="truncate text-sm font-semibold"
+              style={{
+                color: colors.gray900,
+              }}
+            >
+              {member.name}
+            </p>
+
+            <p
+              className="mt-0.5 truncate text-xs"
+              style={{
+                color: colors.gray500,
+              }}
+            >
+              {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
+            </p>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="min-w-0">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span
+              className="text-xs"
+              style={{
+                color: colors.gray500,
+              }}
+            >
+              Progress
+            </span>
+
+            <span
+              className="text-xs font-semibold"
+              style={{
+                color: pct > 0 ? member.avatarColor : colors.gray500,
+              }}
+            >
+              {pct}%
+            </span>
+          </div>
+
+          <div
+            className="h-1.5 w-full overflow-hidden rounded-full"
+            style={{
+              backgroundColor: colors.gray100,
+            }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${pct}%`,
+                backgroundColor: member.avatarColor,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Tasks */}
+        <div className="text-center">
+          <p
+            className="text-sm font-semibold"
+            style={{
+              color: colors.gray800,
+            }}
+          >
+            {member.tasks}
           </p>
         </div>
-        <span className="text-xs font-medium shrink-0" style={{ color: colors.gray400 }}>
-          {pct}%
-        </span>
-        {canManageUsers && (
-          <WpButton
-            variant="ghost"
-            size="sm"
-            className="!p-2 text-red-600 hover:bg-red-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
+
+        {/* Done */}
+        <div className="text-center">
+          <p
+            className="text-sm font-semibold"
+            style={{
+              color: colors.colActive,
             }}
-            aria-label="Remove member"
           >
-            <Trash2 size={16} />
-          </WpButton>
-        )}
-      </div>
+            {member.done}
+          </p>
+        </div>
 
-      <div className="h-1 rounded-full w-full" style={{ backgroundColor: colors.gray100 }}>
-        <div
-          className="h-1 rounded-full transition-all"
-          style={{ width: `${pct}%`, backgroundColor: member.avatarColor }}
-        />
-      </div>
-
-      <div className="flex items-center gap-4 text-xs" style={{ color: colors.gray500 }}>
-        <span>
-          <span className="font-medium" style={{ color: colors.gray700 }}>
-            {member.tasks}
-          </span>{' '}
-          tasks
-        </span>
-        <span style={{ color: colors.colActive }}>
-          <span className="font-medium">{member.done}</span> done
-        </span>
-        <span>
-          <span className="font-medium" style={{ color: colors.gray700 }}>
+        {/* Open */}
+        <div className="text-center">
+          <p
+            className="text-sm font-semibold"
+            style={{
+              color: colors.gray800,
+            }}
+          >
             {open}
-          </span>{' '}
-          open
-        </span>
+          </p>
+        </div>
+
+        {/* Delete */}
+        <div className="flex justify-end">
+          {canManageUsers && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              className="!h-8 !w-8 !p-0 text-red-600 opacity-0 transition-opacity hover:bg-red-50 group-hover:opacity-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              aria-label="Remove member"
+            >
+              <Trash2 size={15} />
+            </WpButton>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile */}
+      <div className="flex flex-col gap-3 md:hidden">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
+            style={{
+              backgroundColor: member.avatarColor,
+            }}
+          >
+            {member.initials}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p
+              className="truncate text-sm font-semibold"
+              style={{
+                color: colors.gray900,
+              }}
+            >
+              {member.name}
+            </p>
+
+            <p
+              className="truncate text-xs"
+              style={{
+                color: colors.gray500,
+              }}
+            >
+              {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
+            </p>
+          </div>
+
+          {canManageUsers && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              className="!h-8 !w-8 !p-0 text-red-600 hover:bg-red-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              aria-label="Remove member"
+            >
+              <Trash2 size={15} />
+            </WpButton>
+          )}
+        </div>
+
+        {/* Mobile Progress */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <span
+              className="text-xs"
+              style={{
+                color: colors.gray500,
+              }}
+            >
+              Progress
+            </span>
+
+            <span
+              className="text-xs font-semibold"
+              style={{
+                color: pct > 0 ? member.avatarColor : colors.gray500,
+              }}
+            >
+              {pct}%
+            </span>
+          </div>
+
+          <div
+            className="h-1.5 w-full rounded-full"
+            style={{
+              backgroundColor: colors.gray100,
+            }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${pct}%`,
+                backgroundColor: member.avatarColor,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Mobile Stats */}
+        <div className="grid grid-cols-3 border-t pt-3">
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: colors.gray800 }}>
+              {member.tasks}
+            </p>
+            <p className="text-[11px]" style={{ color: colors.gray500 }}>
+              Tasks
+            </p>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: colors.colActive }}>
+              {member.done}
+            </p>
+            <p className="text-[11px]" style={{ color: colors.gray500 }}>
+              Done
+            </p>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: colors.gray800 }}>
+              {open}
+            </p>
+            <p className="text-[11px]" style={{ color: colors.gray500 }}>
+              Open
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
