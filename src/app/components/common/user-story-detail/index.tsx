@@ -38,7 +38,7 @@ import { KanbanTask, ColumnId } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
-import StatusModal from '../task-detail/components/StatusModal';
+// import StatusModal from '../task-detail/components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 import {
   useCreateUserStoryComment,
@@ -1561,11 +1561,24 @@ export const UserStoryDetailDrawer = ({
                                                   }}
                                                 />
 
-                                                <span className="truncate">{option.label}</span>
+                                                {/* Status label + final dot */}
+                                                <div className="flex items-center gap-1 min-w-0">
+                                                  <span className="truncate">{option.label}</span>
 
-                                                {isSelected && (
-                                                  <Check size={13} className="ml-auto shrink-0" />
-                                                )}
+                                                  {option.is_final === true && (
+                                                    <span
+                                                      title="Final status"
+                                                      className="w-2 h-2 rounded-full bg-green-600 shrink-0"
+                                                    />
+                                                  )}
+                                                </div>
+
+                                                {/* Selected check */}
+                                                <div className="ml-auto flex items-center">
+                                                  {isSelected && (
+                                                    <Check size={13} className="shrink-0" />
+                                                  )}
+                                                </div>
                                               </button>
                                             );
                                           })}
@@ -2013,39 +2026,37 @@ export const UserStoryDetailDrawer = ({
                       {allStatusOptions.map((option) => (
                         <button
                           key={option.value}
-                          type="button"
-                          onClick={async () => {
+                          onClick={() => {
+                            handleUpdate({ status: option.value });
                             setShowStatusMenu(false);
-
-                            await handleUpdate({
-                              status: option.value,
-                            });
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-900 transition-colors flex items-center gap-2.5 hover:bg-gray-50"
-                          style={{
-                            fontWeight: option.value === userStoryData.status ? 700 : 500,
-                            backgroundColor:
-                              option.value === userStoryData.status ? option.bg : undefined,
-                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50"
                         >
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ backgroundColor: option.dot }}
-                          />
+                          {/* Left: status color + label */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: option.dot }}
+                            />
 
-                          {option.label}
+                            <span className="truncate text-sm text-gray-700">{option.label}</span>
+                          </div>
 
-                          {option.value === userStoryData.status && (
-                            <Check size={13} className="ml-auto" />
-                          )}
+                          {/* Right: Final status indicator */}
+                          {/* {option.is_final && (
+                            <span
+                              className="w-2 h-2 rounded-full bg-red-700 shrink-0"
+                              title="Final status"
+                            />
+                          )} */}
                         </button>
                       ))}
 
                       {/* Divider */}
-                      <div className="my-1 border-t border-gray-200" />
+                      {/* <div className="my-1 border-t border-gray-200" /> */}
 
                       {/* Add Task */}
-                      <button
+                      {/* <button
                         type="button"
                         onClick={() => {
                           setShowStatusMenu(false);
@@ -2056,10 +2067,10 @@ export const UserStoryDetailDrawer = ({
                         className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         Add Status
-                      </button>
+                      </button> */}
 
                       {/* Edit Task */}
-                      <button
+                      {/* <button
                         type="button"
                         onClick={() => {
                           setShowStatusMenu(false);
@@ -2102,8 +2113,8 @@ export const UserStoryDetailDrawer = ({
                         className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         Edit Status
-                      </button>
-                      <button
+                      </button> */}
+                      {/* <button
                         type="button"
                         onClick={() => {
                           setShowStatusMenu(false);
@@ -2116,8 +2127,8 @@ export const UserStoryDetailDrawer = ({
                       >
                         Delete Status
                       </button>
-                      {/* View Workflow */}
-                      {/* <button
+                      View Workflow
+                      <button
                         type="button"
                         onClick={() => {
                           setShowStatusMenu(false);
@@ -2416,7 +2427,7 @@ export const UserStoryDetailDrawer = ({
         <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
       )}
       {/* Add Status Modal */}
-      {showStatusModal && (
+      {/* {showStatusModal && (
         <StatusModal
           projectId={currentUserStory.project_id ?? ''}
           mode={statusModalMode}
@@ -2427,7 +2438,7 @@ export const UserStoryDetailDrawer = ({
             setSelectedStatus(null);
           }}
         />
-      )}
+      )} */}
 
       {/* {showWorkflowModal && (
         <WorkflowModal

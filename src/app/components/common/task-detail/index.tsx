@@ -976,10 +976,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     )}
 
                     {/* Divider */}
-                    <div className="my-1 border-t border-gray-200" />
+                    {/* <div className="my-1 border-t border-gray-200" /> */}
 
                     {/* Add Status */}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => {
                         setUiState((prev) => ({ ...prev, showStatusMenu: false }));
@@ -990,10 +990,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Add Status
-                    </button>
+                    </button> */}
 
                     {/* Edit Status */}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => {
                         setUiState((prev) => ({ ...prev, showStatusMenu: false }));
@@ -1008,10 +1008,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Edit Status
-                    </button>
+                    </button> */}
 
                     {/* Delete Status */}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => {
                         setUiState((prev) => ({ ...prev, showStatusMenu: false }));
@@ -1022,7 +1022,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 transition-colors"
                     >
                       Delete Status
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>

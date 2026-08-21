@@ -24,7 +24,7 @@ export const SettingPageTemplate = () => {
       {/* {activeTab === 'Permissions Matrix' && <PermissionsMatrix />} */}
       {/* {activeTab === 'Roles & Permissions' && <RolePermission />} */}
       {/* {activeTab === 'Notifications' && <NotificationSettings />} */}
-      {activeTab === 'Members' && <MembersSettings/>}
+      {activeTab === 'Members' && <MembersSettings />}
       {activeTab === 'Permissions' && <Permissions />}
       {activeTab === 'Status' && <StatusSettings />}
       {activeTab === 'Security' && <SecuritySetting />}

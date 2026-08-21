@@ -237,8 +237,15 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             <WpInput
               label="Story Points"
               type="number"
+              min={0}
               value={storyPoints}
-              onChange={(e) => setStoryPoints(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (value === '' || Number(value) >= 0) {
+                  setStoryPoints(value);
+                }
+              }}
               placeholder="Enter story points"
               showRequired
             />

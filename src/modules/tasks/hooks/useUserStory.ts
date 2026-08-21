@@ -1,8 +1,10 @@
 import { userStoryService } from '@/src/services/userstory';
 import {
+  CreateUserStoryStatusPayload,
   GetUserStoriesQueryParams,
   ReorderUserStoriesPayload,
   UpdateUserStoryPayload,
+  UpdateUserStoryStatusPayload,
   UserStoryPayload,
 } from '@/src/types/userstories';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -97,4 +99,145 @@ export const useReorderUserStories = () => {
       payload: ReorderUserStoriesPayload;
     }) => userStoryService.reorderUserStories(projectId, payload),
   });
+};
+
+// Get User Story statuses
+export const useGetUserStoryStatuses = (projectId: string, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['user-story-statuses', projectId],
+    queryFn: () => userStoryService.getUserStoryStatuses(projectId),
+    enabled: enabled && !!projectId,
+  });
+
+  return {
+    userStoryStatuses: query.data?.data ?? [],
+    isLoadingUserStoryStatuses: query.isLoading,
+    isFetchingUserStoryStatuses: query.isFetching,
+    isErrorUserStoryStatuses: query.isError,
+    userStoryStatusesError: query.error,
+    refetchUserStoryStatuses: query.refetch,
+  };
+};
+
+// Create User Story status
+export const useCreateUserStoryStatus = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({
+      projectId,
+      payload,
+    }: {
+      projectId: string;
+      payload: CreateUserStoryStatusPayload;
+    }) => userStoryService.createUserStoryStatus(projectId, payload),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-statuses', variables.projectId],
+      });
+    },
+  });
+
+  return {
+    createUserStoryStatus: mutation.mutate,
+    createUserStoryStatusAsync: mutation.mutateAsync,
+    isCreatingUserStoryStatus: mutation.isPending,
+    createUserStoryStatusError: mutation.error,
+  };
+};
+
+// Update User Story status
+export const useUpdateUserStoryStatus = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({
+      projectId,
+      statusId,
+      payload,
+    }: {
+      projectId: string;
+      statusId: string;
+      payload: UpdateUserStoryStatusPayload;
+    }) => userStoryService.updateUserStoryStatus(projectId, statusId, payload),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-statuses', variables.projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['user-stories', variables.projectId],
+      });
+    },
+  });
+
+  return {
+    updateUserStoryStatus: mutation.mutate,
+    updateUserStoryStatusAsync: mutation.mutateAsync,
+    isUpdatingUserStoryStatus: mutation.isPending,
+    updateUserStoryStatusError: mutation.error,
+  };
+};
+
+// Delete User Story status
+export const useDeleteUserStoryStatus = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({ projectId, statusId }: { projectId: string; statusId: string }) =>
+      userStoryService.deleteUserStoryStatus(projectId, statusId),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-statuses', variables.projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['user-stories', variables.projectId],
+      });
+    },
+  });
+
+  return {
+    deleteUserStoryStatus: mutation.mutate,
+    deleteUserStoryStatusAsync: mutation.mutateAsync,
+    isDeletingUserStoryStatus: mutation.isPending,
+    deleteUserStoryStatusError: mutation.error,
+  };
+};
+
+// Option A - Change User Story status
+export const useChangeUserStoryStatus = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({
+      projectId,
+      userStoryId,
+      statusId,
+    }: {
+      projectId: string;
+      userStoryId: string;
+      statusId: string;
+    }) => userStoryService.changeUserStoryStatus(projectId, userStoryId, { status_id: statusId }),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['user-story', variables.projectId, variables.userStoryId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['user-stories', variables.projectId],
+      });
+    },
+  });
+
+  return {
+    changeUserStoryStatus: mutation.mutate,
+    changeUserStoryStatusAsync: mutation.mutateAsync,
+    isChangingUserStoryStatus: mutation.isPending,
+    changeUserStoryStatusError: mutation.error,
+  };
 };

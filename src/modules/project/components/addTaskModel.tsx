@@ -460,14 +460,19 @@ const AddTaskModal = ({
               {...storyPointsRegister}
               error={errors.storyPoints?.message}
               onChange={(e) => {
-                storyPointsRegister.onChange(e);
-                clearFieldError('storyPoints');
+                const value = e.target.value;
+
+                if (value === '' || Number(value) >= 0) {
+                  storyPointsRegister.onChange(e);
+                  clearFieldError('storyPoints');
+                }
               }}
               showRequired
             />
             <WpInput
               id="estimatedHours"
               label="Estimated Hours"
+
               type="number"
               min="0"
               step="0.5"

@@ -46,7 +46,7 @@ export enum ROLE_TYPE {
   PROJECT_MANAGER = 'project_manager',
   DEVELOPER = 'developer',
   VIEWER = 'viewer',
-  TESTER = 'tester',
+  QA = 'tester',
 }
 
 /** Org-level roles stored in state.user.role */
@@ -57,7 +57,7 @@ export const PROJECT_ROLES = [
   ROLE_TYPE.PROJECT_MANAGER,
   ROLE_TYPE.DEVELOPER,
   ROLE_TYPE.VIEWER,
-  ROLE_TYPE.TESTER,
+  ROLE_TYPE.QA,
 ] as const;
 
 export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
@@ -66,7 +66,7 @@ export const ROLE_LABELS: Record<ROLE_TYPE, string> = {
   [ROLE_TYPE.PROJECT_MANAGER]: 'Project Manager',
   [ROLE_TYPE.DEVELOPER]: 'Developer',
   [ROLE_TYPE.VIEWER]: 'Viewer',
-  [ROLE_TYPE.TESTER]: 'Tester',
+  [ROLE_TYPE.QA]: 'QA',
 };
 
 export enum TASK_TYPE {
