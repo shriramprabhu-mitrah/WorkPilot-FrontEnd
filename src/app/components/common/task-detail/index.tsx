@@ -192,13 +192,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     return imageUrl;
   };
 
-const resolveStatusToEdit = (currentStatusId: string): CustomStatus | null => {
-  const statusToEdit =
-    statuses.find((status) => status.id === currentStatusId) ??
-    statuses.find((status) => status.is_default) ??
-    (statuses.length > 0 ? statuses[0] : undefined);
-  return statusToEdit ?? null;
-};
+  const resolveStatusToEdit = (currentStatusId: string): CustomStatus | null => {
+    const statusToEdit =
+      statuses.find((status) => status.id === currentStatusId) ??
+      statuses.find((status) => status.is_default) ??
+      (statuses.length > 0 ? statuses[0] : undefined);
+    return statusToEdit ?? null;
+  };
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {

@@ -870,7 +870,10 @@ export const KanbanBoardTemplate = () => {
           onDragOver={onDragOver}
           onDragEnd={onDragEnd}
         >
-          <div ref={scrollContainerRef} className="flex-1 overflow-x-auto overflow-y-auto -mx-3 sm:mx-0">
+          <div
+            ref={scrollContainerRef}
+            className="flex-1 overflow-x-auto overflow-y-auto -mx-3 sm:mx-0"
+          >
             <div className="inline-block min-w-full px-3 sm:px-0">
               {/* Status Headers */}
               <div className="sticky top-0 z-20 bg-white flex border-b-2 border-gray-300">
@@ -987,8 +990,8 @@ export const KanbanBoardTemplate = () => {
           </DragOverlay>
 
           {/* Scroll Indicator */}
-          <ScrollIndicator 
-            scrollContainerRef={scrollContainerRef} 
+          <ScrollIndicator
+            scrollContainerRef={scrollContainerRef}
             statuses={statuses}
             userStoriesCount={processedStories.length}
           />

@@ -17,12 +17,12 @@ import toast from 'react-hot-toast';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 
 type ActivityTab = 'all' | 'comments' | 'history';
- interface UploadedAttachment {
-   url?: string;
-   file_url?: string;
-   file_path?: string;
-   path?: string;
- }
+interface UploadedAttachment {
+  url?: string;
+  file_url?: string;
+  file_path?: string;
+  path?: string;
+}
 interface ActivitySectionProps {
   items: ActivityItem[];
   taskId?: string;
@@ -63,23 +63,23 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
     taskId ?? '',
     editingId ?? ''
   );
- const { uploadAttachment } = useTaskAttachments(projectId ?? '', taskId ?? '');
+  const { uploadAttachment } = useTaskAttachments(projectId ?? '', taskId ?? '');
 
- const handleEditorImageUpload = async (file: File): Promise<string> => {
-   const formData = new FormData();
-   formData.append('file', file);
-   const result = await uploadAttachment.mutateAsync(formData);
-   const attachment = result?.data?.[0] as UploadedAttachment | undefined;
-   if (!attachment) {
-     throw new Error('No attachment returned from upload API');
-   }
-   const imageUrl =
-     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
-   if (!imageUrl) {
-     throw new Error('Uploaded attachment does not contain an image URL');
-   }
-   return imageUrl;
- };
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const result = await uploadAttachment.mutateAsync(formData);
+    const attachment = result?.data?.[0] as UploadedAttachment | undefined;
+    if (!attachment) {
+      throw new Error('No attachment returned from upload API');
+    }
+    const imageUrl =
+      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+    if (!imageUrl) {
+      throw new Error('Uploaded attachment does not contain an image URL');
+    }
+    return imageUrl;
+  };
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);

@@ -123,12 +123,12 @@ export const useSignin = () => {
       dispatch(clearUser());
       dispatch(clearSelectedProject());
       Cookies.remove('org_slug', { path: '/' });
-      
+
       // Clear all localStorage
       if (typeof window !== 'undefined') {
         localStorage.clear();
       }
-      
+
       queryClient.cancelQueries();
       window.location.href = '/signin';
     },

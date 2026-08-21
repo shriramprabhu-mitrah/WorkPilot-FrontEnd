@@ -22,8 +22,8 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
-const [isEditingDescription, setIsEditingDescription] = useState(false);
-const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
   const queryClient = useQueryClient();
@@ -69,7 +69,7 @@ const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map())
               file,
             });
             const uploaded = result?.data?.data?.[0] as
-              { url?: string; file_url?: string; file_path?: string; path?: string }| undefined;
+              { url?: string; file_url?: string; file_path?: string; path?: string } | undefined;
             const realUrl =
               uploaded?.url ?? uploaded?.file_url ?? uploaded?.file_path ?? uploaded?.path;
             if (realUrl) {
@@ -102,8 +102,6 @@ const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map())
 
     event.target.value = '';
   };
-
-  
 
   const handleRemoveAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));

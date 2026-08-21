@@ -774,7 +774,7 @@ export const UserStoryDetailDrawer = ({
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     const result = await uploadUserStoryAttachmentAsync({ userStoryId, file });
     const attachment = result?.data?.data?.[0] as unknown as UploadedAttachment;
-    
+
     if (!attachment) {
       throw new Error('No attachment returned from upload API');
     }

@@ -138,7 +138,7 @@ export const DashBoardTemplate = () => {
         variant="create"
       />
       <div className="space-y-4 md:space-y-6 w-full max-w-full">
-      {/* <StatCardsSection
+        {/* <StatCardsSection
         stats={[
           {
             ...STATS[0],
@@ -163,52 +163,52 @@ export const DashBoardTemplate = () => {
           },
         ]}
       /> */}
-      <StatCardsSection stats={STATS} />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 w-full max-w-full">
-        <div className="lg:col-span-2">
-          {/* <TaskStatusCard
+        <StatCardsSection stats={STATS} />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 w-full max-w-full">
+          <div className="lg:col-span-2">
+            {/* <TaskStatusCard
             taskStatus={taskStatus}
           /> */}
-          {/* <TaskStatusCard /> */}
-          <TaskStatusCard taskStatus={taskStatus} />
-        </div>
+            {/* <TaskStatusCard /> */}
+            <TaskStatusCard taskStatus={taskStatus} />
+          </div>
 
-        <div className="lg:col-span-3 w-full">
-          {/* <BurndownCard
+          <div className="lg:col-span-3 w-full">
+            {/* <BurndownCard
             chartHeight={300}
             burndownData={dashboard?.sprint_burndown ?? []}
           /> */}
-          <BurndownCard chartHeight={300} />
-        </div>
-        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
-          <SprintProgressCard
-            isMobile={false}
-            chartHeight={200}
-            labels={weekLabels}
-            planned={weeklyPlanned}
-            completed={weeklyCompleted}
-            title="Weekly Progress"
-            subtitle="Planned vs completed tasks by weekday"
-          />
-          {/* <TeamWorkloadCard
+            <BurndownCard chartHeight={300} />
+          </div>
+          <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
+            <SprintProgressCard
+              isMobile={false}
+              chartHeight={200}
+              labels={weekLabels}
+              planned={weeklyPlanned}
+              completed={weeklyCompleted}
+              title="Weekly Progress"
+              subtitle="Planned vs completed tasks by weekday"
+            />
+            {/* <TeamWorkloadCard
             chartHeight={200}
             labels={teamLabels}
             assigned={assignedTasks}
             completed={points}
           /> */}
-          <TeamWorkloadCard
-            chartHeight={200}
-            labels={teamLabels}
-            assigned={assignedTasks}
-            completed={completedTasks}
-          />
-        </div>
-        <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
-          <RecentActivityCard activities={activities} user={activityUser} />
-          <UpcomingDeadlines />
+            <TeamWorkloadCard
+              chartHeight={200}
+              labels={teamLabels}
+              assigned={assignedTasks}
+              completed={completedTasks}
+            />
+          </div>
+          <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
+            <RecentActivityCard activities={activities} user={activityUser} />
+            <UpcomingDeadlines />
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

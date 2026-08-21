@@ -97,10 +97,10 @@ const AddTaskModal = ({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const assigneeRef = useRef<HTMLDivElement>(null);
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(projectId);
-   const statusOptions = statuses.map((status) => ({
-     label: status.name,
-     value: status.id,
-   }));
+  const statusOptions = statuses.map((status) => ({
+    label: status.name,
+    value: status.id,
+  }));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -389,25 +389,25 @@ const AddTaskModal = ({
                 )}
               />
             </div>
-              <Controller
-                name="status_id"
-                control={control}
-                render={({ field }) => (
-                  <WpDropdown
-                    label="Status"
-                    options={statusOptions}
-                    value={field.value}
-                    onChange={(value) => {
-                      field.onChange(value);
-                      clearFieldError('status_id');
-                    }}
-                    placeholder={isLoadingStatus ? 'Loading statuses...' : 'Select status'}
-                    error={errors.status_id?.message}
-                    showRequired
-                    disabled={isLoadingStatus}
-                  />
-                )}
-              />
+            <Controller
+              name="status_id"
+              control={control}
+              render={({ field }) => (
+                <WpDropdown
+                  label="Status"
+                  options={statusOptions}
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    clearFieldError('status_id');
+                  }}
+                  placeholder={isLoadingStatus ? 'Loading statuses...' : 'Select status'}
+                  error={errors.status_id?.message}
+                  showRequired
+                  disabled={isLoadingStatus}
+                />
+              )}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

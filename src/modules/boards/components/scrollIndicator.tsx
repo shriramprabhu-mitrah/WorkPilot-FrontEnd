@@ -9,7 +9,11 @@ interface ScrollIndicatorProps {
   userStoriesCount: number;
 }
 
-export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount }: ScrollIndicatorProps) => {
+export const ScrollIndicator = ({
+  scrollContainerRef,
+  statuses,
+  userStoriesCount,
+}: ScrollIndicatorProps) => {
   const [scrollState, setScrollState] = useState({
     scrollLeft: 0,
     scrollTop: 0,
@@ -28,14 +32,8 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
     if (!container) return;
 
     const updateScrollState = () => {
-      const {
-        scrollLeft,
-        scrollTop,
-        scrollWidth,
-        scrollHeight,
-        clientWidth,
-        clientHeight,
-      } = container;
+      const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } =
+        container;
 
       setScrollState({
         scrollLeft,
@@ -67,7 +65,7 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
 
     // Listen to scroll events
     container.addEventListener('scroll', updateScrollState);
-    
+
     // Listen to resize to update dimensions
     const resizeObserver = new ResizeObserver(updateScrollState);
     resizeObserver.observe(container);
@@ -96,14 +94,8 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
     };
   }, [isDragging]);
 
-  const {
-    scrollLeft,
-    scrollTop,
-    scrollWidth,
-    scrollHeight,
-    clientWidth,
-    clientHeight,
-  } = scrollState;
+  const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } =
+    scrollState;
 
   // Calculate if content is scrollable
   const hasHorizontalScroll = scrollWidth > clientWidth;
@@ -116,15 +108,13 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
   const padding = 6; // Increased padding
 
   // Calculate the viewport box dimensions (proportional to visible area)
-  const viewportBoxWidth =
-    hasHorizontalScroll
-      ? Math.max(20, (clientWidth / scrollWidth) * (indicatorWidth - padding * 2))
-      : indicatorWidth - padding * 2;
+  const viewportBoxWidth = hasHorizontalScroll
+    ? Math.max(20, (clientWidth / scrollWidth) * (indicatorWidth - padding * 2))
+    : indicatorWidth - padding * 2;
 
-  const viewportBoxHeight =
-    hasVerticalScroll
-      ? Math.max(20, (clientHeight / scrollHeight) * (indicatorHeight - padding * 2))
-      : indicatorHeight - padding * 2;
+  const viewportBoxHeight = hasVerticalScroll
+    ? Math.max(20, (clientHeight / scrollHeight) * (indicatorHeight - padding * 2))
+    : indicatorHeight - padding * 2;
 
   // Calculate the position of the viewport box within the indicator
   const maxScrollLeft = scrollWidth - clientWidth;
@@ -181,7 +171,7 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
   const statusColumnWidth = 240; // Approximate width of each status column
   const totalBoardWidth = storyColumnWidth + statuses.length * statusColumnWidth;
   const availableWidth = indicatorWidth - padding * 2;
-  
+
   // Story column takes proportional space
   const indicatorStoryWidth = (storyColumnWidth / totalBoardWidth) * availableWidth;
   const indicatorStatusWidth = (statusColumnWidth / totalBoardWidth) * availableWidth;
@@ -217,7 +207,7 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
             className="flex-shrink-0 border-r-2 border-gray-400 bg-gray-100/80"
             style={{ width: `${indicatorStoryWidth}px` }}
           />
-          
+
           {/* Status columns */}
           {statuses.map((status, index) => (
             <div
@@ -267,9 +257,9 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
           }}
         >
           {/* Render columns inside viewport - they will be clipped to show only visible portion */}
-          <div 
+          <div
             className="absolute inset-0 flex"
-            style={{ 
+            style={{
               left: `-${viewportBoxLeft - padding}px`,
             }}
           >
@@ -278,7 +268,7 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
               className="flex-shrink-0 border-r-2 border-blue-400/60"
               style={{ width: `${indicatorStoryWidth}px` }}
             />
-            
+
             {/* Status columns */}
             {statuses.map((status, index) => (
               <div
@@ -286,7 +276,8 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
                 className="flex-shrink-0 relative"
                 style={{
                   width: `${indicatorStatusWidth}px`,
-                  borderRight: index < statuses.length - 1 ? '2px solid rgba(96, 165, 250, 0.6)' : 'none',
+                  borderRight:
+                    index < statuses.length - 1 ? '2px solid rgba(96, 165, 250, 0.6)' : 'none',
                 }}
               >
                 <div className="absolute inset-0 bg-white/20" />
@@ -298,17 +289,9 @@ export const ScrollIndicator = ({ scrollContainerRef, statuses, userStoriesCount
 
       {/* Scroll percentage text */}
       <div className="absolute -top-7 right-0 text-xs font-semibold text-gray-700 bg-white px-2.5 py-1 rounded-md shadow-md border border-gray-200">
-        {hasHorizontalScroll && (
-          <span>
-            {Math.round((scrollLeft / maxScrollLeft) * 100)}%
-          </span>
-        )}
+        {hasHorizontalScroll && <span>{Math.round((scrollLeft / maxScrollLeft) * 100)}%</span>}
         {hasHorizontalScroll && hasVerticalScroll && <span className="mx-1.5">·</span>}
-        {hasVerticalScroll && (
-          <span>
-            {Math.round((scrollTop / maxScrollTop) * 100)}%
-          </span>
-        )}
+        {hasVerticalScroll && <span>{Math.round((scrollTop / maxScrollTop) * 100)}%</span>}
       </div>
 
       {/* Hint text on first hover */}
