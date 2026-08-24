@@ -37,7 +37,7 @@ export const TeamTemplate = () => {
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
   const projects = userProjects?.data?.project ?? [];
 
-  if (isTeamMembersLoading) return <TeamMemberCardSkeleton page />;
+  if (isTeamMembersLoading) return <TeamMemberCardSkeleton />;
 
   return (
     <div className="flex flex-col gap-8 h-full overflow-y-auto [scrollbar-width:thin]">

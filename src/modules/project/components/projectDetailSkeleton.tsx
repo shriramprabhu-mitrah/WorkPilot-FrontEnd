@@ -11,15 +11,17 @@ export default function ProjectDetailSkeleton() {
       </div>
 
       {/* Project Header Card */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-black">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Skeleton className="h-11 w-11 rounded-xl" />
+
             <div>
-              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="mb-2 h-6 w-48" />
               <Skeleton className="h-4 w-72" />
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             <Skeleton className="h-6 w-16 rounded-full" />
             <Skeleton className="h-8 w-8 rounded-lg" />
@@ -27,24 +29,30 @@ export default function ProjectDetailSkeleton() {
           </div>
         </div>
 
-        <div className="my-5 border-t border-gray-100" />
+        <div className="my-5 border-t border-gray-100 dark:border-gray-800" />
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i}>
-              <Skeleton className="h-3 w-16 mb-2" />
+              <Skeleton className="mb-2 h-3 w-16" />
               <Skeleton className="h-5 w-24" />
             </div>
           ))}
+
           <div>
-            <Skeleton className="h-3 w-24 mb-2" />
+            <Skeleton className="mb-2 h-3 w-24" />
+
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-8 rounded-full border-2 border-white" />
+                  <Skeleton
+                    key={i}
+                    className="h-8 w-8 rounded-full border-2 border-white dark:border-black"
+                  />
                 ))}
               </div>
+
               <Skeleton className="h-4 w-8" />
             </div>
           </div>
@@ -54,6 +62,7 @@ export default function ProjectDetailSkeleton() {
       {/* Sprints Header */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-6 w-20" />
+
         <div className="flex items-center gap-3">
           <Skeleton className="h-9 w-28 rounded-lg" />
           <Skeleton className="h-9 w-28 rounded-lg" />
@@ -63,12 +72,16 @@ export default function ProjectDetailSkeleton() {
       {/* Sprint Cards */}
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-white shadow-sm p-5">
+          <div
+            key={i}
+            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-black"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <Skeleton className="h-5 w-40 mb-2" />
+                <Skeleton className="mb-2 h-5 w-40" />
                 <Skeleton className="h-3 w-56" />
               </div>
+
               <div className="flex items-center gap-2">
                 <Skeleton className="h-6 w-16 rounded-full" />
                 <Skeleton className="h-7 w-7 rounded-lg" />

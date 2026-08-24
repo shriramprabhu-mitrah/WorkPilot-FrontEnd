@@ -23,7 +23,6 @@ export const ProjectSelectionPopover = ({
 
   useEffect(() => {
     if (show) {
-      // Small delay to allow the component to mount before animating
       const timer = setTimeout(() => setIsVisible(true), 100);
       return () => clearTimeout(timer);
     } else {
@@ -45,7 +44,7 @@ export const ProjectSelectionPopover = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/20 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-black/20 dark:bg-black/50 transition-opacity duration-300 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onDismiss}
@@ -53,20 +52,20 @@ export const ProjectSelectionPopover = ({
 
       {/* Popover */}
       <div
-        className={`fixed z-50 w-[320px] bg-white rounded-xl shadow-2xl border border-gray-200 transition-all duration-300 transform ${
-          isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        className={`fixed z-50 w-[320px] transform rounded-xl border border-gray-200 bg-white shadow-2xl transition-all duration-300 dark:border-gray-800 dark:bg-gray-100 ${
+          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         style={{
           left: '88px',
           top: '50px',
         }}
       >
-        {/* Arrow pointing to sidebar */}
+        {/* Arrow */}
         <div className="absolute -left-4 top-8">
           <div className="relative">
             <ArrowLeft
               size={32}
-              className="drop-shadow-lg animate-pulse"
+              className="animate-pulse drop-shadow-lg"
               style={{ color: colors.primary }}
               strokeWidth={2.5}
             />
@@ -74,20 +73,22 @@ export const ProjectSelectionPopover = ({
         </div>
 
         {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-gray-100">
+        <div className="flex items-start justify-between border-b border-gray-100 p-4 dark:border-gray-800 dark:bg-gray-100">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-gray-900">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
               {isCreateVariant ? 'Create Your First Project' : 'Select a Project & Sprint'}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
+
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
               {isCreateVariant
                 ? 'Get started by creating a new project'
                 : 'Get started by choosing your workspace'}
             </p>
           </div>
+
           <button
             onClick={onDismiss}
-            className="ml-2 p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="ml-2 rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-gray-800 dark:hover:text-slate-100"
             aria-label="Close"
           >
             <X size={16} />
@@ -97,46 +98,55 @@ export const ProjectSelectionPopover = ({
         {/* Content */}
         <div className="p-4">
           {isCreateVariant ? (
-            // Create Project Content
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{ backgroundColor: colors.primary }}
                 >
                   <Plus size={16} />
                 </div>
+
                 <div>
-                  <p className="text-sm font-medium text-gray-900">No projects yet</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    No projects yet
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                     You need to create a project to get started with your workspace
                   </p>
                 </div>
               </div>
 
               <div
-                className="mt-4 p-3 rounded-lg border"
-                style={{ backgroundColor: colors.primaryLight, borderColor: colors.primary }}
+                className="mt-4 rounded-lg border p-3 dark:bg-gray-900"
+                style={{
+                  backgroundColor: colors.primaryLight,
+                  borderColor: colors.primary,
+                }}
               >
-                <p className="text-xs text-gray-700">
-                  <span className="font-semibold">Note:</span> Projects help you organize your work,
-                  manage sprints, and track tasks efficiently
+                <p className="text-xs text-gray-700 dark:text-slate-300">
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">Note:</span>{' '}
+                  Projects help you organize your work, manage sprints, and track tasks efficiently
                 </p>
               </div>
             </div>
           ) : (
-            // Select Project Content
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{ backgroundColor: colors.primary }}
                 >
                   1
                 </div>
+
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Click on the project selector</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    Click on the project selector
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                     Look for the workspace selector on the left sidebar
                   </p>
                 </div>
@@ -144,14 +154,18 @@ export const ProjectSelectionPopover = ({
 
               <div className="flex items-start gap-3">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{ backgroundColor: colors.primary }}
                 >
                   2
                 </div>
+
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Choose your project</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    Choose your project
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                     Select from your available projects
                   </p>
                 </div>
@@ -159,26 +173,33 @@ export const ProjectSelectionPopover = ({
 
               <div className="flex items-start gap-3">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{ backgroundColor: colors.primary }}
                 >
                   3
                 </div>
+
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Select a sprint</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    Select a sprint
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                     Pick a specific sprint or view all sprints
                   </p>
                 </div>
               </div>
 
               <div
-                className="mt-4 p-3 rounded-lg border"
-                style={{ backgroundColor: colors.primaryLight, borderColor: colors.primary }}
+                className="mt-4 rounded-lg border p-3 dark:bg-gray-900"
+                style={{
+                  backgroundColor: colors.primaryLight,
+                  borderColor: colors.primary,
+                }}
               >
-                <p className="text-xs text-gray-700">
-                  <span className="font-semibold">Tip:</span> You can change your selection anytime
-                  by clicking the project selector again
+                <p className="text-xs text-gray-700 dark:text-slate-300">
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">Tip:</span> You
+                  can change your selection anytime by clicking the project selector again
                 </p>
               </div>
             </div>
@@ -186,11 +207,11 @@ export const ProjectSelectionPopover = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="border-t border-gray-100 p-4 dark:border-gray-800">
           {isCreateVariant ? (
             <button
               onClick={handleCreateProject}
-              className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white transition-colors hover:opacity-90 flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: colors.primary }}
             >
               <Plus size={16} />
@@ -199,7 +220,7 @@ export const ProjectSelectionPopover = ({
           ) : (
             <button
               onClick={onDismiss}
-              className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white transition-colors hover:opacity-90"
+              className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: colors.primary }}
             >
               Got it!

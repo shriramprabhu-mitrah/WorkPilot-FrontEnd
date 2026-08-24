@@ -295,7 +295,7 @@ export const ScrollIndicator = ({
       </div>
 
       {/* Hint text on first hover */}
-      <div className="absolute -top-[52px] right-0 text-[10px] text-gray-500 dark:text-gray-400 bg-white/95 dark:bg-gray-800/95 px-2 py-0.5 rounded shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="absolute -top-[52px] right-0 text-[10px] text-gray-500 dark:text-gray-400 bg-white/95 dark:bg-gray-800/95 px-2 py-0.5 rounded shadow-sm border border-gray-200 dark:border-gray-700 dark:text-slate-100">
         Click to navigate
       </div>
     </div>

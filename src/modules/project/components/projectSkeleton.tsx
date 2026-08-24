@@ -2,13 +2,13 @@ import Skeleton from '@/src/app/components/common/skeleton';
 
 export default function ProjectSkeleton() {
   const card = (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <div className="flex items-start justify-between mb-5">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-black">
+      <div className="mb-5 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <Skeleton className="h-10 w-10 rounded-xl" />
 
           <div>
-            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="mb-2 h-6 w-40" />
             <Skeleton className="h-4 w-56" />
           </div>
         </div>
@@ -16,10 +16,10 @@ export default function ProjectSkeleton() {
         <Skeleton className="h-7 w-16 rounded-full" />
       </div>
 
-      <Skeleton className="h-4 w-20 mb-2" />
-      <Skeleton className="h-2 w-full rounded-full mb-4" />
+      <Skeleton className="mb-2 h-4 w-20" />
+      <Skeleton className="mb-4 h-2 w-full rounded-full" />
 
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-6" />
         <Skeleton className="h-4 w-24" />
       </div>

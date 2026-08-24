@@ -19,8 +19,8 @@ export const DashboardTemplate = () => {
     <div className="space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Super Admin Dashboard</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
           Platform-wide overview across all organizations
         </p>
       </div>
@@ -78,8 +78,8 @@ export const DashboardTemplate = () => {
       {/* Recent Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Organizations */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Organizations</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">Recent Organizations</h3>
           <div className="space-y-2">
             {recentOrganizations.map((org) => (
               <OrganizationCard key={org.id} organization={org} />
@@ -88,8 +88,8 @@ export const DashboardTemplate = () => {
         </div>
 
         {/* Recent Projects */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Projects</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">Recent Projects</h3>
           <div className="space-y-2">
             {recentProjects.map((project) => (
               <ProjectCard key={project.id} project={project} />
@@ -98,8 +98,8 @@ export const DashboardTemplate = () => {
         </div>
 
         {/* Recent Members */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Members</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">Recent Members</h3>
           <div className="space-y-2">
             {recentMembers.map((member) => (
               <MemberCard key={member.id} member={member} />
@@ -109,35 +109,35 @@ export const DashboardTemplate = () => {
       </div>
 
       {/* Organization Activity Overview Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200">
-          <h3 className="text-base font-semibold text-gray-900">Organization Activity Overview</h3>
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">Organization Activity Overview</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Organization
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Industry
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Projects
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Members
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Created
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {organizations.map((org) => {
                 const getInitials = (name: string) => {
                   return name
@@ -148,40 +148,44 @@ export const DashboardTemplate = () => {
                     .slice(0, 2);
                 };
 
-                const statusColor = org.status === 'Active' ? 'text-green-600' : 'text-gray-500';
-                const statusBg = org.status === 'Active' ? 'bg-green-50' : 'bg-gray-50';
+                const statusColor =
+                  org.status === 'Active'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-gray-500 dark:text-slate-400';
+                const statusBg =
+                  org.status === 'Active'
+                    ? 'bg-green-50 dark:bg-green-900/30'
+                    : 'bg-gray-50 dark:bg-slate-700';
 
                 return (
-                  <tr key={org.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={org.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors">
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-xs shrink-0">
                           {getInitials(org.name)}
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-gray-900">{org.name}</p>
-                          <p className="text-xs text-gray-500">{org.location}</p>
+                          <p className="font-medium text-sm text-gray-900 dark:text-slate-100">{org.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{org.location}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700">{org.industry}</span>
+                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.industry}</span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusColor} ${statusBg}`}
-                      >
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusColor} ${statusBg}`}>
                         {org.status}
                       </span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700">{org.projectCount}</span>
+                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.projectCount}</span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700">{org.memberCount}</span>
+                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.memberCount}</span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500">{org.created}</span>
+                      <span className="text-sm text-gray-500 dark:text-slate-400">{org.created}</span>
                     </td>
                   </tr>
                 );
