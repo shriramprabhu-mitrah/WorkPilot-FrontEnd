@@ -66,19 +66,19 @@ export interface TaskResponse {
 
 export interface UpdateTaskPayload {
   actual_hours?: number;
-  assignee_id?: string;
+  assignee_id?: string | null;
   blocked_reason?: string;
   description?: string;
-  due_date?: string;
+  due_date?: string | null;
   estimated_hours?: number;
   label_ids?: string[];
   priority?: string;
-  sprint_id?: string;
+  sprint_id?: string | null;
   status?: string;
   story_points?: number;
   title?: string;
   type?: string;
-  user_story_id?: string;
+  user_story_id?: string | null;
   status_id?: string;
 }
 

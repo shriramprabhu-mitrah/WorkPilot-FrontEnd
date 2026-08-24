@@ -10,18 +10,24 @@ export const PRIORITY_CONFIG: Record<Priority, { color: string; bg: string }> = 
   Low: { color: colors.priorityLowText, bg: colors.priorityLowBg },
 };
 
-export const PriorityDot = ({ priority }: { priority: Priority }) => (
-  <span
-    className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
-    style={{
-      color: PRIORITY_CONFIG[priority].color,
-      backgroundColor: PRIORITY_CONFIG[priority].bg,
-    }}
-  >
-    <Flag size={11} />
-    {priority}
-  </span>
-);
+export const PriorityDot = ({ priority }: { priority: string | Priority }) => {
+  const normalized = priority
+    ? ((priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) as Priority)
+    : 'Medium';
+  const config = PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
+      style={{
+        color: config.color,
+        backgroundColor: config.bg,
+      }}
+    >
+      <Flag size={11} />
+      {normalized}
+    </span>
+  );
+};
 
 type SubStatus = SubTask['status'];
 

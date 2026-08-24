@@ -1,10 +1,10 @@
 'use client';
 
-import { useDraggable } from '@dnd-kit/core';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { colors } from '@/src/styles/colors';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { GripVertical, Hash } from 'lucide-react';
+import { GripVertical, PlusCircle } from 'lucide-react';
 
 interface DraggableUserStoryProps {
   story: UserStoryResponse;
@@ -13,12 +13,35 @@ interface DraggableUserStoryProps {
 }
 
 export const DraggableUserStory = ({ story, projectId, onStoryClick }: DraggableUserStoryProps) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    transform,
+    isDragging,
+  } = useDraggable({
     id: `story-${story.id}`,
     data: {
+      type: 'story',
       storyId: story.id,
+      story,
     },
   });
+
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: `story-drop-${story.id}`,
+    data: {
+      type: 'story',
+      storyId: story.id,
+      sprintId: story.sprint_id ?? null,
+      story,
+    },
+  });
+
+  const setCombinedRef = (node: HTMLDivElement | null) => {
+    setDragRef(node);
+    setDropRef(node);
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -108,24 +131,27 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
 
   const priorityStyle = getPriorityStyle(story.priority);
   const statusStyle = getStatusStyle(story.status);
+  const taskCount = story.tasks?.length ?? story.total_tasks ?? 0;
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setCombinedRef}
       style={style}
       {...attributes}
       {...listeners}
+      data-story-drop-id={story.id}
       className={`
       flex items-center gap-3
       px-4 py-3
       border-b border-gray-100 dark:border-slate-700 last:border-0
       bg-white dark:bg-slate-800
       hover:bg-gray-50 dark:hover:bg-slate-700/50
-      transition-colors duration-150
+      transition-all duration-150
       ${isDragging ? 'bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50' : ''}
+      ${isOver ? 'bg-indigo-50/80 dark:bg-indigo-900/30 ring-2 ring-indigo-400 dark:ring-indigo-500 border-indigo-300 scale-[1.01] shadow-md z-40' : ''}
     `}
     >
-      {/* Drag Handle - UNCHANGED */}
+      {/* Drag Handle */}
       <span
         className={`
         shrink-0 p-1 rounded
@@ -138,7 +164,7 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       {/* Story Title */}
       <div onClick={handleClick} className="flex-1 min-w-0 cursor-pointer">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="min-w-0 max-w-[200px]">
+          <div className="min-w-0 max-w-[200px] sm:max-w-xs">
             <span
               title={story.title}
               className={`block truncate text-sm font-semibold ${
@@ -151,8 +177,24 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
               {story.title}
             </span>
           </div>
+          {isOver && (
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 px-2 py-0.5 rounded-full animate-pulse">
+              <PlusCircle size={12} />
+              Assign Task
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Tasks badge if available */}
+      {taskCount > 0 && (
+        <span
+          className="text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300"
+          title={`${taskCount} linked tasks`}
+        >
+          {taskCount} {taskCount === 1 ? 'task' : 'tasks'}
+        </span>
+      )}
 
       {/* Priority */}
       <span
@@ -170,26 +212,6 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       >
         {story.priority ?? 'medium'}
       </span>
-
-      {/* Story Points */}
-      {/* <span
-        className="
-        flex items-center justify-center
-        gap-1
-        text-xs
-        min-w-[48px]
-        px-2 py-1
-        rounded-md
-        bg-gray-50
-        border border-gray-100
-        shrink-0
-      "
-        style={{ color: colors.gray500 }}
-        title="Story points"
-      >
-        <Hash size={10} />
-        {story.story_points ?? 0}
-      </span> */}
 
       {/* Status */}
       <span
@@ -215,3 +237,4 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
     </div>
   );
 };
+

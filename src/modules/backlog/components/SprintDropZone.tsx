@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Inbox, Link } from 'lucide-react';
+import { ChevronDown, ChevronRight, Inbox } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
-import { colors } from '@/src/styles/colors';
 import { SprintDetail } from '@/src/types/project';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { DraggableUserStory } from './DraggableUserStory';
@@ -13,6 +12,7 @@ interface SprintDropZoneProps {
   sprint: SprintDetail;
   userStories: UserStoryResponse[];
   projectId: string;
+  activeDragType?: 'task' | 'story' | null;
   onStoryClick?: (story: UserStoryResponse) => void;
 }
 
@@ -20,15 +20,27 @@ export const SprintDropZone = ({
   sprint,
   userStories,
   projectId,
+  activeDragType,
   onStoryClick,
 }: SprintDropZoneProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const { setNodeRef, isOver } = useDroppable({
     id: `sprint-${sprint.id}`,
-    data: { sprintId: sprint.id },
+    data: {
+      type: 'sprint',
+      sprintId: sprint.id,
+      sprint,
+    },
   });
   const { push } = useOrgNavigation();
   const sprintStories = userStories.filter((story) => story.sprint_id === sprint.id);
+
+  const dropMessage =
+    activeDragType === 'task'
+      ? 'Drop task here to assign to sprint'
+      : activeDragType === 'story'
+        ? 'Drop user story here'
+        : 'Drop here to assign to sprint';
 
   return (
     <div
@@ -84,7 +96,7 @@ export const SprintDropZone = ({
               <div className="border-2 border-dashed border-blue-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
                 <div className="flex items-center justify-center gap-2">
                   <Inbox className="w-5 h-5 text-blue-600" />
-                  <p className="text-sm text-blue-700 font-semibold">Drop user story here</p>
+                  <p className="text-sm text-blue-700 font-semibold">{dropMessage}</p>
                 </div>
               </div>
             </div>
@@ -97,7 +109,7 @@ export const SprintDropZone = ({
                 No user stories assigned to this sprint
               </p>
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-center">
-                Drag stories here to assign them
+                Drag stories or tasks here to assign them
               </p>
             </div>
           ) : (
@@ -115,3 +127,4 @@ export const SprintDropZone = ({
     </div>
   );
 };
+
