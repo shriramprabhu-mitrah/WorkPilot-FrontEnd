@@ -1,4 +1,4 @@
-import { ProjectsTemplate } from '@/src/modules/super-admin/templates/ProjectsTemplate';
+import { ProjectsTemplate } from '@/src/modules/super-admin/templates/projectsTemplate';
 
 export const metadata = {
   title: 'Projects - Super Admin',

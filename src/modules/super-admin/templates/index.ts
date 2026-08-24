@@ -1,5 +1,5 @@
-export { DashboardTemplate } from './DashboardTemplate';
-export { OrganizationsTemplate } from './OrganizationsTemplate';
-export { OrganizationDetailTemplate } from './OrganizationDetailTemplate';
-export { ProjectsTemplate } from './ProjectsTemplate';
-export { MembersTemplate } from './MembersTemplate';
+export { DashboardTemplate } from './dashboardTemplate';
+export { OrganizationsTemplate } from './organizationsTemplate';
+export { OrganizationDetailTemplate } from './organizationDetailTemplate';
+export { ProjectsTemplate } from './projectsTemplate';
+export { MembersTemplate } from './membersTemplate';

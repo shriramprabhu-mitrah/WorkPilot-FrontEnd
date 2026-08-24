@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAppSelector } from '@/src/store';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import { LayoutDashboard, Building2, FolderKanban, Users, Settings, LogOut, X } from 'lucide-react';
@@ -13,7 +13,7 @@ const navItems = [
   { label: 'Organizations', path: '/super-admin/organizations', icon: Building2 },
   { label: 'Projects', path: '/super-admin/projects', icon: FolderKanban },
   { label: 'Members', path: '/super-admin/members', icon: Users },
-  { label: 'Settings', path: '/super-admin/settings', icon: Settings },
+  // { label: 'Settings', path: '/super-admin/settings', icon: Settings },
 ];
 
 interface SuperAdminSidebarProps {
@@ -23,7 +23,6 @@ interface SuperAdminSidebarProps {
 
 export const SuperAdminSidebar = ({ isOpen = true, onClose }: SuperAdminSidebarProps) => {
   const pathname = usePathname();
-  const router = useRouter();
   const user = useAppSelector((state) => state.user);
   const { handleLogOut } = useSignin();
 
