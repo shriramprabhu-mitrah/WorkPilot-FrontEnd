@@ -15,7 +15,7 @@ import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
 import { WpTextarea } from '@/src/app/components/common/textarea';
 import { useGetStatus } from '../hooks/useLabels';
-
+import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
 export interface Task {
   title: string;
   description?: string;
@@ -85,7 +85,7 @@ const AddTaskModal = ({
       taskName: '',
       description: '',
       assignee: '',
-      status_id: 'todo',
+      status_id: '',
       priority: 'low',
       type: 'task',
       dueDate: '',
@@ -119,13 +119,7 @@ const AddTaskModal = ({
     const requiredMessages: Partial<Record<keyof FormValues, string>> = {
       taskName: 'Task name is required',
       type: 'Type is required',
-      assignee: 'Assignee is required',
-      status_id: 'Status is required',
       priority: 'Priority is required',
-      storyPoints: 'Story points are required',
-      estimatedHours: 'Estimated hours are required',
-      actualHours: 'Actual hours are required',
-      dueDate: 'Due date is required',
     };
     if (!value && requiredMessages[field]) {
       setError(field, {
@@ -204,13 +198,7 @@ const AddTaskModal = ({
     const fieldsToValidate: (keyof FormValues)[] = [
       'taskName',
       'type',
-      'assignee',
-      'status_id',
       'priority',
-      'storyPoints',
-      'estimatedHours',
-      'actualHours',
-      'dueDate',
     ];
     for (const field of fieldsToValidate) {
       if (!validateField(field)) {
@@ -219,29 +207,41 @@ const AddTaskModal = ({
     }
     try {
       const data = getValues();
+
       const payload: TaskPayload = {
         title: data.taskName.trim(),
-        status_id: data.status_id,
         type: data.type,
         priority: data.priority,
-        estimated_hours: Number(data.estimatedHours),
       };
+
+      if (data.status_id) {
+        payload.status_id = data.status_id;
+      }
+
+      if (data.estimatedHours) {
+        payload.estimated_hours = Number(data.estimatedHours);
+      }
+
       if (data.description.trim()) {
         payload.description = data.description.trim();
       }
+
       if (data.assignee) {
         payload.assignee_id = data.assignee;
       }
+
       if (data.dueDate) {
         payload.due_date = formatISODateTime(data.dueDate);
       }
-      // Use userStoryId if provided, otherwise use sprintId
+
       if (userStoryId) {
         payload.user_story_id = userStoryId;
       }
+
       if (data.storyPoints) {
         payload.story_points = Number(data.storyPoints);
       }
+
       if (data.actualHours) {
         payload.actual_hours = Number(data.actualHours);
       }
@@ -263,7 +263,7 @@ const AddTaskModal = ({
         });
       }
       onClose();
-    } catch (error) {}
+    } catch (error) { }
   };
   const taskNameRegister = register('taskName');
   const descriptionRegister = register('description');
@@ -343,7 +343,6 @@ const AddTaskModal = ({
                       id="assignee"
                       label="Assignee"
                       placeholder="Search assignee..."
-                      showRequired
                       value={memberSearch}
                       onFocus={() => {
                         setShowAssigneeDropdown(true);
@@ -403,7 +402,6 @@ const AddTaskModal = ({
                   }}
                   placeholder={isLoadingStatus ? 'Loading statuses...' : 'Select status'}
                   error={errors.status_id?.message}
-                  showRequired
                   disabled={isLoadingStatus}
                 />
               )}
@@ -417,7 +415,7 @@ const AddTaskModal = ({
               render={({ field }) => (
                 <WpDatePicker
                   label="Due Date"
-                  required
+
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
@@ -467,7 +465,6 @@ const AddTaskModal = ({
                   clearFieldError('storyPoints');
                 }
               }}
-              showRequired
             />
             <WpInput
               id="estimatedHours"
@@ -483,7 +480,6 @@ const AddTaskModal = ({
                 estimatedHoursRegister.onChange(e);
                 clearFieldError('estimatedHours');
               }}
-              showRequired
             />
 
             <WpInput
@@ -499,7 +495,6 @@ const AddTaskModal = ({
                 actualHoursRegister.onChange(e);
                 clearFieldError('actualHours');
               }}
-              showRequired
             />
           </div>
         </div>

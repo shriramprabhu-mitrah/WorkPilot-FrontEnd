@@ -7,8 +7,8 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import type { AddSprintFormValues } from './addSprint';
 
-const formatShort = (d: string) =>
-  new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+// const formatShort = (d: string) =>
+//   new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 interface SprintAccordionItemProps {
   index: number;
@@ -32,14 +32,14 @@ const SprintAccordionItem = ({
   const watched = useWatch({ control, name: `sprints.${index}` });
   const sprintErrors = errors.sprints?.[index];
   const hasError = !!sprintErrors;
-  const startDate = watched?.start_date;
-  const endDate = watched?.end_date;
-  const datePreview =
-    startDate && endDate
-      ? `${formatShort(startDate)} → ${formatShort(endDate)}`
-      : startDate
-        ? `From ${formatShort(startDate)}`
-        : null;
+  // const startDate = watched?.start_date;
+  // const endDate = watched?.end_date;
+  // const datePreview =
+  //   startDate && endDate
+  //     ? `${formatShort(startDate)} → ${formatShort(endDate)}`
+  //     : startDate
+  //       ? `From ${formatShort(startDate)}`
+  //       : null;
 
   return (
     <div
@@ -61,7 +61,7 @@ const SprintAccordionItem = ({
             {index + 1}
           </span>
           <span className="text-sm font-medium">{watched?.name || `Sprint ${index + 1}`}</span>
-          {!isOpen && datePreview && <span className="text-xs text-gray-400 dark:text-slate-500">{datePreview}</span>}
+          {/* {!isOpen && datePreview && <span className="text-xs text-gray-400 dark:text-slate-500">{datePreview}</span>} */}
           {!isOpen && hasError && (
             <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
@@ -84,7 +84,8 @@ const SprintAccordionItem = ({
             label="Goal"
             {...register(`sprints.${index}.goal`)}
           />
-          <div className="grid grid-cols-2 gap-3">
+          {/* future purpose
+           <div className="grid grid-cols-2 gap-3">
             <WpInput
               id={`start-date-${index}`}
               type="date"
@@ -101,7 +102,7 @@ const SprintAccordionItem = ({
               error={sprintErrors?.end_date?.message}
               {...register(`sprints.${index}.end_date`)}
             />
-          </div>
+          </div> */}
         </div>
       )}
     </div>

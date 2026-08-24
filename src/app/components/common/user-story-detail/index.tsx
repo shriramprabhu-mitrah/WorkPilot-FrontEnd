@@ -2365,6 +2365,7 @@ export const UserStoryDetailDrawer = ({
                     )}
                   </div>
                 </DetailRow>
+                {/* future purpose
                 <DetailRow label="Start Date">
                   <span className="text-sm text-gray-700">
                     {userStoryData.start_date
@@ -2375,14 +2376,14 @@ export const UserStoryDetailDrawer = ({
                       })
                       : 'None'}
                   </span>
-                </DetailRow>
+                </DetailRow> */}
 
                 <DetailRow label="Due Date">
                   <EditableDate
                     value={userStoryData.due_date}
                     onChange={(dueDate) => handleUpdate({ due_date: dueDate })}
                     placeholder="Set due date"
-                    includeTime={true}
+                    includeTime={false}
                   />
                 </DetailRow>
               </div>

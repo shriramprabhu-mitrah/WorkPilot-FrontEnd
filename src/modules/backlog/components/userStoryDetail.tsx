@@ -79,7 +79,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
     description: '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -99,10 +99,10 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
   const formatDate = (dateStr?: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '-';
 
   const handleTaskCreated = async () => {
@@ -239,15 +239,14 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           <div>
             <p className="text-xs text-gray-400 dark:text-slate-500">PRIORITY</p>
             <span
-              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                userStory.priority === 'critical'
-                  ? 'bg-red-50 text-red-600'
-                  : userStory.priority === 'high'
-                    ? 'bg-orange-50 text-orange-600'
-                    : userStory.priority === 'medium'
-                      ? 'bg-yellow-50 text-yellow-600'
-                      : 'bg-green-50 text-green-600'
-              }`}
+              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${userStory.priority === 'critical'
+                ? 'bg-red-50 text-red-600'
+                : userStory.priority === 'high'
+                  ? 'bg-orange-50 text-orange-600'
+                  : userStory.priority === 'medium'
+                    ? 'bg-yellow-50 text-yellow-600'
+                    : 'bg-green-50 text-green-600'
+                }`}
             >
               {userStory.priority
                 ? userStory.priority.charAt(0).toUpperCase() + userStory.priority.slice(1)
@@ -364,15 +363,14 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                 <div className="flex shrink-0 items-center gap-2">
                   {/* Priority */}
                   <span
-                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                      task.priority === 'critical'
-                        ? 'bg-red-50 text-red-600'
-                        : task.priority === 'high'
-                          ? 'bg-orange-50 text-orange-600'
-                          : task.priority === 'medium'
-                            ? 'bg-yellow-50 text-yellow-600'
-                            : 'bg-green-50 text-green-600'
-                    }`}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${task.priority === 'critical'
+                      ? 'bg-red-50 text-red-600'
+                      : task.priority === 'high'
+                        ? 'bg-orange-50 text-orange-600'
+                        : task.priority === 'medium'
+                          ? 'bg-yellow-50 text-yellow-600'
+                          : 'bg-green-50 text-green-600'
+                      }`}
                   >
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                   </span>

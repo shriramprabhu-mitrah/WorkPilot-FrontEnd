@@ -28,6 +28,7 @@ import { BacklogRow } from '../components/BacklogRow';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
+import StartSprintModal from '../components/startSprintModal';
 import { useAppSelector } from '@/src/store';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
@@ -82,15 +83,13 @@ export const BacklogTemplate = () => {
     Map<string, { sprintId: string | null; timestamp: number }>
   >(new Map());
   const [unassignedTasksOpen, setUnassignedTasksOpen] = useState(true);
-
+  const [showStartSprintModal, setShowStartSprintModal] = useState(false);
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const selectedProject = selectedApiProject?.id ?? '';
   const selectedSprint = selectedSprintStore?.id ?? '';
-
   // Debounce member search for API calls
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
-
   // Get project members with search
   const {
     members: projectMembers,
@@ -609,7 +608,8 @@ export const BacklogTemplate = () => {
                 wrapperClassName="w-full sm:w-64"
               />
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              {/* Create User Story */}
               <WpButton
                 size="sm"
                 leftIcon={<Plus size={14} />}
@@ -620,6 +620,31 @@ export const BacklogTemplate = () => {
                 <span className="hidden sm:inline">Create User Story</span>
                 <span className="sm:hidden">Create</span>
               </WpButton>
+
+              <div className="flex items-center gap-2">
+                {/* Start Sprint */}
+                <WpButton
+                  size="sm"
+                  variant="secondary"
+                  disabled={!selectedProject}
+                  onClick={() => setShowStartSprintModal(true)}
+                  className="whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Start Sprint</span>
+                  <span className="sm:hidden">Start</span>
+                </WpButton>
+
+                {/* Complete Sprint */}
+                <WpButton
+                  size="sm"
+                  variant="secondary"
+                  disabled
+                  className="whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Complete Sprint</span>
+                  <span className="sm:hidden">Complete</span>
+                </WpButton>
+              </div>
             </div>
           </div>
         </div>
@@ -640,18 +665,16 @@ export const BacklogTemplate = () => {
                 <div
                   ref={backlogRefCallback}
                   data-backlog-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
-                    isOverBacklog
-                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
-                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                  }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${isOverBacklog
+                    ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <div
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
-                      isOverBacklog
-                        ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
-                        : 'border-gray-100 dark:border-slate-700'
-                    }`}
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${isOverBacklog
+                      ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
+                      : 'border-gray-100 dark:border-slate-700'
+                      }`}
                   >
                     <span
                       className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-slate-100'}`}
@@ -659,11 +682,10 @@ export const BacklogTemplate = () => {
                       Unassigned UserStories
                     </span>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-                        isOverBacklog
-                          ? 'bg-green-200 text-green-800 scale-110'
-                          : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
-                      }`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${isOverBacklog
+                        ? 'bg-green-200 text-green-800 scale-110'
+                        : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
+                        }`}
                     >
                       {unassignedStories.length}{' '}
                       {unassignedStories.length === 1 ? 'story' : 'stories'}
@@ -739,11 +761,10 @@ export const BacklogTemplate = () => {
                 {/* Unassigned Tasks Section - Droppable for unassigning */}
                 <div
                   ref={setUnassignedTasksNodeRef}
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
-                    isOverUnassignedTasks && activeTask
-                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
-                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                  }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${isOverUnassignedTasks && activeTask
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <div
                     className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors select-none border-b border-gray-100 dark:border-slate-700"
@@ -1057,6 +1078,17 @@ export const BacklogTemplate = () => {
           onSuccess={async () => {
             await refetchSprints();
             setShowAddSprintModal(false);
+          }}
+        />
+      )}
+
+      {showStartSprintModal && (
+        <StartSprintModal
+          sprint={selectedSprintStore ?? { id: '', name: '' }}
+          onClose={() => setShowStartSprintModal(false)}
+          onStart={() => {
+            setShowStartSprintModal(false);
+            refetchSprints();
           }}
         />
       )}

@@ -161,16 +161,13 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
   }
 
   return (
-    <div className="group flex flex-wrap sm:flex-nowrap min-h-[52px] items-center gap-3 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]">
+    <div className="group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]">
       <GripVertical size={16} className="hidden sm:block shrink-0 text-transparent transition-colors group-hover:text-slate-300 dark:group-hover:text-slate-600" />
       <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10" style={{ backgroundColor: status.color }} />
-      <span className="w-[620px] shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
         {status.name}
       </span>
-      {/* <span className="hidden sm:block min-w-0 flex-1 truncate text-sm text-slate-400 dark:text-slate-500">
-        {status.slug}
-      </span> */}
-      <span className="hidden sm:flex w-20 shrink-0 justify-center">
+      <span className="hidden sm:flex w-full justify-center">
         <ClosedCheck checked={status.isClosed} />
       </span>
       {showArchived && (
@@ -178,7 +175,7 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
           <ClosedCheck checked={status.isArchived} />
         </span>
       )}
-      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="ml-auto flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <WpButton type="button" variant="ghost" size="sm" onClick={onEdit} aria-label="Edit" className="!h-8 !w-8 !p-0">
           <Pencil size={14} />
         </WpButton>
@@ -493,8 +490,8 @@ function StatusSection({
   };
   return (
     <div className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${isOpen
-        ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
-        : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
+      ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
+      : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
       } bg-white dark:bg-slate-800`}>
       {/* Section header */}
       <div className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${isOpen ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
@@ -539,26 +536,30 @@ function StatusSection({
       </div>
 
       {isOpen && (
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-hidden">
           {/* Column headers — desktop */}
-          <div className="hidden sm:flex min-w-[420px] items-center gap-3 px-4 py-2">
-            <span className="w-4 shrink-0" />
+          <div className="hidden sm:grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 px-4 py-2">
+            <span />
 
-            <span className="w-8 shrink-0 text-xs font-semibold text-slate-500">
+            <span className="text-xs font-semibold text-slate-500">
               Color
             </span>
 
-            <span className="w-[620px] shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="min-w-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
               Name
             </span>
 
-            <span className="w-20 shrink-0 flex justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="text-center -translate-x-17 text-xs font-semibold text-slate-500 dark:text-slate-400">
               Closed?
             </span>
+
             {config.showArchived && (
-              <span className="w-20 shrink-0 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Archived</span>
+              <span className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Archived
+              </span>
             )}
 
+            <span />
           </div>
 
           <div>

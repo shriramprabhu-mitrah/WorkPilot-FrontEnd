@@ -149,9 +149,8 @@ const StatusCell = ({
         ...(isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}),
         ...(needsScroll ? { maxHeight: '400px', overflowY: 'scroll' } : {}),
       }}
-      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${
-        isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
-      }`}
+      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
+        }`}
     >
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2">
@@ -196,9 +195,8 @@ const UserStoryRow = ({
               aria-label={isExpanded ? 'Collapse story tasks' : 'Expand story tasks'}
             >
               <svg
-                className={`w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out ${
-                  isExpanded ? 'rotate-90' : ''
-                }`}
+                className={`w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-90' : ''
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -242,10 +240,8 @@ const UserStoryRow = ({
               />
               <div className="flex-1 min-w-0">
                 <h3
-                  className={`text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors dark:text-slate-100 ${
-                    story.is_closed ? 'line-through' : ''
-                  }`}
-                  title={story.title}
+                  className={`text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors dark:text-slate-100 ${story.is_closed ? 'line-through' : ''
+                    }`}
                 >
                   {story.title}
                 </h3>
@@ -263,6 +259,16 @@ const UserStoryRow = ({
                       top: popupPosition.y + 12,
                     }}
                   >
+                    {/* Name */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Name
+                      </span>
+
+                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {story.title}
+                      </span>
+                    </div>
                     <div className="space-y-3">
                       {/* Status */}
                       <div className="flex items-center justify-between gap-4">
@@ -272,57 +278,56 @@ const UserStoryRow = ({
                         </span>
                       </div>
 
-                    {/* Assignee */}
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Assignee</span>
-                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
-                        {story.assignee_name || story.assignee?.name || 'Unassigned'}
-                      </span>
-                    </div>
+                      {/* Assignee */}
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Assignee</span>
+                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                          {story.assignee_name || story.assignee?.name || 'Unassigned'}
+                        </span>
+                      </div>
 
-                    {/* Due Date */}
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Due Date</span>
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                        {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
-                      </span>
-                    </div>
+                      {/* Due Date */}
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Due Date</span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                          {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
+                        </span>
+                      </div>
 
-                    {/* Reporter */}
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Reporter</span>
-                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
-                        {story.reporter_name || story.reporter?.name || '-'}
-                      </span>
-                    </div>
+                      {/* Reporter */}
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Reporter</span>
+                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                          {story.reporter_name || story.reporter?.name || '-'}
+                        </span>
+                      </div>
 
-                    {/* Priority */}
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
-                        {story.priority || '-'}
-                      </span>
+                      {/* Priority */}
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
+                          {story.priority || '-'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </div>,
-                document.body
-              )}
+                  </div>,
+                  document.body
+                )}
+            </div>
           </div>
-        </div>
 
-        {/* Empty status columns for header row */}
-        {statuses.map((status) => {
-          const isCollapsed = collapsedStatuses.has(status.id);
-          return (
-            <div
-              key={status.id}
-              className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-              }`}
-            />
-          );
-        })}
-      </div>
+          {/* Empty status columns for header row */}
+          {statuses.map((status) => {
+            const isCollapsed = collapsedStatuses.has(status.id);
+            return (
+              <div
+                key={status.id}
+                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                  }`}
+              />
+            );
+          })}
+        </div>
 
         {statuses.map((status) => {
           const tasks = story.tasksByStatus.get(status.id) || [];
@@ -332,17 +337,15 @@ const UserStoryRow = ({
           return (
             <div
               key={status.id}
-              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
-                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-              }`}
+              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                }`}
             >
               {/* Expanded Tasks with smooth CSS Grid animation */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  isExpanded && !isCollapsed
-                    ? 'grid-rows-[1fr] opacity-100'
-                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${isExpanded && !isCollapsed
+                  ? 'grid-rows-[1fr] opacity-100'
+                  : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                  }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <StatusCell
@@ -357,11 +360,10 @@ const UserStoryRow = ({
 
               {/* Collapsed summary with smooth transition */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  !isExpanded || isCollapsed
-                    ? 'grid-rows-[1fr] opacity-100'
-                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${!isExpanded || isCollapsed
+                  ? 'grid-rows-[1fr] opacity-100'
+                  : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                  }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <div className="h-[52px] p-2 flex items-center justify-center">
@@ -573,16 +575,16 @@ export const KanbanBoardTemplate = () => {
         title: task.title ?? '',
         priority: task.priority
           ? ((task.priority.charAt(0).toUpperCase() +
-              task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+            task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
           : 'Medium',
         labels: [],
         assigneeInitials: task.assignee_name
           ? task.assignee_name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
           : '',
         assigneeColor: colors.avatarBlue,
         storyPoints: task.story_points ?? 0,
@@ -861,10 +863,10 @@ export const KanbanBoardTemplate = () => {
                   data: oldData.data.map((t) =>
                     t.id === task.taskId
                       ? {
-                          ...t,
-                          status_id: targetStatusId,
-                          ...(storyChanged && { user_story_id: targetStoryId }),
-                        }
+                        ...t,
+                        status_id: targetStatusId,
+                        ...(storyChanged && { user_story_id: targetStoryId }),
+                      }
                       : t
                   ),
                 };
@@ -989,9 +991,8 @@ export const KanbanBoardTemplate = () => {
                   <button
                     key={member.id}
                     onClick={() => toggleAssigneeFilter(userId, memberName)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
-                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
-                    }`}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+                      }`}
                     style={{ backgroundColor: avatarColor }}
                     title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
                   >
@@ -1049,9 +1050,8 @@ export const KanbanBoardTemplate = () => {
                   return (
                     <div
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
-                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                      }`}
+                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                        }`}
                     >
                       {!isCollapsed ? (
                         <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">

@@ -9,24 +9,28 @@ import { WpButton } from '@/src/app/components/common/button';
 import { useCreateSprint } from '../hooks/useSprint';
 import { SprintPayload } from '@/src/types/project';
 import SprintAccordionItem from './sprintAccordionItem';
-
-const today = new Date().toISOString().split('T')[0];
-
-const sprintItemSchema = z
-  .object({
-    name: z.string().min(1, 'Sprint name is required'),
-    goal: z.string().optional(),
-    start_date: z
-      .string()
-      .min(1, 'Start date is required')
-      .refine((d) => d >= today, { message: 'Start date cannot be in the past' }),
-    end_date: z.string().min(1, 'Due date is required'),
-  })
-  .refine((d) => d.end_date >= d.start_date, {
-    message: 'Due date must be after start date',
-    path: ['end_date'],
-  });
-
+// future purpose
+// const today = new Date().toISOString().split('T')[0];
+// const sprintItemSchema = z
+//   .object({
+//     name: z.string().min(1, 'Sprint name is required'),
+//     goal: z.string().optional(),
+//     start_date: z
+//       .string()
+//       .min(1, 'Start date is required')
+//       .refine((d) => d >= today, { message: 'Start date cannot be in the past' }),
+//     end_date: z.string().min(1, 'Due date is required'),
+//   })
+//   .refine((d) => d.end_date >= d.start_date, {
+//     message: 'Due date must be after start date',
+//     path: ['end_date'],
+//   });
+const sprintItemSchema = z.object({
+  name: z.string().min(1, 'Sprint name is required'),
+  goal: z.string().optional(),
+  // start_date: z.string().optional(),
+  // end_date: z.string().optional(),
+});
 const addSprintSchema = z.object({ sprints: z.array(sprintItemSchema) });
 export type AddSprintFormValues = z.infer<typeof addSprintSchema>;
 
@@ -53,8 +57,8 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
         {
           name: 'Sprint 1',
           goal: '',
-          start_date: '',
-          end_date: '',
+          // start_date: '',
+          // end_date: '',
         },
       ],
     },
@@ -67,14 +71,12 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
         sprints: data.sprints.map((s) => ({
           name: s.name,
           goal: s.goal || undefined,
-          start_date: s.start_date,
-          end_date: s.end_date,
         })),
       };
       await createSprintAsync(payload);
       onSuccess?.();
       onClose();
-    } catch {}
+    } catch { }
   };
 
   return (

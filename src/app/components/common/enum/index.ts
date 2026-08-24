@@ -82,7 +82,6 @@ export const taskTypeOptions = [
   { label: 'Feature', value: TASK_TYPE.FEATURE },
   { label: 'Task', value: TASK_TYPE.TASK },
   { label: 'Chore', value: TASK_TYPE.CHORE },
-  { label: 'Story', value: TASK_TYPE.STORY },
 ];
 
 export enum PRIORITY_TYPE {
