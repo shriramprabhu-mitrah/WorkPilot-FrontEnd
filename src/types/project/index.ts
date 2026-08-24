@@ -101,8 +101,8 @@ export interface SprintDetail {
 export interface SprintItem {
   name: string;
   goal?: string;
-  start_date: string;
-  end_date: string;
+  // start_date: string;
+  // end_date: string;
 }
 
 export interface SprintPayload {

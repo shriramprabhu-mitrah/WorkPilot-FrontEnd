@@ -1321,17 +1321,18 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   value={taskData.dueDate}
                   onChange={(dueDate) => handleUpdate({ dueDate })}
                   placeholder="Set due date"
-                  includeTime={true}
+                  includeTime={false}
                 />
               </DetailRow>
 
+              {/* future purpose 
               <DetailRow label="Start date">
                 <EditableDate
                   value={taskData.startDate}
                   onChange={(startDate) => handleUpdate({ startDate })}
                   placeholder="Set start date"
                 />
-              </DetailRow>
+              </DetailRow> */}
 
               <DetailRow label="Story pts">
                 <EditableNumber
