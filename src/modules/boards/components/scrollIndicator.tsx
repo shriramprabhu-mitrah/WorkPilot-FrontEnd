@@ -288,14 +288,14 @@ export const ScrollIndicator = ({
       </div>
 
       {/* Scroll percentage text */}
-      <div className="absolute -top-7 right-0 text-xs font-semibold text-gray-700 bg-white px-2.5 py-1 rounded-md shadow-md border border-gray-200">
+      <div className="absolute -top-7 right-0 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md shadow-md border border-gray-200 dark:border-gray-700">
         {hasHorizontalScroll && <span>{Math.round((scrollLeft / maxScrollLeft) * 100)}%</span>}
         {hasHorizontalScroll && hasVerticalScroll && <span className="mx-1.5">·</span>}
         {hasVerticalScroll && <span>{Math.round((scrollTop / maxScrollTop) * 100)}%</span>}
       </div>
 
       {/* Hint text on first hover */}
-      <div className="absolute -top-[52px] right-0 text-[10px] text-gray-500 bg-white/95 px-2 py-0.5 rounded shadow-sm border border-gray-200">
+      <div className="absolute -top-[52px] right-0 text-[10px] text-gray-500 dark:text-gray-400 bg-white/95 dark:bg-gray-800/95 px-2 py-0.5 rounded shadow-sm border border-gray-200 dark:border-gray-700">
         Click to navigate
       </div>
     </div>

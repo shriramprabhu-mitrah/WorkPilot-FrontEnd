@@ -807,98 +807,68 @@ export const UserStoryDetailDrawer = ({
         onClick={onClose}
       >
         <div
-          className="relative bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
+          className="relative bg-white dark:bg-slate-900 w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
           style={{ maxWidth: '1100px', height: 'min(860px, 94vh)' }}
           onClick={(event) => event.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 shrink-0">
+          <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
                 <FileText size={13} className="text-white" />
               </span>
-              <span className="text-base font-bold text-blue-600">User Story</span>
+              <span className="text-base font-bold text-blue-600 dark:text-blue-400">User Story</span>
             </div>
             <div className="flex items-center gap-1">
-              {/* Three-dot menu */}
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
                 >
                   <MoreHorizontal size={17} />
                 </button>
                 {showMoreMenu && (
-                  <div className="absolute top-full right-0 mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                  <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                     <button
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        setEditingTitle(true);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      onClick={() => { setShowMoreMenu(false); setEditingTitle(true); }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                     >
-                      <Pencil size={14} />
-                      Update
+                      <Pencil size={14} />Update
                     </button>
                     <button
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        setShowDeleteConfirm(true);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                      onClick={() => { setShowMoreMenu(false); setShowDeleteConfirm(true); }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
                     >
-                      <Trash2 size={14} />
-                      Delete
+                      <Trash2 size={14} />Delete
                     </button>
                   </div>
                 )}
               </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
-              >
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors">
                 <X size={17} />
               </button>
             </div>
           </div>
 
           {/* Mobile tab switcher */}
-          <div className="flex sm:hidden border-b border-gray-200 shrink-0">
-            <button
-              onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'content'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500'
-              }`}
-            >
-              Content
-            </button>
-            <button
-              onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'details'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500'
-              }`}
-            >
-              Details
-            </button>
+          <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
+            <button onClick={() => setMobileTab('content')} className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'}`}>Content</button>
+            <button onClick={() => setMobileTab('details')} className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'}`}>Details</button>
           </div>
 
           <div className="flex flex-1 min-h-0 overflow-hidden">
             {isLoadingUserStory && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-7 h-7 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-                  <span className="text-sm text-gray-500">Loading...</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">Loading...</span>
                 </div>
               </div>
             )}
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 dark:border-slate-700 ${
                 mobileTab === 'details' ? 'hidden sm:block' : 'block'
               }`}
             >
@@ -910,7 +880,7 @@ export const UserStoryDetailDrawer = ({
                     onChange={(event) =>
                       setEditableFields((prev) => ({ ...prev, title: event.target.value }))
                     }
-                    className="w-full text-2xl font-bold text-gray-900 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:border-blue-500"
+                    className="w-full text-2xl font-bold text-gray-900 dark:text-slate-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:border-blue-500"
                   />
                   <div className="flex gap-2 mt-2">
                     <button
@@ -929,7 +899,7 @@ export const UserStoryDetailDrawer = ({
                         setEditableFields((prev) => ({ ...prev, title: currentUserStory.title }));
                         setEditingTitle(false);
                       }}
-                      className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                     >
                       Cancel
                     </button>
@@ -937,7 +907,7 @@ export const UserStoryDetailDrawer = ({
                 </div>
               ) : (
                 <h1
-                  className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900"
+                  className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
                   title={userStoryData.title}
                 >
                   {userStoryData.title}
@@ -945,8 +915,8 @@ export const UserStoryDetailDrawer = ({
               )}
 
               {/* Description Section */}
-              <section className="mb-6 pb-6 border-b border-gray-200">
-                <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
+              <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Description</p>
                 {editingDesc ? (
                   <div>
                     <WpRichTextEditor
@@ -984,7 +954,7 @@ export const UserStoryDetailDrawer = ({
                           }));
                           setEditingDesc(false);
                         }}
-                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                       >
                         Cancel
                       </button>
@@ -993,17 +963,17 @@ export const UserStoryDetailDrawer = ({
                 ) : (
                   <div
                     onClick={() => setEditingDesc(true)}
-                    className="text-sm text-gray-600 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 transition-colors min-h-[48px]"
+                    className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors min-h-[48px]"
                   >
                     {userStoryData.description ? (
                       <div
-                        className="prose prose-sm max-w-none"
+                        className="prose prose-sm max-w-none dark:prose-invert"
                         dangerouslySetInnerHTML={{
                           __html: userStoryData.description,
                         }}
                       />
                     ) : (
-                      <span className="text-gray-400">Add a description…</span>
+                      <span className="text-gray-400 dark:text-slate-500">Add a description…</span>
                     )}
                   </div>
                 )}
@@ -1011,13 +981,13 @@ export const UserStoryDetailDrawer = ({
 
               {/* Attachments Section - Placeholder */}
               {/* Attachments Section */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
+              <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700">Attachments</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Attachments</p>
 
                   <label
                     htmlFor="user-story-attachment"
-                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors ${
+                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
                       isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
                     }`}
                   >
@@ -1035,31 +1005,31 @@ export const UserStoryDetailDrawer = ({
                 </div>
 
                 {isLoadingAttachments ? (
-                  <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center">
-                    <p className="text-sm text-gray-500">Loading attachments...</p>
+                  <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Loading attachments...</p>
                   </div>
                 ) : attachments.length === 0 ? (
-                  <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
-                    <p className="text-sm text-gray-500">No attachments</p>
+                  <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
 
-                    <p className="text-xs text-gray-400 mt-1">Add files to this user story</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Add files to this user story</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {attachments.map((attachment) => (
                       <div
                         key={attachment.id}
-                        className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+                        className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <FileText size={18} className="text-blue-600 shrink-0" />
+                          <FileText size={18} className="text-blue-600 dark:text-blue-400 shrink-0" />
 
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-700 truncate">
+                            <p className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
                               {attachment.original_filename}
                             </p>
 
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-400 dark:text-slate-500">
                               {attachment.file_size
                                 ? `${Math.round(attachment.file_size / 1024)} KB`
                                 : ''}
@@ -1089,7 +1059,7 @@ export const UserStoryDetailDrawer = ({
                                 logger.log('Failed to download attachment', error);
                               }
                             }}
-                            className="rounded-lg px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                            className="rounded-lg px-2 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50"
                           >
                             Download
                           </button>
@@ -1102,7 +1072,7 @@ export const UserStoryDetailDrawer = ({
                                 await deleteAttachmentAsync(attachment.id);
                               } catch (error) {}
                             }}
-                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-50"
+                            className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -1114,13 +1084,13 @@ export const UserStoryDetailDrawer = ({
               </div>
 
               {/* Tasks Section */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
+              <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700">Tasks ({totalTasks})</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Tasks ({totalTasks})</p>
                   {onCreateTask && (
                     <button
                       onClick={onCreateTask}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                     >
                       <Plus size={14} />
                       Add
@@ -1129,35 +1099,35 @@ export const UserStoryDetailDrawer = ({
                 </div>
 
                 {tasks.length === 0 ? (
-                  <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
-                    <p className="text-sm text-gray-500">No tasks associated</p>
-                    <p className="text-xs text-gray-400 mt-1">Create tasks to track work</p>
+                  <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">No tasks associated</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Create tasks to track work</p>
                   </div>
                 ) : (
-                  <div className="border border-gray-200 rounded-xl overflow-visible bg-white">
+                  <div className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-visible bg-white dark:bg-slate-800">
                     {' '}
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
                         <tr>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
                             Work
                           </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
                             Priority
                           </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
                             Assignee
                           </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
                             Status
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
                         {tasks.map((task) => (
                           <tr
                             key={task.id}
-                            className="hover:bg-gray-50 cursor-pointer transition-colors"
+                            className="hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
                           >
                             {/* Work Column */}
                             <td className="px-4 py-3">
@@ -1165,8 +1135,8 @@ export const UserStoryDetailDrawer = ({
                                 <span
                                   className={`shrink-0 font-medium hover:underline ${
                                     task.is_final
-                                      ? 'line-through text-gray-400 opacity-60'
-                                      : 'text-blue-600'
+                                      ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
+                                      : 'text-blue-600 dark:text-blue-400'
                                   }`}
                                   onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                                 >
@@ -1176,8 +1146,8 @@ export const UserStoryDetailDrawer = ({
                                   title={task.title}
                                   className={`max-w-[80px] truncate ${
                                     task.is_final
-                                      ? 'line-through text-gray-400 opacity-60'
-                                      : 'text-gray-900'
+                                      ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
+                                      : 'text-gray-900 dark:text-slate-100'
                                   }`}
                                 >
                                   {task.title}
@@ -1187,7 +1157,7 @@ export const UserStoryDetailDrawer = ({
 
                             {/* Priority Column */}
                             <td className="px-4 py-3">
-                              <span className="text-gray-700 capitalize">
+                              <span className="text-gray-700 dark:text-slate-300 capitalize">
                                 {task.priority || 'Medium'}
                               </span>
                             </td>
@@ -1213,7 +1183,7 @@ export const UserStoryDetailDrawer = ({
                                       setChildAssigneeSearch('');
                                     }
                                   }}
-                                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
                                 >
                                   {task.assignee_id ? (
                                     <AssigneeAvatar
@@ -1231,28 +1201,28 @@ export const UserStoryDetailDrawer = ({
                                       size="sm"
                                     />
                                   ) : (
-                                    <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                                      <User size={12} className="text-gray-400" />
+                                    <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                                      <User size={12} className="text-gray-400 dark:text-slate-500" />
                                     </span>
                                   )}
 
-                                  <span className="text-sm text-gray-700 truncate">
+                                  <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                                     {task.assignee_name || 'Unassigned'}
                                   </span>
 
                                   <ChevronDown
                                     size={12}
-                                    className="ml-auto text-gray-400 shrink-0"
+                                    className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
                                   />
                                 </button>
 
                                 {childAssigneeTaskId === task.id && (
                                   <div
-                                    className="absolute left-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-[99999] overflow-hidden"
+                                    className="absolute left-0 top-full mt-1 w-64 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-[99999] overflow-hidden"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {/* Search */}
-                                    <div className="p-2 border-b border-gray-200">
+                                    <div className="p-2 border-b border-gray-200 dark:border-slate-700">
                                       <WpInput
                                         value={childAssigneeSearch}
                                         onChange={(e) => setChildAssigneeSearch(e.target.value)}
@@ -1263,7 +1233,7 @@ export const UserStoryDetailDrawer = ({
 
                                     {/* Loading */}
                                     {(isLoadingChildAssignees || isFetchingChildAssignees) && (
-                                      <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                                      <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
                                         Searching...
                                       </div>
                                     )}
@@ -1360,7 +1330,7 @@ export const UserStoryDetailDrawer = ({
                                               }
                                             }}
                                             disabled={isUpdatingTask}
-                                            className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 text-gray-900"
+                                            className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
                                           >
                                             <AssigneeAvatar
                                               initials={initials}
@@ -1470,7 +1440,7 @@ export const UserStoryDetailDrawer = ({
 
                                       {childStatusTaskId === task.id && (
                                         <div
-                                          className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-[99999] overflow-hidden"
+                                          className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[99999] overflow-hidden"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           {allStatusOptions.map((option) => {
@@ -1545,10 +1515,10 @@ export const UserStoryDetailDrawer = ({
                                                     );
                                                   }
                                                 }}
-                                                className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 disabled:opacity-50"
+                                                className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
                                                 style={{
                                                   fontWeight: isSelected ? 700 : 500,
-                                                  color: '#000000',
+                                                  color: isSelected ? option.color : '#666666',
                                                   backgroundColor: isSelected
                                                     ? option.bg
                                                     : undefined,
@@ -1599,16 +1569,16 @@ export const UserStoryDetailDrawer = ({
 
               {/* Activity Section */}
               <div>
-                <p className="text-base font-semibold text-gray-800 mb-3">Activity</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-3">Activity</p>
 
                 {/* Tabs */}
-                <div className="flex gap-1 border-b border-gray-200 mb-4">
+                <div className="flex gap-1 border-b border-gray-200 dark:border-slate-700 mb-4">
                   {tabs.map((t) => (
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
                       className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-                        tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                        tab === t.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
                       }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
@@ -1621,7 +1591,7 @@ export const UserStoryDetailDrawer = ({
 
                 {/* Tab Content */}
                 {tab === 'all' && (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-slate-400">
                     <p>Showing all activity...</p>
                   </div>
                 )}
@@ -1668,7 +1638,7 @@ export const UserStoryDetailDrawer = ({
                       <button
                         type="button"
                         onClick={() => setShowCommentEditor(true)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-left text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 px-4 py-3 text-left text-sm text-gray-400 dark:text-slate-500 hover:border-gray-400 dark:hover:border-slate-500 hover:text-gray-500 dark:hover:text-slate-400"
                       >
                         Write a comment...
                       </button>
@@ -1681,8 +1651,8 @@ export const UserStoryDetailDrawer = ({
                       </div>
                     ) : comments.length === 0 ? (
                       <div className="text-center py-8">
-                        <p className="text-sm text-gray-500">No comments yet</p>
-                        <p className="text-xs text-gray-400 mt-1">Be the first to comment</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">No comments yet</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Be the first to comment</p>
                       </div>
                     ) : (
                       <div className="space-y-4 mt-6">
@@ -1706,10 +1676,10 @@ export const UserStoryDetailDrawer = ({
 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm font-semibold text-gray-900">
+                                  <span className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                                     {commentItem.user_name || 'Unknown User'}
                                   </span>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-xs text-gray-500 dark:text-slate-400">
                                     {new Date(commentItem.created_at).toLocaleString()}
                                   </span>
                                 </div>
@@ -1749,9 +1719,9 @@ export const UserStoryDetailDrawer = ({
                                   </div>
                                 ) : (
                                   <>
-                                    <div className="bg-gray-50 rounded-lg px-3 py-2 relative group">
+                                    <div className="bg-gray-50 dark:bg-slate-800 rounded-lg px-3 py-2 relative group">
                                       <div
-                                        className="text-sm text-gray-700 prose prose-sm max-w-none"
+                                        className="text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
                                         dangerouslySetInnerHTML={{ __html: commentItem.content }}
                                       />
 
@@ -1761,18 +1731,18 @@ export const UserStoryDetailDrawer = ({
                                             setEditingCommentId(commentItem.id);
                                             setEditingCommentContent(commentItem.content);
                                           }}
-                                          className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                                           title="Edit comment"
                                         >
-                                          <Pencil size={14} className="text-gray-600" />
+                                          <Pencil size={14} className="text-gray-600 dark:text-slate-400" />
                                         </button>
                                         <button
                                           onClick={() => handleDeleteComment(commentItem.id)}
-                                          className="p-1 rounded hover:bg-red-100 transition-colors"
+                                          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                                           title="Delete comment"
                                           disabled={deletingCommentId === commentItem.id}
                                         >
-                                          <Trash2 size={14} className="text-red-600" />
+                                          <Trash2 size={14} className="text-red-600 dark:text-red-400" />
                                         </button>
                                       </div>
                                     </div>
@@ -1786,12 +1756,12 @@ export const UserStoryDetailDrawer = ({
                                             commentItem.user_name || 'User'
                                           )
                                         }
-                                        className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                        className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                       >
                                         <CornerDownRight size={14} />
                                         <span>Reply</span>
                                         {commentItem.replies_count > 0 && (
-                                          <span className="text-xs font-semibold text-blue-600">
+                                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                                             ({commentItem.replies_count})
                                           </span>
                                         )}
@@ -1802,7 +1772,7 @@ export const UserStoryDetailDrawer = ({
 
                                 {/* Replies Section */}
                                 {showRepliesForComment.has(commentItem.id) && (
-                                  <div className="mt-4 ml-4 border-l-2 border-gray-200 pl-4 space-y-4">
+                                  <div className="mt-4 ml-4 border-l-2 border-gray-200 dark:border-slate-700 pl-4 space-y-4">
                                     {/* Display Replies First */}
                                     {repliesMap.get(commentItem.id) &&
                                       repliesMap.get(commentItem.id)!.length > 0 && (
@@ -1827,10 +1797,10 @@ export const UserStoryDetailDrawer = ({
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                   <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-xs font-semibold text-gray-900">
+                                                    <span className="text-xs font-semibold text-gray-900 dark:text-slate-100">
                                                       {reply.user_name || 'Unknown User'}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">
+                                                    <span className="text-xs text-gray-500 dark:text-slate-400">
                                                       {new Date(reply.created_at).toLocaleString()}
                                                     </span>
                                                   </div>
@@ -1875,9 +1845,9 @@ export const UserStoryDetailDrawer = ({
                                                       </div>
                                                     </div>
                                                   ) : (
-                                                    <div className="bg-white rounded-lg px-3 py-2 border border-gray-200 relative group">
+                                                    <div className="bg-white dark:bg-slate-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-slate-700 relative group">
                                                       <div
-                                                        className="text-xs text-gray-700 prose prose-sm max-w-none"
+                                                        className="text-xs text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
                                                         dangerouslySetInnerHTML={{
                                                           __html: reply.content,
                                                         }}
@@ -1990,18 +1960,18 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 ${
+              className={`overflow-y-auto bg-gray-50/60 dark:bg-slate-950/50 ${
                 mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
               }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
-              <div className="px-5 py-5 border-b border-gray-300">
-                <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
+              <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Status</p>
                 <div className="relative" ref={statusMenuRef}>
                   <button
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-gray-100"
                     style={{
                       backgroundColor:
                         allStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
@@ -2021,7 +1991,7 @@ export const UserStoryDetailDrawer = ({
                     <ChevronDown size={14} />
                   </button>
                   {showStatusMenu && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
                       {/* Status Options */}
                       {allStatusOptions.map((option) => (
                         <button
@@ -2030,7 +2000,7 @@ export const UserStoryDetailDrawer = ({
                             handleUpdate({ status: option.value });
                             setShowStatusMenu(false);
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50"
+                          className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-700"
                         >
                           {/* Left: status color + label */}
                           <div className="flex items-center gap-2 min-w-0">
@@ -2039,7 +2009,7 @@ export const UserStoryDetailDrawer = ({
                               style={{ backgroundColor: option.dot }}
                             />
 
-                            <span className="truncate text-sm text-gray-700">{option.label}</span>
+                            <span className="truncate text-sm text-gray-700 dark:text-slate-300">{option.label}</span>
                           </div>
 
                           {/* Right: Final status indicator */}
@@ -2145,7 +2115,7 @@ export const UserStoryDetailDrawer = ({
 
               {/* Details */}
               <div className="px-5 py-5 border-b border-gray-200">
-                <p className="text-base font-semibold text-gray-800 mb-2">Details</p>
+                <p className="text-base font-semibold text-gray-800 mb-2 dark:text-slate-100">Details</p>
 
                 <DetailRow label="Assignee">
                   <div className="relative" ref={assigneeMenuRef}>
@@ -2170,7 +2140,7 @@ export const UserStoryDetailDrawer = ({
                       <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
                     </button>
                     {showAssigneeMenu && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                         <div className="p-2 border-b border-gray-200">
                           <WpInput
                             value={assigneeSearch}
@@ -2286,7 +2256,7 @@ export const UserStoryDetailDrawer = ({
 
                     {/* Sprint Dropdown */}
                     {showSprintMenu && !isUpdatingSprint && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                         {/* Search */}
                         <div className="p-2 border-b border-gray-200">
                           <WpInput
@@ -2394,10 +2364,10 @@ export const UserStoryDetailDrawer = ({
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl mx-4">
-            <h3 className="text-lg font-bold text-gray-900">Delete User Story</h3>
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-xl mx-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Story</h3>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete this user story? This action cannot be undone and will
               also affect all associated tasks.
             </p>

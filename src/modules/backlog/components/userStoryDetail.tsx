@@ -162,12 +162,12 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
         <button
           type="button"
           onClick={() => push('/backlog')}
-          className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-gray-500 hover:text-gray-700 hover:underline"
+          className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:underline"
         >
           Backlog
         </button>
-        <span className="text-gray-400">/</span>
-        <span className="font-medium text-gray-900">{userStory.title}</span>
+        <span className="text-gray-400 dark:text-slate-500">/</span>
+        <span className="font-medium text-gray-900 dark:text-slate-100">{userStory.title}</span>
       </div>
 
       {/* Back Button */}
@@ -183,18 +183,18 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       </WpButton>
 
       {/* User Story Details Card */}
-      <div className="relative rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="relative rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">{userStory.title}</h1>
-              <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-600">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{userStory.title}</h1>
+              <span className="rounded-full bg-purple-50 dark:bg-purple-900/30 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400">
                 User Story
               </span>
             </div>
 
             {userStory.description && (
-              <p className="mt-3 text-sm text-gray-600">{userStory.description}</p>
+              <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">{userStory.description}</p>
             )}
           </div>
 
@@ -225,19 +225,19 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           </div>
         </div>
 
-        <div className="my-5 border-t" />
+        <div className="my-5 border-t dark:border-slate-700" />
 
         <div className="grid grid-cols-4 gap-5">
           <div>
-            <p className="text-xs text-gray-400">STATUS</p>
-            <span className="mt-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+            <p className="text-xs text-gray-400 dark:text-slate-500">STATUS</p>
+            <span className="mt-2 inline-block rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
               {userStory.status
                 ? userStory.status.charAt(0).toUpperCase() + userStory.status.slice(1)
                 : 'To Do'}
             </span>
           </div>
           <div>
-            <p className="text-xs text-gray-400">PRIORITY</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">PRIORITY</p>
             <span
               className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${
                 userStory.priority === 'critical'
@@ -255,19 +255,19 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
             </span>
           </div>
           <div>
-            <p className="text-xs text-gray-400">STORY POINTS</p>
-            <p className="mt-2 text-sm">{userStory.story_points ?? '-'}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">STORY POINTS</p>
+            <p className="mt-2 text-sm dark:text-slate-200">{userStory.story_points ?? '-'}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400">CREATED</p>
-            <p className="mt-2 text-sm">{formatDate(userStory.created_at)}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">CREATED</p>
+            <p className="mt-2 text-sm dark:text-slate-200">{formatDate(userStory.created_at)}</p>
           </div>
         </div>
       </div>
 
       {/* Tasks Section */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Tasks ({tasks.length})</h2>
+        <h2 className="text-lg font-semibold dark:text-slate-100">Tasks ({tasks.length})</h2>
         <WpButton
           type="button"
           variant="primary"
@@ -282,14 +282,14 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
 
       {/* Tasks List */}
       {isFetchingRelatedTasks ? (
-        <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
+        <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           <div className="flex flex-col items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
-            <p className="mt-4 text-sm text-gray-500">Loading tasks...</p>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-blue-600" />
+            <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">Loading tasks...</p>
           </div>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 bg-white py-16">
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-16">
           <div className="flex flex-col items-center justify-center">
             <Image
               src="/images/Time management-rafiki.png"
@@ -297,10 +297,10 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
               width={288}
               height={288}
             />
-            <p className="text-sm font-medium text-gray-400">
+            <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
               No tasks have been created for this user story.
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
               Add your first task to start tracking work.
             </p>
           </div>
@@ -311,25 +311,25 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
             <div
               key={task.id}
               onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
-              className="group cursor-pointer rounded-xl border border-gray-200 bg-white px-5 py-4 transition-all hover:border-gray-300 hover:shadow-sm"
+              className="group cursor-pointer rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-4 transition-all hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm"
             >
               <div className="flex items-center justify-between gap-6">
                 {/* Left Content */}
                 <div className="min-w-0 flex-1">
                   {/* Task key + title */}
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="shrink-0 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-bold text-blue-500">
+                    <span className="shrink-0 rounded-md bg-gray-100 dark:bg-slate-700 px-2 py-1 text-[11px] font-bold text-blue-500 dark:text-blue-400">
                       {task.key}
                     </span>
 
-                    <h3 className="truncate text-sm font-semibold text-gray-900 group-hover:text-gray-700 ml-4">
+                    <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100 group-hover:text-gray-700 dark:group-hover:text-slate-300 ml-4">
                       {task.title}
                     </h3>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap items-center gap-x-5  text-xs text-gray-500">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5  text-xs text-gray-500 dark:text-slate-400">
                     {/* Type */}
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 capitalize">
+                    <span className="rounded-full bg-gray-100 dark:bg-slate-700 px-2 py-0.5 capitalize">
                       {task.type}
                     </span>
 
@@ -346,15 +346,15 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                           size="sm"
                         />
 
-                        <span className="text-gray-600">{task.assignee_name}</span>
+                        <span className="text-gray-600 dark:text-slate-300">{task.assignee_name}</span>
                       </span>
                     )}
 
                     {/* Sprint */}
                     {task.sprint_name && (
                       <span className="flex items-center gap-1.5">
-                        <span className="font-medium text-gray-400">Sprint</span>
-                        <span className="text-gray-600">{task.sprint_name}</span>
+                        <span className="font-medium text-gray-400 dark:text-slate-500">Sprint</span>
+                        <span className="text-gray-600 dark:text-slate-300">{task.sprint_name}</span>
                       </span>
                     )}
                   </div>
@@ -378,7 +378,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                   </span>
 
                   {/* Status */}
-                  <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600">
+                  <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400">
                     {STATUS_LABELS[task.status] ?? task.status}
                   </span>
                 </div>
@@ -424,9 +424,9 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900">Delete User Story</h3>
-            <p className="mt-2 text-sm text-gray-500">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Story</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete this user story? This action cannot be undone and will
               also affect all associated tasks.
             </p>

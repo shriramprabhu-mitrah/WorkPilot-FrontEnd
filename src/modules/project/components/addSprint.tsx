@@ -79,92 +79,18 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
-        {' '}
-        {/* future purpose
-         {step === 1 && (
-          <>
-            <div className="flex items-center justify-between border-b p-5">
-              <h2 className="text-xl font-bold">Add Sprints</h2>
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                aria-label="Close"
-                className="p-2"
-                leftIcon={<X size={18} />}
-              />
-            </div>
-            <div className="p-5">
-              <p className="text-sm text-gray-500">How many sprints do you want to create?</p>
-              <div className="mt-5 flex items-center gap-3">
-                <WpButton
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setSprintCount((prev) => Math.max(1, prev - 1))}
-                  className="h-10 w-10 p-0"
-                  leftIcon={<Minus size={16} />}
-                />
-                <div className="w-14">
-                  <WpInput
-                    id="sprintCount"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={sprintCount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '') {
-                        setSprintCount(0);
-                        return;
-                      }
-                      const numberValue = Number(value);
-                      if (Number.isInteger(numberValue) && numberValue > 0) {
-                        setSprintCount(numberValue);
-                      }
-                    }}
-                    className="h-10 w-14 text-center font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                </div>
-                <WpButton
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setSprintCount((prev) => prev + 1)}
-                  className="h-10 w-10 p-0"
-                  leftIcon={<Plus size={16} />}
-                />
-              </div>
-              <p className="mt-4 text-xs text-gray-400">
-                {sprintCount} sprint{sprintCount > 1 ? 's' : ''} will be created.
-              </p>
-            </div>
-            <div className="flex justify-between border-t p-5">
-              <WpButton variant="ghost" size="sm" onClick={onClose}>
-                Cancel
-              </WpButton>
-              <WpButton
-                variant="primary"
-                size="md"
-                onClick={handleNext}
-                rightIcon={<ArrowRight size={16} />}
-              >
-                Next
-              </WpButton>
-            </div>
-          </>
-        )} */}
+      <div className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-gray-100 dark:border-slate-700">
         <div className="flex w-full flex-col">
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-            <div className="flex items-center justify-between border-b p-5">
-              <h2 className="text-xl font-bold">Configure {fields.length} Sprints</h2>
-
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 p-5">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Configure {fields.length} Sprints</h2>
               <WpButton
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
                 aria-label="Close"
-                className="p-2"
+                className="p-2 dark:text-slate-300"
                 leftIcon={<X size={18} />}
               />
             </div>
@@ -183,7 +109,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
                 />
               ))}
             </div>
-            <div className="flex justify-end border-t border-gray-200 p-5">
+            <div className="flex justify-end border-t border-gray-200 dark:border-slate-700 p-5">
               <WpButton type="submit" variant="primary" size="md" disabled={isCreatingSprint}>
                 {isCreatingSprint ? 'Creating...' : 'Create Sprints'}
               </WpButton>

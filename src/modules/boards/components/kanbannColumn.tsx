@@ -22,14 +22,14 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
   return (
     <div className="flex h-full w-[85vw] sm:w-[260px] sm:min-w-[260px] flex-shrink-0 flex-col min-h-0">
       {/* Header */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-gray-50 px-1 py-2 mb-3">
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-gray-50 dark:bg-gray-800/60 px-1 py-2 mb-3">
         <div className="flex items-center gap-2">
           <span
             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ backgroundColor: column.color }}
           />
-          <span className="text-sm font-semibold text-gray-700">{column.label}</span>
-          <span className="text-xs text-gray-400 font-medium">{column.tasks.length}</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{column.label}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">{column.tasks.length}</span>
         </div>
         <WpButton variant="ghost" size="sm" className="!p-1">
           <Plus size={16} />

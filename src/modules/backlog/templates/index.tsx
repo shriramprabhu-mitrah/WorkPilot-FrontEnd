@@ -381,11 +381,11 @@ export const BacklogTemplate = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 min-w-0">
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: colors.gray900 }}>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
                   Backlog
                 </h1>
                 {selectedApiProject && (
-                  <p className="text-sm mt-0.5 truncate" style={{ color: colors.gray500 }}>
+                  <p className="text-sm mt-0.5 truncate text-gray-500 dark:text-slate-400">
                     {selectedApiProject.name}
                     {selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
                   </p>
@@ -431,19 +431,21 @@ export const BacklogTemplate = () => {
                 <div
                   ref={backlogRefCallback}
                   data-backlog-drop="true"
-                  className={`rounded-xl border bg-white overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
                     isOverBacklog
-                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
+                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
                 >
                   <div
                     className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
-                      isOverBacklog ? 'border-green-200 bg-green-100' : 'border-gray-100'
+                      isOverBacklog
+                        ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
+                        : 'border-gray-100 dark:border-slate-700'
                     }`}
                   >
                     <span
-                      className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700' : 'text-gray-900'}`}
+                      className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-slate-100'}`}
                     >
                       Unassigned
                     </span>
@@ -451,7 +453,7 @@ export const BacklogTemplate = () => {
                       className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
                         isOverBacklog
                           ? 'bg-green-200 text-green-800 scale-110'
-                          : 'bg-gray-100 text-gray-500'
+                          : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
                       }`}
                     >
                       {unassignedStories.length}{' '}
@@ -500,13 +502,13 @@ export const BacklogTemplate = () => {
                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
-                      <p className="text-sm text-gray-500 text-center">
+                      <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
                         {!selectedProject
                           ? 'Select a project to view stories'
                           : 'No unassigned user stories'}
                       </p>
                       {selectedProject && (
-                        <p className="text-xs text-gray-400 mt-1 text-center">
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-center">
                           Create one or drag stories from sprints
                         </p>
                       )}
@@ -580,16 +582,13 @@ export const BacklogTemplate = () => {
           </div>
 
           {/* Right Section: Sprint Drop Zones */}
-          <div className="w-full lg:w-96 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4">
+          <div className="w-full lg:w-96 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l dark:border-slate-700 pt-4 lg:pt-0 lg:pl-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-sm" style={{ color: colors.gray900 }}>
+                <h2 className="font-semibold text-sm text-gray-900 dark:text-slate-100">
                   Sprints
                 </h2>
-                <span
-                  className="text-xs font-medium px-2 py-0.5 rounded-full"
-                  style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
-                >
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700">
                   {allSprints.length} sprints
                 </span>
               </div>
@@ -607,10 +606,10 @@ export const BacklogTemplate = () => {
             </div>
 
             {isLoadingSprints ? (
-              <div className="text-sm text-gray-500 text-center py-4">Loading sprints...</div>
+              <div className="text-sm text-gray-500 dark:text-slate-400 text-center py-4">Loading sprints...</div>
             ) : allSprints.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
                   {!selectedProject
                     ? 'Select a project to view sprints.'
                     : 'No sprints found. Create a sprint to organize user stories.'}
@@ -633,10 +632,10 @@ export const BacklogTemplate = () => {
 
       <DragOverlay>
         {activeStory ? (
-          <div className="bg-white rounded-lg shadow-2xl p-3 border-2 border-blue-500 max-w-md transform rotate-3 scale-105 transition-transform">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-3 border-2 border-blue-500 max-w-md transform rotate-3 scale-105 transition-transform">
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{activeStory.title}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">{activeStory.title}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <span
                     className="text-xs px-2 py-0.5 rounded-full capitalize font-medium"

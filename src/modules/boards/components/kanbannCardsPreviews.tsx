@@ -22,16 +22,16 @@ export const KanbanCardPreview = ({ task }: { task: KanbanTask }) => {
     parts?.length === 3 ? `${months[parseInt(parts[1]) - 1]} ${parseInt(parts[2])}` : task.dueDate;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-xl opacity-95">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-xl opacity-95">
       <p
-        className="text-sm font-semibold text-gray-800 leading-snug mb-2 truncate"
+        className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug mb-2 truncate"
         title={task.title}
       >
         {task.title}
       </p>
       {task.dueDate && (
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-          <Calendar size={11} className="text-gray-400" />
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <Calendar size={11} className="text-gray-400 dark:text-gray-500" />
           <span>{display}</span>
         </div>
       )}
