@@ -261,28 +261,28 @@ export const SignIn = () => {
           }}
         >
           <div
-            className="flex h-screen w-full max-w-[600px] animate-[slideIn_0.3s_ease-out] flex-col bg-white p-10 shadow-[-4px_0_15px_rgba(0,0,0,0.1)]"
+            className="flex h-screen w-full max-w-[600px] animate-[slideIn_0.3s_ease-out] flex-col bg-white dark:bg-slate-900 p-10 shadow-[-4px_0_15px_rgba(0,0,0,0.1)]"
             onClick={(e) => e.stopPropagation()}
           >
             <WpButton
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute right-6 top-6 !p-2 hover:bg-gray-100"
+              className="absolute right-6 top-6 !p-2 hover:bg-gray-100 dark:hover:bg-slate-700"
               onClick={() => setShowForgotSidebar(false)}
             >
               <CloseIconSvg />
             </WpButton>
 
-            <div className="mt-5 mb-10 flex items-center text-2xl font-bold">
+            <div className="mt-5 mb-10 flex items-center text-2xl font-bold text-gray-900 dark:text-slate-100">
               <div className="mr-3 h-8 w-8 rounded-lg bg-[#0d6efd]">
                 <TrackrLogoSvg />
               </div>
               WorkPilot
             </div>
 
-            <h1 className="mb-2 text-[28px] font-bold text-gray-900">Forgot Password?</h1>
-            <p className="mb-8 text-sm text-gray-500">
+            <h1 className="mb-2 text-[28px] font-bold text-gray-900 dark:text-slate-100">Forgot Password?</h1>
+            <p className="mb-8 text-sm text-gray-500 dark:text-slate-400">
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
 

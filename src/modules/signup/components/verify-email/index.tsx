@@ -79,27 +79,27 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-slate-950">
       <div className="flex w-full h-full">
         {/* Left Side: Form */}
-        <div className="w-full md:w-1/2 p-10 flex flex-col items-center justify-center relative">
+        <div className="w-full md:w-1/2 p-10 flex flex-col items-center justify-center relative bg-white dark:bg-slate-950">
           <div className="w-full max-w-md">
             <div className="flex items-center gap-2 mb-10">
               <div className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded-lg text-white">
                 <TrackrLogoSvg />
               </div>
-              <span className="text-xl font-bold text-gray-900">WorkPilot</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-slate-100">WorkPilot</span>
             </div>
 
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-6">
               <Mail size={24} />
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Check your email</h1>
-            <p className="text-gray-500 mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">Check your email</h1>
+            <p className="text-gray-500 dark:text-slate-400 mb-6">
               We sent a 6-digit verification code to
               <br />
-              <strong className="text-blue-600 font-medium">{email}</strong>
+              <strong className="text-blue-600 dark:text-blue-400 font-medium">{email}</strong>
             </p>
 
             {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
@@ -115,7 +115,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-14 text-center text-xl font-bold border border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  className="w-12 h-14 text-center text-xl font-bold border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 outline-none transition-all"
                 />
               ))}
             </div>
@@ -129,12 +129,13 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
             >
               Verify Email
             </WpButton>
+
             <div className="text-center mt-6">
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
                 {timer > 0 ? (
                   <>
                     Resend code in{' '}
-                    <span className="font-semibold text-gray-900">{formatTime(timer)}</span>
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">{formatTime(timer)}</span>
                   </>
                 ) : (
                   <WpButton
@@ -143,7 +144,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                     onClick={handleResend}
                     disabled={resendOtp.isLoading}
                     isLoading={resendOtp.isLoading}
-                    className="!p-0 !text-blue-600 hover:!text-blue-700 underline"
+                    className="!p-0 !text-blue-600 dark:!text-blue-400 hover:!text-blue-700 dark:hover:!text-blue-300 underline"
                   >
                     Resend Code
                   </WpButton>
@@ -156,7 +157,7 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                 size="sm"
                 onClick={onBack}
                 leftIcon={<ArrowLeft size={16} />}
-                className="!text-gray-600 hover:!text-gray-900"
+                className="!text-gray-600 dark:!text-slate-400 hover:!text-gray-900 dark:hover:!text-slate-100"
               >
                 Back to Sign Up
               </WpButton>
@@ -164,9 +165,8 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
           </div>
         </div>
 
-        {/* Right Side: Graphic */}
+        {/* Right Side: Graphic — keeps the blue brand panel, no change needed */}
         <div className="hidden md:flex w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center">
-          {/* Concentric circles background effect */}
           <div className="absolute w-[800px] h-[800px] border border-white/10 rounded-full" />
           <div className="absolute w-[600px] h-[600px] border border-white/10 rounded-full" />
           <div className="absolute w-[400px] h-[400px] border border-white/10 rounded-full" />

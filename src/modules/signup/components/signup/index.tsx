@@ -178,9 +178,9 @@ export const SignUp = () => {
 
       {isSuccess && onboardingStep === 'done' ? (
         <div className="flex w-full flex-col items-center text-center">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50" />
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-900/30" />
           <h1 className="signinTitle mb-4">Account created!</h1>
-          <p className="mb-8 text-sm leading-[1.6] text-gray-500">
+          <p className="mb-8 text-sm leading-[1.6] text-gray-500 dark:text-slate-400">
             Setup complete. Welcome to WorkPilot.
           </p>
 
@@ -277,7 +277,7 @@ export const SignUp = () => {
                   dispatch(setPrivacyAccepted(checked));
                 }}
                 label={
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-slate-400">
                     I agree to the{' '}
                     <button
                       type="button"
@@ -311,19 +311,19 @@ export const SignUp = () => {
                 onClick={() => setSidebarContent(null)}
               >
                 <div
-                  className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+                  className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Popup Header */}
-                  <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4">
-                    <h2 className="text-lg font-semibold text-gray-900">
+                  <div className="flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-slate-700 px-6 py-4">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                       {sidebarContent === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'}
                     </h2>
 
                     <button
                       type="button"
                       onClick={() => setSidebarContent(null)}
-                      className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      className="rounded-md p-2 text-gray-500 dark:text-slate-400 transition-colors hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-slate-200"
                       aria-label="Close"
                     >
                       <CloseIconSvg />

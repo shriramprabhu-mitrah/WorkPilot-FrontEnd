@@ -36,23 +36,26 @@ export const TermsConditions = ({ onContinue }: TermsConditionsProps) => {
         color: colors.textBody,
       }}
     >
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
-        <h1 className="text-2xl font-bold text-gray-900">Terms & Conditions</h1>
+      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Terms & Conditions</h1>
 
-        <p className="mt-2 text-sm ms-3 text-gray-500">
-          Last Updated: <span className="font-medium">July 2026</span>
+        <p className="ms-3 mt-2 text-sm text-gray-500 dark:text-slate-400">
+          Last Updated:{' '}
+          <span className="font-medium text-gray-700 dark:text-slate-200">July 2026</span>
         </p>
 
         <div className="mt-6">
-          <h2 className="text-2xl ms-2 font-semibold text-gray-900">Welcome to WorkPilot</h2>
+          <h2 className="ms-2 text-2xl font-semibold text-gray-900 dark:text-white">
+            Welcome to WorkPilot
+          </h2>
 
-          <p className="mt-4 leading-7 ms-3 text-gray-600">
-            Welcome to <strong>WorkPilot</strong>, a collaborative project management platform that
-            helps teams plan projects, manage tasks, organize sprints, track progress, and work
-            together efficiently.
+          <p className="ms-3 mt-4 leading-7 text-gray-600 dark:text-slate-300">
+            Welcome to <strong className="text-gray-900 dark:text-white">WorkPilot</strong>, a
+            collaborative project management platform that helps teams plan projects, manage tasks,
+            organize sprints, track progress, and work together efficiently.
           </p>
 
-          <p className="mt-4 leading-7 ms-3 text-gray-600">
+          <p className="ms-3 mt-4 leading-7 text-gray-600 dark:text-slate-300">
             By accessing or using WorkPilot, you agree to comply with these Terms & Conditions. If
             you do not agree, please discontinue use of the application.
           </p>

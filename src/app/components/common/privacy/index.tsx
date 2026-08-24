@@ -36,22 +36,25 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
         color: colors.textBody,
       }}
     >
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
-        <h1 className="text-2xl font-bold text-gray-900">Privacy Policy</h1>
+      <div className="mb-8 rounded-2xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Privacy Policy</h1>
 
-        <p className="mt-2 ms-2 text-sm text-gray-500">
-          Last Updated: <span className="font-medium">July 2026</span>
+        <p className="mt-2 ms-2 text-sm text-gray-500 dark:text-slate-400">
+          Last Updated:{' '}
+          <span className="font-medium text-gray-700 dark:text-slate-200">July 2026</span>
         </p>
 
         <div className="mt-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Your Privacy Matters</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Your Privacy Matters
+          </h2>
 
-          <p className="mt-4 leading-7 ms-2 text-gray-600">
-            At <strong>WorkPilot</strong>, we respect your privacy and are committed to protecting
-            your personal information.
+          <p className="mt-4 ms-2 leading-7 text-gray-600 dark:text-slate-300">
+            At <strong className="text-gray-900 dark:text-white">WorkPilot</strong>, we respect your
+            privacy and are committed to protecting your personal information.
           </p>
 
-          <p className="mt-4 leading-7 ms-2 text-gray-600">
+          <p className="mt-4 ms-2 leading-7 text-gray-600 dark:text-slate-300">
             This Privacy Policy explains how we collect, use, store, and protect your information
             when you use WorkPilot, and outlines your rights regarding your personal data.
           </p>

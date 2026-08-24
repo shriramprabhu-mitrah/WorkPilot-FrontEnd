@@ -544,3 +544,241 @@
     display: none;
   }
 }
+
+/* ─── New utility classes (replacing inline styles) ─── */
+
+.lp-trusted-desc {
+  color: var(--color-slate-600);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.lp-why-box {
+  background: var(--color-slate-50);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.lp-why-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: var(--color-slate-800);
+}
+
+.lp-why-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.lp-why-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-slate-600);
+  font-size: 16px;
+}
+
+.lp-why-check {
+  color: var(--color-primary-focus);
+  flex-shrink: 0;
+}
+
+.lp-contact-label {
+  color: var(--color-slate-500);
+}
+
+/* ─── Dark mode overrides ─── */
+
+/* Page root */
+.dark .lp-page {
+  background-color: #0f172a;
+  color: #f1f5f9; /* slate-100 */
+}
+
+/* Header */
+.dark .lp-header {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: #1e293b;
+}
+
+.dark .lp-nav-link {
+  color: #94a3b8;
+}
+
+.dark .lp-nav-link:hover {
+  color: #f1f5f9;
+}
+
+.dark .lp-btn-outline {
+  background: transparent;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.dark .lp-btn-outline:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.dark .lp-btn-primary {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.dark .lp-btn-primary:hover {
+  background: #e2e8f0;
+}
+
+/* Hero */
+.dark .lp-hero-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-hero-subtitle {
+  color: #94a3b8;
+}
+
+.dark .lp-hero-image-wrapper {
+  border-color: #1e293b;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Trusted By */
+.dark .lp-trusted {
+  background: #1e293b;
+}
+
+.dark .lp-trusted-title {
+  color: #94a3b8;
+}
+
+.dark .lp-trusted-desc {
+  color: #94a3b8;
+}
+
+/* Sections */
+.dark .lp-section-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-section-desc {
+  color: #94a3b8;
+}
+
+.dark .lp-section-alt {
+  background: #1e293b;
+}
+
+/* Feature cards */
+.dark .lp-feature-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .lp-feature-icon {
+  background: #1d3461;
+  color: #60a5fa;
+}
+
+.dark .lp-feature-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-feature-desc {
+  color: #94a3b8;
+}
+
+/* How It Works — steps */
+.dark .lp-step-num {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.dark .lp-step-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-step-desc {
+  color: #94a3b8;
+}
+
+/* Why Teams Love box */
+.dark .lp-why-box {
+  background: #1e293b;
+}
+
+.dark .lp-why-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-why-item {
+  color: #94a3b8;
+}
+
+/* Dashboard preview */
+.dark .lp-dashboard-preview {
+  border-color: #1e293b;
+}
+
+/* Testimonials */
+.dark .lp-testimonial-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .lp-testimonial-quote {
+  color: #94a3b8;
+}
+
+.dark .lp-testimonial-author {
+  color: #f1f5f9;
+}
+
+/* CTA section stays dark by design — already dark bg */
+.dark .lp-cta-section {
+  background: #020617;
+}
+
+/* Footer */
+.dark .lp-footer {
+  background: #020617;
+  color: #94a3b8;
+}
+
+.dark .lp-footer-tagline {
+  color: #64748b;
+}
+
+.dark .lp-footer-col-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-footer-link {
+  color: #64748b;
+}
+
+.dark .lp-footer-link:hover {
+  color: #f1f5f9;
+}
+
+.dark .lp-footer-bottom {
+  border-top-color: #1e293b;
+  color: #475569;
+}
+
+.dark .lp-contact-label {
+  color: #64748b;
+}
+
+/* Logo text */
+.dark .logo {
+  color: #f1f5f9;
+}
