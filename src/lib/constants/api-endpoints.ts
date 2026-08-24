@@ -308,6 +308,14 @@ export const ApiEndpoints = {
       '/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'
     ),
   },
+
+  Role: {
+    getRoles: createQueryEndpoint('/organization/roles'),
+    createRole: createEndpoint('/organization/roles'),
+    getRoleById: createQueryEndpoint('/organization/roles/{roleId}'),
+    updateRole: createEndpoint('/organization/roles/{roleId}'),
+    deleteRole: createEndpoint('/organization/roles/{roleId}'),
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;
