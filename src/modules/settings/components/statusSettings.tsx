@@ -4,9 +4,21 @@ import { useState } from 'react';
 import { Check, ChevronRight, GripVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
-
+import {
+  useGetUserStoryStatuses,
+  useCreateUserStoryStatus,
+  useUpdateUserStoryStatus,
+  useDeleteUserStoryStatus,
+} from '@/src/modules/tasks/hooks/useUserStory';
+import { useAppSelector } from '@/src/store';
+import {
+  useGetStatus,
+  useCreateStatus,
+  useUpdateStatus,
+  useDeleteStatus,
+} from '../../project/hooks/useLabels';
 interface Status {
-  id: number;
+  id: string;
   color: string;
   name: string;
   slug: string;
@@ -28,41 +40,29 @@ const SECTIONS: SectionConfig[] = [
     key: 'userStory',
     label: 'USER STORY STATUSES',
     showArchived: true,
-    initialStatuses: [
-      { id: 1, color: '#6b7280', name: 'New', slug: 'new' },
-      { id: 2, color: '#ef4444', name: 'Ready', slug: 'ready' },
-      { id: 3, color: '#f97316', name: 'In progress', slug: 'in-progress' },
-      { id: 4, color: '#eab308', name: 'Ready for test', slug: 'ready-for-test' },
-      { id: 5, color: '#84cc16', name: 'Done', slug: 'done', isClosed: true },
-      { id: 6, color: '#94a3b8', name: 'Archived', slug: 'archived', isClosed: true, isArchived: true },
-    ],
+    initialStatuses: [],
   },
   {
     key: 'task',
     label: 'TASK STATUSES',
     showArchived: false,
-    initialStatuses: [
-      { id: 1, color: '#6b7280', name: 'New', slug: 'new' },
-      { id: 2, color: '#f97316', name: 'In progress', slug: 'in-progress' },
-      { id: 3, color: '#eab308', name: 'Ready for test', slug: 'ready-for-test' },
-      { id: 4, color: '#84cc16', name: 'Closed', slug: 'closed', isClosed: true },
-      { id: 5, color: '#3b82f6', name: 'Needs Info', slug: 'needs-info' },
-    ],
+    initialStatuses: [],
   },
-  {
-    key: 'issue',
-    label: 'BUG STATUSES',
-    showArchived: false,
-    initialStatuses: [
-      { id: 1, color: '#6b7280', name: 'New', slug: 'new' },
-      { id: 2, color: '#38bdf8', name: 'In progress', slug: 'in-progress' },
-      { id: 3, color: '#eab308', name: 'Ready for test', slug: 'ready-for-test' },
-      { id: 4, color: '#84cc16', name: 'Closed', slug: 'closed', isClosed: true },
-      { id: 5, color: '#ef4444', name: 'Needs Info', slug: 'needs-info' },
-      { id: 6, color: '#94a3b8', name: 'Rejected', slug: 'rejected', isClosed: true },
-      { id: 7, color: '#3b82f6', name: 'Postponed', slug: 'postponed' },
-    ],
-  },
+  // },
+  // {
+  //   key: 'issue',
+  //   label: 'BUG STATUSES',
+  //   showArchived: false,
+  //   initialStatuses: [
+  //     { id: 1, color: '#6b7280', name: 'New', slug: 'new' },
+  //     { id: 2, color: '#38bdf8', name: 'In progress', slug: 'in-progress' },
+  //     { id: 3, color: '#eab308', name: 'Ready for test', slug: 'ready-for-test' },
+  //     { id: 4, color: '#84cc16', name: 'Closed', slug: 'closed', isClosed: true },
+  //     { id: 5, color: '#ef4444', name: 'Needs Info', slug: 'needs-info' },
+  //     { id: 6, color: '#94a3b8', name: 'Rejected', slug: 'rejected', isClosed: true },
+  //     { id: 7, color: '#3b82f6', name: 'Postponed', slug: 'postponed' },
+  //   ],
+  // },
 ];
 
 function toSlug(name: string) {
@@ -208,58 +208,243 @@ function AddStatusRow({ onAdd, onCancel }: { onAdd: (name: string, color: string
   );
 }
 
-function StatusSection({ config }: { config: SectionConfig }) {
+function StatusSection({
+  config,
+  projectId,
+}: {
+  config: SectionConfig;
+  projectId: string;
+}) {
   const [statuses, setStatuses] = useState<Status[]>(config.initialStatuses);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const isUserStory = config.key === 'userStory';
+  const isTask = config.key === 'task';
+
+  const { userStoryStatuses } = useGetUserStoryStatuses(
+    projectId,
+    isUserStory
+  );
+
+  const { data: taskStatuses = [] } = useGetStatus(
+    projectId,
+    isTask
+  );
+  const { createUserStoryStatusAsync } = useCreateUserStoryStatus();
+
+  const { updateUserStoryStatusAsync } = useUpdateUserStoryStatus();
+
+  const { deleteUserStoryStatusAsync } = useDeleteUserStoryStatus();
+  const createStatus = useCreateStatus();
+  const updateStatus = useUpdateStatus();
+  const deleteStatus = useDeleteStatus();
+  const displayStatuses: Status[] = isUserStory
+    ? userStoryStatuses.map((status) => ({
+      id: status.id,
+      name: status.name,
+      color: status.color,
+      slug: toSlug(status.name),
+      isClosed: status.is_closed,
+    }))
+    : isTask
+      ? taskStatuses.map((status) => ({
+        id: status.id,
+        name: status.name,
+        color: status.color,
+        slug: toSlug(status.name),
+
+      }))
+      : statuses;
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const nextId = Math.max(0, ...statuses.map((s) => s.id)) + 1;
+  const nextId =
+    Math.max(
+      0,
+      ...statuses.map((s) => Number(s.id)).filter((id) => !Number.isNaN(id))
+    ) + 1;
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
+    if (isUserStory) {
+      try {
+        await deleteUserStoryStatusAsync({
+          projectId,
+          statusId: id,
+        });
+
+        if (editingId === id) {
+          setEditingId(null);
+        }
+      } catch (error) {
+        // Toast/error handled by API service
+      }
+
+      return;
+    }
+    if (isTask) {
+      try {
+        await deleteStatus.mutateAsync({
+          projectId,
+          statusId: id,
+        });
+
+        if (editingId === id) {
+          setEditingId(null);
+        }
+      } catch {
+        // Error is handled by API service
+      }
+
+      return;
+    }
     setStatuses((prev) => prev.filter((s) => s.id !== id));
-    if (editingId === id) setEditingId(null);
+
+    if (editingId === id) {
+      setEditingId(null);
+    }
   };
 
-  const handleSaveEdit = (id: number, name: string, isClosed: boolean) => {
+  const handleSaveEdit = async (
+    id: string,
+    name: string,
+    isClosed: boolean
+  ) => {
     const trimmed = name.trim();
+
     if (!trimmed) return;
-    setStatuses((prev) => prev.map((s) => s.id === id ? { ...s, name: trimmed, slug: toSlug(trimmed), isClosed } : s));
+
+    if (isUserStory) {
+      try {
+        await updateUserStoryStatusAsync({
+          projectId,
+          statusId: id,
+          payload: {
+            name: trimmed,
+            is_closed: isClosed,
+          },
+        });
+
+        setEditingId(null);
+      } catch (error) {
+        // Toast/error handled by API service
+      }
+
+      return;
+    }
+    if (isTask) {
+      try {
+        await updateStatus.mutateAsync({
+          projectId,
+          statusId: id,
+          payload: {
+            name: trimmed,
+
+          },
+        });
+
+        setEditingId(null);
+      } catch {
+        // Error is handled by API service
+      }
+
+      return;
+    }
+    setStatuses((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? {
+            ...s,
+            name: trimmed,
+            slug: toSlug(trimmed),
+            isClosed,
+          }
+          : s
+      )
+    );
+
     setEditingId(null);
   };
 
-  const handleAdd = (name: string, color: string, isClosed: boolean) => {
-    setStatuses((prev) => [...prev, { id: nextId, color, name, slug: toSlug(name), isClosed }]);
+  const handleAdd = async (
+    name: string,
+    color: string,
+    isClosed: boolean
+  ) => {
+    const trimmed = name.trim();
+
+    if (!trimmed) return;
+
+    if (isUserStory) {
+      try {
+        await createUserStoryStatusAsync({
+          projectId,
+          payload: {
+            name,
+            color,
+            is_closed: isClosed,
+          },
+        });
+
+        setIsAdding(false);
+      } catch (error) {
+        // Toast/error handled by API service
+      }
+
+      return;
+    }
+    if (isTask) {
+      try {
+        await createStatus.mutateAsync({
+          projectId,
+          payload: {
+            name: trimmed,
+            color,
+            is_final: isClosed,
+          },
+        });
+
+        setIsAdding(false);
+      } catch {
+        // Error is handled by API service
+      }
+
+      return;
+    }
+    setStatuses((prev) => [
+      ...prev,
+      {
+        id: String(nextId),
+        color,
+        name: trimmed,
+        slug: toSlug(trimmed),
+        isClosed,
+      },
+    ]);
+
     setIsAdding(false);
   };
-
   return (
-    <div className={`mb-4 overflow-hidden rounded-xl border transition-all ${
-      isOpen
-        ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
-        : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
-    } bg-white dark:bg-slate-800`}>
+    <div className={`mb-4 overflow-hidden rounded-xl border transition-all ${isOpen
+      ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
+      : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
+      } bg-white dark:bg-slate-800`}>
       {/* Section header */}
-      <div className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${
-        isOpen ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-      }`}>
+      <div className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${isOpen ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+        }`}>
         <button
           type="button"
           onClick={() => { setIsOpen((p) => { const n = !p; if (!n) { setIsAdding(false); setEditingId(null); } return n; }); }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
         >
-          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
-            isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-          }`}>
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            }`}>
             <ChevronRight size={18} strokeWidth={2.5} className={`transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
           </span>
           <span className={`text-[13px] font-bold tracking-wide ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>
             {config.label}
           </span>
-          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-            isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-          }`}>
-            {statuses.length}
+          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            }`}>
+            {displayStatuses.length}
           </span>
         </button>
         <WpButton
@@ -300,7 +485,7 @@ function StatusSection({ config }: { config: SectionConfig }) {
           </div>
 
           <div>
-            {statuses.map((status) => (
+            {displayStatuses.map((status) => (
               <StatusRow
                 key={status.id}
                 status={status}
@@ -315,7 +500,7 @@ function StatusSection({ config }: { config: SectionConfig }) {
 
             {isAdding && <AddStatusRow onAdd={handleAdd} onCancel={() => setIsAdding(false)} />}
 
-            {statuses.length === 0 && !isAdding && (
+            {displayStatuses.length === 0 && !isAdding && (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                   <Plus size={18} />
@@ -330,8 +515,18 @@ function StatusSection({ config }: { config: SectionConfig }) {
     </div>
   );
 }
-
 export default function StatusSettings() {
+  const projectId = useAppSelector(
+    (state) => state.project.selectedProject?.id
+  );
+
+  if (!projectId) {
+    return (
+      <div className="px-8 py-10 text-center text-gray-500">
+        Please select a project first.
+      </div>
+    );
+  }
   return (
     <div className="min-h-[calc(100vh-160px)] px-0 py-2">
       <div className="mb-6 flex items-center gap-3">
@@ -343,7 +538,11 @@ export default function StatusSettings() {
       </p>
       <div className="space-y-1">
         {SECTIONS.map((section) => (
-          <StatusSection key={section.key} config={section} />
+          <StatusSection
+            key={section.key}
+            config={section}
+            projectId={projectId}
+          />
         ))}
       </div>
     </div>
