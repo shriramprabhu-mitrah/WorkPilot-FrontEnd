@@ -31,11 +31,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
     return avatarColors[index];
   };
 
-  const statusColor = member.status === 'Active' ? 'text-green-600' : 'text-gray-400';
-  const statusBg = member.status === 'Active' ? 'bg-green-50' : 'bg-gray-50';
-
   return (
-    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+    <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
           className={`w-10 h-10 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-sm shrink-0`}
@@ -43,12 +40,16 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
           {getInitials(member.name)}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-sm text-gray-900 truncate">{member.name}</h4>
-          <p className="text-xs text-gray-500">{member.role}</p>
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-slate-100 truncate">{member.name}</h4>
+          <p className="text-xs text-gray-500 dark:text-slate-400">{member.role}</p>
         </div>
       </div>
       <span
-        className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor} ${statusBg} shrink-0`}
+        className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${
+          member.status === 'Active'
+            ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+            : 'text-gray-400 dark:text-slate-400 bg-gray-50 dark:bg-slate-700'
+        }`}
       >
         {member.status}
       </span>

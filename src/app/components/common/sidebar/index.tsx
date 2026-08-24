@@ -306,7 +306,10 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       {/* Manage Project Modal */}
       {showManageProject && (
         <div className="fixed inset-0 z-[100] flex items-start justify-start">
-          <div className="fixed inset-0 bg-black/20 dark:bg-black/40" onClick={() => setShowManageProject(false)} />
+          <div
+            className="fixed inset-0 bg-black/20 dark:bg-black/40"
+            onClick={() => setShowManageProject(false)}
+          />
           <div
             ref={modalRef}
             className="relative z-10 mt-[60px] ml-[72px] w-[300px] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden"
@@ -383,16 +386,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                        <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
                           {p.key}
                         </span>
+
                         <span
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowManageProject(false);
                             router.push(`/${orgSlug}/projects/sprints?projectId=${p.id}`);
                           }}
-                          className="p-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 text-slate-100 hover:text-blue-600 transition-colors"
+                          className="rounded p-0.5 text-gray-500 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
                         >
                           <Eye size={13} />
                         </span>

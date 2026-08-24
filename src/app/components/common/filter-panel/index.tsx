@@ -123,28 +123,30 @@ export const FilterPanel = ({
   };
 
   // Shared search input used in every category
-  const SearchInput = ({ placeholder }: { placeholder: string }) => (
-    <div className="p-2.5 border-b border-gray-200 dark:border-gray-700">
-      <div className="relative">
-        <Search
-          size={15}
-          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-        />
-        <input
-          type="text"
-          placeholder={placeholder}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            if (placeholder === 'Search assignee' && onAssigneeSearch) {
-              onAssigneeSearch(e.target.value);
-            }
-          }}
-          className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-    </div>
-  );
+ const SearchInput = ({ placeholder }: { placeholder: string }) => (
+   <div className="border-b border-gray-200 p-2.5 dark:border-slate-700">
+     <div className="relative">
+       <Search
+         size={15}
+         className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400"
+       />
+
+       <input
+         type="text"
+         placeholder={placeholder}
+         value={searchTerm}
+         onChange={(e) => {
+           setSearchTerm(e.target.value);
+
+           if (placeholder === 'Search assignee' && onAssigneeSearch) {
+             onAssigneeSearch(e.target.value);
+           }
+         }}
+         className="w-full rounded-md border border-gray-300 bg-white py-1.5 pl-8 pr-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 sm:text-sm"
+       />
+     </div>
+   </div>
+ );
 
   // Shared footer row
   const Footer = ({ selectedCount, totalCount }: { selectedCount: number; totalCount: number }) => (
@@ -237,7 +239,7 @@ export const FilterPanel = ({
                       className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
                       style={{ backgroundColor: status.color }}
                     />
-                    <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+                    <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-200">
                       {status.name}
                     </span>
                   </div>
@@ -315,7 +317,7 @@ export const FilterPanel = ({
                     }
                     className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                   />
-                  <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">{type}</span>
+                  <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-100">{type}</span>
                 </label>
               ))}
               {filteredTypes.length === 0 && searchTerm && (
@@ -376,7 +378,7 @@ export const FilterPanel = ({
 
   return (
     <div
-      className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 z-50 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex overflow-hidden"
+      className="absolute left-0 top-full z-50 mt-2 flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800 sm:left-auto sm:right-0"
       style={{
         width: '520px',
         maxWidth: 'calc(100vw - 32px)',
@@ -385,16 +387,17 @@ export const FilterPanel = ({
       }}
     >
       {/* Left Sidebar */}
-      <div className="w-40 sm:w-44 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60 flex flex-col">
+      <div className="flex w-40 flex-col border-r border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/60 sm:w-44">
         {/* Sidebar header */}
-        <div className="flex items-center justify-between p-2.5 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-200">
+        <div className="flex items-center justify-between border-b border-gray-200 p-2.5 dark:border-slate-700">
+          <span className="text-xs font-semibold text-gray-700 dark:text-slate-200 sm:text-sm">
             Filter by
           </span>
+
           <WpButton
             variant="ghost"
             size="sm"
-            className="!p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-slate-100"
+            className="!p-1 text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-100"
             onClick={onClose}
           >
             <X size={15} />
@@ -408,6 +411,7 @@ export const FilterPanel = ({
             .map((category) => {
               const count = getActiveCount(category.id);
               const isActive = selectedCategory === category.id;
+
               return (
                 <button
                   key={category.id}
@@ -415,19 +419,20 @@ export const FilterPanel = ({
                     setSelectedCategory(category.id);
                     setSearchTerm('');
                   }}
-                  className={`w-full text-left px-3 py-2 text-xs sm:text-sm transition-colors flex items-center justify-between ${
+                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors sm:text-sm ${
                     isActive
-                      ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium'
-                      : 'text-gray-700 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                      ? 'bg-blue-50 font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   <span>{category.label}</span>
+
                   {count > 0 && (
                     <span
-                      className={`text-[10px] px-1.5 py-px rounded font-medium ${
+                      className={`rounded px-1.5 py-px text-[10px] font-medium ${
                         isActive
                           ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-slate-100'
+                          : 'bg-gray-200 text-gray-600 dark:bg-slate-600 dark:text-slate-200'
                       }`}
                     >
                       {count}
@@ -439,15 +444,21 @@ export const FilterPanel = ({
         </div>
 
         {/* Clear all */}
-        <div className="p-2.5 border-t border-gray-200 dark:border-gray-700">
+        <div className="border-t border-gray-200 p-2.5 dark:border-slate-700">
           {hasActive && (
             <WpButton
               variant="ghost"
               size="sm"
               onClick={() =>
-                onChange({ priorities: [], assignees: [], labels: [], types: [], statuses: [] })
+                onChange({
+                  priorities: [],
+                  assignees: [],
+                  labels: [],
+                  types: [],
+                  statuses: [],
+                })
               }
-              className="w-full text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="w-full text-xs text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white"
             >
               Clear all
             </WpButton>
@@ -456,7 +467,9 @@ export const FilterPanel = ({
       </div>
 
       {/* Right Content Area */}
-      <div className="flex-1 flex flex-col">{renderCategoryContent()}</div>
+      <div className="flex flex-1 flex-col bg-white dark:bg-slate-800">
+        {renderCategoryContent()}
+      </div>
     </div>
   );
 };

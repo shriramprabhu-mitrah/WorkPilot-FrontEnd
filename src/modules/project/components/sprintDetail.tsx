@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Plus, Pencil, Trash2, Hash } from 'lucide-react';
+import { Plus, Pencil, Trash2, Hash } from 'lucide-react';
 
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetSprintById, useDeleteSprint } from '@/src/modules/project/hooks/useSprint';
@@ -22,7 +22,6 @@ import { useGetUserStories, useDeleteUserStory } from '../../tasks/hooks/useUser
 import { colors } from '@/src/styles/colors';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { useQueryClient } from '@tanstack/react-query';
-
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 const SprintDetail = () => {
@@ -47,9 +46,7 @@ const SprintDetail = () => {
     userStories: tasksList,
     isLoadingUserStories: isLoadingTasks,
     isFetchingUserStories: isFetchingTasks,
-  } = useGetUserStories(projectId, {
-    sprint_id: sprintId,
-  });
+  } = useGetUserStories(projectId, { sprint_id: sprintId });
 
   const { deleteTaskAsync, isDeletingTask } = useDeleteTask(projectId);
   const deleteUserStoryMutation = useDeleteUserStory();
@@ -57,11 +54,7 @@ const SprintDetail = () => {
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     projectId,
-    {
-      page: 1,
-      page_size: 10,
-      name: debouncedMemberSearch,
-    },
+    { page: 1, page_size: 10, name: debouncedMemberSearch },
     true
   );
   const assigneeOptions =
@@ -73,6 +66,7 @@ const SprintDetail = () => {
   const STATUS_LABELS = Object.fromEntries(
     statusOptions.map((option) => [option.value, option.label])
   );
+
   const mapTaskToDrawerTask = (task: UserStoryResponse | TaskResponse): KanbanTask => ({
     id: 'key' in task && task.key ? task.key : '',
     taskId: task.id ?? '',
@@ -123,7 +117,6 @@ const SprintDetail = () => {
       setSelectedUserStoryIds([]);
       return;
     }
-
     setSelectedUserStoryIds(
       (tasksList || []).map((task) => task.id).filter((id): id is string => Boolean(id))
     );
@@ -133,10 +126,7 @@ const SprintDetail = () => {
     if (selectedUserStoryIds.length === 0) return;
     try {
       for (const userStoryId of selectedUserStoryIds) {
-        await deleteUserStoryMutation.mutateAsync({
-          projectId: projectId,
-          userStoryId: userStoryId,
-        });
+        await deleteUserStoryMutation.mutateAsync({ projectId, userStoryId });
       }
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       setSelectedUserStoryIds([]);
@@ -152,30 +142,15 @@ const SprintDetail = () => {
   const getPriorityStyle = (priority?: string | null) => {
     switch (priority?.toLowerCase()) {
       case 'critical':
-        return {
-          backgroundColor: colors.priorityCriticalBg,
-          color: colors.priorityCriticalText,
-        };
+        return { backgroundColor: colors.priorityCriticalBg, color: colors.priorityCriticalText };
       case 'high':
-        return {
-          backgroundColor: colors.priorityHighBg,
-          color: colors.priorityHighText,
-        };
+        return { backgroundColor: colors.priorityHighBg, color: colors.priorityHighText };
       case 'medium':
-        return {
-          backgroundColor: colors.priorityMediumBg,
-          color: colors.priorityMediumText,
-        };
+        return { backgroundColor: colors.priorityMediumBg, color: colors.priorityMediumText };
       case 'low':
-        return {
-          backgroundColor: colors.priorityLowBg,
-          color: colors.priorityLowText,
-        };
+        return { backgroundColor: colors.priorityLowBg, color: colors.priorityLowText };
       default:
-        return {
-          backgroundColor: colors.gray100,
-          color: colors.gray500,
-        };
+        return { backgroundColor: colors.gray100, color: colors.gray500 };
     }
   };
 
@@ -184,39 +159,21 @@ const SprintDetail = () => {
     switch (status?.toLowerCase()) {
       case 'done':
       case 'completed':
-        return {
-          backgroundColor: colors.colDoneBg,
-          color: colors.colDone,
-        };
+        return { backgroundColor: colors.colDoneBg, color: colors.colDone };
       case 'in_progress':
       case 'in progress':
-        return {
-          backgroundColor: colors.colInProgressBg,
-          color: colors.colInProgress,
-        };
+        return { backgroundColor: colors.colInProgressBg, color: colors.colInProgress };
       case 'in_review':
       case 'in review':
-        return {
-          backgroundColor: colors.colInReviewBg,
-          color: colors.colInReview,
-        };
+        return { backgroundColor: colors.colInReviewBg, color: colors.colInReview };
       case 'testing':
-        return {
-          backgroundColor: colors.priorityMediumBg,
-          color: colors.priorityMediumText,
-        };
+        return { backgroundColor: colors.priorityMediumBg, color: colors.priorityMediumText };
       case 'blocked':
-        return {
-          backgroundColor: '#FEE2E2',
-          color: '#DC2626',
-        };
+        return { backgroundColor: '#FEE2E2', color: '#DC2626' };
       case 'todo':
       case 'to do':
       default:
-        return {
-          backgroundColor: colors.colTodoBg,
-          color: colors.colTodo,
-        };
+        return { backgroundColor: colors.colTodoBg, color: colors.colTodo };
     }
   };
 
@@ -228,8 +185,7 @@ const SprintDetail = () => {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <div className="text-center">
-          <p className="text-sm text-gray-500">Sprint not found.</p>
-
+          <p className="text-sm text-gray-500 dark:text-slate-400">Sprint not found.</p>
           <WpButton
             type="button"
             variant="primary"
@@ -243,52 +199,24 @@ const SprintDetail = () => {
       </div>
     );
   }
+
   const allUserStoriesSelected =
     (tasksList || []).length > 0 && selectedUserStoryIds.length === (tasksList || []).length;
+
   return (
     <div className="space-y-6">
-      {/* <div className="flex items-center gap-2 text-sm">
-        <button
-          type="button"
-          onClick={() => push('/projects')}
-          className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-gray-500 hover:text-gray-700 hover:underline"
-        >
-          Projects
-        </button>
-        <span className="text-gray-400">/</span>
-
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          Sprints
-        </button>
-        <span className="text-gray-400">/</span>
-        <span className="font-medium text-gray-900">{sprint.name}</span>
-      </div> */}
-      {/* <WpButton
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => router.back()}
-        leftIcon={<ArrowLeft size={16} />}
-        className="text-gray-500"
-      >
-        Sprints
-      </WpButton> */}
-      <div className="relative rounded-2xl border border-gray-200 bg-white p-6">
+      {/* Sprint info card */}
+      <div className="relative rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{sprint.name}</h1>
-
-            <p className="mt-2 text-sm text-gray-500">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{sprint.name}</h1>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               {formatDate(sprint.start_date)} → {formatDate(sprint.end_date)}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-600">
+            <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs text-blue-600 dark:text-blue-400">
               {sprint.status.charAt(0).toUpperCase() + sprint.status.slice(1)}
             </span>
 
@@ -309,7 +237,7 @@ const SprintDetail = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowDeleteSprintConfirm(true)}
-                className="!p-2 text-red-600 hover:bg-red-50"
+                className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 aria-label="Delete sprint"
               >
                 <Trash2 size={15} />
@@ -318,24 +246,27 @@ const SprintDetail = () => {
           </div>
         </div>
 
-        <div className="my-5 border-t" />
+        <div className="my-5 border-t border-gray-100 dark:border-slate-700" />
+
         <div className="grid grid-cols-3 gap-5">
           <div>
-            <p className="text-xs text-gray-400">START DATE</p>
-            <p className="mt-2 text-sm">{formatDate(sprint.start_date)}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">START DATE</p>
+            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{formatDate(sprint.start_date)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400">END DATE</p>
-            <p className="mt-2 text-sm">{formatDate(sprint.end_date)}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">END DATE</p>
+            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{formatDate(sprint.end_date)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400">GOAL</p>
-            <p className="mt-2 text-sm">{sprint.goal || '-'}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">GOAL</p>
+            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{sprint.goal || '-'}</p>
           </div>
         </div>
       </div>
+
+      {/* User Stories section header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">User Stories</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">User Stories</h2>
         <div className="flex items-center gap-2">
           {selectedUserStoryIds.length > 0 && (
             <WpButton
@@ -344,92 +275,76 @@ const SprintDetail = () => {
               size="md"
               onClick={() => setShowDeleteUserStoryConfirm(true)}
               disabled={deleteUserStoryMutation.isPending}
-              className="text-red-600 hover:bg-red-50"
+              className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
               leftIcon={<Trash2 size={16} />}
             >
               {deleteUserStoryMutation.isPending ? 'Deleting...' : 'Delete'}
             </WpButton>
           )}
-
-          {/* <WpButton
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={() => setShowAddTaskModal(true)}
-            leftIcon={<Plus size={16} />}
-          >
-            Add Task
-          </WpButton> */}
         </div>
       </div>
 
+      {/* User Stories list */}
       {isFetchingTasks ? (
-        <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
+        <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
-
-            <p className="mt-4 text-sm text-gray-500">Loading updated user stories...</p>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-blue-600" />
+            <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">Loading updated user stories...</p>
           </div>
         </div>
       ) : !(tasksList || []).length ? (
-        <div className="rounded-2xl border border-gray-200 bg-white py-16">
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
           <div className="flex flex-col items-center justify-center">
             <img src="/images/Time management-rafiki.png" alt="No Tasks" className="h-72 w-72" />
-
-            <p className="text-sm font-medium text-gray-400">
+            <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
               No user stories have been assigned to this sprint.
             </p>
-
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
               Go to backlog to assign user stories to this sprint.
             </p>
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+          {/* Table header */}
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700">
             <input
               type="checkbox"
               checked={allUserStoriesSelected}
               onChange={handleSelectAll}
-              className="h-4 w-4 cursor-pointer rounded border-gray-300"
+              className="h-4 w-4 cursor-pointer rounded border-gray-300 dark:border-slate-600"
             />
-            <span className="text-xs text-gray-500">Select all</span>
+            <span className="text-xs text-gray-500 dark:text-slate-400">Select all</span>
             <span
-              className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ color: colors.gray500, backgroundColor: colors.gray100 }}
+              className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300"
             >
               {(tasksList || []).length} {(tasksList || []).length === 1 ? 'story' : 'stories'}
             </span>
           </div>
 
+          {/* Story rows */}
           {(tasksList || []).map((story) => {
             const userStoryId = story.id ?? '';
             const priorityStyle = getPriorityStyle(story.priority);
             const statusStyle = getStatusStyle(story.status);
+            const isSelected = selectedUserStoryIds.includes(userStoryId);
 
             return (
               <div
                 key={userStoryId}
                 className={`
-                  flex items-center gap-3
-                  px-4 py-2.5
-                  border-b last:border-0
-                  hover:bg-gray-50
+                  flex items-center gap-3 px-4 py-2.5 border-b last:border-0
+                  hover:bg-gray-50 dark:hover:bg-slate-800/60
                   transition-all duration-200
-                  ${
-                    selectedUserStoryIds.includes(userStoryId)
-                      ? 'bg-blue-50/30 border-l-4 border-l-blue-400'
-                      : ''
-                  }
+                  ${isSelected ? 'bg-blue-50/30 dark:bg-blue-900/20 border-l-4 border-l-blue-400' : ''}
                 `}
               >
                 <input
                   type="checkbox"
-                  checked={selectedUserStoryIds.includes(userStoryId)}
+                  checked={isSelected}
                   onChange={() => handleUserStorySelection(userStoryId)}
-                  onClick={(event) => event.stopPropagation()}
-                  className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300"
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 dark:border-slate-600"
                 />
 
                 {/* Story title */}
@@ -437,11 +352,13 @@ const SprintDetail = () => {
                   onClick={() => setSelectedUserStory(story)}
                   className="flex-1 min-w-0 cursor-pointer"
                 >
-                  <span className="text-sm truncate block" style={{ color: colors.gray800 }}>
+                  <span className="text-sm truncate block text-gray-800 dark:text-slate-100">
                     {story.title}
                   </span>
                   {story.description && (
-                    <p className="mt-0.5 text-xs text-gray-400 truncate">{story.description}</p>
+                    <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 truncate">
+                      {story.description}
+                    </p>
                   )}
                 </div>
 
@@ -455,8 +372,7 @@ const SprintDetail = () => {
 
                 {/* Story points */}
                 <span
-                  className="flex items-center gap-0.5 text-xs w-10 shrink-0"
-                  style={{ color: colors.gray400 }}
+                  className="flex items-center gap-0.5 text-xs w-10 shrink-0 text-gray-400 dark:text-slate-500"
                   title="Story points"
                 >
                   <Hash size={11} />
@@ -494,9 +410,7 @@ const SprintDetail = () => {
             setShowAddTaskModal(false);
             queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
             if (taskUserStoryId) {
-              queryClient.invalidateQueries({
-                queryKey: ['user-story', projectId, taskUserStoryId],
-              });
+              queryClient.invalidateQueries({ queryKey: ['user-story', projectId, taskUserStoryId] });
             }
             setTaskUserStoryId('');
             setMemberSearch('');
@@ -522,14 +436,12 @@ const SprintDetail = () => {
           onDelete={async () => {
             try {
               await deleteUserStoryMutation.mutateAsync({
-                projectId: projectId,
+                projectId,
                 userStoryId: selectedUserStory.id,
               });
               queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
               setSelectedUserStory(null);
-            } catch (error) {
-              // Error is already handled by the mutation
-            }
+            } catch (error) {}
           }}
         />
       )}
@@ -543,19 +455,18 @@ const SprintDetail = () => {
         />
       )}
 
+      {/* Delete user stories confirm modal */}
       {showDeleteUserStoryConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900">Delete User Stories</h3>
-
-            <p className="mt-2 text-sm text-gray-500">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-transparent dark:border-slate-700">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Stories</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete{' '}
               {selectedUserStoryIds.length === 1
                 ? 'this user story'
                 : `${selectedUserStoryIds.length} user stories`}
               ?
             </p>
-
             <div className="mt-6 flex justify-end gap-3">
               <WpButton
                 variant="ghost"
@@ -565,7 +476,6 @@ const SprintDetail = () => {
               >
                 Cancel
               </WpButton>
-
               <WpButton
                 variant="primary"
                 size="sm"
@@ -580,16 +490,15 @@ const SprintDetail = () => {
         </div>
       )}
 
+      {/* Delete sprint confirm modal */}
       {showDeleteSprintConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900">Delete Sprint</h3>
-
-            <p className="mt-2 text-sm text-gray-500">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-transparent dark:border-slate-700">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete Sprint</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete{' '}
-              <span className="font-medium text-gray-800">{sprint.name}</span>?
+              <span className="font-medium text-gray-800 dark:text-slate-200">{sprint.name}</span>?
             </p>
-
             <div className="mt-6 flex justify-end gap-3">
               <WpButton
                 variant="ghost"
@@ -599,7 +508,6 @@ const SprintDetail = () => {
               >
                 Cancel
               </WpButton>
-
               <WpButton
                 variant="primary"
                 size="sm"

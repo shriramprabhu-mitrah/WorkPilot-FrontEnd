@@ -80,17 +80,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
     const mapStatus = (status: string): 'Planned' | 'Active' | 'Completed' => {
       const normalized = status.toLowerCase();
-
-      if (normalized === 'active' || normalized === 'in_progress') {
-        return 'Active';
-      }
-
-      if (normalized === 'completed' || normalized === 'done') {
-        return 'Completed';
-      }
-
+      if (normalized === 'active' || normalized === 'in_progress') return 'Active';
+      if (normalized === 'completed' || normalized === 'done') return 'Completed';
       return 'Planned';
     };
+
     const refreshSprints = async () => {
       try {
         setIsRefreshingSprints(true);
@@ -99,6 +93,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         setIsRefreshingSprints(false);
       }
     };
+
     return {
       id: apiSprint.id,
       name: apiSprint.name,
@@ -145,20 +140,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           project_role: memberRoles[memberId],
         })),
       };
-
       await addMembersAsync(payload);
       setShowAddMemberModal(false);
       setIsRefreshingMembers(true);
-
       const res = await projectService.getProjectDetail(project.id);
       if (res.data) {
         const { creator, ...rest } = res.data;
-        dispatch(
-          setSelectedProject({
-            ...rest,
-            owner: creator ?? rest.owner ?? 'Unassigned',
-          })
-        );
+        dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
       setSelectedMembers([]);
       setMemberRoles({});
@@ -172,6 +160,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const handleSprintClick = (sprint: Sprint) => {
     push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${project.id}`);
   };
+
   const confirmDeleteProject = async () => {
     if (!project.id) {
       showToast.error('Project ID is missing');
@@ -192,20 +181,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       return;
     }
     try {
-      await removeMemberAsync({
-        projectId: project.id,
-        userId: memberToRemove.userId,
-      });
+      await removeMemberAsync({ projectId: project.id, userId: memberToRemove.userId });
       setMemberToRemove(null);
       const res = await projectService.getProjectDetail(project.id);
       if (res.data) {
         const { creator, ...rest } = res.data;
-        dispatch(
-          setSelectedProject({
-            ...rest,
-            owner: creator ?? rest.owner ?? 'Unassigned',
-          })
-        );
+        dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
     } catch (error) {}
   };
@@ -219,28 +200,16 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
   const getColorFromId = (userId: string) => {
     const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-orange-500',
-      'bg-teal-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-cyan-500',
+      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500',
+      'bg-orange-500', 'bg-teal-500', 'bg-red-500', 'bg-yellow-500', 'bg-cyan-500',
     ];
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
   const canRemoveMember = (memberRole: string): boolean => {
-    if (memberRole === ROLE_TYPE.ORG_ADMIN) {
-      return false;
-    }
-    if (!isAdmin() && !isProjectManager()) {
-      return false;
-    }
+    if (memberRole === ROLE_TYPE.ORG_ADMIN) return false;
+    if (!isAdmin() && !isProjectManager()) return false;
     return true;
   };
 
@@ -259,12 +228,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       const res = await projectService.getProjectDetail(selectedApiProject.id);
       if (res?.data) {
         const { creator, ...rest } = res.data;
-        dispatch(
-          setSelectedProject({
-            ...rest,
-            owner: creator ?? rest.owner ?? 'Unassigned',
-          })
-        );
+        dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
     } catch (error) {
       showToast.error('Failed to update member role');
@@ -273,33 +237,18 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     }
   };
 
-  // Only project-level roles are assignable within a project
-  const roleOptions = PROJECT_ROLES.map((role) => ({
-    value: role,
-    label: ROLE_LABELS[role],
-  }));
+  const roleOptions = PROJECT_ROLES.map((role) => ({ value: role, label: ROLE_LABELS[role] }));
 
   const handleMemberChange = (members: string[]) => {
     setSelectedMembers(members);
-
     setMemberRoles((prev) => {
       const updated = { ...prev };
-
-      members.forEach((id) => {
-        if (!updated[id]) {
-          updated[id] = ROLE_TYPE.DEVELOPER;
-        }
-      });
-
-      Object.keys(updated).forEach((id) => {
-        if (!members.includes(id)) {
-          delete updated[id];
-        }
-      });
-
+      members.forEach((id) => { if (!updated[id]) updated[id] = ROLE_TYPE.DEVELOPER; });
+      Object.keys(updated).forEach((id) => { if (!members.includes(id)) delete updated[id]; });
       return updated;
     });
   };
+
   const handleSprintSuccess = async () => {
     try {
       setIsRefreshingSprints(true);
@@ -310,37 +259,41 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-gray-500 cursor-pointer" onClick={() => push('/projects')}>
+        <span
+          className="text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-700 dark:hover:text-slate-200"
+          onClick={() => push('/projects')}
+        >
           Projects
         </span>
-        <ChevronRight size={14} className="text-gray-400" />
-        <span className="font-medium text-gray-900">{project?.name}</span>
+        <ChevronRight size={14} className="text-gray-400 dark:text-slate-500" />
+        <span className="font-medium text-gray-900 dark:text-slate-100">{project?.name}</span>
       </div>
 
-      <div className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* Project info card */}
+      <div className="relative rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         {isUpdatingProject && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 dark:bg-slate-900/70">
             <div className="flex flex-col items-center gap-2">
               <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
-
-              <p className="text-sm font-medium text-gray-600">Updating project...</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">Updating project...</p>
             </div>
           </div>
         )}
-        {/* existing content */}
+
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white">
               {project?.initials}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{project?.name}</h1>
-              <p className="mt-1 text-sm text-gray-500">{project?.description}</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{project?.name}</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{project?.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
+            <span className="rounded-full bg-green-50 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-600 dark:text-green-400">
               {project?.status}
             </span>
             {hasPermission('PROJECT_EDIT') && (
@@ -359,7 +312,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="!p-2 text-red-600 hover:bg-red-50"
+                className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 aria-label="Delete project"
               >
                 <Trash2 size={16} />
@@ -368,35 +321,35 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           </div>
         </div>
 
-        <div className="my-5 border-t border-gray-100" />
+        <div className="my-5 border-t border-gray-100 dark:border-slate-700" />
 
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
           <div>
-            <p className="text-[10px] font-medium text-gray-400">CREATED</p>
-            <p className="mt-2 text-sm font-medium text-gray-900">{project?.date}</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">CREATED</p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">{project?.date}</p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400">TOTAL SPRINTS</p>
-            <p className="mt-2 text-sm font-medium text-gray-900">{sprints?.length}</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">TOTAL SPRINTS</p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">{sprints?.length}</p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400">PROJECT OWNER</p>
-            <p className="mt-2 text-sm font-medium text-gray-900">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">PROJECT OWNER</p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
               {selectedApiProject?.owner || project?.owner || 'Not assigned'}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400">TEAM SIZE</p>
-            <p className="mt-2 text-sm font-medium text-gray-900">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">TEAM SIZE</p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
               {selectedApiProject?.members?.length || project.members.length} members
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 mb-2">TEAM MEMBERS</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500 mb-2">TEAM MEMBERS</p>
             {isRefreshingMembers ? (
               <div className="flex items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-                <span className="text-xs font-medium text-gray-500">updating...</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">updating...</span>
               </div>
             ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
               <div className="flex items-center gap-2">
@@ -404,40 +357,39 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   {selectedApiProject.members.slice(0, 5).map((member, index) => (
                     <div
                       key={member.user_id}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white ${getColorFromId(member.user_id)}`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 text-xs font-semibold text-white ${getColorFromId(member.user_id)}`}
                       style={{ zIndex: 5 - index }}
                       title={member.full_name || member.username}
                     >
                       {getInitials(member.full_name || member.username)}
                     </div>
                   ))}
-
                   {selectedApiProject.members.length > 5 && (
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-semibold text-gray-700"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 bg-gray-300 dark:bg-slate-600 text-xs font-semibold text-gray-700 dark:text-slate-100"
                       style={{ zIndex: 0 }}
                     >
                       +{selectedApiProject.members.length - 5}
                     </div>
                   )}
                 </div>
-
                 <button
                   onClick={() => setShowViewMembersModal(true)}
-                  className="whitespace-nowrap text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
+                  className="whitespace-nowrap text-xs font-medium text-blue-600 dark:text-blue-400 transition-colors hover:text-blue-700 dark:hover:text-blue-300"
                 >
                   View
                 </button>
               </div>
             ) : (
-              <p className="mt-2 text-sm text-gray-500">No members</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">No members</p>
             )}
           </div>
         </div>
       </div>
 
+      {/* Sprints section header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Sprints</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Sprints</h2>
         <div className="flex items-center gap-3">
           {hasPermission('MEMBER_ADD') && (
             <WpButton variant="primary" size="md" onClick={() => setShowAddMemberModal(true)}>
@@ -452,31 +404,28 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         </div>
       </div>
 
+      {/* Sprint list */}
       <div className="space-y-3">
         {isLoadingSprints || isRefreshingSprints ? (
-          <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-gray-200 bg-white">
+          <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <div className="text-center">
-              <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-
-              <p className="text-sm font-medium text-gray-600">
+              <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
                 {isRefreshingSprints ? 'Loading updated sprints...' : 'Loading sprint details...'}
               </p>
             </div>
           </div>
         ) : sprints.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white py-16">
+          <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
             <div className="flex flex-col items-center justify-center">
               <img src="/images/agile method-amico.svg" alt="No Sprints" className="h-72 w-72" />
-
-              <h2 className="mt-6 text-2xl font-bold text-gray-900">No Sprints Found</h2>
-
-              <p className="text-sm font-medium text-gray-400">
+              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">No Sprints Found</h2>
+              <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
                 No sprints have been created for this project.
               </p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                 Create your first sprint to start planning work.
               </p>
-
               {hasPermission('SPRINT_CREATE') && (
                 <WpButton
                   variant="primary"
@@ -493,7 +442,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           sprints.map((sprint) => {
             const isExpanded = expandedSprint === sprint.id;
             return (
-              <div key={sprint.id} className="rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div key={sprint.id} className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
                 <div className="flex w-full items-center justify-between p-5">
                   <button
                     type="button"
@@ -501,42 +450,42 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     className="flex flex-1 items-start text-left"
                   >
                     <div>
-                      <h3 className="font-semibold text-gray-900">{sprint.name}</h3>
-                      <p className="mt-1 text-xs text-gray-400">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{sprint.name}</h3>
+                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                         {sprint.startDate || 'No start date'} → {sprint.endDate || 'No end date'}
                       </p>
                     </div>
                   </button>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+                    <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
                       {sprint.status}
                     </span>
                     <button
                       type="button"
                       onClick={() => setExpandedSprint(isExpanded ? null : sprint.id)}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition-colors"
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                       />
                     </button>
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="border-t border-gray-100 p-5">
+                  <div className="border-t border-gray-100 dark:border-slate-700 p-5">
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-400">START DATE</p>
-                        <p className="mt-1 text-sm text-gray-900">{sprint.startDate || '-'}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">START DATE</p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.startDate || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400">END DATE</p>
-                        <p className="mt-1 text-sm text-gray-900">{sprint.endDate || '-'}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">END DATE</p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.endDate || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400">TASKS</p>
-                        <p className="mt-1 text-sm text-gray-900">{sprint.tasks}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">TASKS</p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.tasks}</p>
                       </div>
                     </div>
                   </div>
@@ -563,20 +512,21 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         />
       )}
 
+      {/* Add Member modal */}
       {showAddMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 p-5">
+          <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Add Members</h2>
-                <p className="mt-1 text-sm text-gray-500">Select members to add to this project.</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add Members</h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">Select members to add to this project.</p>
               </div>
               <WpButton
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAddMemberModal(false)}
-                className="!p-2 text-gray-400"
+                className="!p-2 text-gray-400 dark:text-slate-500"
               >
                 <X size={17} />
               </WpButton>
@@ -595,20 +545,18 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <div className="mt-5 flex-1">
                 {selectedMembers.length > 0 ? (
                   <>
-                    <p className="mb-3 text-sm font-medium text-gray-700">Member Roles</p>
-
+                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Member Roles</p>
                     <div className="space-y-3 pr-2">
                       {selectedMembers.map((memberId) => {
                         const member = memberOptions.find((m) => m.value === memberId);
                         return (
                           <div
                             key={memberId}
-                            className="flex items-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                            className="flex items-center rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-3"
                           >
-                            <div className="w-40 text-sm font-medium text-gray-700">
+                            <div className="w-40 text-sm font-medium text-gray-700 dark:text-slate-200">
                               {member?.label}
                             </div>
-
                             <div className="flex-1 -mb-5">
                               <WpDropdown
                                 options={roleOptions}
@@ -627,10 +575,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex h-full min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50">
+                  <div className="flex h-full min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800">
                     <div className="text-center">
-                      <p className="text-base font-medium text-gray-700">No members selected</p>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="text-base font-medium text-gray-700 dark:text-slate-200">No members selected</p>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                         Select members above to assign project roles.
                       </p>
                     </div>
@@ -638,15 +586,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-3 border-t border-gray-100 p-5">
+
+            <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
               <WpButton
                 type="button"
                 variant="secondary"
                 size="md"
-                onClick={() => {
-                  setShowAddMemberModal(false);
-                  setSelectedMembers([]);
-                }}
+                onClick={() => { setShowAddMemberModal(false); setSelectedMembers([]); }}
                 disabled={isAddingMembers}
               >
                 Cancel
@@ -667,20 +613,21 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         </div>
       )}
 
+      {/* Delete project modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             <div className="p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                   <Trash2 size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Delete Project</h2>
-                  <p className="mt-1 text-sm text-gray-500">This action cannot be undone</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Delete Project</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">This action cannot be undone</p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-600">
+              <p className="mt-4 text-sm text-gray-600 dark:text-slate-300">
                 Are you sure you want to delete <strong>{project?.name}</strong>? All sprints,
                 tasks, and data associated with this project will be permanently removed.
               </p>
@@ -710,13 +657,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         </div>
       )}
 
+      {/* View members modal */}
       {showViewMembersModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 p-5">
+          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Team Members</h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Team Members</h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                   {selectedApiProject?.members?.length || 0} members in this project
                 </p>
               </div>
@@ -725,7 +673,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowViewMembersModal(false)}
-                className="!p-2 text-gray-400"
+                className="!p-2 text-gray-400 dark:text-slate-500"
               >
                 <X size={17} />
               </WpButton>
@@ -740,7 +688,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     return (
                       <div
                         key={member.user_id}
-                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all hover:border-gray-300"
+                        className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-3 transition-all hover:border-gray-300 dark:hover:border-slate-600"
                       >
                         <div className="flex items-center gap-3">
                           <div
@@ -749,7 +697,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             {getInitials(member.full_name || member.username)}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                               {member.full_name || member.username}
                             </p>
                             {editingMemberId === member.user_id ? (
@@ -762,7 +710,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 />
                               </div>
                             ) : (
-                              <p className="text-xs text-gray-500 capitalize flex items-center gap-2">
+                              <p className="text-xs text-gray-500 dark:text-slate-400 capitalize flex items-center gap-2">
                                 {updatingMemberId === member.user_id ? (
                                   <>
                                     <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
@@ -781,23 +729,17 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                               <WpButton
                                 variant="ghost"
                                 size="sm"
-                                className="!p-2 text-green-600 hover:bg-green-50"
-                                onClick={() => {
-                                  updateMember(member);
-                                }}
+                                className="!p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                onClick={() => updateMember(member)}
                                 disabled={isUpdatingProjectRole}
                               >
                                 <Check size={16} />
                               </WpButton>
-
                               <WpButton
                                 variant="ghost"
                                 size="sm"
-                                className="!p-2 text-gray-500 hover:bg-gray-100"
-                                onClick={() => {
-                                  setEditingMemberId(null);
-                                  setSelectedRole('');
-                                }}
+                                className="!p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                onClick={() => { setEditingMemberId(null); setSelectedRole(''); }}
                                 disabled={isUpdatingProjectRole}
                               >
                                 <X size={16} />
@@ -806,13 +748,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() =>
-                                    setMemberToRemove({
-                                      userId: member.user_id,
-                                      name: member.full_name || member.username,
-                                    })
-                                  }
-                                  className="!p-2 text-red-600 hover:bg-red-50"
+                                  onClick={() => setMemberToRemove({ userId: member.user_id, name: member.full_name || member.username })}
+                                  className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   aria-label="Remove member"
                                 >
                                   <Trash2 size={16} />
@@ -825,27 +762,18 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
-                                  className="!p-2 text-blue-600 hover:bg-blue-50"
-                                  onClick={() => {
-                                    setEditingMemberId(member.user_id);
-                                    setSelectedRole(member.role);
-                                  }}
+                                  className="!p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                  onClick={() => { setEditingMemberId(member.user_id); setSelectedRole(member.role); }}
                                 >
                                   <Pencil size={16} />
                                 </WpButton>
                               )}
-
                               {hasPermission('MEMBER_REMOVE') && canDelete && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() =>
-                                    setMemberToRemove({
-                                      userId: member.user_id,
-                                      name: member.full_name || member.username,
-                                    })
-                                  }
-                                  className="!p-2 text-red-600 hover:bg-red-50"
+                                  onClick={() => setMemberToRemove({ userId: member.user_id, name: member.full_name || member.username })}
+                                  className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   aria-label="Remove member"
                                 >
                                   <Trash2 size={16} />
@@ -859,12 +787,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   })
                 ) : (
                   <div className="py-8 text-center">
-                    <p className="text-sm text-gray-500">No members in this project yet.</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">No members in this project yet.</p>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-3 border-t border-gray-100 p-5">
+            <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
               <WpButton
                 type="button"
                 variant="secondary"
@@ -878,20 +806,21 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         </div>
       )}
 
+      {/* Remove member confirm modal */}
       {memberToRemove && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             <div className="p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                   <Trash2 size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Remove Member</h2>
-                  <p className="mt-1 text-sm text-gray-500">Remove member from project</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Remove Member</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Remove member from project</p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-600">
+              <p className="mt-4 text-sm text-gray-600 dark:text-slate-300">
                 Are you sure you want to remove <strong>{memberToRemove.name}</strong> from this
                 project? They will lose access to all project resources.
               </p>

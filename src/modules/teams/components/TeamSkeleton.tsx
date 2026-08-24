@@ -1,76 +1,74 @@
+'use client';
+
 import Skeleton from '@/src/app/components/common/skeleton';
 
-interface TeamMemberCardSkeletonProps {
-  page?: boolean;
-}
+function TeamMemberRowSkeleton() {
+  return (
+    <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-black">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-9 w-9 rounded-lg" />
 
-export default function TeamMemberCardSkeleton({ page = false }: TeamMemberCardSkeletonProps) {
-  const card = (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-12 w-12 rounded-full" />
-
-          <div>
-            <Skeleton className="h-4 w-28 mb-2" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-3 w-8" />
-          <Skeleton className="h-5 w-1 rounded-full" />
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-16" />
         </div>
       </div>
 
-      <Skeleton className="h-[2px] w-full rounded-full mt-4 mb-4" />
+      <div className="pr-6">
+        <Skeleton className="mb-2 h-3 w-16" />
+        <Skeleton className="h-2 w-full rounded-full" />
+      </div>
 
-      <div className="flex items-center gap-5">
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-3 w-12" />
+      <div className="flex justify-center">
+        <Skeleton className="h-4 w-6" />
+      </div>
+
+      <div className="flex justify-center">
+        <Skeleton className="h-4 w-6" />
+      </div>
+
+      <div className="flex justify-center">
+        <Skeleton className="h-4 w-6" />
       </div>
     </div>
   );
+}
 
-  if (!page) return card;
-
+export default function TeamMemberCardSkeleton() {
   return (
-    <>
-      <div className="mb-8 flex items-start justify-between">
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
         <div>
-          <Skeleton className="h-8 w-24 mb-2" />
-          <Skeleton className="h-4 w-40" />
+          <Skeleton className="mb-2 h-8 w-24" />
+          <Skeleton className="h-4 w-20" />
         </div>
 
         <Skeleton className="h-10 w-36 rounded-lg" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
+        <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+          <Skeleton className="h-3 w-16" />
+
+          <Skeleton className="h-3 w-16" />
+
+          <div className="flex justify-center">
+            <Skeleton className="h-3 w-12" />
+          </div>
+
+          <div className="flex justify-center">
+            <Skeleton className="h-3 w-10" />
+          </div>
+
+          <div className="flex justify-center">
+            <Skeleton className="h-3 w-10" />
+          </div>
+        </div>
+
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index}>{card}</div>
+          <TeamMemberRowSkeleton key={index} />
         ))}
       </div>
-
-      <div className="mt-10">
-        <Skeleton className="h-7 w-64 mb-6" />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="rounded-xl p-5 animate-pulse bg-white">
-              <Skeleton className="h-5 w-40 mb-3" />
-              <Skeleton className="h-4 w-52 mb-5" />
-
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 mb-3">
-                  <Skeleton className="h-4 w-4 rounded-full" />
-                  <Skeleton className="h-4 flex-1" />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
