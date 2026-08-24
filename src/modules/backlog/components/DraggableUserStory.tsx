@@ -118,18 +118,18 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       className={`
       flex items-center gap-3
       px-4 py-3
-      border-b border-gray-100 last:border-0
-      bg-white
-      hover:bg-gray-50
+      border-b border-gray-100 dark:border-slate-700 last:border-0
+      bg-white dark:bg-slate-800
+      hover:bg-gray-50 dark:hover:bg-slate-700/50
       transition-colors duration-150
-      ${isDragging ? 'bg-blue-50 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50' : ''}
+      ${isDragging ? 'bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50' : ''}
     `}
     >
       {/* Drag Handle - UNCHANGED */}
       <span
         className={`
         shrink-0 p-1 rounded
-        ${isDragging ? 'text-blue-500 bg-blue-100' : 'text-gray-300 group-hover:text-gray-500'}
+        ${isDragging ? 'text-blue-500 bg-blue-100 dark:bg-blue-900/40' : 'text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400'}
       `}
       >
         <GripVertical size={15} />
@@ -142,10 +142,10 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
             <span
               title={story.title}
               className={`block truncate text-sm font-semibold ${
-                story.is_closed ? 'line-through text-gray-500 opacity-60' : ''
+                story.is_closed ? 'line-through text-gray-500 opacity-60' : 'dark:text-slate-100'
               }`}
               style={{
-                color: story.is_closed ? undefined : isDragging ? colors.primary : colors.gray800,
+                color: story.is_closed ? undefined : isDragging ? colors.primary : undefined,
               }}
             >
               {story.title}

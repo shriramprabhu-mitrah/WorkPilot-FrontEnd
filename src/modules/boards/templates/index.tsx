@@ -90,7 +90,7 @@ const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void
         {...attributes}
         {...listeners}
         onClick={() => setShowModal(true)}
-        className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none w-full"
+        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none w-full"
       >
         <KanbanCardContent task={task} />
       </div>
@@ -242,7 +242,7 @@ const UserStoryRow = ({
               />
               <div className="flex-1 min-w-0">
                 <h3
-                  className={`text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors ${
+                  className={`text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors dark:text-slate-100 ${
                     story.is_closed ? 'line-through' : ''
                   }`}
                   title={story.title}
@@ -272,44 +272,57 @@ const UserStoryRow = ({
                         </span>
                       </div>
 
-                      {/* Assignee */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500">Assignee</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800">
-                          {story.assignee_name || story.assignee?.name || 'Unassigned'}
-                        </span>
-                      </div>
-
-                      {/* Due Date */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500">Due Date</span>
-                        <span className="text-sm font-medium text-gray-800">
-                          {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
-                        </span>
-                      </div>
-
-                      {/* Reporter */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500">Reporter</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800">
-                          {story.reporter_name || story.reporter?.name || '-'}
-                        </span>
-                      </div>
-
-                      {/* Priority */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500">Priority</span>
-                        <span className="text-sm font-medium text-gray-800 capitalize">
-                          {story.priority || '-'}
-                        </span>
-                      </div>
+                    {/* Assignee */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Assignee</span>
+                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {story.assignee_name || story.assignee?.name || 'Unassigned'}
+                      </span>
                     </div>
-                  </div>,
-                  document.body
-                )}
-            </div>
+
+                    {/* Due Date */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Due Date</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
+                      </span>
+                    </div>
+
+                    {/* Reporter */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Reporter</span>
+                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {story.reporter_name || story.reporter?.name || '-'}
+                      </span>
+                    </div>
+
+                    {/* Priority */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
+                        {story.priority || '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
           </div>
         </div>
+
+        {/* Empty status columns for header row */}
+        {statuses.map((status) => {
+          const isCollapsed = collapsedStatuses.has(status.id);
+          return (
+            <div
+              key={status.id}
+              className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+              }`}
+            />
+          );
+        })}
+      </div>
 
         {statuses.map((status) => {
           const tasks = story.tasksByStatus.get(status.id) || [];
@@ -911,12 +924,12 @@ export const KanbanBoardTemplate = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0 px-3 sm:px-0">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800 mb-1">Kanban Board</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">Kanban Board</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-300">
             Visualize and manage your team&apos;s tasks across workflow stages.
           </p>
           {storeProject && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 dark:text-gray-400 mt-0.5">
               {storeProject.name}
               {storeSprint ? ` · ${storeSprint.name}` : ' · All Sprints'}
             </p>
@@ -930,6 +943,7 @@ export const KanbanBoardTemplate = () => {
               size="sm"
               onClick={() => setShowFilter((v) => !v)}
               leftIcon={<Filter size={15} />}
+              className="dark:text-white dark:border-gray-600"
             >
               <span>Filter</span>
               {hasActiveFilter && (
@@ -986,7 +1000,7 @@ export const KanbanBoardTemplate = () => {
                 );
               })
             ) : (
-              <span className="text-xs text-gray-400">No team members</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">No team members</span>
             )}
           </div>
         </div>
@@ -1001,9 +1015,9 @@ export const KanbanBoardTemplate = () => {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/kanban method-pana.svg" alt="No Tasks" className="h-90 w-90" />
 
-            <h2 className="text-2xl font-bold text-gray-900">No tasks found</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">No tasks found</h2>
 
-            <p className="mt-3 max-w-md text-center text-gray-500">
+            <p className="mt-3 max-w-md text-center text-gray-500 dark:text-gray-400">
               There are no tasks for this selection. Try a different project or sprint.
             </p>
           </div>
@@ -1024,9 +1038,9 @@ export const KanbanBoardTemplate = () => {
           >
             <div className="inline-block min-w-full px-3 sm:px-0">
               {/* Status Headers */}
-              <div className="sticky top-0 z-20 bg-white flex border-b-2 border-gray-300">
-                <div className="sticky left-0 z-30 bg-gray-100 border-r border-gray-200 w-[200px] sm:w-[250px] flex-shrink-0 p-3">
-                  <span className="text-sm font-semibold text-gray-700">User Stories</span>
+              <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 flex border-b-2 border-gray-300 dark:border-gray-700">
+                <div className="sticky left-0 z-30 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-[200px] sm:w-[250px] flex-shrink-0 p-3">
+                  <span className="text-sm font-semibold text-gray-700 dark:text-slate-100">User Stories</span>
                 </div>
                 {statuses.map((status) => {
                   const isCollapsed = collapsedStatuses.has(status.id);
@@ -1035,19 +1049,19 @@ export const KanbanBoardTemplate = () => {
                   return (
                     <div
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
+                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
                         isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
                       }`}
                     >
                       {!isCollapsed ? (
-                        <div className="p-3 flex items-center gap-2">
+                        <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">
                           <button
                             onClick={() => toggleStatusCollapse(status.id)}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 active:scale-95 rounded transition-all duration-200"
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 rounded transition-all duration-200"
                             title="Collapse column"
                           >
                             <svg
-                              className="w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out rotate-90"
+                              className="w-4 h-4 text-gray-600 dark:text-slate-300 transition-transform duration-300 ease-in-out rotate-90"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -1064,10 +1078,10 @@ export const KanbanBoardTemplate = () => {
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: status.color }}
                           />
-                          <span className="text-sm font-semibold text-gray-700 truncate">
+                          <span className="text-sm font-semibold text-gray-700 dark:text-slate-100 truncate">
                             {status.name}
                           </span>
-                          <span className="ml-auto text-xs text-gray-500 font-medium">
+                          <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 font-medium">
                             {taskCount}
                           </span>
                         </div>
@@ -1075,11 +1089,11 @@ export const KanbanBoardTemplate = () => {
                         <div className="h-full flex flex-col items-center justify-start py-3 px-2">
                           <button
                             onClick={() => toggleStatusCollapse(status.id)}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 active:scale-95 rounded transition-all duration-200 mb-2"
+                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 rounded transition-all duration-200 mb-2"
                             title="Expand column"
                           >
                             <svg
-                              className="w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out"
+                              className="w-4 h-4 text-gray-600 dark:text-slate-300 transition-transform duration-300 ease-in-out"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -1098,7 +1112,7 @@ export const KanbanBoardTemplate = () => {
                           />
                           <div className="flex-1 flex items-center justify-center overflow-hidden">
                             <span
-                              className="text-xs font-semibold text-gray-700 whitespace-nowrap"
+                              className="text-xs font-semibold text-gray-700 dark:text-slate-200 whitespace-nowrap"
                               style={{
                                 writingMode: 'vertical-rl',
                                 textOrientation: 'mixed',
@@ -1108,7 +1122,7 @@ export const KanbanBoardTemplate = () => {
                               {status.name}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 font-medium mt-2">
+                          <span className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-2">
                             {taskCount}
                           </span>
                         </div>

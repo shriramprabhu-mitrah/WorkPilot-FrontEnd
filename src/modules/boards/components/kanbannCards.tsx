@@ -44,7 +44,7 @@ export const KanbanCard = ({ task }: { task: KanbanTask }) => {
         {...attributes}
         {...listeners}
         onClick={() => setShowModal(true)}
-        className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none"
+        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none"
       >
         <KanbanCardContent task={task} />
       </div>

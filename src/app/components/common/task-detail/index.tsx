@@ -450,20 +450,20 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       onClick={onClose}
     >
       <div
-        className="relative bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
+        className="relative bg-white dark:bg-slate-900 w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
         style={{ maxWidth: '1100px', height: 'min(860px, 94vh)' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 shrink-0">
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
               <FileText size={13} className="text-white" />
             </span>
-            <span className="text-base font-bold text-blue-600">{task.id}</span>
+            <span className="text-base font-bold text-blue-600 dark:text-blue-400">{task.id}</span>
             {task.sprint && (
               <>
-                <span className="text-gray-300">/</span>
-                <span className="text-sm font-medium text-gray-500">{task.sprint}</span>
+                <span className="text-gray-300 dark:text-slate-600">/</span>
+                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">{task.sprint}</span>
               </>
             )}
           </div>
@@ -472,13 +472,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             <div className="relative" ref={actionMenuRef}>
               <button
                 onClick={() => setShowActionMenu(!showActionMenu)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
               >
                 <MoreVertical size={17} />
               </button>
 
               {showActionMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -501,7 +501,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         editingDesc: true,
                       }));
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <Pencil size={14} />
                     Update
@@ -512,7 +512,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       setShowActionMenu(false);
                       setShowCloneModal(true);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <Copy size={14} />
                     Clone
@@ -523,7 +523,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       setShowActionMenu(false);
                       setShowDeleteConfirm(true);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <Trash2 size={14} />
                     Delete
@@ -535,7 +535,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             {/* Close button */}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
             >
               <X size={17} />
             </button>
@@ -543,11 +543,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         </div>
 
         {/* Mobile tab switcher */}
-        <div className="flex sm:hidden border-b border-gray-200 shrink-0">
+        <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
           <button
             onClick={() => setMobileTab('content')}
             className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
+              mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'
             }`}
           >
             Content
@@ -555,7 +555,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           <button
             onClick={() => setMobileTab('details')}
             className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'
+              mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'
             }`}
           >
             Details
@@ -564,10 +564,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {isLoading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
               <div className="flex flex-col items-center gap-2">
                 <div className="w-7 h-7 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-                <span className="text-sm text-gray-500">Loading...</span>
+                <span className="text-sm text-gray-500 dark:text-slate-400">Loading...</span>
               </div>
             </div>
           )}
@@ -584,12 +584,12 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   onChange={(e) => setEditTaskTitle(e.target.value)}
                   placeholder="Task name"
                   autoFocus
-                  className="w-full px-3 py-2.5 text-2xl font-bold text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full px-3 py-2.5 text-2xl font-bold text-gray-900 dark:text-slate-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
             ) : (
               <h1
-                className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900"
+                className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
                 title={taskData.title || task.title}
               >
                 {taskData.title || task.title}
@@ -606,8 +606,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </button>
             </div> */}
 
-            <section className="mb-6 pb-6 border-b border-gray-200">
-              <p className="text-base font-semibold text-gray-800 mb-2">Description</p>
+            <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Description</p>
 
               {uiState.editingDesc ? (
                 <div>
@@ -646,7 +646,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                           setIsEditingTask(false);
                         }}
-                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -766,7 +766,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       }}
                     />
                   ) : (
-                    <span className="text-gray-400">Add a description…</span>
+                    <span className="text-gray-400 dark:text-slate-500">Add a description…</span>
                   )}
                 </div>
               )}
@@ -786,9 +786,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </button>
             </section> */}
             {/* Attachments */}
-            <div className="mb-6 pb-6 border-b border-gray-200">
+            <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-gray-700">Attachments</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Attachments</p>
 
                 <input
                   ref={attachmentInputRef}
@@ -810,41 +810,41 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
               {/* Empty state */}
               {isLoadingAttachments || isFetchingAttachments ? (
-                <div className="border border-gray-200 rounded-xl px-4 py-5 text-center bg-white">
-                  <p className="text-sm text-gray-400">Loading attachments...</p>
+                <div className="border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
+                  <p className="text-sm text-gray-400 dark:text-slate-500">Loading attachments...</p>
                 </div>
               ) : !attachments?.data?.length ? (
-                <div className="border border-dashed border-gray-300 rounded-xl px-4 py-5 text-center bg-white">
-                  <div className="w-9 h-9 mx-auto mb-2 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Paperclip size={16} className="text-gray-400" />
+                <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
+                  <div className="w-9 h-9 mx-auto mb-2 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
+                    <Paperclip size={16} className="text-gray-400 dark:text-slate-500" />
                   </div>
 
-                  <p className="text-sm text-gray-500">No attachments</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
 
-                  <p className="text-xs text-gray-400 mt-1">Add files to this task</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Add files to this task</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {attachments?.data?.map((attachment) => (
                     <div
                       key={attachment.id}
-                      className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+                      className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5"
                     >
                       {/* File icon */}
-                      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                        <FileText size={17} className="text-gray-500" />
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                        <FileText size={17} className="text-gray-500 dark:text-slate-400" />
                       </div>
 
                       {/* File details */}
                       <div className="flex-1 min-w-0">
                         <p
-                          className="text-sm font-medium text-gray-700 truncate"
+                          className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate"
                           title={attachment.original_filename}
                         >
                           {attachment.original_filename}
                         </p>
 
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
                           {formatFileSize(attachment.file_size)}
                         </p>
                       </div>
@@ -897,8 +897,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             }`}
             style={{ width: isMobile ? undefined : rightWidth }}
           >
-            <div className="px-5 py-5 border-b border-gray-300">
-              <p className="text-base font-semibold text-gray-800 mb-2">Status</p>
+            <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Status</p>
 
               <div className="relative" ref={statusMenuRef}>
                 <button
@@ -931,9 +931,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </button>
 
                 {uiState.showStatusMenu && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
                     {isLoadingStatus ? (
-                      <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
                         Loading statuses...
                       </div>
                     ) : statusOptions.length === 0 ? (
@@ -1028,8 +1028,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </div>
             </div>
 
-            <div className="px-5 py-5 border-b border-gray-200">
-              <p className="text-base font-semibold text-gray-800 mb-2">Details</p>
+            <div className="px-5 py-5 border-b border-gray-200 dark:border-slate-700">
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Details</p>
 
               <DetailRow label="Assignee">
                 <div className="relative" ref={assigneeMenuRef}>
@@ -1048,15 +1048,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         <User size={12} className="text-gray-400" />
                       </span>
                     )}
-                    <span className="text-sm text-gray-700 truncate">
+                    <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.assigneeName || 'Unassigned'}
                     </span>
-                    <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
                   </button>
                   {showAssigneeMenu && (
-                    <div className="absolute top-full left-0 mt-1 w-full  bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-1 w-full  bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                       {/* Search */}
-                      <div className="p-2 border-b border-gray-200">
+                      <div className="p-2 border-b border-gray-200 dark:border-slate-700">
                         <WpInput
                           ref={assigneeSearchRef}
                           value={assigneeSearch}
@@ -1212,17 +1212,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       isUpdatingUserStory ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
                     }`}
                   >
-                    <span className="text-sm text-gray-700 truncate">
+                    <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.user_story_title || 'No user story'}
                     </span>
 
-                    <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
                   </button>
 
                   {showUserStoryMenu && !isUpdatingUserStory && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-[100] overflow-hidden">
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[100] overflow-hidden">
                       {/* Search */}
-                      <div className="p-2 border-b border-gray-200">
+                      <div className="p-2 border-b border-gray-200 dark:border-slate-700">
                         <WpInput
                           value={userStorySearch}
                           onChange={(e) => setUserStorySearch(e.target.value)}
@@ -1360,11 +1360,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           onClick={() => setShowCloneModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Clone Task</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">Clone Task</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mb-4">
               Create a copy of this task with the same details.
             </p>
 
@@ -1373,16 +1373,16 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 type="checkbox"
                 checked={keepAssignee}
                 onChange={(e) => setKeepAssignee(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Keep assignee</span>
+              <span className="text-sm text-gray-700 dark:text-slate-300">Keep assignee</span>
             </label>
 
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowCloneModal(false)}
                 disabled={isCloningTask}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
@@ -1407,11 +1407,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           onClick={() => setShowDeleteConfirm(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Delete Task</h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">Delete Task</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
               Are you sure you want to delete this task? This action cannot be undone.
             </p>
 
@@ -1419,7 +1419,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeletingTask}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>

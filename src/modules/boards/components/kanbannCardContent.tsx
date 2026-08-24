@@ -14,7 +14,7 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
     <>
       {/* Title */}
       <p
-        className="text-sm font-semibold text-gray-800 leading-snug mb-2 truncate"
+        className="text-sm font-semibold text-gray-800 dark:text-slate-100 leading-snug mb-2 truncate"
         title={task.title}
       >
         {task.title}
@@ -43,8 +43,8 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
               ? `${months[parseInt(parts[1]) - 1]} ${parseInt(parts[2])}`
               : task.dueDate;
           return (
-            <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <Calendar size={11} className="text-gray-400" />
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
+              <Calendar size={11} className="text-gray-400 dark:text-slate-100" />
               <span>{display}</span>
             </div>
           );
@@ -64,18 +64,18 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
 
       {/* Subtasks row */}
       {subtasks.length > 0 && (
-        <div className="border-t border-gray-100 mt-1 pt-2">
+        <div className="border-t border-gray-100 dark:border-gray-700 mt-1 pt-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setExpanded((v) => !v);
             }}
-            className="flex items-center justify-between w-full text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            className="flex items-center justify-between w-full text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
           >
             <div className="flex items-center gap-1.5">
-              <GitBranch size={11} className="text-gray-400" />
+              <GitBranch size={11} className="text-gray-400 dark:text-gray-500" />
               <span className="font-medium">Subtasks</span>
-              <span className="font-semibold text-gray-600">
+              <span className="font-semibold text-gray-600 dark:text-gray-300">
                 {doneCount}/{subtasks.length}
               </span>
             </div>
@@ -87,11 +87,11 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
               {subtasks.map((sub) => (
                 <div
                   key={sub.id}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-2 py-1.5 hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-700 px-2 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
                 >
                   <span
                     className={`text-xs flex-1 truncate ${
-                      sub.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'
+                      sub.status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'
                     }`}
                   >
                     {sub.title}

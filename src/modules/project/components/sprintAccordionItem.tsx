@@ -44,26 +44,26 @@ const SprintAccordionItem = ({
   return (
     <div
       key={fieldId}
-      className={`overflow-hidden rounded-xl border ${hasError ? 'border-red-300' : 'border-gray-200'}`}
+      className={`overflow-hidden rounded-xl border ${hasError ? 'border-red-300 dark:border-red-700' : 'border-gray-200 dark:border-slate-600'}`}
     >
       <WpButton
         variant="ghost"
         size="md"
         type="button"
         onClick={onToggle}
-        className="w-full justify-between rounded-none p-4 text-gray-900 hover:bg-gray-50"
+        className="w-full justify-between rounded-none p-4 text-gray-900 dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-700/50"
         rightIcon={isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
       >
         <div className="flex items-center gap-3">
           <span
-            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${hasError ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}
+            className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${hasError ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}
           >
             {index + 1}
           </span>
           <span className="text-sm font-medium">{watched?.name || `Sprint ${index + 1}`}</span>
-          {!isOpen && datePreview && <span className="text-xs text-gray-400">{datePreview}</span>}
+          {!isOpen && datePreview && <span className="text-xs text-gray-400 dark:text-slate-500">{datePreview}</span>}
           {!isOpen && hasError && (
-            <span className="flex items-center gap-1 text-xs text-red-500">
+            <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
               Incomplete
             </span>
@@ -71,7 +71,7 @@ const SprintAccordionItem = ({
         </div>
       </WpButton>
       {isOpen && (
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 bg-gray-50 dark:bg-slate-700/40">
           <WpInput
             id={`sprint-name-${index}`}
             label="Sprint name"
