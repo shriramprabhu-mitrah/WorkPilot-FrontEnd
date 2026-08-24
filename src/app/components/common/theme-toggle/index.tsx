@@ -16,7 +16,7 @@ export const ThemeToggle = () => {
       <WpButton
         variant="ghost"
         size="sm"
-        className="!p-1.5 text-gray-500 hidden md:flex"
+        className="!p-1.5 text-gray-500 flex"
         aria-label="Toggle theme"
         disabled
       >
@@ -31,7 +31,7 @@ export const ThemeToggle = () => {
     <WpButton
       variant="ghost"
       size="sm"
-      className="!p-1.5 text-gray-500 dark:text-slate-300 hidden md:flex"
+      className="!p-1.5 text-gray-500 dark:text-slate-300 flex"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

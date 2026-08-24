@@ -21,6 +21,8 @@ import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { X } from 'lucide-react';
 import ContactSalesModal from '@/src/app/components/common/contactSales';
+import { ThemeToggle } from '@/src/app/components/common/theme-toggle';
+import { useTheme } from 'next-themes';
 
 // Intersection Observer Hook for scroll animations
 const useScrollReveal = () => {
@@ -45,7 +47,7 @@ const useScrollReveal = () => {
 export const LandingPage = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const router = useRouter();
-
+ const { resolvedTheme } = useTheme();
   useScrollReveal();
 
   return (
@@ -69,6 +71,7 @@ export const LandingPage = () => {
           <a href="#pricing" className="lp-nav-link">
             Pricing
           </a> */}
+          <ThemeToggle />
           <WpButton
             variant="secondary"
             onClick={() => router.push('/signin')}
@@ -130,9 +133,7 @@ export const LandingPage = () => {
       {/* Trusted By */}
       <section className="lp-trusted animate-on-scroll">
         <h3 className="lp-trusted-title">Trusted by Modern Teams</h3>
-        <p
-          style={{ color: colors.slate600, maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}
-        >
+        <p className="lp-trusted-desc">
           Helping startups, growing businesses, and enterprise teams streamline project execution
           and deliver successful outcomes.
         </p>
@@ -206,7 +207,7 @@ export const LandingPage = () => {
           </div>
           <div className="lp-dashboard-preview animate-on-scroll">
             <Image
-              src="/images/dashboard-landing.png"
+              src={resolvedTheme === 'dark' ? '/pic.png' : '/image1.png'}
               alt="Dashboard Preview"
               width={1200}
               height={675}
@@ -247,36 +248,9 @@ export const LandingPage = () => {
               ))}
             </div>
           </div>
-          <div
-            className="animate-on-scroll"
-            style={{
-              background: colors.slate50,
-              padding: '40px',
-              borderRadius: '20px',
-              textAlign: 'center',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                marginBottom: '24px',
-                color: colors.slate800,
-              }}
-            >
-              Why Teams Love WorkPilot
-            </h3>
-            <ul
-              style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                textAlign: 'left',
-              }}
-            >
+          <div className="lp-why-box animate-on-scroll">
+            <h3 className="lp-why-title">Why Teams Love WorkPilot</h3>
+            <ul className="lp-why-list">
               {[
                 'Simple and intuitive interface',
                 'Agile project management',
@@ -286,17 +260,8 @@ export const LandingPage = () => {
                 'Responsive on desktop and mobile',
                 'Scalable for growing teams',
               ].map((item, idx) => (
-                <li
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    color: colors.slate600,
-                    fontSize: '16px',
-                  }}
-                >
-                  <span style={{ color: colors.primaryFocus, flexShrink: 0 }}>
+                <li key={idx} className="lp-why-item">
+                  <span className="lp-why-check">
                     <CheckIconSvg />
                   </span>
                   {item}
@@ -444,17 +409,17 @@ export const LandingPage = () => {
               Project Management Made Simple. Collaboration Made Powerful. Beyond eXpectation.
             </p>
             <section id="contact">
-              <h2 className=" mt-2 text-sm text-gray-500">Contact Us</h2>
+              <h2 className="mt-2 text-sm lp-contact-label">Contact Us</h2>
               <div className="flex flex-col gap-1">
                 <div>
-                  <span className=" text-sm text-gray-500">Email</span>
-                  <a className="ml-2 text-sm text-blue-600 hover:underline">
+                  <span className="text-sm lp-contact-label">Email</span>
+                  <a className="ml-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
                     support@workpilot.com
                   </a>
                 </div>
                 <div>
-                  <span className=" text-sm text-gray-500">Phone</span>
-                  <span className="ml-2 text-sm text-blue-600">12345678</span>
+                  <span className="text-sm lp-contact-label">Phone</span>
+                  <span className="ml-2 text-sm text-blue-600 dark:text-blue-400">12345678</span>
                 </div>
               </div>
             </section>
