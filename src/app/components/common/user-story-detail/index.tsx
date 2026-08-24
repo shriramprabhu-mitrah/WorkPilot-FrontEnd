@@ -28,7 +28,8 @@ import { userStoryService } from '@/src/services/userstory';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
-import { useGetUserStoryById } from '@/src/modules/tasks/hooks/useUserStory';
+import { useGetUserStoryById, useGetUserStoryStatuses, } from '@/src/modules/tasks/hooks/useUserStory';
+
 import { WpButton } from '../button';
 import { WpInput } from '../input';
 import { UserStoryResponse, UserStoryReplyResponse } from '@/src/types/userstories';
@@ -202,7 +203,7 @@ export const UserStoryDetailDrawer = ({
 
     const priority = story.priority
       ? ((story.priority.charAt(0).toUpperCase() +
-          story.priority.slice(1).toLowerCase()) as Priority)
+        story.priority.slice(1).toLowerCase()) as Priority)
       : ('Medium' as Priority);
 
     const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
@@ -236,11 +237,11 @@ export const UserStoryDetailDrawer = ({
 
     const assigneeInitials = assigneeName
       ? assigneeName
-          .split(' ')
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
       : '';
 
     return {
@@ -304,7 +305,13 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
-  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
+  const { data: customStatuses = [] } = useGetStatus(
+    currentUserStory.project_id ?? ''
+  );
+
+  const { userStoryStatuses = [] } = useGetUserStoryStatuses(
+    currentUserStory.project_id ?? ''
+  );
   const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
   // Comment hooks
@@ -724,7 +731,7 @@ export const UserStoryDetailDrawer = ({
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -751,7 +758,7 @@ export const UserStoryDetailDrawer = ({
     { key: 'history', label: 'History' },
   ];
 
-  const allStatusOptions = customStatuses.map((status) => ({
+  const taskStatusOptions = customStatuses.map((status) => ({
     value: status.id,
     label: status.name,
     color: status.color,
@@ -760,10 +767,22 @@ export const UserStoryDetailDrawer = ({
     is_final: status.is_final,
   }));
 
-  const allStatusConfig = Object.fromEntries(
-    allStatusOptions.map((option) => [option.value, option])
+  const userStoryStatusOptions = userStoryStatuses.map((status) => ({
+    value: status.id,
+    label: status.name,
+    color: status.color,
+    bg: `${status.color}18`,
+    dot: status.color,
+    is_final: status.is_closed,
+  }));
+
+  const taskStatusConfig = Object.fromEntries(
+    taskStatusOptions.map((option) => [option.value, option])
   );
 
+  const userStoryStatusConfig = Object.fromEntries(
+    userStoryStatusOptions.map((option) => [option.value, option])
+  );
   interface UploadedAttachment {
     url?: string;
     file_url?: string;
@@ -851,9 +870,25 @@ export const UserStoryDetailDrawer = ({
           </div>
 
           {/* Mobile tab switcher */}
-          <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
-            <button onClick={() => setMobileTab('content')} className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'}`}>Content</button>
-            <button onClick={() => setMobileTab('details')} className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'}`}>Details</button>
+          <div className="flex sm:hidden border-b border-gray-200 shrink-0">
+            <button
+              onClick={() => setMobileTab('content')}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500'
+                }`}
+            >
+              Content
+            </button>
+            <button
+              onClick={() => setMobileTab('details')}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500'
+                }`}
+            >
+              Details
+            </button>
           </div>
 
           <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -868,9 +903,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 dark:border-slate-700 ${
-                mobileTab === 'details' ? 'hidden sm:block' : 'block'
-              }`}
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 dark:border-slate-700 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                }`}
             >
               {editingTitle ? (
                 <div className="mb-5">
@@ -987,9 +1021,8 @@ export const UserStoryDetailDrawer = ({
 
                   <label
                     htmlFor="user-story-attachment"
-                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
-                      isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
-                    }`}
+                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
+                      }`}
                   >
                     <Plus size={14} />
                     {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
@@ -1070,7 +1103,7 @@ export const UserStoryDetailDrawer = ({
                             onClick={async () => {
                               try {
                                 await deleteAttachmentAsync(attachment.id);
-                              } catch (error) {}
+                              } catch (error) { }
                             }}
                             className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                           >
@@ -1133,22 +1166,20 @@ export const UserStoryDetailDrawer = ({
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2 min-w-0">
                                 <span
-                                  className={`shrink-0 font-medium hover:underline ${
-                                    task.is_final
+                                  className={`shrink-0 font-medium hover:underline ${task.is_final
                                       ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
                                       : 'text-blue-600 dark:text-blue-400'
-                                  }`}
+                                    }`}
                                   onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                                 >
                                   {task.key}
                                 </span>
                                 <span
                                   title={task.title}
-                                  className={`max-w-[80px] truncate ${
-                                    task.is_final
+                                  className={`max-w-[80px] truncate ${task.is_final
                                       ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
                                       : 'text-gray-900 dark:text-slate-100'
-                                  }`}
+                                    }`}
                                 >
                                   {task.title}
                                 </span>
@@ -1190,11 +1221,11 @@ export const UserStoryDetailDrawer = ({
                                       initials={
                                         task.assignee_name
                                           ? task.assignee_name
-                                              .split(' ')
-                                              .map((name) => name[0])
-                                              .join('')
-                                              .slice(0, 2)
-                                              .toUpperCase()
+                                            .split(' ')
+                                            .map((name) => name[0])
+                                            .join('')
+                                            .slice(0, 2)
+                                            .toUpperCase()
                                           : 'UN'
                                       }
                                       color={getMemberColor(task.assignee_id)}
@@ -1278,10 +1309,10 @@ export const UserStoryDetailDrawer = ({
                                                 prevTasks.map((childTask) =>
                                                   childTask.id === task.id
                                                     ? {
-                                                        ...childTask,
-                                                        assignee_id: m.user_id,
-                                                        assignee_name: updatedAssigneeName,
-                                                      }
+                                                      ...childTask,
+                                                      assignee_id: m.user_id,
+                                                      assignee_name: updatedAssigneeName,
+                                                    }
                                                     : childTask
                                                 )
                                               );
@@ -1311,10 +1342,10 @@ export const UserStoryDetailDrawer = ({
                                                   prevTasks.map((childTask) =>
                                                     childTask.id === task.id
                                                       ? {
-                                                          ...childTask,
-                                                          assignee_id: previousAssigneeId,
-                                                          assignee_name: previousAssigneeName,
-                                                        }
+                                                        ...childTask,
+                                                        assignee_id: previousAssigneeId,
+                                                        assignee_name: previousAssigneeName,
+                                                      }
                                                       : childTask
                                                   )
                                                 );
@@ -1396,9 +1427,11 @@ export const UserStoryDetailDrawer = ({
                                 ref={childStatusTaskId === task.id ? childStatusMenuRef : undefined}
                               >
                                 {(() => {
+
                                   const currentStatus =
-                                    allStatusConfig[task.status] ||
-                                    allStatusOptions.find(
+                                    taskStatusConfig[task.status_id ?? ''] ||
+                                    taskStatusConfig[task.status] ||
+                                    taskStatusOptions.find(
                                       (option) =>
                                         option.label.toLowerCase() === task.status?.toLowerCase()
                                     );
@@ -1443,10 +1476,10 @@ export const UserStoryDetailDrawer = ({
                                           className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[99999] overflow-hidden"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          {allStatusOptions.map((option) => {
+                                          {taskStatusOptions.map((option) => {
                                             const isSelected =
-                                              option.label.toLowerCase() ===
-                                              task.status?.toLowerCase();
+                                              option.value === task.status_id ||
+                                              option.label.toLowerCase() === task.status?.toLowerCase();
 
                                             return (
                                               <button
@@ -1469,11 +1502,11 @@ export const UserStoryDetailDrawer = ({
                                                     prev.map((childTask) =>
                                                       childTask.id === task.id
                                                         ? {
-                                                            ...childTask,
-                                                            status: newStatusName,
-                                                            status_id: option.value,
-                                                            status_color: option.color,
-                                                          }
+                                                          ...childTask,
+                                                          status: newStatusName,
+                                                          status_id: option.value,
+                                                          status_color: option.color,
+                                                        }
                                                         : childTask
                                                     )
                                                   );
@@ -1507,9 +1540,9 @@ export const UserStoryDetailDrawer = ({
                                                       prev.map((childTask) =>
                                                         childTask.id === task.id
                                                           ? {
-                                                              ...childTask,
-                                                              status: previousStatus,
-                                                            }
+                                                            ...childTask,
+                                                            status: previousStatus,
+                                                          }
                                                           : childTask
                                                       )
                                                     );
@@ -1577,9 +1610,8 @@ export const UserStoryDetailDrawer = ({
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
-                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-                        tab === t.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
-                      }`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
+                        }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
                       }}
@@ -1663,11 +1695,11 @@ export const UserStoryDetailDrawer = ({
                                 initials={
                                   commentItem.user_name
                                     ? commentItem.user_name
-                                        .split(' ')
-                                        .map((n) => n[0])
-                                        .join('')
-                                        .toUpperCase()
-                                        .slice(0, 2)
+                                      .split(' ')
+                                      .map((n) => n[0])
+                                      .join('')
+                                      .toUpperCase()
+                                      .slice(0, 2)
                                     : 'UN'
                                 }
                                 color={getMemberColor(commentItem.user_id)}
@@ -1785,11 +1817,11 @@ export const UserStoryDetailDrawer = ({
                                                   initials={
                                                     reply.user_name
                                                       ? reply.user_name
-                                                          .split(' ')
-                                                          .map((n: string) => n[0])
-                                                          .join('')
-                                                          .toUpperCase()
-                                                          .slice(0, 2)
+                                                        .split(' ')
+                                                        .map((n: string) => n[0])
+                                                        .join('')
+                                                        .toUpperCase()
+                                                        .slice(0, 2)
                                                       : 'UN'
                                                   }
                                                   color={getMemberColor(reply.user_id)}
@@ -1960,9 +1992,8 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 dark:bg-slate-950/50 ${
-                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-              }`}
+              className={`overflow-y-auto bg-gray-50/60 dark:bg-slate-950/50 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+                }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
@@ -1974,8 +2005,9 @@ export const UserStoryDetailDrawer = ({
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-gray-100"
                     style={{
                       backgroundColor:
-                        allStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
-                      borderColor: `${allStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
+                        userStoryStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
+                      borderColor:
+                        `${userStoryStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
                     }}
                   >
                     <span className="flex items-center gap-2">
@@ -1983,17 +2015,17 @@ export const UserStoryDetailDrawer = ({
                         className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{
                           backgroundColor:
-                            allStatusConfig[userStoryData.status]?.dot || colors.colTodo,
+                            userStoryStatusConfig[userStoryData.status]?.dot || colors.colTodo,
                         }}
                       />
-                      {allStatusConfig[userStoryData.status]?.label || 'To Do'}
+                      {userStoryStatusConfig[userStoryData.status]?.label || 'To Do'}
                     </span>
                     <ChevronDown size={14} />
                   </button>
                   {showStatusMenu && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
                       {/* Status Options */}
-                      {allStatusOptions.map((option) => (
+                      {userStoryStatusOptions.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => {
@@ -2239,15 +2271,14 @@ export const UserStoryDetailDrawer = ({
 
                         setShowSprintMenu((v) => !v);
                       }}
-                      className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
-                        isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
-                      }`}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                        }`}
                     >
                       <span className="text-sm text-gray-700 truncate">
                         {selectedSprintName ||
                           (userStoryData.sprintId
                             ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
-                                ?.name || 'Sprint assigned'
+                              ?.name || 'Sprint assigned'
                             : 'No sprint')}
                       </span>
 
@@ -2293,7 +2324,7 @@ export const UserStoryDetailDrawer = ({
                                     selectedSprintName ||
                                     (userStoryData.sprintId
                                       ? sprints?.find((s) => s.id === userStoryData.sprintId)
-                                          ?.name || 'Sprint assigned'
+                                        ?.name || 'Sprint assigned'
                                       : 'No sprint');
 
                                   try {
@@ -2310,11 +2341,10 @@ export const UserStoryDetailDrawer = ({
                                     setIsUpdatingSprint(false);
                                   }
                                 }}
-                                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${
-                                  isUpdatingSprint
+                                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${isUpdatingSprint
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-gray-50'
-                                }`}
+                                  }`}
                               >
                                 <span className="truncate">{sprint.name}</span>
 
@@ -2339,10 +2369,10 @@ export const UserStoryDetailDrawer = ({
                   <span className="text-sm text-gray-700">
                     {userStoryData.start_date
                       ? new Date(userStoryData.start_date).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })
                       : 'None'}
                   </span>
                 </DetailRow>

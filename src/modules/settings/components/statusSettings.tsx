@@ -21,7 +21,7 @@ interface Status {
   id: string;
   color: string;
   name: string;
-  slug: string;
+  // slug: string;
   isClosed?: boolean;
   isArchived?: boolean;
 }
@@ -39,7 +39,7 @@ const SECTIONS: SectionConfig[] = [
   {
     key: 'userStory',
     label: 'USER STORY STATUSES',
-    showArchived: true,
+    showArchived: false,
     initialStatuses: [],
   },
   {
@@ -84,29 +84,64 @@ interface StatusRowProps {
   isEditing: boolean;
   onEdit: () => void;
   onDelete: () => void;
-  onSaveEdit: (name: string, isClosed: boolean) => void;
+  onSaveEdit: (name: string, color: string, isClosed: boolean) => void;
   onCancelEdit: () => void;
 }
 
 function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEdit, onCancelEdit }: StatusRowProps) {
   const [editName, setEditName] = useState(status.name);
+  const [editColor, setEditColor] = useState(status.color);
   const [editClosed, setEditClosed] = useState(status.isClosed ?? false);
 
   if (isEditing) {
     return (
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
         <GripVertical size={16} className="hidden sm:block shrink-0 text-slate-300 dark:text-slate-600" />
-        <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5" style={{ backgroundColor: status.color }} />
-        <WpInput
-          value={editName}
-          autoFocus
-          wrapperClassName="!mb-0 min-w-0 flex-1"
-          onChange={(e) => setEditName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onSaveEdit(editName, editClosed);
-            if (e.key === 'Escape') onCancelEdit();
-          }}
-        />
+        {/* <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5" style={{ backgroundColor: status.color }} /> */}
+        <div className="relative h-8 w-8 shrink-0">
+          <span
+            className="absolute inset-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"
+            style={{ backgroundColor: editColor }}
+          />
+
+          <input
+            type="color"
+            value={editColor}
+            onChange={(e) => setEditColor(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            title="Choose status color"
+          />
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center rounded-lg border border-blue-500 bg-white dark:bg-slate-800">
+          <input
+            type="text"
+            value={editColor}
+            onChange={(e) => {
+              let value = e.target.value;
+
+              if (!value.startsWith('#')) {
+                value = `#${value}`;
+              }
+
+              if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
+                setEditColor(value);
+              }
+            }}
+            className="w-[80px] shrink-0 border-0 bg-transparent pl-3 text-sm font-medium text-slate-500 outline-none dark:text-slate-400"
+          />
+
+          <input
+            value={editName}
+            autoFocus
+            className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none"
+            onChange={(e) => setEditName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onSaveEdit(editName, editColor, editClosed);
+              if (e.key === 'Escape') onCancelEdit();
+            }}
+          />
+        </div>
         <select
           value={editClosed ? 'Yes' : 'No'}
           onChange={(e) => setEditClosed(e.target.value === 'Yes')}
@@ -115,7 +150,7 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
           <option value="No">No</option>
           <option value="Yes">Yes</option>
         </select>
-        <WpButton type="button" variant="ghost" size="sm" onClick={() => onSaveEdit(editName, editClosed)} className="!h-9 !w-9 !p-0" aria-label="Save">
+        <WpButton type="button" variant="ghost" size="sm" onClick={() => onSaveEdit(editName, editColor, editClosed)} className="!h-9 !w-9 !p-0" aria-label="Save">
           <Check size={17} strokeWidth={2.5} />
         </WpButton>
         <WpButton type="button" variant="secondary" size="sm" onClick={onCancelEdit} className="!h-9 !w-9 !p-0" aria-label="Cancel">
@@ -129,12 +164,12 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
     <div className="group flex flex-wrap sm:flex-nowrap min-h-[52px] items-center gap-3 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]">
       <GripVertical size={16} className="hidden sm:block shrink-0 text-transparent transition-colors group-hover:text-slate-300 dark:group-hover:text-slate-600" />
       <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10" style={{ backgroundColor: status.color }} />
-      <span className="w-full sm:w-40 shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+      <span className="w-[620px] shrink-0 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
         {status.name}
       </span>
-      <span className="hidden sm:block min-w-0 flex-1 truncate text-sm text-slate-400 dark:text-slate-500">
+      {/* <span className="hidden sm:block min-w-0 flex-1 truncate text-sm text-slate-400 dark:text-slate-500">
         {status.slug}
-      </span>
+      </span> */}
       <span className="hidden sm:flex w-20 shrink-0 justify-center">
         <ClosedCheck checked={status.isClosed} />
       </span>
@@ -143,7 +178,7 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
           <ClosedCheck checked={status.isArchived} />
         </span>
       )}
-      <div className="flex items-center gap-1 ml-auto opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <WpButton type="button" variant="ghost" size="sm" onClick={onEdit} aria-label="Edit" className="!h-8 !w-8 !p-0">
           <Pencil size={14} />
         </WpButton>
@@ -171,25 +206,51 @@ function AddStatusRow({ onAdd, onCancel }: { onAdd: (name: string, color: string
 
   return (
     <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-t border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
-      <span className="hidden sm:block w-4 shrink-0" />
-      <input
-        type="color"
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-        className="h-8 w-8 cursor-pointer rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 p-1 shadow shrink-0"
-        title="Choose status color"
-      />
-      <WpInput
-        value={name}
-        autoFocus
-        placeholder="Write a name for the new status"
-        wrapperClassName="!mb-0 min-w-0 flex-1"
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleAdd();
-          if (e.key === 'Escape') onCancel();
-        }}
-      />
+      <div className="relative h-8 w-8 shrink-0">
+        <span
+          className="absolute inset-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"
+          style={{ backgroundColor: color }}
+        />
+
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          title="Choose status color"
+        />
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-center rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+        <input
+          type="text"
+          value={color}
+          onChange={(e) => {
+            let value = e.target.value;
+
+            if (!value.startsWith('#')) {
+              value = `#${value}`;
+            }
+
+            if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
+              setColor(value);
+            }
+          }}
+          className="w-[80px] shrink-0 border-0 bg-transparent pl-3 text-sm font-medium text-slate-500 outline-none dark:text-slate-400"
+        />
+
+        <input
+          value={name}
+          autoFocus
+          placeholder="Write a name for the new status"
+          className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none"
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAdd();
+            if (e.key === 'Escape') onCancel();
+          }}
+        />
+      </div>
       <select
         value={isClosed ? 'Yes' : 'No'}
         onChange={(e) => setIsClosed(e.target.value === 'Yes')}
@@ -306,12 +367,16 @@ function StatusSection({
   const handleSaveEdit = async (
     id: string,
     name: string,
+    color: string,
     isClosed: boolean
   ) => {
     const trimmed = name.trim();
 
     if (!trimmed) return;
 
+    if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+      return;
+    }
     if (isUserStory) {
       try {
         await updateUserStoryStatusAsync({
@@ -319,6 +384,7 @@ function StatusSection({
           statusId: id,
           payload: {
             name: trimmed,
+            color,
             is_closed: isClosed,
           },
         });
@@ -337,6 +403,9 @@ function StatusSection({
           statusId: id,
           payload: {
             name: trimmed,
+            color,
+            is_final: isClosed,
+
 
           },
         });
@@ -423,9 +492,9 @@ function StatusSection({
     setIsAdding(false);
   };
   return (
-    <div className={`mb-4 overflow-hidden rounded-xl border transition-all ${isOpen
-      ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
-      : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
+    <div className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${isOpen
+        ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
+        : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
       } bg-white dark:bg-slate-800`}>
       {/* Section header */}
       <div className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${isOpen ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
@@ -472,16 +541,24 @@ function StatusSection({
       {isOpen && (
         <div className="overflow-x-auto">
           {/* Column headers — desktop */}
-          <div className="hidden sm:flex min-w-[600px] items-center gap-3 border-b border-blue-50 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5">
+          <div className="hidden sm:flex min-w-[420px] items-center gap-3 px-4 py-2">
             <span className="w-4 shrink-0" />
-            <span className="w-8 shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">Color</span>
-            <span className="w-40 shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">Name</span>
-            <span className="min-w-0 flex-1 text-xs font-semibold text-slate-500 dark:text-slate-400">Slug</span>
-            <span className="w-20 shrink-0 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Closed?</span>
+
+            <span className="w-8 shrink-0 text-xs font-semibold text-slate-500">
+              Color
+            </span>
+
+            <span className="w-[620px] shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Name
+            </span>
+
+            <span className="w-20 shrink-0 flex justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Closed?
+            </span>
             {config.showArchived && (
               <span className="w-20 shrink-0 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Archived</span>
             )}
-            <span className="w-16 shrink-0" />
+
           </div>
 
           <div>
@@ -493,7 +570,7 @@ function StatusSection({
                 isEditing={editingId === status.id}
                 onEdit={() => { setIsAdding(false); setEditingId(status.id); }}
                 onDelete={() => handleDelete(status.id)}
-                onSaveEdit={(name, isClosed) => handleSaveEdit(status.id, name, isClosed)}
+                onSaveEdit={(name, color, isClosed) => handleSaveEdit(status.id, name, color, isClosed)}
                 onCancelEdit={() => setEditingId(null)}
               />
             ))}
