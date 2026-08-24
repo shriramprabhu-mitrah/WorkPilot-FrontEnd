@@ -316,6 +316,12 @@ export const ApiEndpoints = {
     updateRole: createEndpoint('/organization/roles/{roleId}'),
     deleteRole: createEndpoint('/organization/roles/{roleId}'),
   },
+
+  SuperAdmin: {
+    getOrganization: createQueryEndpoint('/organization'),
+    getMembers: createQueryEndpoint('/organization/all-members'),
+    getAllProjects: createQueryEndpoint('/project/all-projects'),
+  },
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

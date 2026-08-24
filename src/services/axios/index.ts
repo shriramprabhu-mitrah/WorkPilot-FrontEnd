@@ -7,14 +7,15 @@ import { showToast } from '@/src/utils/toast';
 // Generic pagination interface based on the API structure
 export interface PaginationInfo {
   page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+  // Additional optional fields for flexibility
   pageSize?: number;
-  page_size?: number;
-  total_items?: number | string;
-  totalItems?: number | string;
-  total_pages?: number;
+  totalItems?: number;
   totalPages?: number;
-  has_next?: boolean;
-  has_previous?: boolean;
   hasNextPage?: boolean;
   has_next_page?: boolean;
   hasPrevPage?: boolean;

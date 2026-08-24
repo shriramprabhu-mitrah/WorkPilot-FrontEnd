@@ -1,44 +1,75 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Search, Trash2, ChevronDown } from 'lucide-react';
-import { members, organizations } from '../data/mockData';
+import { useState, useMemo } from 'react';
+import { Search, Trash2, ChevronDown, Loader2 } from 'lucide-react';
+import { useGetMembers, useGetOrganizations } from '../hooks/useSuperAdmin';
+import { AdminMembersParams } from '@/src/services/superadmin';
+import { Pagination } from '../../../app/components/common/pagination/pagination';
 
 const avatarColors = [
-  'bg-blue-500', 'bg-pink-500', 'bg-green-500', 'bg-amber-500',
-  'bg-purple-500', 'bg-teal-500', 'bg-rose-500', 'bg-indigo-500',
+  'bg-blue-500',
+  'bg-pink-500',
+  'bg-green-500',
+  'bg-amber-500',
+  'bg-purple-500',
+  'bg-teal-500',
+  'bg-rose-500',
+  'bg-indigo-500',
 ];
 
 export const MembersTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<string>('All Organizations');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Fetch all organizations without pagination for the dropdown
+  const { organizations = [] } = useGetOrganizations({});
+
+  const queryParams = useMemo(() => {
+    const params: AdminMembersParams = { page, page_size: pageSize };
+    if (searchQuery.trim()) {
+      params.search = searchQuery;
+    }
+    if (selectedOrg !== 'All Organizations') {
+      const org = organizations.find((o) => o.name === selectedOrg);
+      if (org) {
+        params.organization_id = org.id;
+      }
+    }
+    return params;
+  }, [page, pageSize, searchQuery, selectedOrg, organizations]);
+
+  const { members = [], meta, isLoadingMembers } = useGetMembers(queryParams);
 
   const getInitials = (name: string) =>
-    name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+    name
+      ? name
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : '';
 
   const getAvatarColor = (id: string) => {
-    const index = parseInt(id, 10) % avatarColors.length;
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % avatarColors.length;
     return avatarColors[index];
   };
 
-  const filteredMembers = useMemo(() => {
-    let filtered = members;
-    if (selectedOrg !== 'All Organizations') {
-      filtered = filtered.filter((m) => m.organization === selectedOrg);
-    }
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (m) =>
-          m.name.toLowerCase().includes(query) ||
-          m.email.toLowerCase().includes(query) ||
-          m.organization.toLowerCase().includes(query) ||
-          m.role.toLowerCase().includes(query)
-      );
-    }
-    return filtered;
-  }, [searchQuery, selectedOrg]);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6 w-full max-w-full">
@@ -46,7 +77,7 @@ export const MembersTemplate = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">All Members</h1>
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-          {members.length} members across all organizations
+          {meta?.total_items || members.length} members across all organizations
         </p>
       </div>
 
@@ -55,7 +86,10 @@ export const MembersTemplate = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search members..."
@@ -83,7 +117,10 @@ export const MembersTemplate = () => {
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
                 <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   <button
-                    onClick={() => { setSelectedOrg('All Organizations'); setIsDropdownOpen(false); }}
+                    onClick={() => {
+                      setSelectedOrg('All Organizations');
+                      setIsDropdownOpen(false);
+                    }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                       selectedOrg === 'All Organizations'
                         ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
@@ -95,7 +132,10 @@ export const MembersTemplate = () => {
                   {organizations.map((org) => (
                     <button
                       key={org.id}
-                      onClick={() => { setSelectedOrg(org.name); setIsDropdownOpen(false); }}
+                      onClick={() => {
+                        setSelectedOrg(org.name);
+                        setIsDropdownOpen(false);
+                      }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                         selectedOrg === org.name
                           ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
@@ -118,67 +158,124 @@ export const MembersTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                {['Member','Email','Organization','Role','Status','Joined','Actions'].map((col) => (
-                  <th key={col} className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                    {col}
-                  </th>
-                ))}
+                {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Actions'].map(
+                  (col) => (
+                    <th
+                      key={col}
+                      className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    >
+                      {col}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-              {filteredMembers.map((member) => {
-                const isActive = member.status === 'Active';
-                const statusCls = isActive
-                  ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
-                  : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
+              {isLoadingMembers ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-8 text-center text-gray-500">
+                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                    Loading members...
+                  </td>
+                </tr>
+              ) : (
+                members.map((member) => {
+                  const isActive = member.is_active;
+                  const statusCls = isActive
+                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+                    : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
 
-                return (
-                  <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
-                          {getInitials(member.name)}
+                  return (
+                    <tr
+                      key={member.id}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                    >
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          {member.avatar_url ? (
+                            <img
+                              src={member.avatar_url}
+                              alt={member.name}
+                              className="w-8 h-8 rounded-full"
+                            />
+                          ) : (
+                            <div
+                              className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                            >
+                              {getInitials(member.name)}
+                            </div>
+                          )}
+                          <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                            {member.name}
+                          </span>
                         </div>
-                        <span className="font-medium text-sm text-gray-900 dark:text-slate-100">{member.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{member.email}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{member.organization}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
-                        {member.role}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}>
-                        {member.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-400">{member.joined}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <button
-                        className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
-                        title="Remove member"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {member.email}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {member.organization_name || '-'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
+                          Member
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
+                        >
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          {new Date(member.joined_at).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <button
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
+                          title="Remove member"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
-        {filteredMembers.length === 0 && (
+        {members.length === 0 && !isLoadingMembers && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-slate-400 text-sm">No members found matching your criteria.</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">
+              No members found matching your criteria.
+            </p>
           </div>
+        )}
+
+        {/* Pagination Controls */}
+        {meta && Number(meta.total_items) > 0 && (
+          <Pagination
+            meta={{
+              page: meta.page,
+              page_size: meta.page_size ?? meta.pageSize ?? pageSize,
+              total_items: meta.total_items ?? meta.totalItems,
+              total_pages: meta.total_pages ?? meta.totalPages ?? 0,
+              has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
+              has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
+            }}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )}
       </div>
     </div>

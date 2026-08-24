@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, AlertCircle } from 'lucide-react';
+import { Search, AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { organizations, Organization } from '../data/mockData';
+import { useGetOrganizations } from '../hooks/useSuperAdmin';
+import { AdminOrganization } from '@/src/types/superadmin';
+import { AdminOrganizationsParams } from '@/src/services/superadmin';
+import { Pagination } from '../../../app/components/common/pagination/pagination';
 
 type FilterType = 'All' | 'Active' | 'Inactive';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
-  organization: Organization | null;
+  organization: AdminOrganization | null;
   action: 'activate' | 'deactivate';
   onClose: () => void;
   onConfirm: () => void;
@@ -75,9 +78,12 @@ export const OrganizationsTemplate = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
-    organization: Organization | null;
+    organization: AdminOrganization | null;
     action: 'activate' | 'deactivate';
   }>({
     isOpen: false,
@@ -85,31 +91,33 @@ export const OrganizationsTemplate = () => {
     action: 'activate',
   });
 
-  const filteredOrganizations = useMemo(() => {
-    let filtered = organizations;
-    if (activeFilter === 'Active') filtered = filtered.filter((org) => org.status === 'Active');
-    else if (activeFilter === 'Inactive') filtered = filtered.filter((org) => org.status === 'Inactive');
+  const queryParams = useMemo(() => {
+    const params: AdminOrganizationsParams = { page, page_size: pageSize };
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (org) =>
-          org.name.toLowerCase().includes(query) ||
-          org.industry.toLowerCase().includes(query) ||
-          org.location?.toLowerCase().includes(query) ||
-          org.slug.toLowerCase().includes(query)
-      );
+      params.search = searchQuery;
     }
-    return filtered;
-  }, [searchQuery, activeFilter]);
+    if (activeFilter === 'Active') params.is_active = true;
+    if (activeFilter === 'Inactive') params.is_active = false;
+    return params;
+  }, [page, pageSize, searchQuery, activeFilter]);
+
+  const { organizations = [], meta, isLoadingOrganizations } = useGetOrganizations(queryParams);
 
   const getInitials = (name: string) =>
-    name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+    name
+      ? name
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : '';
 
-  const handleViewOrg = (orgSlug: string) => {
-    router.push(`/super-admin/organizations/${orgSlug}`);
-  };
+  // const handleViewOrg = (orgSlug: string) => {
+  //   router.push(`/super-admin/organizations/${orgSlug}`);
+  // };
 
-  const handleOpenConfirmation = (org: Organization, action: 'activate' | 'deactivate') => {
+  const handleOpenConfirmation = (org: AdminOrganization, action: 'activate' | 'deactivate') => {
     setConfirmModal({ isOpen: true, organization: org, action });
   };
 
@@ -119,6 +127,15 @@ export const OrganizationsTemplate = () => {
 
   const handleConfirmToggleStatus = () => {
     handleCloseConfirmation();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
   };
 
   return (
@@ -135,7 +152,7 @@ export const OrganizationsTemplate = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Organizations</h1>
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-          {organizations.length} organizations on the platform
+          {meta?.total_items || organizations.length} organizations on the platform
         </p>
       </div>
 
@@ -143,7 +160,10 @@ export const OrganizationsTemplate = () => {
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search organizations..."
@@ -176,88 +196,146 @@ export const OrganizationsTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                {['Organization','Industry','Country','Status','Projects','Members','Created','Actions'].map((col) => (
-                  <th key={col} className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                {[
+                  'Organization',
+                  'Industry',
+                  'Country',
+                  'Status',
+                  'Projects',
+                  'Members',
+                  'Created',
+                  'Actions',
+                ].map((col) => (
+                  <th
+                    key={col}
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                  >
                     {col}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-              {filteredOrganizations.map((org) => {
-                const isActive = org.status === 'Active';
-                const statusCls = isActive
-                  ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
-                  : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
+              {isLoadingOrganizations ? (
+                <tr>
+                  <td colSpan={8} className="px-5 py-8 text-center text-gray-500">
+                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                    Loading organizations...
+                  </td>
+                </tr>
+              ) : (
+                organizations.map((org) => {
+                  const isActive = org.is_active;
+                  const statusCls = isActive
+                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+                    : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
 
-                return (
-                  <tr key={org.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0">
-                          {getInitials(org.name)}
+                  return (
+                    <tr
+                      key={org.id}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                    >
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0">
+                            {getInitials(org.name)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                              {org.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400">/{org.slug}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-gray-900 dark:text-slate-100">{org.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">/{org.slug}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.industry}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.location}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}>
-                        {org.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.projectCount}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">{org.memberCount}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-400">{org.created}</span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <button
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {org.industry}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {org.country}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
+                        >
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {org.total_projects}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          {org.total_members}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          {new Date(org.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {/* <button
                           onClick={() => handleViewOrg(org.slug)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium hover:underline"
                         >
                           View
-                        </button>
-                        {isActive ? (
-                          <button
-                            onClick={() => handleOpenConfirmation(org, 'deactivate')}
-                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium hover:underline"
-                          >
-                            Deactivate
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleOpenConfirmation(org, 'activate')}
-                            className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium hover:underline"
-                          >
-                            Activate
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                        </button> */}
+                          {isActive ? (
+                            <button
+                              onClick={() => handleOpenConfirmation(org, 'deactivate')}
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium hover:underline"
+                            >
+                              Deactivate
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenConfirmation(org, 'activate')}
+                              className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium hover:underline"
+                            >
+                              Activate
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
-        {filteredOrganizations.length === 0 && (
+        {organizations.length === 0 && !isLoadingOrganizations && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-slate-400 text-sm">No organizations found matching your criteria.</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">
+              No organizations found matching your criteria.
+            </p>
           </div>
+        )}
+
+        {/* Pagination Controls */}
+        {meta && Number(meta.total_items) > 0 && (
+          <Pagination
+            meta={{
+              page: meta.page,
+              page_size: meta.page_size ?? meta.pageSize ?? pageSize,
+              total_items: meta.total_items ?? meta.totalItems,
+              total_pages: meta.total_pages ?? meta.totalPages ?? 0,
+              has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
+              has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
+            }}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )}
       </div>
     </div>

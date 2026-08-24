@@ -50,7 +50,11 @@ export const TeamTemplate = () => {
           </p>
         </div>
         {isAdmin() && (
-          <WpButton size="sm" leftIcon={<UserPlus size={16} />} onClick={() => setIsInviteModalOpen(true)}>
+          <WpButton
+            size="sm"
+            leftIcon={<UserPlus size={16} />}
+            onClick={() => setIsInviteModalOpen(true)}
+          >
             Invite Member
           </WpButton>
         )}
@@ -76,7 +80,12 @@ export const TeamTemplate = () => {
               id: member.id,
               name: member.name,
               role: member.role,
-              initials: member.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 4),
+              initials: member.name
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 4),
               avatarColor: colors.primary,
               tasks: 0,
               done: 0,
@@ -86,8 +95,14 @@ export const TeamTemplate = () => {
                 key={member.id}
                 member={memberData}
                 canManageUsers={hasPermission('TEAMS_DELETE')}
-                onDelete={() => { setSelectedMember(memberData); setShowDeleteModal(true); }}
-                onClick={() => { setSelectedUserId(member.id); setShowUserDetails(true); }}
+                onDelete={() => {
+                  setSelectedMember(memberData);
+                  setShowDeleteModal(true);
+                }}
+                onClick={() => {
+                  setSelectedUserId(member.id);
+                  setShowUserDetails(true);
+                }}
                 isLast={index === visibleMembers.length - 1}
               />
             );
@@ -99,8 +114,12 @@ export const TeamTemplate = () => {
                 <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
                   <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">No members yet</p>
-                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Invite members to get started.</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                  No members yet
+                </p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                  Invite members to get started.
+                </p>
               </div>
             </div>
           )}
@@ -109,7 +128,11 @@ export const TeamTemplate = () => {
 
       {!showAll && teamMembers?.data && teamMembers.data.length > 4 && (
         <div className="mt-2 flex justify-center">
-          <WpButton variant="ghost" className="text-sm font-medium text-blue-600 dark:text-blue-400 p-0" onClick={() => setShowAll(true)}>
+          <WpButton
+            variant="ghost"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 p-0"
+            onClick={() => setShowAll(true)}
+          >
             View More
           </WpButton>
         </div>
@@ -126,7 +149,11 @@ export const TeamTemplate = () => {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
                 Team Member Details
               </h2>
-              <WpButton variant="ghost" onClick={() => setShowUserDetails(false)} className="dark:text-slate-300">
+              <WpButton
+                variant="ghost"
+                onClick={() => setShowUserDetails(false)}
+                className="dark:text-slate-300"
+              >
                 ✕
               </WpButton>
             </div>
@@ -137,14 +164,18 @@ export const TeamTemplate = () => {
               <div className="mt-2 space-y-5">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-slate-400">Name</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100">{user?.data?.name}</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">
+                    {user?.data?.name}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-slate-400">Email</p>
                   <p className="text-gray-800 dark:text-slate-200">{user?.data?.email}</p>
                 </div>
                 <div>
-                  <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Projects</p>
+                  <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">
+                    Projects
+                  </p>
                   {isProjectLoading ? (
                     <p className="text-sm text-gray-500 dark:text-slate-400">Loading projects...</p>
                   ) : projects.length > 0 ? (
@@ -152,22 +183,35 @@ export const TeamTemplate = () => {
                       <table className="w-full">
                         <thead className="bg-gray-100 dark:bg-slate-700">
                           <tr>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">Project</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">Role</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">
+                              Project
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">
+                              Role
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           {projects.map((project) => (
-                            <tr key={project.project_id} className="border-t border-gray-200 dark:border-slate-700">
-                              <td className="px-4 py-3 text-sm text-gray-800 dark:text-slate-200">{project.project_name}</td>
-                              <td className="px-4 py-3 text-sm capitalize text-gray-800 dark:text-slate-200">{project.role}</td>
+                            <tr
+                              key={project.project_id}
+                              className="border-t border-gray-200 dark:border-slate-700"
+                            >
+                              <td className="px-4 py-3 text-sm text-gray-800 dark:text-slate-200">
+                                {project.project_name}
+                              </td>
+                              <td className="px-4 py-3 text-sm capitalize text-gray-800 dark:text-slate-200">
+                                {project.role}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 dark:text-slate-400">No projects assigned.</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
+                      No projects assigned.
+                    </p>
                   )}
                 </div>
               </div>
@@ -181,16 +225,24 @@ export const TeamTemplate = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-gray-200 dark:border-slate-700">
             <div className="p-5">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Delete Member</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                Delete Member
+              </h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                 Are you sure you want to remove{' '}
-                <span className="font-medium text-gray-800 dark:text-slate-200">{selectedMember?.name}</span>?
+                <span className="font-medium text-gray-800 dark:text-slate-200">
+                  {selectedMember?.name}
+                </span>
+                ?
               </p>
             </div>
             <div className="flex justify-end gap-3 p-5 border-t border-gray-100 dark:border-slate-700">
               <WpButton
                 variant="secondary"
-                onClick={() => { setShowDeleteModal(false); setSelectedMember(null); }}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedMember(null);
+                }}
               >
                 Cancel
               </WpButton>

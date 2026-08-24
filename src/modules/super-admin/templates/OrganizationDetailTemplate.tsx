@@ -2,8 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Trash2, Plus } from 'lucide-react';
-import { organizations, projects, members } from '../data/mockData';
+import { ChevronLeft, Trash2, Plus, Loader2 } from 'lucide-react';
+import {
+  useGetOrganization,
+  useGetOrganizationUsers,
+} from '@/src/modules/organization/hooks/useOrganization';
+import { useGetAllProjects } from '../hooks/useSuperAdmin';
 
 interface OrganizationDetailTemplateProps {
   orgSlug: string;
@@ -17,7 +21,23 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('Projects');
 
-  const organization = organizations.find((org) => org.slug === orgSlug);
+  const { organization: orgResponse, isOrganizationLoading } = useGetOrganization();
+  const organization = orgResponse?.data;
+
+  // Use the requested hook for fetching members
+  const { users: orgMembers = [], isUsersLoading } = useGetOrganizationUsers(1, 100, true);
+
+  // Use projects hook for organization projects
+  const { projects: allProjects = [], isLoadingProjects } = useGetAllProjects({ search: orgSlug }); // Simple filter attempt
+  const orgProjects = allProjects.filter((p) => p.organization_id === organization?.id);
+
+  if (isOrganizationLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin text-purple-600" size={32} />
+      </div>
+    );
+  }
 
   if (!organization) {
     return (
@@ -29,16 +49,23 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
     );
   }
 
-  const orgProjects = projects.filter((p) => p.organizationId === organization.id);
-  const orgMembers = members.filter((m) => m.organizationId === organization.id);
-
   const getInitials = (name: string) =>
-    name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+    name
+      ? name
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : '';
 
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'Active':
-        return { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/30' };
+        return {
+          color: 'text-green-600 dark:text-green-400',
+          bg: 'bg-green-50 dark:bg-green-900/30',
+        };
       case 'Running':
       case 'Planning':
         return { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' };
@@ -51,16 +78,24 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
   };
 
   const avatarColors = [
-    'bg-blue-500', 'bg-pink-500', 'bg-green-500',
-    'bg-amber-500', 'bg-purple-500', 'bg-teal-500',
+    'bg-blue-500',
+    'bg-pink-500',
+    'bg-green-500',
+    'bg-amber-500',
+    'bg-purple-500',
+    'bg-teal-500',
   ];
 
   const getAvatarColor = (id: string) => {
-    const index = parseInt(id, 10) % avatarColors.length;
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % avatarColors.length;
     return avatarColors[index];
   };
 
-  const orgStatus = getStatusStyle(organization.status);
+  const orgStatus = getStatusStyle(organization.is_active ? 'Active' : 'Inactive');
 
   return (
     <div className="space-y-6 w-full max-w-full">
@@ -78,37 +113,59 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-2xl shrink-0">
-              {getInitials(organization.name)}
+              {getInitials(organization.name || '')}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{organization.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                {organization.name}
+              </h1>
               <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-                /{organization.slug} · {organization.industry} · {organization.location}
+                /{organization.slug} · {organization.industry} · {organization.country}
               </p>
             </div>
           </div>
-          <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium ${orgStatus.color} ${orgStatus.bg}`}>
-            {organization.status}
+          <span
+            className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium ${orgStatus.color} ${orgStatus.bg}`}
+          >
+            {organization.is_active ? 'Active' : 'Inactive'}
           </span>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">Created</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">{organization.created}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+              Created
+            </p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+              {organization.created_at
+                ? new Date(organization.created_at).toLocaleDateString()
+                : 'N/A'}
+            </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">Size</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">50-100</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+              Size
+            </p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+              {organization.team_size}
+            </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">Projects</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">{organization.projectCount}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+              Projects
+            </p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+              {orgProjects.length}
+            </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">Members</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">{organization.memberCount}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+              Members
+            </p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+              {orgMembers.length}
+            </p>
           </div>
         </div>
       </div>
@@ -141,62 +198,105 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                 <tr>
-                  {['Project','Key','Manager','Status','Sprints','Members','Created','Actions'].map((col) => (
-                    <th key={col} className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                  {[
+                    'Project',
+                    'Key',
+                    'Manager',
+                    'Status',
+                    'Sprints',
+                    'Members',
+                    'Created',
+                    'Actions',
+                  ].map((col) => (
+                    <th
+                      key={col}
+                      className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    >
                       {col}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                {orgProjects.map((project) => {
-                  const statusStyle = getStatusStyle(project.status);
-                  return (
-                    <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors">
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
-                            {project.key}
+                {isLoadingProjects ? (
+                  <tr>
+                    <td colSpan={8} className="px-5 py-8 text-center text-gray-500">
+                      <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                      Loading projects...
+                    </td>
+                  </tr>
+                ) : (
+                  orgProjects.map((project) => {
+                    const statusStyle = getStatusStyle(project.status);
+                    const projectKey = project.name
+                      ? project.name.substring(0, 3).toUpperCase()
+                      : 'PRJ';
+                    return (
+                      <tr
+                        key={project.id}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                      >
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
+                              {projectKey}
+                            </div>
+                            <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                              {project.name}
+                            </span>
                           </div>
-                          <span className="font-medium text-sm text-gray-900 dark:text-slate-100">{project.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm font-mono text-gray-600 dark:text-slate-400">{project.key}</span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">{project.manager}</span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}>
-                          {project.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">{project.sprints}</span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">{project.members}</span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500 dark:text-slate-400">{project.created}</span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <button
-                          className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
-                          title="Delete project"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm font-mono text-gray-600 dark:text-slate-400">
+                            {projectKey}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.created_by}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}
+                          >
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.sprint_count}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.total_members}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500 dark:text-slate-400">
+                            {new Date(project.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <button
+                            className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
+                            title="Delete project"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
             {orgProjects.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-slate-400 text-sm">No projects found for this organization.</p>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">
+                  No projects found for this organization.
+                </p>
               </div>
             )}
           </div>
@@ -215,58 +315,83 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                   <tr>
-                    {['Member','Email','Role','Status','Joined','Actions'].map((col) => (
-                      <th key={col} className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                    {['Member', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((col) => (
+                      <th
+                        key={col}
+                        className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                      >
                         {col}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                  {orgMembers.map((member) => {
-                    const statusStyle = getStatusStyle(member.status);
-                    return (
-                      <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors">
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
-                              {getInitials(member.name)}
+                  {isUsersLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-8 text-center text-gray-500">
+                        <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                        Loading members...
+                      </td>
+                    </tr>
+                  ) : (
+                    orgMembers.map((member) => {
+                      const statusStyle = getStatusStyle(member.status || 'Active');
+                      return (
+                        <tr
+                          key={member.id}
+                          className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                        >
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                              >
+                                {getInitials(member.name || member.email)}
+                              </div>
+                              <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                                {member.name || member.email}
+                              </span>
                             </div>
-                            <span className="font-medium text-sm text-gray-900 dark:text-slate-100">{member.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-700 dark:text-slate-300">{member.email}</span>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
-                            {member.role}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}>
-                            {member.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-500 dark:text-slate-400">{member.joined}</span>
-                        </td>
-                        <td className="px-5 py-4 whitespace-nowrap">
-                          <button
-                            className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
-                            title="Remove member"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-700 dark:text-slate-300">
+                              {member.email}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
+                              {member.role || 'Member'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}
+                            >
+                              {member.status || 'Active'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-500 dark:text-slate-400">N/A</span>
+                          </td>
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <button
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
+                              title="Remove member"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
               {orgMembers.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-slate-400 text-sm">No members found for this organization.</p>
+                  <p className="text-gray-500 dark:text-slate-400 text-sm">
+                    No members found for this organization.
+                  </p>
                 </div>
               )}
             </div>
