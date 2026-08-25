@@ -200,8 +200,16 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
   const getColorFromId = (userId: string) => {
     const colors = [
-      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500',
-      'bg-orange-500', 'bg-teal-500', 'bg-red-500', 'bg-yellow-500', 'bg-cyan-500',
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-orange-500',
+      'bg-teal-500',
+      'bg-red-500',
+      'bg-yellow-500',
+      'bg-cyan-500',
     ];
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
@@ -243,8 +251,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     setSelectedMembers(members);
     setMemberRoles((prev) => {
       const updated = { ...prev };
-      members.forEach((id) => { if (!updated[id]) updated[id] = ROLE_TYPE.DEVELOPER; });
-      Object.keys(updated).forEach((id) => { if (!members.includes(id)) delete updated[id]; });
+      members.forEach((id) => {
+        if (!updated[id]) updated[id] = ROLE_TYPE.DEVELOPER;
+      });
+      Object.keys(updated).forEach((id) => {
+        if (!members.includes(id)) delete updated[id];
+      });
       return updated;
     });
   };
@@ -277,7 +289,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 dark:bg-slate-900/70">
             <div className="flex flex-col items-center gap-2">
               <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">Updating project...</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
+                Updating project...
+              </p>
             </div>
           </div>
         )}
@@ -288,8 +302,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               {project?.initials}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{project?.name}</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{project?.description}</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
+                {project?.name}
+              </h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                {project?.description}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -326,14 +344,22 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
           <div>
             <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">CREATED</p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">{project?.date}</p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
+              {project?.date}
+            </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">TOTAL SPRINTS</p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">{sprints?.length}</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">
+              TOTAL SPRINTS
+            </p>
+            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
+              {sprints?.length}
+            </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">PROJECT OWNER</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">
+              PROJECT OWNER
+            </p>
             <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
               {selectedApiProject?.owner || project?.owner || 'Not assigned'}
             </p>
@@ -345,11 +371,15 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500 mb-2">TEAM MEMBERS</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500 mb-2">
+              TEAM MEMBERS
+            </p>
             {isRefreshingMembers ? (
               <div className="flex items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">updating...</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                  updating...
+                </span>
               </div>
             ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
               <div className="flex items-center gap-2">
@@ -419,7 +449,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
             <div className="flex flex-col items-center justify-center">
               <img src="/images/agile method-amico.svg" alt="No Sprints" className="h-72 w-72" />
-              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">No Sprints Found</h2>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">
+                No Sprints Found
+              </h2>
               <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
                 No sprints have been created for this project.
               </p>
@@ -442,7 +474,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           sprints.map((sprint) => {
             const isExpanded = expandedSprint === sprint.id;
             return (
-              <div key={sprint.id} className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
+              <div
+                key={sprint.id}
+                className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm"
+              >
                 <div className="flex w-full items-center justify-between p-5">
                   <button
                     type="button"
@@ -450,7 +485,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     className="flex flex-1 items-start text-left"
                   >
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{sprint.name}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">
+                        {sprint.name}
+                      </h3>
                       <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                         {sprint.startDate || 'No start date'} → {sprint.endDate || 'No end date'}
                       </p>
@@ -476,16 +513,28 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   <div className="border-t border-gray-100 dark:border-slate-700 p-5">
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">START DATE</p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.startDate || '-'}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                          START DATE
+                        </p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                          {sprint.startDate || '-'}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">END DATE</p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.endDate || '-'}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                          END DATE
+                        </p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                          {sprint.endDate || '-'}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">TASKS</p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">{sprint.tasks}</p>
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                          TASKS
+                        </p>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                          {sprint.tasks}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -518,8 +567,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add Members</h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">Select members to add to this project.</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                  Add Members
+                </h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
+                  Select members to add to this project.
+                </p>
               </div>
               <WpButton
                 type="button"
@@ -545,7 +598,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <div className="mt-5 flex-1">
                 {selectedMembers.length > 0 ? (
                   <>
-                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Member Roles</p>
+                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">
+                      Member Roles
+                    </p>
                     <div className="space-y-3 pr-2">
                       {selectedMembers.map((memberId) => {
                         const member = memberOptions.find((m) => m.value === memberId);
@@ -577,7 +632,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 ) : (
                   <div className="flex h-full min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800">
                     <div className="text-center">
-                      <p className="text-base font-medium text-gray-700 dark:text-slate-200">No members selected</p>
+                      <p className="text-base font-medium text-gray-700 dark:text-slate-200">
+                        No members selected
+                      </p>
                       <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                         Select members above to assign project roles.
                       </p>
@@ -592,7 +649,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 type="button"
                 variant="secondary"
                 size="md"
-                onClick={() => { setShowAddMemberModal(false); setSelectedMembers([]); }}
+                onClick={() => {
+                  setShowAddMemberModal(false);
+                  setSelectedMembers([]);
+                }}
                 disabled={isAddingMembers}
               >
                 Cancel
@@ -623,8 +683,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   <Trash2 size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Delete Project</h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">This action cannot be undone</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                    Delete Project
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                    This action cannot be undone
+                  </p>
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-600 dark:text-slate-300">
@@ -663,7 +727,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Team Members</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                  Team Members
+                </h2>
                 <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                   {selectedApiProject?.members?.length || 0} members in this project
                 </p>
@@ -739,7 +805,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 variant="ghost"
                                 size="sm"
                                 className="!p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700"
-                                onClick={() => { setEditingMemberId(null); setSelectedRole(''); }}
+                                onClick={() => {
+                                  setEditingMemberId(null);
+                                  setSelectedRole('');
+                                }}
                                 disabled={isUpdatingProjectRole}
                               >
                                 <X size={16} />
@@ -748,7 +817,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => setMemberToRemove({ userId: member.user_id, name: member.full_name || member.username })}
+                                  onClick={() =>
+                                    setMemberToRemove({
+                                      userId: member.user_id,
+                                      name: member.full_name || member.username,
+                                    })
+                                  }
                                   className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   aria-label="Remove member"
                                 >
@@ -763,7 +837,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                   variant="ghost"
                                   size="sm"
                                   className="!p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                  onClick={() => { setEditingMemberId(member.user_id); setSelectedRole(member.role); }}
+                                  onClick={() => {
+                                    setEditingMemberId(member.user_id);
+                                    setSelectedRole(member.role);
+                                  }}
                                 >
                                   <Pencil size={16} />
                                 </WpButton>
@@ -772,7 +849,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => setMemberToRemove({ userId: member.user_id, name: member.full_name || member.username })}
+                                  onClick={() =>
+                                    setMemberToRemove({
+                                      userId: member.user_id,
+                                      name: member.full_name || member.username,
+                                    })
+                                  }
                                   className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   aria-label="Remove member"
                                 >
@@ -787,7 +869,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   })
                 ) : (
                   <div className="py-8 text-center">
-                    <p className="text-sm text-gray-500 dark:text-slate-400">No members in this project yet.</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
+                      No members in this project yet.
+                    </p>
                   </div>
                 )}
               </div>
@@ -816,8 +900,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   <Trash2 size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Remove Member</h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Remove member from project</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                    Remove Member
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                    Remove member from project
+                  </p>
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-600 dark:text-slate-300">

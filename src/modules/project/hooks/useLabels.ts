@@ -81,10 +81,7 @@ export const useDeleteLabel = () => {
   });
 };
 
-export const useGetStatus = (
-  projectId: string,
-  enabled = true
-) => {
+export const useGetStatus = (projectId: string, enabled = true) => {
   return useQuery({
     queryKey: colorsKeys.list(projectId),
     queryFn: () => customStatusService.getCustomStatuses(projectId),

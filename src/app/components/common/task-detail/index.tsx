@@ -463,7 +463,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             {task.sprint && (
               <>
                 <span className="text-gray-300 dark:text-slate-600">/</span>
-                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">{task.sprint}</span>
+                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">
+                  {task.sprint}
+                </span>
               </>
             )}
           </div>
@@ -547,7 +549,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           <button
             onClick={() => setMobileTab('content')}
             className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'content' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'
+              mobileTab === 'content'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 dark:text-slate-400'
             }`}
           >
             Content
@@ -555,7 +559,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           <button
             onClick={() => setMobileTab('details')}
             className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 dark:text-slate-400'
+              mobileTab === 'details'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 dark:text-slate-400'
             }`}
           >
             Details
@@ -607,7 +613,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             </div> */}
 
             <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
-              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Description</p>
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
+                Description
+              </p>
 
               {uiState.editingDesc ? (
                 <div>
@@ -788,7 +796,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             {/* Attachments */}
             <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Attachments</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                  Attachments
+                </p>
 
                 <input
                   ref={attachmentInputRef}
@@ -811,7 +821,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               {/* Empty state */}
               {isLoadingAttachments || isFetchingAttachments ? (
                 <div className="border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
-                  <p className="text-sm text-gray-400 dark:text-slate-500">Loading attachments...</p>
+                  <p className="text-sm text-gray-400 dark:text-slate-500">
+                    Loading attachments...
+                  </p>
                 </div>
               ) : !attachments?.data?.length ? (
                 <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
@@ -821,7 +833,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                   <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
 
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Add files to this task</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                    Add files to this task
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -898,7 +912,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             style={{ width: isMobile ? undefined : rightWidth }}
           >
             <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
-              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Status</p>
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
+                Status
+              </p>
 
               <div className="relative" ref={statusMenuRef}>
                 <button
@@ -1029,7 +1045,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             </div>
 
             <div className="px-5 py-5 border-b border-gray-200 dark:border-slate-700">
-              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Details</p>
+              <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
+                Details
+              </p>
 
               <DetailRow label="Assignee">
                 <div className="relative" ref={assigneeMenuRef}>
@@ -1051,7 +1069,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.assigneeName || 'Unassigned'}
                     </span>
-                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                    <ChevronDown
+                      size={12}
+                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                    />
                   </button>
                   {showAssigneeMenu && (
                     <div className="absolute top-full left-0 mt-1 w-full  bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
@@ -1216,7 +1237,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       {taskData.user_story_title || 'No user story'}
                     </span>
 
-                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                    <ChevronDown
+                      size={12}
+                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                    />
                   </button>
 
                   {showUserStoryMenu && !isUpdatingUserStory && (
@@ -1411,7 +1435,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">Delete Task</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">
+              Delete Task
+            </h3>
             <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
               Are you sure you want to delete this task? This action cannot be undone.
             </p>

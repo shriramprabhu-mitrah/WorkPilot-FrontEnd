@@ -237,4 +237,3 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
     </div>
   );
 };
-

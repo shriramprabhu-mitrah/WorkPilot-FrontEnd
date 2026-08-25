@@ -251,11 +251,15 @@ const SprintDetail = () => {
         <div className="grid grid-cols-3 gap-5">
           <div>
             <p className="text-xs text-gray-400 dark:text-slate-500">START DATE</p>
-            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{formatDate(sprint.start_date)}</p>
+            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
+              {formatDate(sprint.start_date)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-400 dark:text-slate-500">END DATE</p>
-            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{formatDate(sprint.end_date)}</p>
+            <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
+              {formatDate(sprint.end_date)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-400 dark:text-slate-500">GOAL</p>
@@ -289,7 +293,9 @@ const SprintDetail = () => {
         <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-blue-600" />
-            <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">Loading updated user stories...</p>
+            <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">
+              Loading updated user stories...
+            </p>
           </div>
         </div>
       ) : !(tasksList || []).length ? (
@@ -315,9 +321,7 @@ const SprintDetail = () => {
               className="h-4 w-4 cursor-pointer rounded border-gray-300 dark:border-slate-600"
             />
             <span className="text-xs text-gray-500 dark:text-slate-400">Select all</span>
-            <span
-              className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300"
-            >
+            <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300">
               {(tasksList || []).length} {(tasksList || []).length === 1 ? 'story' : 'stories'}
             </span>
           </div>
@@ -410,7 +414,9 @@ const SprintDetail = () => {
             setShowAddTaskModal(false);
             queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
             if (taskUserStoryId) {
-              queryClient.invalidateQueries({ queryKey: ['user-story', projectId, taskUserStoryId] });
+              queryClient.invalidateQueries({
+                queryKey: ['user-story', projectId, taskUserStoryId],
+              });
             }
             setTaskUserStoryId('');
             setMemberSearch('');
@@ -459,7 +465,9 @@ const SprintDetail = () => {
       {showDeleteUserStoryConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-transparent dark:border-slate-700">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Stories</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              Delete User Stories
+            </h3>
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete{' '}
               {selectedUserStoryIds.length === 1

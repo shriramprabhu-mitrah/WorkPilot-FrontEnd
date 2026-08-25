@@ -28,7 +28,10 @@ import { userStoryService } from '@/src/services/userstory';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
-import { useGetUserStoryById, useGetUserStoryStatuses, } from '@/src/modules/tasks/hooks/useUserStory';
+import {
+  useGetUserStoryById,
+  useGetUserStoryStatuses,
+} from '@/src/modules/tasks/hooks/useUserStory';
 
 import { WpButton } from '../button';
 import { WpInput } from '../input';
@@ -203,7 +206,7 @@ export const UserStoryDetailDrawer = ({
 
     const priority = story.priority
       ? ((story.priority.charAt(0).toUpperCase() +
-        story.priority.slice(1).toLowerCase()) as Priority)
+          story.priority.slice(1).toLowerCase()) as Priority)
       : ('Medium' as Priority);
 
     const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
@@ -237,11 +240,11 @@ export const UserStoryDetailDrawer = ({
 
     const assigneeInitials = assigneeName
       ? assigneeName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     return {
@@ -305,13 +308,9 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
-  const { data: customStatuses = [] } = useGetStatus(
-    currentUserStory.project_id ?? ''
-  );
+  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
 
-  const { userStoryStatuses = [] } = useGetUserStoryStatuses(
-    currentUserStory.project_id ?? ''
-  );
+  const { userStoryStatuses = [] } = useGetUserStoryStatuses(currentUserStory.project_id ?? '');
   const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
   // Comment hooks
@@ -731,7 +730,7 @@ export const UserStoryDetailDrawer = ({
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -773,7 +772,7 @@ export const UserStoryDetailDrawer = ({
     color: status.color,
     bg: `${status.color}18`,
     dot: status.color,
-    is_final: status.is_closed,
+    is_final: status.is_final,
   }));
 
   const taskStatusConfig = Object.fromEntries(
@@ -836,7 +835,9 @@ export const UserStoryDetailDrawer = ({
               <span className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
                 <FileText size={13} className="text-white" />
               </span>
-              <span className="text-base font-bold text-blue-600 dark:text-blue-400">User Story</span>
+              <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                User Story
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <div className="relative" ref={moreMenuRef}>
@@ -849,21 +850,32 @@ export const UserStoryDetailDrawer = ({
                 {showMoreMenu && (
                   <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                     <button
-                      onClick={() => { setShowMoreMenu(false); setEditingTitle(true); }}
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        setEditingTitle(true);
+                      }}
                       className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                     >
-                      <Pencil size={14} />Update
+                      <Pencil size={14} />
+                      Update
                     </button>
                     <button
-                      onClick={() => { setShowMoreMenu(false); setShowDeleteConfirm(true); }}
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        setShowDeleteConfirm(true);
+                      }}
                       className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
                     >
-                      <Trash2 size={14} />Delete
+                      <Trash2 size={14} />
+                      Delete
                     </button>
                   </div>
                 )}
               </div>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors">
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
+              >
                 <X size={17} />
               </button>
             </div>
@@ -873,19 +885,21 @@ export const UserStoryDetailDrawer = ({
           <div className="flex sm:hidden border-b border-gray-200 shrink-0">
             <button
               onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mobileTab === 'content'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-                }`}
+              }`}
             >
               Content
             </button>
             <button
               onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mobileTab === 'details'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500'
-                }`}
+              }`}
             >
               Details
             </button>
@@ -903,8 +917,9 @@ export const UserStoryDetailDrawer = ({
 
             {/* Left Column - Content */}
             <div
-              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 dark:border-slate-700 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
-                }`}
+              className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 dark:border-slate-700 ${
+                mobileTab === 'details' ? 'hidden sm:block' : 'block'
+              }`}
             >
               {editingTitle ? (
                 <div className="mb-5">
@@ -950,7 +965,9 @@ export const UserStoryDetailDrawer = ({
 
               {/* Description Section */}
               <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
-                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Description</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
+                  Description
+                </p>
                 {editingDesc ? (
                   <div>
                     <WpRichTextEditor
@@ -1017,12 +1034,15 @@ export const UserStoryDetailDrawer = ({
               {/* Attachments Section */}
               <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Attachments</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                    Attachments
+                  </p>
 
                   <label
                     htmlFor="user-story-attachment"
-                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
-                      }`}
+                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
+                      isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
+                    }`}
                   >
                     <Plus size={14} />
                     {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
@@ -1039,13 +1059,17 @@ export const UserStoryDetailDrawer = ({
 
                 {isLoadingAttachments ? (
                   <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center">
-                    <p className="text-sm text-gray-500 dark:text-slate-400">Loading attachments...</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
+                      Loading attachments...
+                    </p>
                   </div>
                 ) : attachments.length === 0 ? (
                   <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
                     <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
 
-                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Add files to this user story</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                      Add files to this user story
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -1055,7 +1079,10 @@ export const UserStoryDetailDrawer = ({
                         className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <FileText size={18} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                          <FileText
+                            size={18}
+                            className="text-blue-600 dark:text-blue-400 shrink-0"
+                          />
 
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
@@ -1103,7 +1130,7 @@ export const UserStoryDetailDrawer = ({
                             onClick={async () => {
                               try {
                                 await deleteAttachmentAsync(attachment.id);
-                              } catch (error) { }
+                              } catch (error) {}
                             }}
                             className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                           >
@@ -1119,7 +1146,9 @@ export const UserStoryDetailDrawer = ({
               {/* Tasks Section */}
               <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Tasks ({totalTasks})</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                    Tasks ({totalTasks})
+                  </p>
                   {onCreateTask && (
                     <button
                       onClick={onCreateTask}
@@ -1134,7 +1163,9 @@ export const UserStoryDetailDrawer = ({
                 {tasks.length === 0 ? (
                   <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
                     <p className="text-sm text-gray-500 dark:text-slate-400">No tasks associated</p>
-                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Create tasks to track work</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                      Create tasks to track work
+                    </p>
                   </div>
                 ) : (
                   <div className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-visible bg-white dark:bg-slate-800">
@@ -1166,20 +1197,22 @@ export const UserStoryDetailDrawer = ({
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2 min-w-0">
                                 <span
-                                  className={`shrink-0 font-medium hover:underline ${task.is_final
+                                  className={`shrink-0 font-medium hover:underline ${
+                                    task.is_final
                                       ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
                                       : 'text-blue-600 dark:text-blue-400'
-                                    }`}
+                                  }`}
                                   onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
                                 >
                                   {task.key}
                                 </span>
                                 <span
                                   title={task.title}
-                                  className={`max-w-[80px] truncate ${task.is_final
+                                  className={`max-w-[80px] truncate ${
+                                    task.is_final
                                       ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
                                       : 'text-gray-900 dark:text-slate-100'
-                                    }`}
+                                  }`}
                                 >
                                   {task.title}
                                 </span>
@@ -1221,11 +1254,11 @@ export const UserStoryDetailDrawer = ({
                                       initials={
                                         task.assignee_name
                                           ? task.assignee_name
-                                            .split(' ')
-                                            .map((name) => name[0])
-                                            .join('')
-                                            .slice(0, 2)
-                                            .toUpperCase()
+                                              .split(' ')
+                                              .map((name) => name[0])
+                                              .join('')
+                                              .slice(0, 2)
+                                              .toUpperCase()
                                           : 'UN'
                                       }
                                       color={getMemberColor(task.assignee_id)}
@@ -1233,7 +1266,10 @@ export const UserStoryDetailDrawer = ({
                                     />
                                   ) : (
                                     <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                      <User size={12} className="text-gray-400 dark:text-slate-500" />
+                                      <User
+                                        size={12}
+                                        className="text-gray-400 dark:text-slate-500"
+                                      />
                                     </span>
                                   )}
 
@@ -1309,10 +1345,10 @@ export const UserStoryDetailDrawer = ({
                                                 prevTasks.map((childTask) =>
                                                   childTask.id === task.id
                                                     ? {
-                                                      ...childTask,
-                                                      assignee_id: m.user_id,
-                                                      assignee_name: updatedAssigneeName,
-                                                    }
+                                                        ...childTask,
+                                                        assignee_id: m.user_id,
+                                                        assignee_name: updatedAssigneeName,
+                                                      }
                                                     : childTask
                                                 )
                                               );
@@ -1342,10 +1378,10 @@ export const UserStoryDetailDrawer = ({
                                                   prevTasks.map((childTask) =>
                                                     childTask.id === task.id
                                                       ? {
-                                                        ...childTask,
-                                                        assignee_id: previousAssigneeId,
-                                                        assignee_name: previousAssigneeName,
-                                                      }
+                                                          ...childTask,
+                                                          assignee_id: previousAssigneeId,
+                                                          assignee_name: previousAssigneeName,
+                                                        }
                                                       : childTask
                                                   )
                                                 );
@@ -1427,7 +1463,6 @@ export const UserStoryDetailDrawer = ({
                                 ref={childStatusTaskId === task.id ? childStatusMenuRef : undefined}
                               >
                                 {(() => {
-
                                   const currentStatus =
                                     taskStatusConfig[task.status_id ?? ''] ||
                                     taskStatusConfig[task.status] ||
@@ -1479,7 +1514,8 @@ export const UserStoryDetailDrawer = ({
                                           {taskStatusOptions.map((option) => {
                                             const isSelected =
                                               option.value === task.status_id ||
-                                              option.label.toLowerCase() === task.status?.toLowerCase();
+                                              option.label.toLowerCase() ===
+                                                task.status?.toLowerCase();
 
                                             return (
                                               <button
@@ -1502,11 +1538,11 @@ export const UserStoryDetailDrawer = ({
                                                     prev.map((childTask) =>
                                                       childTask.id === task.id
                                                         ? {
-                                                          ...childTask,
-                                                          status: newStatusName,
-                                                          status_id: option.value,
-                                                          status_color: option.color,
-                                                        }
+                                                            ...childTask,
+                                                            status: newStatusName,
+                                                            status_id: option.value,
+                                                            status_color: option.color,
+                                                          }
                                                         : childTask
                                                     )
                                                   );
@@ -1540,9 +1576,9 @@ export const UserStoryDetailDrawer = ({
                                                       prev.map((childTask) =>
                                                         childTask.id === task.id
                                                           ? {
-                                                            ...childTask,
-                                                            status: previousStatus,
-                                                          }
+                                                              ...childTask,
+                                                              status: previousStatus,
+                                                            }
                                                           : childTask
                                                       )
                                                     );
@@ -1602,7 +1638,9 @@ export const UserStoryDetailDrawer = ({
 
               {/* Activity Section */}
               <div>
-                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-3">Activity</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-3">
+                  Activity
+                </p>
 
                 {/* Tabs */}
                 <div className="flex gap-1 border-b border-gray-200 dark:border-slate-700 mb-4">
@@ -1610,8 +1648,11 @@ export const UserStoryDetailDrawer = ({
                     <button
                       key={t.key}
                       onClick={() => setTab(t.key)}
-                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
-                        }`}
+                      className={`px-3 py-2 text-sm font-medium transition-colors relative ${
+                        tab === t.key
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
+                      }`}
                       style={{
                         borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
                       }}
@@ -1684,7 +1725,9 @@ export const UserStoryDetailDrawer = ({
                     ) : comments.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-sm text-gray-500 dark:text-slate-400">No comments yet</p>
-                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Be the first to comment</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                          Be the first to comment
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-4 mt-6">
@@ -1695,11 +1738,11 @@ export const UserStoryDetailDrawer = ({
                                 initials={
                                   commentItem.user_name
                                     ? commentItem.user_name
-                                      .split(' ')
-                                      .map((n) => n[0])
-                                      .join('')
-                                      .toUpperCase()
-                                      .slice(0, 2)
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)
                                     : 'UN'
                                 }
                                 color={getMemberColor(commentItem.user_id)}
@@ -1766,7 +1809,10 @@ export const UserStoryDetailDrawer = ({
                                           className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                                           title="Edit comment"
                                         >
-                                          <Pencil size={14} className="text-gray-600 dark:text-slate-400" />
+                                          <Pencil
+                                            size={14}
+                                            className="text-gray-600 dark:text-slate-400"
+                                          />
                                         </button>
                                         <button
                                           onClick={() => handleDeleteComment(commentItem.id)}
@@ -1774,7 +1820,10 @@ export const UserStoryDetailDrawer = ({
                                           title="Delete comment"
                                           disabled={deletingCommentId === commentItem.id}
                                         >
-                                          <Trash2 size={14} className="text-red-600 dark:text-red-400" />
+                                          <Trash2
+                                            size={14}
+                                            className="text-red-600 dark:text-red-400"
+                                          />
                                         </button>
                                       </div>
                                     </div>
@@ -1817,11 +1866,11 @@ export const UserStoryDetailDrawer = ({
                                                   initials={
                                                     reply.user_name
                                                       ? reply.user_name
-                                                        .split(' ')
-                                                        .map((n: string) => n[0])
-                                                        .join('')
-                                                        .toUpperCase()
-                                                        .slice(0, 2)
+                                                          .split(' ')
+                                                          .map((n: string) => n[0])
+                                                          .join('')
+                                                          .toUpperCase()
+                                                          .slice(0, 2)
                                                       : 'UN'
                                                   }
                                                   color={getMemberColor(reply.user_id)}
@@ -1992,13 +2041,16 @@ export const UserStoryDetailDrawer = ({
 
             {/* Right Column - Details */}
             <div
-              className={`overflow-y-auto bg-gray-50/60 dark:bg-slate-950/50 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-                }`}
+              className={`overflow-y-auto bg-gray-50/60 dark:bg-slate-950/50 ${
+                mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+              }`}
               style={{ width: isMobile ? undefined : rightWidth }}
             >
               {/* Status */}
               <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
-                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">Status</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
+                  Status
+                </p>
                 <div className="relative" ref={statusMenuRef}>
                   <button
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
@@ -2006,8 +2058,7 @@ export const UserStoryDetailDrawer = ({
                     style={{
                       backgroundColor:
                         userStoryStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
-                      borderColor:
-                        `${userStoryStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
+                      borderColor: `${userStoryStatusConfig[userStoryData.status]?.dot || colors.colTodo}55`,
                     }}
                   >
                     <span className="flex items-center gap-2">
@@ -2041,7 +2092,9 @@ export const UserStoryDetailDrawer = ({
                               style={{ backgroundColor: option.dot }}
                             />
 
-                            <span className="truncate text-sm text-gray-700 dark:text-slate-300">{option.label}</span>
+                            <span className="truncate text-sm text-gray-700 dark:text-slate-300">
+                              {option.label}
+                            </span>
                           </div>
 
                           {/* Right: Final status indicator */}
@@ -2147,7 +2200,9 @@ export const UserStoryDetailDrawer = ({
 
               {/* Details */}
               <div className="px-5 py-5 border-b border-gray-200">
-                <p className="text-base font-semibold text-gray-800 mb-2 dark:text-slate-100">Details</p>
+                <p className="text-base font-semibold text-gray-800 mb-2 dark:text-slate-100">
+                  Details
+                </p>
 
                 <DetailRow label="Assignee">
                   <div className="relative" ref={assigneeMenuRef}>
@@ -2271,14 +2326,15 @@ export const UserStoryDetailDrawer = ({
 
                         setShowSprintMenu((v) => !v);
                       }}
-                      className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
-                        }`}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
+                        isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                      }`}
                     >
                       <span className="text-sm text-gray-700 truncate">
                         {selectedSprintName ||
                           (userStoryData.sprintId
                             ? sprints?.find((sprint) => sprint.id === userStoryData.sprintId)
-                              ?.name || 'Sprint assigned'
+                                ?.name || 'Sprint assigned'
                             : 'No sprint')}
                       </span>
 
@@ -2324,7 +2380,7 @@ export const UserStoryDetailDrawer = ({
                                     selectedSprintName ||
                                     (userStoryData.sprintId
                                       ? sprints?.find((s) => s.id === userStoryData.sprintId)
-                                        ?.name || 'Sprint assigned'
+                                          ?.name || 'Sprint assigned'
                                       : 'No sprint');
 
                                   try {
@@ -2341,10 +2397,11 @@ export const UserStoryDetailDrawer = ({
                                     setIsUpdatingSprint(false);
                                   }
                                 }}
-                                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${isUpdatingSprint
+                                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${
+                                  isUpdatingSprint
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'hover:bg-gray-50'
-                                  }`}
+                                }`}
                               >
                                 <span className="truncate">{sprint.name}</span>
 
@@ -2396,7 +2453,9 @@ export const UserStoryDetailDrawer = ({
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-xl mx-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Story</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              Delete User Story
+            </h3>
 
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete this user story? This action cannot be undone and will

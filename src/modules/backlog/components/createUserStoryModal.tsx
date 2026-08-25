@@ -118,7 +118,9 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       >
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Create New Story</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              Create New Story
+            </h2>
           </div>
           <button
             type="button"
@@ -138,7 +140,9 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             showRequired
           />
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              Description
+            </label>
 
             {!isEditingDescription ? (
               <textarea
@@ -160,7 +164,9 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
           </div>
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Attachments</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                Attachments
+              </label>
 
               <input
                 ref={attachmentInputRef}
@@ -186,7 +192,9 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
                   <Paperclip size={16} className="text-gray-400 dark:text-slate-400" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
-                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Add files to this story</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                  Add files to this story
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -200,7 +208,10 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-700 dark:text-slate-200" title={file.name}>
+                      <p
+                        className="truncate text-sm font-medium text-gray-700 dark:text-slate-200"
+                        title={file.name}
+                      >
                         {file.name}
                       </p>
                       <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">

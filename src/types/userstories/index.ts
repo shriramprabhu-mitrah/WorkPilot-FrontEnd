@@ -171,21 +171,21 @@ export interface UserStoryStatus {
   color: string;
   display_order: number;
   is_default: boolean;
-  is_closed: boolean;
+  is_final?: boolean;
 }
 
 export interface CreateUserStoryStatusPayload {
   name: string;
   color: string;
   display_order?: number;
-  is_closed?: boolean;
+  is_final?: boolean;
 }
 
 export interface UpdateUserStoryStatusPayload {
   name?: string;
   color?: string;
   display_order?: number;
-  is_closed?: boolean;
+  is_final?: boolean;
 }
 
 export interface ChangeUserStoryStatusPayload {
