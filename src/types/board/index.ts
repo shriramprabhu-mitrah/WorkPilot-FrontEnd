@@ -48,16 +48,18 @@ export interface KanbanTask {
   description?: string;
   subtasks?: SubTask[];
   reporter?: string;
-  reporter_name? : string;
+  reporter_name?: string;
   reporterInitials?: string;
   reporterColor?: string;
   sprint?: string;
   startDate?: string;
   parent?: string;
   activity?: ActivityItem[];
-  assignee?: {name : string , color : string} | string; 
-  color?:string
-  reporter_id?:string
+  assignee_name?: string;
+  key?: string;
+  assignee?: { name: string; color: string } | string;
+  color?: string;
+  reporter_id?: string;
 }
 
 export interface KanbanColumn {

@@ -117,6 +117,7 @@ export interface ProjectDetailMember {
   username: string;
   full_name: string;
   role: string;
+  email?: string;
 }
 
 // Project Detail Response (includes sprints and members)
@@ -140,7 +141,7 @@ export interface ProjectMember {
   username: string;
   full_name?: string;
   role?: string;
-  color? : string
+  color?: string;
 }
 
 export interface GetProjectMembersParams {
