@@ -1,22 +1,14 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { roleService } from '@/src/services/settings';
-import {
-  CreateRolePayload,
-  UpdateRolePayload,
-} from '@/src/types/settings';
+import { CreateRolePayload, UpdateRolePayload } from '@/src/types/settings';
 
 const roleKeys = {
   all: ['roles'] as const,
 
   list: () => ['roles', 'list'] as const,
 
-  detail: (roleId: string) =>
-    ['roles', 'detail', roleId] as const,
+  detail: (roleId: string) => ['roles', 'detail', roleId] as const,
 };
 
 export const useGetRoles = () => {
@@ -26,10 +18,7 @@ export const useGetRoles = () => {
   });
 };
 
-export const useGetRoleById = (
-  roleId: string,
-  enabled = true
-) => {
+export const useGetRoleById = (roleId: string, enabled = true) => {
   return useQuery({
     queryKey: roleKeys.detail(roleId),
     queryFn: () => roleService.getRoleById(roleId),
@@ -41,8 +30,7 @@ export const useCreateRole = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateRolePayload) =>
-      roleService.createRole(payload),
+    mutationFn: (payload: CreateRolePayload) => roleService.createRole(payload),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -56,13 +44,8 @@ export const useUpdateRole = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      roleId,
-      payload,
-    }: {
-      roleId: string;
-      payload: UpdateRolePayload;
-    }) => roleService.updateRole(roleId, payload),
+    mutationFn: ({ roleId, payload }: { roleId: string; payload: UpdateRolePayload }) =>
+      roleService.updateRole(roleId, payload),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -80,8 +63,7 @@ export const useDeleteRole = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (roleId: string) =>
-      roleService.deleteRole(roleId),
+    mutationFn: (roleId: string) => roleService.deleteRole(roleId),
 
     onSuccess: (_, roleId) => {
       queryClient.invalidateQueries({

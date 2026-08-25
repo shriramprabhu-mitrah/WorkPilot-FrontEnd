@@ -14,6 +14,7 @@ import { rolesData } from '@/src/modules/settings/data/rolesJson';
 import ProfileSkeleton from './profileSkeleton';
 import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
 import { useSearchParams } from 'next/navigation';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import Image from 'next/image';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
@@ -21,6 +22,9 @@ export default function Profile() {
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const searchParams = useSearchParams();
+
+  const { push, replace } = useOrgNavigation();
+
   const shouldChangePassword = searchParams.get('changePassword') === 'true';
   const [pwdData, setPwdData] = useState({
     old_password: '',
@@ -46,6 +50,9 @@ export default function Profile() {
       setTimeout(() => {
         setIsChangingPwd(false);
         setPwdSuccess(false);
+        if (shouldChangePassword) {
+          replace('/profile');
+        }
       }, 2000);
     } catch (err: unknown) {
       setPwdError(err instanceof Error ? err.message : 'Failed to change password');
@@ -117,7 +124,9 @@ export default function Profile() {
 
   return (
     <div className="w-full px-3 sm:px-0">
-      <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900 dark:text-slate-100">My Profile</h1>
+      <h1 className="mb-4 sm:mb-6 text-2xl font-bold text-gray-900 dark:text-slate-100">
+        My Profile
+      </h1>
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {/* Left Column */}
         <div className="w-full md:w-[320px] shrink-0 space-y-6">
@@ -367,7 +376,17 @@ export default function Profile() {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <WpButton type="button" onClick={() => setIsChangingPwd(false)} variant="warning">
+                  <WpButton
+                    type="button"
+                    onClick={() => {
+                      setIsChangingPwd(false);
+
+                      if (shouldChangePassword) {
+                        replace('/profile');
+                      }
+                    }}
+                    variant="warning"
+                  >
                     Cancel
                   </WpButton>
                   <WpButton type="submit" disabled={isChangingPassword} variant="danger">

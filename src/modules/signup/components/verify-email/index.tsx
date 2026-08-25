@@ -95,7 +95,9 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
               <Mail size={24} />
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">Check your email</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-2">
+              Check your email
+            </h1>
             <p className="text-gray-500 dark:text-slate-400 mb-6">
               We sent a 6-digit verification code to
               <br />
@@ -135,7 +137,9 @@ export const VerifyEmailModal = ({ email, onVerified, onBack }: VerifyEmailProps
                 {timer > 0 ? (
                   <>
                     Resend code in{' '}
-                    <span className="font-semibold text-gray-900 dark:text-slate-100">{formatTime(timer)}</span>
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">
+                      {formatTime(timer)}
+                    </span>
                   </>
                 ) : (
                   <WpButton

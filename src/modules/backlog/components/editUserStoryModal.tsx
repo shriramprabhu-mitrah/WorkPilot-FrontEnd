@@ -115,7 +115,9 @@ const EditUserStoryModal = ({
 
           {/* Description */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              Description
+            </label>
 
             <textarea
               value={description}

@@ -195,11 +195,7 @@ const AddTaskModal = ({
   };
 
   const handleSave = async () => {
-    const fieldsToValidate: (keyof FormValues)[] = [
-      'taskName',
-      'type',
-      'priority',
-    ];
+    const fieldsToValidate: (keyof FormValues)[] = ['taskName', 'type', 'priority'];
     for (const field of fieldsToValidate) {
       if (!validateField(field)) {
         return;
@@ -263,7 +259,7 @@ const AddTaskModal = ({
         });
       }
       onClose();
-    } catch (error) { }
+    } catch (error) {}
   };
   const taskNameRegister = register('taskName');
   const descriptionRegister = register('description');

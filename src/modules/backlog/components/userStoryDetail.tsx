@@ -79,7 +79,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
     description: '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: task.due_date ?? '',
@@ -99,10 +99,10 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
   const formatDate = (dateStr?: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : '-';
 
   const handleTaskCreated = async () => {
@@ -187,14 +187,18 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{userStory.title}</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
+                {userStory.title}
+              </h1>
               <span className="rounded-full bg-purple-50 dark:bg-purple-900/30 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400">
                 User Story
               </span>
             </div>
 
             {userStory.description && (
-              <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">{userStory.description}</p>
+              <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">
+                {userStory.description}
+              </p>
             )}
           </div>
 
@@ -239,14 +243,15 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           <div>
             <p className="text-xs text-gray-400 dark:text-slate-500">PRIORITY</p>
             <span
-              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${userStory.priority === 'critical'
-                ? 'bg-red-50 text-red-600'
-                : userStory.priority === 'high'
-                  ? 'bg-orange-50 text-orange-600'
-                  : userStory.priority === 'medium'
-                    ? 'bg-yellow-50 text-yellow-600'
-                    : 'bg-green-50 text-green-600'
-                }`}
+              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                userStory.priority === 'critical'
+                  ? 'bg-red-50 text-red-600'
+                  : userStory.priority === 'high'
+                    ? 'bg-orange-50 text-orange-600'
+                    : userStory.priority === 'medium'
+                      ? 'bg-yellow-50 text-yellow-600'
+                      : 'bg-green-50 text-green-600'
+              }`}
             >
               {userStory.priority
                 ? userStory.priority.charAt(0).toUpperCase() + userStory.priority.slice(1)
@@ -345,15 +350,21 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                           size="sm"
                         />
 
-                        <span className="text-gray-600 dark:text-slate-300">{task.assignee_name}</span>
+                        <span className="text-gray-600 dark:text-slate-300">
+                          {task.assignee_name}
+                        </span>
                       </span>
                     )}
 
                     {/* Sprint */}
                     {task.sprint_name && (
                       <span className="flex items-center gap-1.5">
-                        <span className="font-medium text-gray-400 dark:text-slate-500">Sprint</span>
-                        <span className="text-gray-600 dark:text-slate-300">{task.sprint_name}</span>
+                        <span className="font-medium text-gray-400 dark:text-slate-500">
+                          Sprint
+                        </span>
+                        <span className="text-gray-600 dark:text-slate-300">
+                          {task.sprint_name}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -363,14 +374,15 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                 <div className="flex shrink-0 items-center gap-2">
                   {/* Priority */}
                   <span
-                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${task.priority === 'critical'
-                      ? 'bg-red-50 text-red-600'
-                      : task.priority === 'high'
-                        ? 'bg-orange-50 text-orange-600'
-                        : task.priority === 'medium'
-                          ? 'bg-yellow-50 text-yellow-600'
-                          : 'bg-green-50 text-green-600'
-                      }`}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                      task.priority === 'critical'
+                        ? 'bg-red-50 text-red-600'
+                        : task.priority === 'high'
+                          ? 'bg-orange-50 text-orange-600'
+                          : task.priority === 'medium'
+                            ? 'bg-yellow-50 text-yellow-600'
+                            : 'bg-green-50 text-green-600'
+                    }`}
                   >
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                   </span>
@@ -423,7 +435,9 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Delete User Story</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              Delete User Story
+            </h3>
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Are you sure you want to delete this user story? This action cannot be undone and will
               also affect all associated tasks.

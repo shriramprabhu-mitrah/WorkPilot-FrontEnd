@@ -66,7 +66,11 @@ const SECTIONS: SectionConfig[] = [
 ];
 
 function toSlug(name: string) {
-  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function ClosedCheck({ checked }: { checked?: boolean }) {
@@ -88,7 +92,15 @@ interface StatusRowProps {
   onCancelEdit: () => void;
 }
 
-function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEdit, onCancelEdit }: StatusRowProps) {
+function StatusRow({
+  status,
+  showArchived,
+  isEditing,
+  onEdit,
+  onDelete,
+  onSaveEdit,
+  onCancelEdit,
+}: StatusRowProps) {
   const [editName, setEditName] = useState(status.name);
   const [editColor, setEditColor] = useState(status.color);
   const [editClosed, setEditClosed] = useState(status.isClosed ?? false);
@@ -96,7 +108,10 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
   if (isEditing) {
     return (
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
-        <GripVertical size={16} className="hidden sm:block shrink-0 text-slate-300 dark:text-slate-600" />
+        <GripVertical
+          size={16}
+          className="hidden sm:block shrink-0 text-slate-300 dark:text-slate-600"
+        />
         {/* <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5" style={{ backgroundColor: status.color }} /> */}
         <div className="relative h-8 w-8 shrink-0">
           <span
@@ -150,10 +165,24 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
           <option value="No">No</option>
           <option value="Yes">Yes</option>
         </select>
-        <WpButton type="button" variant="ghost" size="sm" onClick={() => onSaveEdit(editName, editColor, editClosed)} className="!h-9 !w-9 !p-0" aria-label="Save">
+        <WpButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onSaveEdit(editName, editColor, editClosed)}
+          className="!h-9 !w-9 !p-0"
+          aria-label="Save"
+        >
           <Check size={17} strokeWidth={2.5} />
         </WpButton>
-        <WpButton type="button" variant="secondary" size="sm" onClick={onCancelEdit} className="!h-9 !w-9 !p-0" aria-label="Cancel">
+        <WpButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={onCancelEdit}
+          className="!h-9 !w-9 !p-0"
+          aria-label="Cancel"
+        >
           <X size={17} strokeWidth={2.5} />
         </WpButton>
       </div>
@@ -162,8 +191,14 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
 
   return (
     <div className="group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]">
-      <GripVertical size={16} className="hidden sm:block shrink-0 text-transparent transition-colors group-hover:text-slate-300 dark:group-hover:text-slate-600" />
-      <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10" style={{ backgroundColor: status.color }} />
+      <GripVertical
+        size={16}
+        className="hidden sm:block shrink-0 text-transparent transition-colors group-hover:text-slate-300 dark:group-hover:text-slate-600"
+      />
+      <span
+        className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"
+        style={{ backgroundColor: status.color }}
+      />
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800 dark:text-slate-100">
         {status.name}
       </span>
@@ -176,10 +211,24 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
         </span>
       )}
       <div className="ml-auto flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <WpButton type="button" variant="ghost" size="sm" onClick={onEdit} aria-label="Edit" className="!h-8 !w-8 !p-0">
+        <WpButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onEdit}
+          aria-label="Edit"
+          className="!h-8 !w-8 !p-0"
+        >
           <Pencil size={14} />
         </WpButton>
-        <WpButton type="button" variant="ghost" size="sm" onClick={onDelete} aria-label="Delete" className="!h-8 !w-8 !p-0 !text-slate-400 hover:!bg-red-100 dark:hover:!bg-red-900/30 hover:!text-red-500">
+        <WpButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onDelete}
+          aria-label="Delete"
+          className="!h-8 !w-8 !p-0 !text-slate-400 hover:!bg-red-100 dark:hover:!bg-red-900/30 hover:!text-red-500"
+        >
           <Trash2 size={14} />
         </WpButton>
       </div>
@@ -187,7 +236,13 @@ function StatusRow({ status, showArchived, isEditing, onEdit, onDelete, onSaveEd
   );
 }
 
-function AddStatusRow({ onAdd, onCancel }: { onAdd: (name: string, color: string, isClosed: boolean) => void; onCancel: () => void }) {
+function AddStatusRow({
+  onAdd,
+  onCancel,
+}: {
+  onAdd: (name: string, color: string, isClosed: boolean) => void;
+  onCancel: () => void;
+}) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#2563eb');
   const [isClosed, setIsClosed] = useState(false);
@@ -256,36 +311,38 @@ function AddStatusRow({ onAdd, onCancel }: { onAdd: (name: string, color: string
         <option value="No">No</option>
         <option value="Yes">Yes</option>
       </select>
-      <WpButton type="button" variant="primary" size="sm" onClick={handleAdd} className="!h-8 !w-8 !min-h-0 !p-0" aria-label="Add">
+      <WpButton
+        type="button"
+        variant="primary"
+        size="sm"
+        onClick={handleAdd}
+        className="!h-8 !w-8 !min-h-0 !p-0"
+        aria-label="Add"
+      >
         <Check size={15} strokeWidth={2.5} />
       </WpButton>
-      <WpButton type="button" variant="secondary" size="sm" onClick={onCancel} className="!h-8 !w-8 !min-h-0 !p-0" aria-label="Cancel">
+      <WpButton
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={onCancel}
+        className="!h-8 !w-8 !min-h-0 !p-0"
+        aria-label="Cancel"
+      >
         <X size={15} strokeWidth={2.5} />
       </WpButton>
     </div>
   );
 }
 
-function StatusSection({
-  config,
-  projectId,
-}: {
-  config: SectionConfig;
-  projectId: string;
-}) {
+function StatusSection({ config, projectId }: { config: SectionConfig; projectId: string }) {
   const [statuses, setStatuses] = useState<Status[]>(config.initialStatuses);
   const isUserStory = config.key === 'userStory';
   const isTask = config.key === 'task';
 
-  const { userStoryStatuses } = useGetUserStoryStatuses(
-    projectId,
-    isUserStory
-  );
+  const { userStoryStatuses } = useGetUserStoryStatuses(projectId, isUserStory);
 
-  const { data: taskStatuses = [] } = useGetStatus(
-    projectId,
-    isTask
-  );
+  const { data: taskStatuses = [] } = useGetStatus(projectId, isTask);
   const { createUserStoryStatusAsync } = useCreateUserStoryStatus();
 
   const { updateUserStoryStatusAsync } = useUpdateUserStoryStatus();
@@ -296,30 +353,27 @@ function StatusSection({
   const deleteStatus = useDeleteStatus();
   const displayStatuses: Status[] = isUserStory
     ? userStoryStatuses.map((status) => ({
-      id: status.id,
-      name: status.name,
-      color: status.color,
-      slug: toSlug(status.name),
-      isClosed: status.is_closed,
-    }))
-    : isTask
-      ? taskStatuses.map((status) => ({
         id: status.id,
         name: status.name,
         color: status.color,
         slug: toSlug(status.name),
-
+        isClosed: status.is_final,
       }))
+    : isTask
+      ? taskStatuses.map((status) => ({
+          id: status.id,
+          name: status.name,
+          color: status.color,
+          slug: toSlug(status.name),
+          isClosed: status.is_final,
+        }))
       : statuses;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const nextId =
-    Math.max(
-      0,
-      ...statuses.map((s) => Number(s.id)).filter((id) => !Number.isNaN(id))
-    ) + 1;
+    Math.max(0, ...statuses.map((s) => Number(s.id)).filter((id) => !Number.isNaN(id))) + 1;
 
   const handleDelete = async (id: string) => {
     if (isUserStory) {
@@ -361,12 +415,7 @@ function StatusSection({
     }
   };
 
-  const handleSaveEdit = async (
-    id: string,
-    name: string,
-    color: string,
-    isClosed: boolean
-  ) => {
+  const handleSaveEdit = async (id: string, name: string, color: string, isClosed: boolean) => {
     const trimmed = name.trim();
 
     if (!trimmed) return;
@@ -382,7 +431,7 @@ function StatusSection({
           payload: {
             name: trimmed,
             color,
-            is_closed: isClosed,
+            is_final: isClosed,
           },
         });
 
@@ -402,8 +451,6 @@ function StatusSection({
             name: trimmed,
             color,
             is_final: isClosed,
-
-
           },
         });
 
@@ -418,11 +465,11 @@ function StatusSection({
       prev.map((s) =>
         s.id === id
           ? {
-            ...s,
-            name: trimmed,
-            slug: toSlug(trimmed),
-            isClosed,
-          }
+              ...s,
+              name: trimmed,
+              slug: toSlug(trimmed),
+              isClosed,
+            }
           : s
       )
     );
@@ -430,11 +477,7 @@ function StatusSection({
     setEditingId(null);
   };
 
-  const handleAdd = async (
-    name: string,
-    color: string,
-    isClosed: boolean
-  ) => {
+  const handleAdd = async (name: string, color: string, isClosed: boolean) => {
     const trimmed = name.trim();
 
     if (!trimmed) return;
@@ -446,7 +489,7 @@ function StatusSection({
           payload: {
             name,
             color,
-            is_closed: isClosed,
+            is_final: isClosed,
           },
         });
 
@@ -489,27 +532,61 @@ function StatusSection({
     setIsAdding(false);
   };
   return (
-    <div className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${isOpen
-      ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
-      : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
-      } bg-white dark:bg-slate-800`}>
+    <div
+      className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${
+        isOpen
+          ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
+          : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
+      } bg-white dark:bg-slate-800`}
+    >
       {/* Section header */}
-      <div className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${isOpen ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-        }`}>
+      <div
+        className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${
+          isOpen
+            ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20'
+            : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+        }`}
+      >
         <button
           type="button"
-          onClick={() => { setIsOpen((p) => { const n = !p; if (!n) { setIsAdding(false); setEditingId(null); } return n; }); }}
+          onClick={() => {
+            setIsOpen((p) => {
+              const n = !p;
+              if (!n) {
+                setIsAdding(false);
+                setEditingId(null);
+              }
+              return n;
+            });
+          }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
         >
-          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-            }`}>
-            <ChevronRight size={18} strokeWidth={2.5} className={`transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+          <span
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
+              isOpen
+                ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            <ChevronRight
+              size={18}
+              strokeWidth={2.5}
+              className={`transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+            />
           </span>
-          <span className={`text-[13px] font-bold tracking-wide ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>
+          <span
+            className={`text-[13px] font-bold tracking-wide ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}
+          >
             {config.label}
           </span>
-          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isOpen ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-            }`}>
+
+          <span
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              isOpen
+                ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
+                : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            }`}
+          >
             {displayStatuses.length}
           </span>
         </button>
@@ -518,7 +595,11 @@ function StatusSection({
           variant="primary"
           size="sm"
           leftIcon={<Plus size={14} strokeWidth={2.5} />}
-          onClick={() => { setIsOpen(true); setIsAdding(true); setEditingId(null); }}
+          onClick={() => {
+            setIsOpen(true);
+            setIsAdding(true);
+            setEditingId(null);
+          }}
           className="ml-4 shrink-0 text-[11px] font-bold tracking-wide hidden sm:inline-flex"
         >
           ADD STATUS
@@ -527,7 +608,11 @@ function StatusSection({
           type="button"
           variant="primary"
           size="sm"
-          onClick={() => { setIsOpen(true); setIsAdding(true); setEditingId(null); }}
+          onClick={() => {
+            setIsOpen(true);
+            setIsAdding(true);
+            setEditingId(null);
+          }}
           className="ml-3 shrink-0 !h-8 !w-8 !p-0 sm:hidden"
           aria-label="Add status"
         >
@@ -541,9 +626,7 @@ function StatusSection({
           <div className="hidden sm:grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 px-4 py-2">
             <span />
 
-            <span className="text-xs font-semibold text-slate-500">
-              Color
-            </span>
+            <span className="text-xs font-semibold text-slate-500">Color</span>
 
             <span className="min-w-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
               Name
@@ -569,9 +652,14 @@ function StatusSection({
                 status={status}
                 showArchived={config.showArchived}
                 isEditing={editingId === status.id}
-                onEdit={() => { setIsAdding(false); setEditingId(status.id); }}
+                onEdit={() => {
+                  setIsAdding(false);
+                  setEditingId(status.id);
+                }}
                 onDelete={() => handleDelete(status.id)}
-                onSaveEdit={(name, color, isClosed) => handleSaveEdit(status.id, name, color, isClosed)}
+                onSaveEdit={(name, color, isClosed) =>
+                  handleSaveEdit(status.id, name, color, isClosed)
+                }
                 onCancelEdit={() => setEditingId(null)}
               />
             ))}
@@ -583,8 +671,12 @@ function StatusSection({
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                   <Plus size={18} />
                 </div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No statuses available</p>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Add a new status to get started.</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  No statuses available
+                </p>
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  Add a new status to get started.
+                </p>
               </div>
             )}
           </div>
@@ -594,33 +686,28 @@ function StatusSection({
   );
 }
 export default function StatusSettings() {
-  const projectId = useAppSelector(
-    (state) => state.project.selectedProject?.id
-  );
+  const projectId = useAppSelector((state) => state.project.selectedProject?.id);
 
   if (!projectId) {
     return (
-      <div className="px-8 py-10 text-center text-gray-500">
-        Please select a project first.
-      </div>
+      <div className="px-8 py-10 text-center text-gray-500">Please select a project first.</div>
     );
   }
   return (
     <div className="min-h-[calc(100vh-160px)] px-0 py-2">
       <div className="mb-6 flex items-center gap-3">
         <div className="h-8 w-1 rounded-full bg-blue-600" />
-        <h2 className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">Statuses</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
+          Statuses
+        </h2>
       </div>
       <p className="mb-6 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-        Add, remove or edit the color and name of the statuses your epics, user stories, tasks and issues will go through.
+        Add, remove or edit the color and name of the statuses your epics, user stories, tasks and
+        issues will go through.
       </p>
       <div className="space-y-1">
         {SECTIONS.map((section) => (
-          <StatusSection
-            key={section.key}
-            config={section}
-            projectId={projectId}
-          />
+          <StatusSection key={section.key} config={section} projectId={projectId} />
         ))}
       </div>
     </div>

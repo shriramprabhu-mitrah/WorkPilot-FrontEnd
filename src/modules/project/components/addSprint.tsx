@@ -76,7 +76,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
       await createSprintAsync(payload);
       onSuccess?.();
       onClose();
-    } catch { }
+    } catch {}
   };
 
   return (
@@ -85,7 +85,9 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
         <div className="flex w-full flex-col">
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 p-5">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Configure {fields.length} Sprints</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">
+                Configure {fields.length} Sprints
+              </h2>
               <WpButton
                 type="button"
                 variant="ghost"

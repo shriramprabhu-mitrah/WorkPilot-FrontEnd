@@ -123,30 +123,30 @@ export const FilterPanel = ({
   };
 
   // Shared search input used in every category
- const SearchInput = ({ placeholder }: { placeholder: string }) => (
-   <div className="border-b border-gray-200 p-2.5 dark:border-slate-700">
-     <div className="relative">
-       <Search
-         size={15}
-         className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400"
-       />
+  const SearchInput = ({ placeholder }: { placeholder: string }) => (
+    <div className="border-b border-gray-200 p-2.5 dark:border-slate-700">
+      <div className="relative">
+        <Search
+          size={15}
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400"
+        />
 
-       <input
-         type="text"
-         placeholder={placeholder}
-         value={searchTerm}
-         onChange={(e) => {
-           setSearchTerm(e.target.value);
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
 
-           if (placeholder === 'Search assignee' && onAssigneeSearch) {
-             onAssigneeSearch(e.target.value);
-           }
-         }}
-         className="w-full rounded-md border border-gray-300 bg-white py-1.5 pl-8 pr-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 sm:text-sm"
-       />
-     </div>
-   </div>
- );
+            if (placeholder === 'Search assignee' && onAssigneeSearch) {
+              onAssigneeSearch(e.target.value);
+            }
+          }}
+          className="w-full rounded-md border border-gray-300 bg-white py-1.5 pl-8 pr-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 sm:text-sm"
+        />
+      </div>
+    </div>
+  );
 
   // Shared footer row
   const Footer = ({ selectedCount, totalCount }: { selectedCount: number; totalCount: number }) => (
@@ -312,12 +312,12 @@ export const FilterPanel = ({
                   <input
                     type="checkbox"
                     checked={filters.types.includes(type)}
-                    onChange={() =>
-                      onChange({ ...filters, types: toggle(filters.types, type) })
-                    }
+                    onChange={() => onChange({ ...filters, types: toggle(filters.types, type) })}
                     className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                   />
-                  <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-100">{type}</span>
+                  <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-100">
+                    {type}
+                  </span>
                 </label>
               ))}
               {filteredTypes.length === 0 && searchTerm && (
@@ -347,12 +347,12 @@ export const FilterPanel = ({
                   <input
                     type="checkbox"
                     checked={filters.labels.includes(label)}
-                    onChange={() =>
-                      onChange({ ...filters, labels: toggle(filters.labels, label) })
-                    }
+                    onChange={() => onChange({ ...filters, labels: toggle(filters.labels, label) })}
                     className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                   />
-                  <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">{label}</span>
+                  <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+                    {label}
+                  </span>
                 </label>
               ))}
               {filteredLabels.length === 0 && searchTerm && (

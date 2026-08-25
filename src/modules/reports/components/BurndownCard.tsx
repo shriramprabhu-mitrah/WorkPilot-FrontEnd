@@ -7,7 +7,23 @@ import { useTheme } from 'next-themes';
 import * as echarts from 'echarts';
 import type { EChartsOption } from 'echarts-for-react';
 
-const burndownDays = ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15'];
+const burndownDays = [
+  'D1',
+  'D2',
+  'D3',
+  'D4',
+  'D5',
+  'D6',
+  'D7',
+  'D8',
+  'D9',
+  'D10',
+  'D11',
+  'D12',
+  'D13',
+  'D14',
+  'D15',
+];
 const burndownIdeal = [58, 54, 50, 46, 42, 38, 34, 30, 26, 22, 18, 14, 10, 6, 2];
 const burndownActual = [58, 55, 53, 49, 47, 42, 40, 36, 31, 27, 21, 16, 10, 5, 1];
 
