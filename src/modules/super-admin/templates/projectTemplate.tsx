@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Trash2, Loader2 } from 'lucide-react';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
-import { AdminProjectsParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
+import { AdminProjectsParams } from '@/src/types/superadmin';
 
 export const ProjectsTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');

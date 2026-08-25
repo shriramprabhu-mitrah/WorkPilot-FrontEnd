@@ -40,3 +40,36 @@ export interface Project {
   total_tasks: number;
   total_members: number;
 }
+
+export interface AdminMembersParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  full_name?: string;
+  email?: string;
+  username?: string;
+  role?: string;
+  organization_id?: string;
+  is_active?: boolean;
+  is_verified?: boolean;
+  timezone?: string;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface AdminProjectsParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  status?: string;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
+  include_sprints?: boolean;
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface UpdateOrganization {
+  organizationId: string;
+  is_active: boolean;
+}
