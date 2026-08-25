@@ -1,4 +1,4 @@
-import { DashboardTemplate } from '@/src/modules/super-admin/templates/dashboardTemplate';
+import { DashboardTemplate } from '@/src/modules/super-admin/templates/dashboardTemplatee';
 
 export const metadata = {
   title: 'Super Admin Dashboard',

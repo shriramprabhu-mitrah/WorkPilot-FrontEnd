@@ -1,4 +1,4 @@
-import { MembersTemplate } from '@/src/modules/super-admin/templates/membersTemplate';
+import { MembersTemplate } from '@/src/modules/super-admin/templates/memberssTemplate';
 
 export const metadata = {
   title: 'Members - Super Admin',

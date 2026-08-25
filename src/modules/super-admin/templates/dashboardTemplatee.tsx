@@ -11,10 +11,10 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useGetOrganizations, useGetAllProjects, useGetMembers } from '../hooks/useSuperAdmin';
-import { MetricCard } from '../components/metricCard';
-import { OrganizationCard } from '../components/organizationCard';
-import { ProjectCard } from '../components/projectCard';
-import { MemberCard } from '../components/memberCard';
+import { MetricCard } from '../components/metricsCard';
+import { OrganizationCard } from '../components/organizationsCard';
+import { ProjectCard } from '../components/projecttCard';
+import { MemberCard } from '../components/membersCard';
 
 // Mock metrics for dashboard
 const dashboardMetrics = {

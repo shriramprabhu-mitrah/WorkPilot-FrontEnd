@@ -1,4 +1,4 @@
-import { OrganizationDetailTemplate } from '@/src/modules/super-admin/templates/organizationDetailTemplate';
+import { OrganizationDetailTemplate } from '@/src/modules/super-admin/templates/organizationsDetailTemplate';
 
 export const metadata = {
   title: 'Organization Details - Super Admin',

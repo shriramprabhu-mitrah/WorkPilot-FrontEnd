@@ -1,6 +1,6 @@
 'use client';
 
-import { SuperAdminSidebar } from '@/src/modules/super-admin/components/superAdminSidebar';
+import { SuperAdminSidebar } from '@/src/modules/super-admin/components/superAdminnSidebar';
 import { ThemeToggle } from '@/src/app/components/common/theme-toggle';
 import { useCallback, useState } from 'react';
 import { Menu } from 'lucide-react';
