@@ -321,6 +321,7 @@ export const ApiEndpoints = {
     getOrganization: createQueryEndpoint('/organization'),
     getMembers: createQueryEndpoint('/organization/all-members'),
     getAllProjects: createQueryEndpoint('/project/all-projects'),
+    activeOrganization: createEndpoint('/organization/status/{organizationId}')
   },
 };
 

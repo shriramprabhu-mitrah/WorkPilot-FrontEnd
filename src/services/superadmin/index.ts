@@ -1,6 +1,6 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService, PaginatedApiResponse } from '../axios';
-import { AdminOrganization, AdminOrganizationMember, Project } from '@/src/types/superadmin';
+import { AdminMembersParams, AdminOrganization, AdminOrganizationMember, AdminProjectsParams, Project } from '@/src/types/superadmin';
 
 export interface AdminOrganizationsParams {
   page?: number;
@@ -17,33 +17,7 @@ export interface AdminOrganizationsParams {
   [key: string]: string | number | boolean | undefined;
 }
 
-export interface AdminMembersParams {
-  page?: number;
-  page_size?: number;
-  search?: string;
-  full_name?: string;
-  email?: string;
-  username?: string;
-  role?: string;
-  organization_id?: string;
-  is_active?: boolean;
-  is_verified?: boolean;
-  timezone?: string;
-  sort_by?: string;
-  sort_order?: 'ASC' | 'DESC';
-  [key: string]: string | number | boolean | undefined;
-}
 
-export interface AdminProjectsParams {
-  page?: number;
-  page_size?: number;
-  search?: string;
-  status?: string;
-  sort_by?: string;
-  sort_order?: 'ASC' | 'DESC';
-  include_sprints?: boolean;
-  [key: string]: string | number | boolean | undefined;
-}
 
 class AdminService {
   async getOrganizations(
@@ -52,8 +26,8 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getOrganization;
     const cleanParams = params
       ? (Object.fromEntries(
-          Object.entries(params).filter(([, value]) => value !== undefined)
-        ) as Record<string, string | number | boolean>)
+        Object.entries(params).filter(([, value]) => value !== undefined)
+      ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<AdminOrganization[]>(url);
@@ -65,8 +39,8 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getMembers;
     const cleanParams = params
       ? (Object.fromEntries(
-          Object.entries(params).filter(([, value]) => value !== undefined)
-        ) as Record<string, string | number | boolean>)
+        Object.entries(params).filter(([, value]) => value !== undefined)
+      ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<AdminOrganizationMember[]>(url);
@@ -76,11 +50,24 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getAllProjects;
     const cleanParams = params
       ? (Object.fromEntries(
-          Object.entries(params).filter(([, value]) => value !== undefined)
-        ) as Record<string, string | number | boolean>)
+        Object.entries(params).filter(([, value]) => value !== undefined)
+      ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<Project[]>(url);
+  }
+
+  async updateOrganization(
+    organizationId: string,
+    is_active: boolean
+  ): Promise<PaginatedApiResponse<AdminOrganization[]>> {
+    const url = ApiEndpoints.SuperAdmin.activeOrganization.withParams({
+      organizationId: organizationId,
+    });
+
+    return apiService.patch<AdminOrganization[]>(url, {
+      is_active,
+    });
   }
 }
 

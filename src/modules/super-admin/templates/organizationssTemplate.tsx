@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useGetOrganizations } from '../hooks/useSuperAdmin';
+import { useGetOrganizations, useUpdateOrganization } from '../hooks/useSuperAdmin';
 import { AdminOrganization } from '@/src/types/superadmin';
 import { AdminOrganizationsParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
@@ -102,6 +102,7 @@ export const OrganizationsTemplate = () => {
   }, [page, pageSize, searchQuery, activeFilter]);
 
   const { organizations = [], meta, isLoadingOrganizations } = useGetOrganizations(queryParams);
+  const { mutate: updateOrganization } = useUpdateOrganization();
 
   const getInitials = (name: string) =>
     name
@@ -126,7 +127,19 @@ export const OrganizationsTemplate = () => {
   };
 
   const handleConfirmToggleStatus = () => {
-    handleCloseConfirmation();
+    if (!confirmModal.organization) return;
+    
+    updateOrganization(
+      {
+        organizationId: confirmModal.organization.id,
+        is_active: confirmModal.action === 'activate',
+      },
+      {
+        onSuccess: () => {
+          handleCloseConfirmation();
+        },
+      }
+    );
   };
 
   const handlePageChange = (newPage: number) => {

@@ -3,8 +3,8 @@
 import { useState, useMemo } from 'react';
 import { Search, Trash2, ChevronDown, Loader2 } from 'lucide-react';
 import { useGetMembers, useGetOrganizations } from '../hooks/useSuperAdmin';
-import { AdminMembersParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
+import { AdminMembersParams } from '@/src/types/superadmin';
 
 const avatarColors = [
   'bg-blue-500',
