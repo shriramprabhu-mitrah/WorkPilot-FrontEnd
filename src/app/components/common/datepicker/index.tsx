@@ -22,18 +22,8 @@ interface WpDatePickerProps {
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 function formatDisplay(iso: string, showTime?: boolean) {
@@ -88,17 +78,13 @@ export const WpDatePicker = ({
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const prevMonth = () => {
-    if (viewMonth === 0) {
-      setViewMonth(11);
-      setViewYear((y) => y - 1);
-    } else setViewMonth((m) => m - 1);
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
   };
 
   const nextMonth = () => {
-    if (viewMonth === 11) {
-      setViewMonth(0);
-      setViewYear((y) => y + 1);
-    } else setViewMonth((m) => m + 1);
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
   };
 
   const toISO = (y: number, m: number, d: number) =>
@@ -113,10 +99,7 @@ export const WpDatePicker = ({
     const iso = toISO(viewYear, viewMonth, d);
     const newValue = showTime ? `${iso}T${time}` : iso;
     onChange(newValue);
-    if (!showTime) {
-      setOpen(false);
-      onCommit?.(newValue);
-    }
+    if (!showTime) { setOpen(false); onCommit?.(newValue); }
   };
 
   const handleTimeChange = (newTime: string) => {
@@ -134,11 +117,12 @@ export const WpDatePicker = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-bold mb-2 text-[var(--color-text-body)]">
+        <label className="block text-sm font-bold mb-2 text-[var(--color-text-body)] dark:text-slate-200">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
+
       <div className="relative">
         <button
           ref={buttonRef}
@@ -146,29 +130,35 @@ export const WpDatePicker = ({
           disabled={disabled}
           onClick={handleOpen}
           className={[
-            'w-full flex items-center justify-between px-3 py-2 h-11 rounded-lg text-sm transition-all bg-white border border-[var(--color-gray-300)]',
+            'w-full flex items-center justify-between px-3 py-2 h-11 rounded-lg text-sm transition-all',
+            'bg-white dark:bg-slate-800',
+            'border border-[var(--color-gray-300)] dark:border-slate-600',
             error
               ? 'border-[var(--color-error)] text-[var(--color-error)]'
               : open
-                ? 'border-[var(--color-primary-focus)] bg-[var(--color-primary-light)]'
-                : 'hover:border-[var(--color-gray-400)]',
+                ? 'border-[var(--color-primary-focus)] bg-[var(--color-primary-light)] dark:bg-blue-900/20'
+                : 'hover:border-[var(--color-gray-400)] dark:hover:border-slate-500',
             disabled
-              ? 'cursor-not-allowed text-[var(--color-gray-400)] bg-[var(--color-gray-100)]'
+              ? 'cursor-not-allowed text-[var(--color-gray-400)] bg-[var(--color-gray-100)] dark:bg-slate-700'
               : 'cursor-pointer',
           ]
             .filter(Boolean)
             .join(' ')}
         >
           <span
-            className={`flex items-center gap-2 ${!value ? 'text-[var(--color-gray-400)]' : 'text-[var(--color-gray-900)]'}`}
+            className={`flex items-center gap-2 ${
+              !value
+                ? 'text-[var(--color-gray-400)] dark:text-slate-500'
+                : 'text-[var(--color-gray-900)] dark:text-slate-100'
+            }`}
           >
-            <Calendar size={15} className="text-[var(--color-gray-400)]" />
+            <Calendar size={15} className="text-[var(--color-gray-400)] dark:text-slate-500" />
             {value ? formatDisplay(value, showTime) : placeholder}
           </span>
           {value && !disabled ? (
             <X
               size={14}
-              className="text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)]"
+              className="text-[var(--color-gray-400)] dark:text-slate-500 hover:text-[var(--color-gray-600)] dark:hover:text-slate-300"
               onClick={handleClear}
             />
           ) : null}
@@ -179,27 +169,27 @@ export const WpDatePicker = ({
           createPortal(
             <div
               ref={ref}
-              className="fixed z-[9999] w-64 rounded-lg border border-[var(--color-gray-200)] bg-white p-2 shadow-lg"
+              className="fixed z-[9999] w-64 rounded-lg border border-[var(--color-gray-200)] dark:border-slate-700 bg-white dark:bg-slate-800 p-2 shadow-lg"
               style={{ top: dropdownPos.top, left: dropdownPos.left }}
             >
-              {/* Header */}
+              {/* Month/Year header */}
               <div className="flex items-center justify-between mb-1.5">
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="p-1 rounded hover:bg-[var(--color-gray-100)]"
+                  className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700"
                 >
-                  <ChevronLeft size={16} className="text-[var(--color-gray-600)]" />
+                  <ChevronLeft size={16} className="text-[var(--color-gray-600)] dark:text-slate-300" />
                 </button>
-                <span className="text-xs font-semibold text-[var(--color-gray-900)]">
+                <span className="text-xs font-semibold text-[var(--color-gray-900)] dark:text-slate-100">
                   {MONTHS[viewMonth]} {viewYear}
                 </span>
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="p-1 rounded hover:bg-[var(--color-gray-100)]"
+                  className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700"
                 >
-                  <ChevronRight size={16} className="text-[var(--color-gray-600)]" />
+                  <ChevronRight size={16} className="text-[var(--color-gray-600)] dark:text-slate-300" />
                 </button>
               </div>
 
@@ -208,14 +198,14 @@ export const WpDatePicker = ({
                 {DAYS.map((d) => (
                   <span
                     key={d}
-                    className="text-center text-[11px] font-medium text-[var(--color-gray-400)] py-0.5"
+                    className="text-center text-[11px] font-medium text-[var(--color-gray-400)] dark:text-slate-500 py-0.5"
                   >
                     {d}
                   </span>
                 ))}
               </div>
 
-              {/* Dates */}
+              {/* Date cells */}
               <div className="grid grid-cols-7 gap-y-1" onClick={(e) => e.stopPropagation()}>
                 {Array.from({ length: firstDay }).map((_, i) => (
                   <span key={`e-${i}`} />
@@ -223,25 +213,25 @@ export const WpDatePicker = ({
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1;
                   const iso = toISO(viewYear, viewMonth, day);
-                  const isSelected = iso === datePart; // Compare date parts only
+                  const isSelected = iso === datePart;
                   const isToday =
                     iso === toISO(today.getFullYear(), today.getMonth(), today.getDate());
-                  const disabled = isDisabled(day);
+                  const dayDisabled = isDisabled(day);
 
                   return (
                     <button
                       key={day}
                       type="button"
-                      disabled={disabled}
+                      disabled={dayDisabled}
                       onClick={() => handleSelect(day)}
                       className={[
                         'w-6 h-6 mx-auto flex items-center justify-center rounded-full text-xs transition-colors',
                         isSelected
                           ? 'bg-[var(--color-primary-focus)] text-white font-semibold'
                           : isToday
-                            ? 'border border-[var(--color-primary-focus)] text-[var(--color-primary-focus)] font-semibold'
-                            : 'hover:bg-[var(--color-primary-light)] text-[var(--color-gray-700)]',
-                        disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer',
+                            ? 'border border-[var(--color-primary-focus)] text-[var(--color-primary-focus)] font-semibold dark:text-blue-400 dark:border-blue-400'
+                            : 'hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200',
+                        dayDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer',
                       ]
                         .filter(Boolean)
                         .join(' ')}
@@ -252,15 +242,18 @@ export const WpDatePicker = ({
                 })}
               </div>
 
+              {/* Time picker row */}
               {showTime && (
-                <div className="mt-3 pt-3 border-t border-[var(--color-gray-200)] flex items-center justify-between gap-2">
-                  <span className="text-xs text-[var(--color-gray-500)] font-medium">Time</span>
+                <div className="mt-3 pt-3 border-t border-[var(--color-gray-200)] dark:border-slate-700 flex items-center justify-between gap-2">
+                  <span className="text-xs text-[var(--color-gray-500)] dark:text-slate-400 font-medium">
+                    Time
+                  </span>
                   <input
                     type="time"
                     step={1}
                     value={time}
                     onChange={(e) => handleTimeChange(e.target.value)}
-                    className="text-sm border border-[var(--color-gray-300)] rounded-md px-2 py-1 focus:outline-none focus:border-[var(--color-primary-focus)] text-[var(--color-gray-900)]"
+                    className="text-sm border border-[var(--color-gray-300)] dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 text-[var(--color-gray-900)] dark:text-slate-100 focus:outline-none focus:border-[var(--color-primary-focus)]"
                   />
                   <button
                     type="button"
@@ -279,8 +272,11 @@ export const WpDatePicker = ({
             document.body
           )}
       </div>
+
       {error && <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>}
-      {hint && !error && <p className="mt-1 text-xs text-[var(--color-gray-400)]">{hint}</p>}
+      {hint && !error && (
+        <p className="mt-1 text-xs text-[var(--color-gray-400)] dark:text-slate-500">{hint}</p>
+      )}
     </div>
   );
 };

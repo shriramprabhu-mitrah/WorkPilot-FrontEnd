@@ -16,6 +16,7 @@ import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/en
 import { WpTextarea } from '@/src/app/components/common/textarea';
 import { useGetStatus } from '../hooks/useLabels';
 import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
+
 export interface Task {
   title: string;
   description?: string;
@@ -268,21 +269,23 @@ const AddTaskModal = ({
   const actualHoursRegister = register('actualHours');
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-xl font-bold text-gray-900">Add Task</h2>
-
+      <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 px-5 py-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Add Task</h2>
           <WpButton
             type="button"
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="!p-1.5 text-gray-400 hover:text-gray-600"
+            className="!p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
             aria-label="Close"
           >
             <X size={18} />
           </WpButton>
         </div>
+
+        {/* Body */}
         <div className="max-h-[70vh] space-y-4 overflow-y-auto p-5">
           <div className="grid grid-cols-2 gap-3">
             <WpInput
@@ -316,18 +319,28 @@ const AddTaskModal = ({
               )}
             />
           </div>
-          <WpTextarea
-            id="description"
-            label="Description"
-            placeholder="Optional details..."
-            rows={4}
-            {...descriptionRegister}
-            error={errors.description?.message}
-            onChange={(e) => {
-              descriptionRegister.onChange(e);
-              clearFieldError('description');
-            }}
+
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-1">
+                <WpRichTextEditor
+                  value={field.value ?? ''}
+                  placeholder="Optional details..."
+                  minHeight="120px"
+                  onChange={(html) => {
+                    field.onChange(html);
+                    clearFieldError('description');
+                  }}
+                />
+                {errors.description?.message && (
+                  <p className="text-sm text-red-500">{errors.description.message}</p>
+                )}
+              </div>
+            )}
           />
+
           <div className="grid grid-cols-2 gap-3">
             <div className="relative" ref={assigneeRef}>
               <Controller
@@ -340,9 +353,7 @@ const AddTaskModal = ({
                       label="Assignee"
                       placeholder="Search assignee..."
                       value={memberSearch}
-                      onFocus={() => {
-                        setShowAssigneeDropdown(true);
-                      }}
+                      onFocus={() => setShowAssigneeDropdown(true)}
                       onChange={(e) => {
                         onMemberSearchChange?.(e.target.value);
                         setShowAssigneeDropdown(true);
@@ -351,9 +362,9 @@ const AddTaskModal = ({
                       error={errors.assignee?.message}
                     />
                     {showAssigneeDropdown && (
-                      <div className="absolute z-50 mt-[-20px] w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                      <div className="absolute z-50 mt-[-20px] w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
                         {isLoadingMembers ? (
-                          <div className="px-4 py-3 text-sm text-gray-500">Searching...</div>
+                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">Searching...</div>
                         ) : assigneeOptions.length > 0 ? (
                           assigneeOptions.map((member) => (
                             <button
@@ -365,16 +376,16 @@ const AddTaskModal = ({
                                 setShowAssigneeDropdown(false);
                                 clearFieldError('assignee');
                               }}
-                              className="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+                              className="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                             >
                               <span>{member.label}</span>
                               {field.value === member.value && (
-                                <Check size={14} className="text-blue-600" />
+                                <Check size={14} className="text-blue-600 dark:text-blue-400" />
                               )}
                             </button>
                           ))
                         ) : (
-                          <div className="px-4 py-3 text-sm text-gray-500">
+                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
                             {memberSearch ? 'No members found' : 'No members available'}
                           </div>
                         )}
@@ -411,13 +422,10 @@ const AddTaskModal = ({
               render={({ field }) => (
                 <WpDatePicker
                   label="Due Date"
-
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value);
-                    if (value) {
-                      clearFieldError('dueDate');
-                    }
+                    if (value) clearFieldError('dueDate');
                   }}
                   showTime
                   placeholder="Select due date and time"
@@ -444,6 +452,7 @@ const AddTaskModal = ({
               )}
             />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <WpInput
               id="storyPoints"
@@ -455,7 +464,6 @@ const AddTaskModal = ({
               error={errors.storyPoints?.message}
               onChange={(e) => {
                 const value = e.target.value;
-
                 if (value === '' || Number(value) >= 0) {
                   storyPointsRegister.onChange(e);
                   clearFieldError('storyPoints');
@@ -465,7 +473,6 @@ const AddTaskModal = ({
             <WpInput
               id="estimatedHours"
               label="Estimated Hours"
-
               type="number"
               min="0"
               step="0.5"
@@ -477,7 +484,6 @@ const AddTaskModal = ({
                 clearFieldError('estimatedHours');
               }}
             />
-
             <WpInput
               id="actualHours"
               label="Actual Hours"
@@ -494,7 +500,9 @@ const AddTaskModal = ({
             />
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-gray-100 px-5 py-4">
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 px-5 py-4">
           <WpButton
             type="button"
             variant="secondary"
@@ -504,7 +512,6 @@ const AddTaskModal = ({
           >
             Cancel
           </WpButton>
-
           <WpButton
             type="button"
             variant="primary"

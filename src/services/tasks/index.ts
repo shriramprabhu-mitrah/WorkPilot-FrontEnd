@@ -46,6 +46,9 @@ class TaskService {
     if (params?.fields) {
       searchParams.append('fields', params.fields);
     }
+    if (params?.user_story_id) {
+      searchParams.append('user_story_id', params.user_story_id);
+    }
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.Task.getTasks.withNamedParams({ projectId });
     const url = `${endpoint.url}${query ? `?${query}` : ''}`;

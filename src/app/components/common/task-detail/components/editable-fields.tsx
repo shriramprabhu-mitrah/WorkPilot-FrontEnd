@@ -154,7 +154,7 @@ export const EditableNumber = ({
       }}
       className="flex items-center gap-1.5 group/edit"
     >
-      <span className="flex items-center gap-1.5 text-sm text-gray-800">
+      <span className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-slate-100">
         <Hash size={12} className="text-gray-400" />
         {value}
       </span>

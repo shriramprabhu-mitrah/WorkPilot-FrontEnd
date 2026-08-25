@@ -77,6 +77,7 @@ export interface UpdateUserStoryPayload {
   story_points?: number;
   assignee_id?: string;
   sprint_id?: string | null;
+  reporter_id?: string | null;
 }
 
 export interface ReorderUserStoriesPayload {
