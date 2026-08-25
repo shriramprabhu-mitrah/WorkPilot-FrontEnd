@@ -140,6 +140,7 @@ export interface ProjectMember {
   username: string;
   full_name?: string;
   role?: string;
+  color? : string
 }
 
 export interface GetProjectMembersParams {

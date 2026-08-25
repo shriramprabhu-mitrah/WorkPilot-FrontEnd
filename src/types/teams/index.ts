@@ -27,6 +27,7 @@ export interface TeamMember {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  color?:string
 }
 
 export interface RemoveUserPayload {

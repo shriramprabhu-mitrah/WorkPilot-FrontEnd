@@ -284,7 +284,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             >
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 group-hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: colors.accent }}
+                style={{ backgroundColor: user.color ?? '' }}
               >
                 {getInitials(user.name)}
               </div>

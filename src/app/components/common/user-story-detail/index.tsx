@@ -202,6 +202,7 @@ export const UserStoryDetailDrawer = ({
     sprintName: string;
     start_date: string;
     due_date: string;
+    color?:string
   };
 
   const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
@@ -222,6 +223,7 @@ export const UserStoryDetailDrawer = ({
       status: story.status_id ?? '',
       storyPoints: story.story_points ?? 0,
       assigneeId: story.assignee_id ?? '',
+      color: story.color ?? '',
       assigneeName,
       reporterId: story.reporter_id ?? story.reporter?.id ?? '',
       reporterName,
@@ -235,6 +237,7 @@ export const UserStoryDetailDrawer = ({
   const [editableFields, setEditableFields] = useState<EditableUserStoryFields>(() =>
     createEditableFields(currentUserStory)
   );
+  
 
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
@@ -274,18 +277,21 @@ export const UserStoryDetailDrawer = ({
       status: editableFields.status,
       storyPoints: editableFields.storyPoints,
       assigneeId: editableFields.assigneeId,
+      assigneeColor:currentUserStory?.assignee?.color ,
       assigneeName,
       assigneeInitials,
       reporterId: editableFields.reporterId,
       reporterName,
       reporterInitials,
+      reporterColor:currentUserStory?.reporter?.color,
       sprintId: editableFields.sprintId,
       sprintName: editableFields.sprintName,
       start_date: editableFields.start_date,
       due_date: editableFields.due_date,
     };
-  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name, currentUserStory.reporter?.name]);
+  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name, currentUserStory.reporter?.name ]);
 
+   
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
   useEffect(() => {
@@ -1194,7 +1200,7 @@ export const UserStoryDetailDrawer = ({
                 projectId={currentUserStory.project_id ?? ''}
                 userStoryId={currentUserStory.id ?? ''}
                 onCreateTask={onCreateTask}
-                totalTasks = {totalTasks}
+                totalTasks={totalTasks}
               />
 
               {/* Activity Section */}
@@ -1609,7 +1615,9 @@ export const UserStoryDetailDrawer = ({
             >
               {/* Status */}
               <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
-                <p className="text-base font-semibold text-gray-800 dark:text-slate-100 mb-2">Status</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-100 mb-2">
+                  Status
+                </p>
                 <div className="relative" ref={statusMenuRef}>
                   <button
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
@@ -1772,7 +1780,7 @@ export const UserStoryDetailDrawer = ({
                       {userStoryData.assigneeId ? (
                         <AssigneeAvatar
                           initials={userStoryData.assigneeInitials}
-                          color={getMemberColor(userStoryData.assigneeId)}
+                          color={userStoryData.assigneeColor || ''}
                           size="sm"
                         />
                       ) : (
@@ -1863,7 +1871,7 @@ export const UserStoryDetailDrawer = ({
                       {userStoryData.reporterId ? (
                         <AssigneeAvatar
                           initials={userStoryData.reporterInitials}
-                          color={getMemberColor(userStoryData.reporterId)}
+                          color={userStoryData.reporterColor || ''}
                           size="sm"
                         />
                       ) : (
@@ -1874,7 +1882,10 @@ export const UserStoryDetailDrawer = ({
                       <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                         {userStoryData.reporterName || 'Unassigned'}
                       </span>
-                      <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                      <ChevronDown
+                        size={12}
+                        className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                      />
                     </button>
 
                     {showReporterMenu && (
@@ -1928,7 +1939,10 @@ export const UserStoryDetailDrawer = ({
                                 <AssigneeAvatar initials={initials} color={color} size="sm" />
                                 <span className="truncate">{displayName}</span>
                                 {isSelected && (
-                                  <Check size={12} className="ml-auto text-blue-600 dark:text-blue-400 shrink-0" />
+                                  <Check
+                                    size={12}
+                                    className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
+                                  />
                                 )}
                               </WpButton>
                             );

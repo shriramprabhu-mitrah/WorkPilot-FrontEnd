@@ -591,7 +591,7 @@ export const KanbanBoardTemplate = () => {
               .toUpperCase()
               .slice(0, 2)
           : '',
-        assigneeColor: colors.avatarBlue,
+        assigneeColor: task?.assignee?.color ?? '',
         storyPoints: task.story_points ?? 0,
         dueDate: task.due_date ? task.due_date.split('T')[0] : '',
         columnId: statusId,
@@ -621,11 +621,16 @@ export const KanbanBoardTemplate = () => {
   // Derive unique assignees from filter members search results
   const allAssignees = useMemo(() => {
     if (!filterMembers || filterMembers.length === 0) return [];
+
     return filterMembers
-      .map((m) => m.full_name || m.user?.full_name || '')
-      .filter((name) => name !== '')
-      .sort();
+      .map((m) => ({
+        name: m.full_name || m.user?.full_name || '',
+        color: m.color ?? null,
+      }))
+      .filter((assignee) => assignee.name !== '')
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [filterMembers]);
+ 
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
@@ -999,7 +1004,7 @@ export const KanbanBoardTemplate = () => {
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
                       isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
                     }`}
-                    style={{ backgroundColor: avatarColor }}
+                    style={{ backgroundColor: member.color }}
                     title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
                   >
                     {initials}

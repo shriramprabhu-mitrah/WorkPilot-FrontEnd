@@ -11,6 +11,7 @@ export interface UserProfile {
   created_at?: string;
   username?: string;
   is_active?: boolean;
+  color?: string
 }
 
 export interface UserUpdatePayload {

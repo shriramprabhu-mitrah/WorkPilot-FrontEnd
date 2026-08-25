@@ -55,6 +55,9 @@ export interface KanbanTask {
   startDate?: string;
   parent?: string;
   activity?: ActivityItem[];
+  assignee?: {name : string , color : string} | string; 
+  color?:string
+  reporter_id?:string
 }
 
 export interface KanbanColumn {
