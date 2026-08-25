@@ -150,7 +150,10 @@ export default function Profile() {
                   unoptimized
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-500 text-3xl font-bold text-white shadow-sm">
+                <div
+                  className="flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-sm"
+                  style={{ backgroundColor: user?.color }}
+                >
                   {getInitials(displayName)}
                 </div>
               )}

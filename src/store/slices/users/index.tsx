@@ -7,6 +7,7 @@ export interface UserState {
   role: string | null;
   avatar_url: string | null;
   is_active: boolean | null;
+  color:string | null;
 }
 
 const initialState: UserState = {
@@ -16,6 +17,7 @@ const initialState: UserState = {
   role: null,
   avatar_url: null,
   is_active: null,
+  color:null
 };
 
 export const userSlice = createSlice({
@@ -29,6 +31,7 @@ export const userSlice = createSlice({
       if (action.payload.role !== undefined) state.role = action.payload.role;
       if (action.payload.avatar_url !== undefined) state.avatar_url = action.payload.avatar_url;
       if (action.payload.is_active !== undefined) state.is_active = action.payload.is_active;
+      if (action.payload.color !== undefined) state.color = action.payload.color
     },
     clearUser: (state) => {
       state.name = null;

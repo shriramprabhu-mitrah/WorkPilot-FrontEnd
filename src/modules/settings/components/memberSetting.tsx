@@ -93,7 +93,10 @@ const MembersSettings = () => {
                 >
                   {/* Member info */}
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-blue-600 dark:text-blue-300">
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+                      style={{ backgroundColor: member.color }}
+                    >
                       {initials || 'U'}
                     </div>
                     <div className="min-w-0">

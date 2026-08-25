@@ -63,6 +63,14 @@ export interface TaskResponse {
   updated_at?: string;
   start_date?: string;
   is_final?: boolean;
+  assignee?: {
+    name?: string;
+    color?: string;
+  };
+  reporter?: {
+    name?: string;
+    color?: string;
+  };
 }
 
 export interface UpdateTaskPayload {

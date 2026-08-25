@@ -31,17 +31,20 @@ export interface UserStoryResponse {
   due_date?: string;
   start_date?: string;
   is_closed?: boolean;
+  color?:string
   assignee?: {
     id: string;
     name: string;
     email: string;
     role: string;
+    color?:string
   };
   reporter?: {
     id: string;
     name: string;
     email: string;
     role: string;
+    color?:string
   };
   sprint_id?: string;
   story_points?: number;

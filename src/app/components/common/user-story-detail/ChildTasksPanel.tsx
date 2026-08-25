@@ -74,7 +74,7 @@ const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
         .toUpperCase()
         .slice(0, 2)
     : '',
-  assigneeColor: task.assignee_id ? getMemberColor(task.assignee_id) : '',
+  assigneeColor: task.assignee?.color || '',
   reporter: '',
   reporterInitials: '',
   reporterColor: undefined,
@@ -390,7 +390,7 @@ export const ChildTasksPanel = ({
                         {task.assignee_id ? (
                           <AssigneeAvatar
                             initials={getInitials(task.assignee_name ?? '')}
-                            color={getMemberColor(task.assignee_id)}
+                            color={task.assignee?.color || ''}
                             size="sm"
                           />
                         ) : (

@@ -43,6 +43,7 @@ export const useSignin = () => {
           role: userProfile.role,
           avatar_url: userProfile.avatar_url,
           is_active: userProfile.is_active,
+          color: userProfile.color
         })
       );
 

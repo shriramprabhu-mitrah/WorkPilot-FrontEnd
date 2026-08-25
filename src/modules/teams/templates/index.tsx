@@ -86,7 +86,7 @@ export const TeamTemplate = () => {
                 .join('')
                 .toUpperCase()
                 .slice(0, 4),
-              avatarColor: colors.primary,
+              avatarColor: member?.color || '',
               tasks: 0,
               done: 0,
             };

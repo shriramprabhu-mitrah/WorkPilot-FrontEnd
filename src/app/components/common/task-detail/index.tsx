@@ -102,7 +102,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     assigneeColor: task.assigneeColor,
     assigneeId: '',
     assigneeName: '',
-    reporterId: task.reporter_name ? task.reporter_name : '',
+    reporterId: task.reporter_id ?? '',
     reporterName: task.reporter_name ?? '',
     reporterInitials: task.reporterInitials ?? '',
     reporterColor: task.reporterColor ?? '',
@@ -308,11 +308,29 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     },
     [task.projectId, task.taskId, taskData, onUpdate]
   );
+   const getInitials = (name: string) =>
+     name
+       .split(' ')
+       .map((n) => n[0])
+       .join('')
+       .toUpperCase()
+       .slice(0, 2);
+
+   const AVATAR_COLORS = [
+     colors.avatarBlue,
+     colors.avatarGreen,
+     colors.avatarPink,
+     colors.avatarAmber,
+     colors.avatarIndigo,
+   ];
+   const getMemberColor = (userId: string) =>
+     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
   useEffect(() => {
     if (hasFetched.current === task.taskId) return;
 
     hasFetched.current = task.taskId ?? null;
+
     const fetchDetail = async () => {
       if (!task.projectId || !task.taskId) return;
 
@@ -323,32 +341,61 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           const d = taskRes.data;
           const apiDescription = d.description ?? '';
           const assigneeName = d.assignee_name ?? '';
+          const reporterId = d.reporter_id ?? '';
+          const reporterName = d.reporter_name ?? '';
+          const reporterInitials = reporterName
+            ? reporterName
+                .split(' ')
+                .filter(Boolean)
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+            : '';
+          const reporterColor = d.reporter?.color ?? '';
           const initials = assigneeName
             ? assigneeName
                 .split(' ')
+                .filter(Boolean)
                 .map((n: string) => n[0])
                 .join('')
                 .toUpperCase()
                 .slice(0, 2)
             : task.assigneeInitials;
+
           setTaskData((prev) => ({
             ...prev,
+
             description: d.description ?? prev.description,
+
             priority: d.priority
               ? ((d.priority.charAt(0).toUpperCase() +
                   d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
+
             status: d.status ?? prev.status,
-            reporterName: d.reporter_name ?? prev.reporterName,
+
+            // Reporter
+            reporterId,
+            reporterName,
+            reporterInitials,
+            reporterColor,
+
             user_story_title: d.user_story_title ?? prev.user_story_title,
-            dueDate: d.due_date ? d.due_date?.replace(/Z$/, '') : '',
+
+            dueDate: d.due_date ? d.due_date.replace(/Z$/, '') : '',
+
             storyPoints: d.story_points ?? prev.storyPoints,
+
             sprint: d.sprint_name ?? prev.sprint,
+
+            // Assignee
             assignee: initials,
-            assigneeColor: task.assigneeColor,
+            assigneeColor: d.assignee?.color ?? task.assigneeColor ?? '',
             assigneeId: d.assignee_id ?? '',
             assigneeName: assigneeName,
           }));
+
           setSavedDescription(apiDescription);
         }
       } catch (error) {
@@ -357,6 +404,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         setIsLoading(false);
       }
     };
+
     fetchDetail();
   }, [task.taskId, task.projectId]);
 
@@ -391,23 +439,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-
-  const AVATAR_COLORS = [
-    colors.avatarBlue,
-    colors.avatarGreen,
-    colors.avatarPink,
-    colors.avatarAmber,
-    colors.avatarIndigo,
-  ];
-  const getMemberColor = (userId: string) =>
-    AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
+ 
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -1088,7 +1120,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     {taskData.assigneeId ? (
                       <AssigneeAvatar
                         initials={taskData.assignee}
-                        color={getMemberColor(taskData.assigneeId)}
+                        color={taskData.assigneeColor || ''}
                         size="sm"
                       />
                     ) : (
@@ -1239,7 +1271,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.reporterName || 'None'}
                     </span>
-                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                    <ChevronDown
+                      size={12}
+                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                    />
                   </button>
 
                   {showReporterMenu && (
@@ -1269,13 +1304,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         reporterMembers?.map((m) => {
                           const name = m.full_name ?? m.user?.name ?? '';
                           const displayName =
-                            name ||
-                            m.user?.email?.split('@')[0] ||
-                            m.user?.email ||
-                            'Unknown User';
-                          const initials = getInitials(
-                            name || m.user?.email?.split('@')[0] || 'U'
-                          );
+                            name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
+                          const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
                           const color = getMemberColor(m.user_id);
                           const isSelected = m.user_id === taskData.reporterId;
                           return (
@@ -1314,7 +1344,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                               <AssigneeAvatar initials={initials} color={color} size="sm" />
                               <span className="truncate">{displayName}</span>
                               {isSelected && (
-                                <Check size={12} className="ml-auto text-blue-600 dark:text-blue-400 shrink-0" />
+                                <Check
+                                  size={12}
+                                  className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
+                                />
                               )}
                             </WpButton>
                           );
@@ -1347,7 +1380,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                               }));
                               setShowReporterMenu(false);
                               setReporterSearch('');
-                                if (!task.projectId || !task.taskId) return;
+                              if (!task.projectId || !task.taskId) return;
                               try {
                                 await taskService.updateTask(task.projectId, task.taskId, {
                                   reporter_id: null,

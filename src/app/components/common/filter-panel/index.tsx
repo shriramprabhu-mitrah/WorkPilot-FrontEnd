@@ -16,7 +16,10 @@ export interface FilterState {
 
 interface Props {
   filters: FilterState;
-  allAssignees: string[];
+  allAssignees: Array<{
+    name: string;
+    color: string | null;
+  }>;
   allLabels: string[];
   allTypes: string[];
   allStatuses: Array<{ id: string; name: string; color: string }>;
@@ -182,26 +185,31 @@ export const FilterPanel = ({
               ) : (
                 allAssignees.map((assignee) => (
                   <label
-                    key={assignee}
+                    key={assignee.name}
                     className="flex items-center gap-2.5 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700/60 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={filters.assignees.includes(assignee)}
+                      checked={filters.assignees.includes(assignee.name)}
                       onChange={() =>
-                        onChange({ ...filters, assignees: toggle(filters.assignees, assignee) })
+                        onChange({
+                          ...filters,
+                          assignees: toggle(filters.assignees, assignee.name),
+                        })
                       }
                       className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                     />
+
                     <div className="flex items-center gap-2">
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-medium flex-shrink-0"
-                        style={{ backgroundColor: getAvatarColor(assignee) }}
+                        style={{ backgroundColor: assignee.color ?? colors.accent }}
                       >
-                        {getInitials(assignee)}
+                        {getInitials(assignee.name)}
                       </div>
+
                       <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-200">
-                        {assignee}
+                        {assignee.name}
                       </span>
                     </div>
                   </label>
