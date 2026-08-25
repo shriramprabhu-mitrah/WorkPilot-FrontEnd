@@ -4,15 +4,22 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { colors } from '@/src/styles/colors';
 import { UserStoryResponse } from '@/src/types/userstories';
+import { TaskResponse } from '@/src/types/task';
 import { GripVertical, PlusCircle } from 'lucide-react';
 
 interface DraggableUserStoryProps {
   story: UserStoryResponse;
   projectId: string;
+  tasks?: TaskResponse[];
   onStoryClick?: (story: UserStoryResponse) => void;
 }
 
-export const DraggableUserStory = ({ story, projectId, onStoryClick }: DraggableUserStoryProps) => {
+export const DraggableUserStory = ({
+  story,
+  projectId,
+  tasks = [],
+  onStoryClick,
+}: DraggableUserStoryProps) => {
   const {
     attributes,
     listeners,
@@ -131,7 +138,9 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
 
   const priorityStyle = getPriorityStyle(story.priority);
   const statusStyle = getStatusStyle(story.status);
-  const taskCount = story.tasks?.length ?? story.total_tasks ?? 0;
+  const linkedTasks = tasks.filter((t) => t.user_story_id === story.id);
+  const taskCount =
+    linkedTasks.length > 0 ? linkedTasks.length : (story.tasks?.length ?? story.total_tasks ?? 0);
 
   return (
     <div
@@ -164,7 +173,7 @@ export const DraggableUserStory = ({ story, projectId, onStoryClick }: Draggable
       {/* Story Title */}
       <div onClick={handleClick} className="flex-1 min-w-0 cursor-pointer">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="min-w-0 max-w-[200px] sm:max-w-xs">
+          <div className="min-w-0 flex-1">
             <span
               title={story.title}
               className={`block truncate text-sm font-semibold ${

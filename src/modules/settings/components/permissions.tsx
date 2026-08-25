@@ -1,31 +1,34 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 import { WpInput } from '@/src/app/components/common/input';
+import { useGetRoles, useCreateRole, useUpdateRole, useDeleteRole } from '../hooks/useSettings';
+import { Role, RolePermissions } from '@/src/types/settings';
+import PermissionsSkeleton from './permissionsSkeleton';
 
-interface Role {
-  id: number;
-  name: string;
+interface PermissionAction {
+  key: string;
+  label: string;
 }
 
 interface PermissionSection {
-  id: number;
+  id: string;
+  sectionKey: keyof RolePermissions;
   name: string;
-  allowed: number;
-  total: number;
-  permissions: string[];
+  permissions: PermissionAction[];
 }
 
 interface RoleListProps {
   roles: Role[];
-  selectedRole: Role;
+  selectedRole: Role | null;
+  hasChanges: boolean;
   isAddingRole: boolean;
   newRoleName: string;
   roleError: string;
   newRoleRef: React.RefObject<HTMLDivElement | null>;
-  setSelectedRole: React.Dispatch<React.SetStateAction<Role>>;
-  setExpandedSection: React.Dispatch<React.SetStateAction<number | null>>;
+  setSelectedRole: (role: Role) => void;
+  setExpandedSection: React.Dispatch<React.SetStateAction<string | null>>;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAddingRole: React.Dispatch<React.SetStateAction<boolean>>;
   setNewRoleName: React.Dispatch<React.SetStateAction<string>>;
@@ -33,55 +36,66 @@ interface RoleListProps {
   handleAddRole: () => void;
 }
 
-const INITIAL_ROLES: Role[] = [
-  { id: 1, name: 'Super Admin' },
-  { id: 2, name: 'Organization Admin' },
-  { id: 3, name: 'Project Manager' },
-  { id: 4, name: 'Developer' },
-  { id: 5, name: 'QA' },
-  { id: 6, name: 'Stakeholder' },
-];
-
 const PERMISSION_SECTIONS: PermissionSection[] = [
   {
-    id: 2,
+    id: 'sprints',
+    sectionKey: 'sprints',
     name: 'Sprints',
-    allowed: 4,
-    total: 4,
-    permissions: ['View sprints', 'Add sprints', 'Modify sprints', 'Delete sprints'],
-  },
-  {
-    id: 3,
-    name: 'User Stories',
-    allowed: 5,
-    total: 5,
     permissions: [
-      'View user stories',
-      'Add user stories',
-      'Modify user stories',
-      'Comment user stories',
-      'Delete user stories',
+      { key: 'view', label: 'View sprints' },
+      { key: 'add', label: 'Add sprints' },
+      { key: 'modify', label: 'Modify sprints' },
+      { key: 'delete', label: 'Delete sprints' },
     ],
   },
   {
-    id: 4,
-    name: 'Tasks',
-    allowed: 5,
-    total: 5,
-    permissions: ['View tasks', 'Add tasks', 'Modify tasks', 'Comment tasks', 'Delete tasks'],
+    id: 'user_stories',
+    sectionKey: 'user_stories',
+    name: 'User Stories',
+    permissions: [
+      { key: 'view', label: 'View user stories' },
+      { key: 'add', label: 'Add user stories' },
+      { key: 'modify', label: 'Modify user stories' },
+      { key: 'delete', label: 'Delete user stories' },
+    ],
   },
   {
-    id: 5,
-    name: 'Issues',
-    allowed: 5,
-    total: 5,
-    permissions: ['View issues', 'Add issues', 'Modify issues', 'Comment issues', 'Delete issues'],
+    id: 'tasks',
+    sectionKey: 'tasks',
+    name: 'Tasks',
+    permissions: [
+      { key: 'view', label: 'View tasks' },
+      { key: 'add', label: 'Add tasks' },
+      { key: 'modify', label: 'Modify tasks' },
+      { key: 'delete', label: 'Delete tasks' },
+    ],
+  },
+  {
+    id: 'comments',
+    sectionKey: 'comments',
+    name: 'Comments',
+    permissions: [
+      { key: 'view', label: 'View comments' },
+      { key: 'add', label: 'Add comments' },
+      { key: 'comment', label: 'Comment on items' },
+      { key: 'modify', label: 'Modify comments' },
+      { key: 'delete', label: 'Delete comments' },
+    ],
   },
 ];
+
+const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
+  projects: { view: true, add: false, modify: false, delete: false },
+  sprints: { view: true, add: false, modify: false, delete: false },
+  user_stories: { view: true, add: false, modify: false, delete: false },
+  tasks: { view: true, add: false, modify: false, delete: false },
+  comments: { view: true, add: false, modify: false, delete: false, comment: false },
+};
 
 const RoleList = ({
   roles,
   selectedRole,
+  hasChanges,
   isAddingRole,
   newRoleName,
   roleError,
@@ -98,7 +112,7 @@ const RoleList = ({
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto">
         {roles.map((role) => {
-          const isSelected = selectedRole.id === role.id;
+          const isSelected = selectedRole?.id === role.id;
 
           return (
             <button
@@ -109,7 +123,7 @@ const RoleList = ({
                 setExpandedSection(null);
                 setSidebarOpen(false);
               }}
-              className={`group relative flex h-[52px] w-full items-center border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${
+              className={`group relative flex h-[52px] w-full items-center justify-between border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${
                 isSelected
                   ? 'bg-white font-semibold text-blue-600 dark:bg-slate-800 dark:text-blue-400'
                   : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
@@ -121,15 +135,23 @@ const RoleList = ({
                 }`}
               />
 
-              <span
-                className={`mr-3 h-[7px] w-[7px] shrink-0 rounded-full ${
-                  isSelected
-                    ? 'bg-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]'
-                    : 'bg-transparent group-hover:bg-slate-400'
-                }`}
-              />
+              <div className="flex min-w-0 items-center truncate">
+                <span
+                  className={`mr-3 h-[7px] w-[7px] shrink-0 rounded-full ${
+                    isSelected
+                      ? 'bg-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]'
+                      : 'bg-transparent group-hover:bg-slate-400'
+                  }`}
+                />
+                <span className="truncate">{role.name}</span>
+              </div>
 
-              {role.name}
+              {isSelected && hasChanges && (
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-amber-500"
+                  title="Unsaved changes"
+                />
+              )}
             </button>
           );
         })}
@@ -190,10 +212,16 @@ const RoleList = ({
 };
 
 const Permissions = () => {
-  const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
-  const [selectedRole, setSelectedRole] = useState<Role>(INITIAL_ROLES[2]);
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [permissionStates, setPermissionStates] = useState<Record<string, boolean>>({});
+  const { data: rolesResponse, isLoading: isRolesLoading } = useGetRoles();
+  const { mutateAsync: createRole, isPending: isCreatingRole } = useCreateRole();
+  const { mutateAsync: updateRole, isPending: isUpdatingRole } = useUpdateRole();
+  const { mutateAsync: deleteRole, isPending: isDeletingRole } = useDeleteRole();
+
+  const roles = rolesResponse?.data ?? [];
+
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [localPermissions, setLocalPermissions] = useState<RolePermissions>({});
   const [isAddingRole, setIsAddingRole] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
   const [roleError, setRoleError] = useState('');
@@ -201,18 +229,82 @@ const Permissions = () => {
 
   const newRoleRef = useRef<HTMLDivElement>(null);
 
-  const handleSectionClick = (sectionId: number) => {
+  useEffect(() => {
+    if (roles.length > 0) {
+      if (!selectedRoleId || !roles.some((r) => r.id === selectedRoleId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedRoleId(roles[0].id);
+      }
+    } else {
+      setSelectedRoleId(null);
+    }
+  }, [roles, selectedRoleId]);
+
+  const selectedRole = roles.find((r) => r.id === selectedRoleId) || roles[0] || null;
+
+  useEffect(() => {
+    if (selectedRole) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalPermissions(selectedRole.permissions || {});
+    } else {
+      setLocalPermissions({});
+    }
+  }, [selectedRole?.id, selectedRole?.permissions]);
+
+  const hasChanges = useMemo(() => {
+    if (!selectedRole) return false;
+    return JSON.stringify(localPermissions) !== JSON.stringify(selectedRole.permissions || {});
+  }, [localPermissions, selectedRole]);
+
+  const handleSectionClick = (sectionId: string) => {
     setExpandedSection((prev) => (prev === sectionId ? null : sectionId));
   };
 
-  const handlePermissionToggle = (permission: string) => {
-    setPermissionStates((prev) => ({
-      ...prev,
-      [permission]: !(prev[permission] ?? true),
-    }));
+  const isPermissionEnabled = (section: PermissionSection, action: PermissionAction): boolean => {
+    const sectionPerms = localPermissions[section.sectionKey] as
+      Record<string, boolean> | undefined;
+    return sectionPerms?.[action.key] ?? false;
   };
 
-  const handleAddRole = () => {
+  const handlePermissionToggle = (section: PermissionSection, action: PermissionAction) => {
+    if (!selectedRole) return;
+
+    const currentVal = isPermissionEnabled(section, action);
+    const newVal = !currentVal;
+
+    setLocalPermissions((prev) => {
+      const defaultSectionPerms =
+        section.sectionKey === 'comments'
+          ? { view: false, add: false, modify: false, delete: false, comment: false }
+          : { view: false, add: false, modify: false, delete: false };
+
+      const currentSectionPerms = (prev[section.sectionKey] ||
+        defaultSectionPerms) as unknown as Record<string, boolean>;
+
+      return {
+        ...prev,
+        [section.sectionKey]: {
+          ...currentSectionPerms,
+          [action.key]: newVal,
+        },
+      };
+    });
+  };
+
+  const handleSavePermissions = async () => {
+    if (!selectedRole) return;
+
+    try {
+      await updateRole({
+        roleId: selectedRole.id,
+        payload: {
+          permissions: localPermissions,
+        },
+      });
+    } catch {}
+  };
+
+  const handleAddRole = async () => {
     const trimmed = newRoleName.trim();
 
     if (!trimmed) {
@@ -225,29 +317,36 @@ const Permissions = () => {
       return;
     }
 
-    const newRole: Role = {
-      id: Math.max(0, ...roles.map((role) => role.id)) + 1,
-      name: trimmed,
-    };
+    try {
+      const res = await createRole({
+        name: trimmed,
+        description: '',
+        permissions: DEFAULT_ROLE_PERMISSIONS,
+      });
 
-    setRoles((prev) => [...prev, newRole]);
-    setSelectedRole(newRole);
-    setExpandedSection(null);
-    setNewRoleName('');
-    setRoleError('');
-    setIsAddingRole(false);
+      if (res?.data?.id) {
+        setSelectedRoleId(res.data.id);
+      }
+      setExpandedSection(null);
+      setNewRoleName('');
+      setRoleError('');
+      setIsAddingRole(false);
+    } catch {}
   };
 
-  const handleDeleteRole = () => {
-    if (roles.length <= 1) {
+  const handleDeleteRole = async () => {
+    if (!selectedRole || roles.length <= 1) {
       return;
     }
 
-    const remaining = roles.filter((role) => role.id !== selectedRole.id);
-
-    setRoles(remaining);
-    setSelectedRole(remaining[0]);
-    setExpandedSection(null);
+    try {
+      await deleteRole(selectedRole.id);
+      const remaining = roles.filter((role) => role.id !== selectedRole.id);
+      if (remaining.length > 0) {
+        setSelectedRoleId(remaining[0].id);
+      }
+      setExpandedSection(null);
+    } catch {}
   };
 
   useEffect(() => {
@@ -273,11 +372,14 @@ const Permissions = () => {
   const roleListProps: RoleListProps = {
     roles,
     selectedRole,
+    hasChanges: Boolean(hasChanges),
     isAddingRole,
     newRoleName,
     roleError,
     newRoleRef,
-    setSelectedRole,
+    setSelectedRole: (role: Role) => {
+      setSelectedRoleId(role.id);
+    },
     setExpandedSection,
     setSidebarOpen,
     setIsAddingRole,
@@ -285,6 +387,27 @@ const Permissions = () => {
     setRoleError,
     handleAddRole,
   };
+
+  if (isRolesLoading) {
+    return <PermissionsSkeleton />;
+  }
+
+  if (!selectedRole && roles.length === 0) {
+    return (
+      <div className="flex min-h-[calc(100vh-160px)] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
+        <aside className="w-[240px] shrink-0 border-r border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900 flex flex-col">
+          <RoleList {...roleListProps} />
+        </aside>
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-10 sm:px-6">
+          <div className="flex h-[65px] items-center justify-between">
+            <h2 className="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
+              Permissions
+            </h2>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-160px)] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
@@ -299,7 +422,7 @@ const Permissions = () => {
             className={`transition-transform ${sidebarOpen ? 'rotate-180' : ''}`}
           />
 
-          {selectedRole.name}
+          {selectedRole?.name || 'Select Role'}
         </button>
       </div>
 
@@ -326,138 +449,166 @@ const Permissions = () => {
             Permissions
           </h2>
 
-          <button
-            type="button"
-            onClick={handleDeleteRole}
-            disabled={roles.length <= 1}
-            className="flex h-8 items-center gap-2 rounded-lg bg-red-500 px-4 text-[11px] font-bold tracking-wide text-white shadow transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Trash2 size={13} />
-            DELETE
-          </button>
-        </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSavePermissions}
+              disabled={!hasChanges || isUpdatingRole}
+              className="flex h-8 items-center gap-2 rounded-lg bg-blue-600 px-4 text-[11px] font-bold tracking-wide text-white shadow transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isUpdatingRole ? 'SAVING...' : 'SAVE'}
+            </button>
 
-        <div className="flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+            <button
+              type="button"
+              onClick={handleDeleteRole}
+              disabled={roles.length <= 1 || selectedRole?.is_system || isDeletingRole}
+              className="flex h-8 items-center gap-2 rounded-lg bg-red-500 px-4 text-[11px] font-bold tracking-wide text-white shadow transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Trash2 size={13} />
+              {isDeletingRole ? 'DELETING...' : 'DELETE'}
+            </button>
           </div>
-
-          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-            {selectedRole.name}
-          </h1>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          {PERMISSION_SECTIONS.map((section, idx) => {
-            const isExpanded = expandedSection === section.id;
+        {selectedRole && (
+          <>
+            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                </div>
 
-            return (
-              <div
-                key={section.id}
-                className={
-                  idx !== PERMISSION_SECTIONS.length - 1
-                    ? 'border-b border-slate-200 dark:border-slate-700'
-                    : ''
-                }
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSectionClick(section.id)}
-                  className={`group flex min-h-[56px] w-full items-center px-4 text-left transition-all ${
-                    isExpanded
-                      ? 'bg-blue-50 dark:bg-blue-900/20'
-                      : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'
-                  }`}
-                >
-                  <span
-                    className={`mr-3 h-6 w-[3px] rounded-full ${
-                      isExpanded
-                        ? 'bg-blue-600'
-                        : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'
-                    }`}
-                  />
-
-                  <span
-                    className={`text-[15px] font-semibold ${
-                      isExpanded
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-slate-700 dark:text-slate-200'
-                    }`}
-                  >
-                    {section.name}
-                  </span>
-
-                  <span
-                    className={`ml-3 inline-flex min-w-[42px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                      isExpanded
-                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300'
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                    }`}
-                  >
-                    {section.allowed}/{section.total}
-                  </span>
-
-                  <span
-                    className={`ml-auto flex h-7 w-7 items-center justify-center rounded-lg ${
-                      isExpanded
-                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                    }`}
-                  >
-                    <ChevronDown
-                      size={16}
-                      strokeWidth={2.3}
-                      className={`transition-transform duration-200 ${
-                        isExpanded ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </span>
-                </button>
-
-                {isExpanded && (
-                  <div className="border-t border-slate-200 bg-slate-50 px-4 py-1 dark:border-slate-700 dark:bg-slate-900/50">
-                    {section.permissions.map((permission, i) => {
-                      const isEnabled = permissionStates[permission] ?? true;
-
-                      return (
-                        <div
-                          key={permission}
-                          className={`flex min-h-[43px] items-center px-4 sm:px-8 ${
-                            i !== section.permissions.length - 1
-                              ? 'border-b border-slate-100 dark:border-slate-700/50'
-                              : ''
-                          }`}
-                        >
-                          <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
-                            {permission}
-                          </span>
-
-                          <button
-                            type="button"
-                            role="switch"
-                            aria-checked={isEnabled}
-                            onClick={() => handlePermissionToggle(permission)}
-                            className={`relative ml-auto h-5 w-9 shrink-0 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                              isEnabled
-                                ? 'border-blue-600 bg-blue-600'
-                                : 'border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700'
-                            }`}
-                          >
-                            <span
-                              className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-200 ${
-                                isEnabled ? 'left-[18px]' : 'left-[2px]'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                  {selectedRole.name}
+                </h1>
               </div>
-            );
-          })}
-        </div>
+
+              {hasChanges && (
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              {PERMISSION_SECTIONS.map((section, idx) => {
+                const isExpanded = expandedSection === section.id;
+                const allowedCount = section.permissions.filter((p) =>
+                  isPermissionEnabled(section, p)
+                ).length;
+                const totalCount = section.permissions.length;
+
+                return (
+                  <div
+                    key={section.id}
+                    className={
+                      idx !== PERMISSION_SECTIONS.length - 1
+                        ? 'border-b border-slate-200 dark:border-slate-700'
+                        : ''
+                    }
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleSectionClick(section.id)}
+                      className={`group flex min-h-[56px] w-full items-center px-4 text-left transition-all ${
+                        isExpanded
+                          ? 'bg-blue-50 dark:bg-blue-900/20'
+                          : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span
+                        className={`mr-3 h-6 w-[3px] rounded-full ${
+                          isExpanded
+                            ? 'bg-blue-600'
+                            : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'
+                        }`}
+                      />
+
+                      <span
+                        className={`text-[15px] font-semibold ${
+                          isExpanded
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        {section.name}
+                      </span>
+
+                      <span
+                        className={`ml-3 inline-flex min-w-[42px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                          isExpanded
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300'
+                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                        }`}
+                      >
+                        {allowedCount}/{totalCount}
+                      </span>
+
+                      <span
+                        className={`ml-auto flex h-7 w-7 items-center justify-center rounded-lg ${
+                          isExpanded
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                        }`}
+                      >
+                        <ChevronDown
+                          size={16}
+                          strokeWidth={2.3}
+                          className={`transition-transform duration-200 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-slate-200 bg-slate-50 px-4 py-1 dark:border-slate-700 dark:bg-slate-900/50">
+                        {section.permissions.map((action, i) => {
+                          const isEnabled = isPermissionEnabled(section, action);
+
+                          return (
+                            <div
+                              key={action.key}
+                              className={`flex min-h-[43px] items-center px-4 sm:px-8 ${
+                                i !== section.permissions.length - 1
+                                  ? 'border-b border-slate-100 dark:border-slate-700/50'
+                                  : ''
+                              }`}
+                            >
+                              <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
+                                {action.label}
+                              </span>
+
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isEnabled}
+                                onClick={() => handlePermissionToggle(section, action)}
+                                className={`relative ml-auto h-5 w-9 shrink-0 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                                  isEnabled
+                                    ? 'border-blue-600 bg-blue-600'
+                                    : 'border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700'
+                                }`}
+                              >
+                                <span
+                                  className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-200 ${
+                                    isEnabled ? 'left-[18px]' : 'left-[2px]'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

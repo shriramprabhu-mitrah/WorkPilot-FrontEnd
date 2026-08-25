@@ -35,13 +35,59 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
   };
 };
 
+const SPRINT_PAGE_SIZE = 5;
+
+export const useGetSprintOrphanTasks = (projectId: string, sprintId: string, enabled = true) => {
+  const query = useInfiniteQuery({
+    queryKey: ['sprint-orphan-tasks', projectId, sprintId],
+    queryFn: ({ pageParam = 1 }) =>
+      taskService.getTasks(projectId, {
+        sprint_id: sprintId,
+        user_story_id: null,
+        page: pageParam,
+        page_size: SPRINT_PAGE_SIZE,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const items = lastPage?.data ?? [];
+      // If no items returned or less than page size, no more pages exist
+      if (items.length === 0 || items.length < SPRINT_PAGE_SIZE) {
+        return undefined;
+      }
+      const meta = lastPage?.meta;
+      if (meta) {
+        const hasNext = meta.has_next ?? meta.has_next_page ?? meta.hasNextPage;
+        if (hasNext === false) return undefined;
+        const totalPages = meta.total_pages ?? meta.totalPages;
+        const currentPage = meta.page ?? allPages.length;
+        if (totalPages && Number(currentPage) >= Number(totalPages)) return undefined;
+        return Number(currentPage) + 1;
+      }
+      return allPages.length + 1;
+    },
+    enabled: enabled && !!projectId && !!sprintId,
+  });
+
+  const allTasks = query.data?.pages.flatMap((page) => page.data ?? []) ?? [];
+  const totalItems =
+    query.data?.pages[0]?.meta?.total_items ?? query.data?.pages[0]?.meta?.totalItems;
+
+  return {
+    tasks: allTasks,
+    totalItems,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    fetchNextPage: query.fetchNextPage,
+    isError: query.isError,
+    error: query.error,
+  };
+};
+
 const PAGE_SIZE_CHILD = 4;
 
-export const useGetChildTasks = (
-  projectId: string,
-  userStoryId: string,
-  enabled = true
-) => {
+export const useGetChildTasks = (projectId: string, userStoryId: string, enabled = true) => {
   const query = useInfiniteQuery({
     queryKey: [QUERY_KEYS.tasks, projectId, 'child', userStoryId],
     queryFn: ({ pageParam = 1 }) =>
@@ -73,8 +119,7 @@ export const useGetChildTasks = (
   // "how many we've loaded so far" if the API doesn't expose one.
   const total = useMemo(() => {
     const firstPage = query.data?.pages[0] as
-      | { count?: number; pagination?: { total?: number; total_count?: number } }
-      | undefined;
+      { count?: number; pagination?: { total?: number; total_count?: number } } | undefined;
 
     return (
       firstPage?.count ??
@@ -208,7 +253,7 @@ export const useUpdateTask = () => {
       payload: UpdateTaskPayload;
     }) => taskService.updateTask(projectId, taskId, payload),
     onSuccess: (_, variables) => {
-      // Invalidate all task queries for this project
+      // Invalidate task queries for this project
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.tasks, variables.projectId],
       });
@@ -218,22 +263,29 @@ export const useUpdateTask = () => {
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
 
-      // Invalidate user stories to update task counts and lists
-      queryClient.invalidateQueries({
-        queryKey: ['user-stories', variables.projectId],
-      });
-
-      // If task has a user story association, invalidate that specific user story
-      if (variables.payload.user_story_id) {
+      // Invalidate the specific sprint's orphan tasks if sprint_id is present
+      if (variables.payload.sprint_id) {
         queryClient.invalidateQueries({
-          queryKey: ['user-story', variables.projectId, variables.payload.user_story_id],
+          queryKey: ['sprint-orphan-tasks', variables.projectId, variables.payload.sprint_id],
         });
       }
 
-      // Invalidate task-story-relationship queries (covers all user stories)
-      queryClient.invalidateQueries({
-        queryKey: ['task-story-relationship', variables.projectId],
-      });
+      // Only invalidate user story related queries when user_story_id is explicitly changed
+      if (variables.payload.user_story_id) {
+        queryClient.invalidateQueries({
+          queryKey: ['user-stories', variables.projectId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['user-story', variables.projectId, variables.payload.user_story_id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            'task-story-relationship',
+            variables.projectId,
+            variables.payload.user_story_id,
+          ],
+        });
+      }
     },
   });
   return {

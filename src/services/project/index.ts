@@ -123,7 +123,7 @@ class ProjectService {
     return apiService.patch(
       url,
       {
-        project_role: payload.project_role,
+        role_id: payload.role_id ?? payload.project_role,
       },
       {
         showSuccessToast: true,

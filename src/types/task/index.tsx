@@ -89,7 +89,7 @@ export interface UpdateTaskPayload {
   type?: string;
   user_story_id?: string | null;
   status_id?: string;
-  reporter_id? : string | null;
+  reporter_id?: string | null;
 }
 
 export interface BulkUpdateTaskItem {
@@ -118,7 +118,8 @@ export interface GetTasksQueryParams {
   search?: string;
   type?: string;
   fields?: string;
-  user_story_id?: string;
+  unassigned_task?: boolean;
+  user_story_id?: string | null;
 }
 
 export interface TaskAttachment {

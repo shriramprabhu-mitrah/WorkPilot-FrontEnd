@@ -48,7 +48,8 @@ export interface Creator {
 export interface UpdateProjectRolePayload {
   project_id: string;
   user_id: string;
-  project_role: string;
+  role_id?: string;
+  project_role?: string;
 }
 
 export interface CreateTaskPayload {

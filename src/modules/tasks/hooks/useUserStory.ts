@@ -7,7 +7,7 @@ import {
   UpdateUserStoryStatusPayload,
   UserStoryPayload,
 } from '@/src/types/userstories';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 
 export const useGetUserStories = (
   projectId: string,
@@ -29,6 +29,57 @@ export const useGetUserStories = (
   };
 };
 
+const SPRINT_PAGE_SIZE = 5;
+
+export const useGetSprintUserStories = (
+  projectId: string,
+  sprintId: string,
+  enabled = true
+) => {
+  const query = useInfiniteQuery({
+    queryKey: ['sprint-user-stories', projectId, sprintId],
+    queryFn: ({ pageParam = 1 }) =>
+      userStoryService.getUserStories(projectId, {
+        sprint_id: sprintId,
+        page: pageParam,
+        page_size: SPRINT_PAGE_SIZE,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const items = lastPage?.data ?? [];
+      // If no items returned or less than page size, no more pages exist
+      if (items.length === 0 || items.length < SPRINT_PAGE_SIZE) {
+        return undefined;
+      }
+      const meta = lastPage?.meta;
+      if (meta) {
+        const hasNext = meta.has_next ?? meta.has_next_page ?? meta.hasNextPage;
+        if (hasNext === false) return undefined;
+        const totalPages = meta.total_pages ?? meta.totalPages;
+        const currentPage = meta.page ?? allPages.length;
+        if (totalPages && Number(currentPage) >= Number(totalPages)) return undefined;
+        return Number(currentPage) + 1;
+      }
+      return allPages.length + 1;
+    },
+    enabled: enabled && !!projectId && !!sprintId,
+  });
+
+  const allUserStories = query.data?.pages.flatMap((page) => page.data ?? []) ?? [];
+  const totalItems = query.data?.pages[0]?.meta?.total_items ?? query.data?.pages[0]?.meta?.totalItems;
+
+  return {
+    userStories: allUserStories,
+    totalItems,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    fetchNextPage: query.fetchNextPage,
+    isError: query.isError,
+    error: query.error,
+  };
+};
 export const useCreateUserStory = (projectId: string) => {
   const mutation = useMutation({
     mutationFn: (payload: UserStoryPayload) => userStoryService.createUserStory(projectId, payload),

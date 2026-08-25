@@ -19,6 +19,7 @@ import {
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { showToast } from '@/src/utils/toast';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useGetRoles } from '@/src/modules/settings/hooks/useSettings';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import {
   AddProjectMembersPayload,
@@ -27,7 +28,6 @@ import {
   SprintDetail,
 } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
-import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
@@ -50,12 +50,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [isRefreshingMembers, setIsRefreshingMembers] = useState(false);
   const [isRefreshingSprints, setIsRefreshingSprints] = useState(false);
-  const [memberRoles, setMemberRoles] = useState<Record<string, ROLE_TYPE>>({});
+  const [memberRoles, setMemberRoles] = useState<Record<string, string>>({});
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(
     null
   );
   const { hasPermission, isAdmin, isProjectManager } = usePermissions();
 
+  const { data: rolesResponse, isLoading: isRolesLoading } = useGetRoles();
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
@@ -215,8 +216,19 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     return colors[hash % colors.length];
   };
 
+  const isOrgAdminRole = (role?: string): boolean => {
+    if (!role) return false;
+    const lower = role.toLowerCase().replace(/[\s_-]+/g, '');
+    return (
+      lower === 'orgadmin' ||
+      lower === 'organizationadmin' ||
+      lower === 'admin' ||
+      lower === 'superadmin'
+    );
+  };
+
   const canRemoveMember = (memberRole: string): boolean => {
-    if (memberRole === ROLE_TYPE.ORG_ADMIN) return false;
+    if (isOrgAdminRole(memberRole)) return false;
     if (!isAdmin() && !isProjectManager()) return false;
     return true;
   };
@@ -229,6 +241,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       await updateProjectRoleAsync({
         project_id: selectedApiProject.id,
         user_id: member.user_id,
+        role_id: selectedRole,
         project_role: selectedRole,
       });
       setEditingMemberId(null);
@@ -245,14 +258,20 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     }
   };
 
-  const roleOptions = PROJECT_ROLES.map((role) => ({ value: role, label: ROLE_LABELS[role] }));
+  const roleOptions = useMemo(() => {
+    return (rolesResponse?.data ?? []).map((role) => ({
+      value: role.id,
+      label: role.name,
+    }));
+  }, [rolesResponse?.data]);
 
   const handleMemberChange = (members: string[]) => {
     setSelectedMembers(members);
     setMemberRoles((prev) => {
       const updated = { ...prev };
+      const defaultRole = roleOptions[0]?.value || '';
       members.forEach((id) => {
-        if (!updated[id]) updated[id] = ROLE_TYPE.DEVELOPER;
+        if (!updated[id]) updated[id] = defaultRole;
       });
       Object.keys(updated).forEach((id) => {
         if (!members.includes(id)) delete updated[id];
@@ -615,13 +634,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             <div className="flex-1 -mb-5">
                               <WpDropdown
                                 options={roleOptions}
-                                value={memberRoles[memberId]}
+                                value={memberRoles[memberId] || roleOptions[0]?.value}
                                 onChange={(value) =>
                                   setMemberRoles((prev) => ({
                                     ...prev,
-                                    [memberId]: value as ROLE_TYPE,
+                                    [memberId]: value,
                                   }))
                                 }
+                                disabled={isRolesLoading}
                               />
                             </div>
                           </div>
@@ -748,7 +768,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <div className="space-y-2">
                 {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
                   selectedApiProject.members.map((member) => {
-                    const isOrgAdmin = member.role === ROLE_TYPE.ORG_ADMIN;
+                    const isOrgAdmin = isOrgAdminRole(member.role);
                     const canDelete =
                       !isOrgAdmin && hasPermission('MEMBER_REMOVE') && canRemoveMember(member.role);
                     return (
@@ -772,7 +792,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                   options={roleOptions}
                                   value={selectedRole}
                                   onChange={(value) => setSelectedRole(value)}
-                                  placeholder="Select Role"
+                                  placeholder={isRolesLoading ? 'Loading roles...' : 'Select Role'}
+                                  disabled={isRolesLoading}
                                 />
                               </div>
                             ) : (
@@ -783,7 +804,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                     Updating...
                                   </>
                                 ) : (
-                                  member.role.replace('_', ' ')
+                                  rolesResponse?.data?.find(
+                                    (r) =>
+                                      r.id === member.role ||
+                                      r.name.toLowerCase() === member.role?.toLowerCase()
+                                  )?.name || member.role?.replace('_', ' ')
                                 )}
                               </p>
                             )}
@@ -839,7 +864,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                   className="!p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                   onClick={() => {
                                     setEditingMemberId(member.user_id);
-                                    setSelectedRole(member.role);
+                                    const matchingRole = rolesResponse?.data?.find(
+                                      (r) =>
+                                        r.id === member.role ||
+                                        r.name.toLowerCase() === member.role?.toLowerCase()
+                                    );
+                                    setSelectedRole(matchingRole?.id || member.role || '');
                                   }}
                                 >
                                   <Pencil size={16} />

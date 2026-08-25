@@ -46,8 +46,14 @@ class TaskService {
     if (params?.fields) {
       searchParams.append('fields', params.fields);
     }
-    if (params?.user_story_id) {
-      searchParams.append('user_story_id', params.user_story_id);
+    if (params?.unassigned_task !== undefined) {
+      searchParams.append('unassigned_task', String(params.unassigned_task));
+    }
+    if (params?.user_story_id !== undefined) {
+      searchParams.append(
+        'user_story_id',
+        params.user_story_id === null ? 'null' : params.user_story_id
+      );
     }
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.Task.getTasks.withNamedParams({ projectId });
