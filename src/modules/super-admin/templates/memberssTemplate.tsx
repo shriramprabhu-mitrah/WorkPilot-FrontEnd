@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Trash2, ChevronDown, Loader2 } from 'lucide-react';
 import { useGetMembers, useGetOrganizations } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
@@ -19,18 +19,28 @@ const avatarColors = [
 
 export const MembersTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<string>('All Organizations');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Debounce search query with 1000ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Fetch all organizations without pagination for the dropdown
   const { organizations = [] } = useGetOrganizations({});
 
   const queryParams = useMemo(() => {
     const params: AdminMembersParams = { page, page_size: pageSize };
-    if (searchQuery.trim()) {
-      params.search = searchQuery;
+    if (debouncedSearchQuery.trim()) {
+      params.search = debouncedSearchQuery;
     }
     if (selectedOrg !== 'All Organizations') {
       const org = organizations.find((o) => o.name === selectedOrg);
@@ -39,7 +49,7 @@ export const MembersTemplate = () => {
       }
     }
     return params;
-  }, [page, pageSize, searchQuery, selectedOrg, organizations]);
+  }, [page, pageSize, debouncedSearchQuery, selectedOrg, organizations]);
 
   const { members = [], meta, isLoadingMembers } = useGetMembers(queryParams);
 

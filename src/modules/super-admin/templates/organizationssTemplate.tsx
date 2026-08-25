@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGetOrganizations, useUpdateOrganization } from '../hooks/useSuperAdmin';
@@ -77,6 +77,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 export const OrganizationsTemplate = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -91,15 +92,24 @@ export const OrganizationsTemplate = () => {
     action: 'activate',
   });
 
+  // Debounce search query with 1000ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const queryParams = useMemo(() => {
     const params: AdminOrganizationsParams = { page, page_size: pageSize };
-    if (searchQuery.trim()) {
-      params.search = searchQuery;
+    if (debouncedSearchQuery.trim()) {
+      params.search = debouncedSearchQuery;
     }
     if (activeFilter === 'Active') params.is_active = true;
     if (activeFilter === 'Inactive') params.is_active = false;
     return params;
-  }, [page, pageSize, searchQuery, activeFilter]);
+  }, [page, pageSize, debouncedSearchQuery, activeFilter]);
 
   const { organizations = [], meta, isLoadingOrganizations } = useGetOrganizations(queryParams);
   const { mutate: updateOrganization } = useUpdateOrganization();

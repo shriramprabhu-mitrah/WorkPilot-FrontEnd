@@ -6,14 +6,15 @@ export type SettingsTab =
   | 'Members'
   | 'Permissions'
   | 'Status'
-  | 'Security';
+  | 'Security'
+  | 'Billing';
 
 interface SettingsHeaderProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
 }
 
-const tabs: SettingsTab[] = ['General', 'Members', 'Permissions', 'Status', 'Security'];
+const tabs: SettingsTab[] = ['General', 'Members', 'Permissions', 'Status', 'Security', 'Billing'];
 
 export default function SettingsHeader({ activeTab, onTabChange }: SettingsHeaderProps) {
   return (

@@ -798,7 +798,7 @@ export const UserStoryDetailDrawer = ({
   const completedTasks = currentUserStory.completed_tasks ?? 0;
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
-    { key: 'all', label: 'All' },
+    // { key: 'all', label: 'All' },
     { key: 'comments', label: 'Comments' },
     { key: 'history', label: 'History' },
   ];
@@ -1224,11 +1224,11 @@ export const UserStoryDetailDrawer = ({
                 </div>
 
                 {/* Tab Content */}
-                {tab === 'all' && (
+                {/* {tab === 'all' && (
                   <div className="text-sm text-gray-500 dark:text-slate-400">
                     <p>Showing all activity...</p>
                   </div>
-                )}
+                )} */}
 
                 {tab === 'comments' && (
                   <div className="space-y-4">

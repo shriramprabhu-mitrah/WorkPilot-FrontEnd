@@ -52,6 +52,9 @@ export const PERMISSIONS: Record<string, PermissionConfig> = {
   ORG_MEMBERS_MANAGE: {
     allowedRoles: [ROLE_TYPE.ORG_ADMIN],
   },
+  ORG_BILLING_MANAGE: {
+    allowedRoles: [ROLE_TYPE.ORG_ADMIN],
+  },
 
   // Task permissions
   TASK_CREATE: {
