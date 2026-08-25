@@ -10,9 +10,9 @@ import SettingsSkeleton from '../components/settingSkeleton';
 import { useGetOrganization } from '../../organization/hooks/useOrganization';
 import Permissions from '../components/permissions';
 import StatusSettings from '../components/statusSettings';
-import MembersSettings from '../components/memberSetting';
 import { BillingSettings } from '../components/billingSettings';
 
+import { TeamTemplate } from '../../teams/templates';
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
   const { isOrganizationLoading } = useGetOrganization();
@@ -26,7 +26,7 @@ export const SettingPageTemplate = () => {
       {/* {activeTab === 'Permissions Matrix' && <PermissionsMatrix />} */}
       {/* {activeTab === 'Roles & Permissions' && <RolePermission />} */}
       {/* {activeTab === 'Notifications' && <NotificationSettings />} */}
-      {activeTab === 'Members' && <MembersSettings />}
+      {activeTab === 'Members' && <TeamTemplate />}
       {activeTab === 'Permissions' && <Permissions />}
       {activeTab === 'Status' && <StatusSettings />}
       {activeTab === 'Security' && <SecuritySetting />}

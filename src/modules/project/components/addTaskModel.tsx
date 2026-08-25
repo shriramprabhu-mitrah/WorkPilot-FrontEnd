@@ -364,7 +364,9 @@ const AddTaskModal = ({
                     {showAssigneeDropdown && (
                       <div className="absolute z-50 mt-[-20px] w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
                         {isLoadingMembers ? (
-                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">Searching...</div>
+                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
+                            Searching...
+                          </div>
                         ) : assigneeOptions.length > 0 ? (
                           assigneeOptions.map((member) => (
                             <button

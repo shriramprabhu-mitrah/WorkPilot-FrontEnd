@@ -11,12 +11,10 @@ import {
   useGetTeamMembers,
   useGetUserById,
   useRemoveUser,
-  useUpdateRole,
 } from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '../components/TeamSkeleton';
-import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 
 export const TeamTemplate = () => {
   const [page] = useState(1);
@@ -29,7 +27,6 @@ export const TeamTemplate = () => {
   const [showAll, setShowAll] = useState(false);
 
   const { mutate: removeUser } = useRemoveUser();
-  const { mutate: updateRole } = useUpdateRole();
   const { hasPermission, isAdmin } = usePermissions();
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
   const visibleMembers = showAll ? teamMembers?.data : teamMembers?.data?.slice(0, 4);
@@ -44,9 +41,11 @@ export const TeamTemplate = () => {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-shrink-0">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">Team</h1>
-          <p className="text-sm mt-0.5 text-gray-500 dark:text-slate-400">
-            {teamMembers?.data?.length} members
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
+            Manage Members
+          </h1>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            Manage organization members and their roles
           </p>
         </div>
         {isAdmin() && (
@@ -115,10 +114,10 @@ export const TeamTemplate = () => {
                   <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
                 </div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                  No members yet
+                  No members invited
                 </p>
                 <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
-                  Invite members to get started.
+                  Invite members to your organization.
                 </p>
               </div>
             </div>

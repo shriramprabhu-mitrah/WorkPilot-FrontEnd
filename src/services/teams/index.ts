@@ -2,6 +2,7 @@ import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { ApiResponse } from '@/src/types/core';
 import {
   GetUserProjectsResponse,
+  ProjectMember,
   RemoveUserPayload,
   TeamMember,
   UpdateRolePayload,
@@ -9,11 +10,44 @@ import {
 } from '@/src/types/teams';
 import { apiService } from '../axios';
 import { Project } from '@/src/types/project';
-
+import { AddProjectMembersPayload } from '@/src/types/project';
 class TeamService {
   async getTeamMembers(page: number, pageSize: number): Promise<ApiResponse<TeamMember[]>> {
     const url = `${ApiEndpoints.Team.getUsers.url}?page=${page}&page_size=${pageSize}&is_active=true`;
     return apiService.get<TeamMember[]>(url, {
+      showErrorToast: true,
+    });
+  }
+
+  async getProjectMembers(
+    projectId: string,
+    page: number,
+    pageSize: number
+  ): Promise<ApiResponse<ProjectMember[]>> {
+    const url = `${ApiEndpoints.Project.getProjectMembers.withParams({
+      projectId,
+    })}?page=${page}&page_size=${pageSize}`;
+
+    return apiService.get<ProjectMember[]>(url, {
+      showErrorToast: true,
+    });
+  }
+
+  async addProjectMembers(payload: AddProjectMembersPayload) {
+    return apiService.post(ApiEndpoints.Project.addMembers.url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
+  }
+
+  async removeProjectMember(projectId: string, userId: string) {
+    const url = ApiEndpoints.Project.removeMember.withParams({
+      projectId,
+      userId,
+    });
+
+    return apiService.delete(url, {
+      showSuccessToast: true,
       showErrorToast: true,
     });
   }

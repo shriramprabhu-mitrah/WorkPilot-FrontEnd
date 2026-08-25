@@ -91,7 +91,9 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
                 >
                   <span
                     className={`text-xs flex-1 truncate ${
-                      sub.status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'
+                      sub.status === 'done'
+                        ? 'line-through text-gray-400 dark:text-gray-500'
+                        : 'text-gray-700 dark:text-gray-200'
                     }`}
                   >
                     {sub.title}

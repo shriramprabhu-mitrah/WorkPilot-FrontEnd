@@ -112,7 +112,11 @@ export default function InviteTeamModal({ open, onClose }: InviteTeamModalProps)
             <span className="text-sm text-gray-500 dark:text-slate-400">
               {members.length} member{members.length > 1 ? 's' : ''}
             </span>
-            <WpButton onClick={handleSubmit} isLoading={isInvitingUsers} loadingText="Submitting...">
+            <WpButton
+              onClick={handleSubmit}
+              isLoading={isInvitingUsers}
+              loadingText="Submitting..."
+            >
               Submit Invitations
             </WpButton>
           </div>

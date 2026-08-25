@@ -4,7 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppSelector } from '@/src/store';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
-import { LayoutDashboard, Building2, FolderKanban, Users, Settings, LogOut, X, CreditCard } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Building2,
+  FolderKanban,
+  Users,
+  Settings,
+  LogOut,
+  X,
+  CreditCard,
+} from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { getInitials } from '@/src/app/components/common/format';
 

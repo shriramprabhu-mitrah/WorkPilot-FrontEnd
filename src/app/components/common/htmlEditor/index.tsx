@@ -866,7 +866,9 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
       "
           >
             <div className="mb-3">
-              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">Paste or search for link</label>
+              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">
+                Paste or search for link
+              </label>
               <input
                 autoFocus
                 type="text"
@@ -899,7 +901,9 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             </div>
 
             <div className="mb-3">
-              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">Display text (optional)</label>
+              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">
+                Display text (optional)
+              </label>
               <input
                 type="text"
                 value={linkText}

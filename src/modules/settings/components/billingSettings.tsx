@@ -345,10 +345,7 @@ export const BillingSettings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {currentPlan.features.map((feature, idx) => (
               <div key={idx} className="flex items-center gap-2.5">
-                <CheckCircle2
-                  size={18}
-                  className="text-green-500 dark:text-green-400 shrink-0"
-                />
+                <CheckCircle2 size={18} className="text-green-500 dark:text-green-400 shrink-0" />
                 <span className="text-sm text-gray-700 dark:text-slate-300">{feature}</span>
               </div>
             ))}
@@ -436,16 +433,22 @@ export const BillingSettings = () => {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                 <tr>
-                  {['Payment ID', 'Date', 'Plan', 'Billing Period', 'Amount', 'Status', 'Invoice'].map(
-                    (col) => (
-                      <th
-                        key={col}
-                        className="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider"
-                      >
-                        {col}
-                      </th>
-                    )
-                  )}
+                  {[
+                    'Payment ID',
+                    'Date',
+                    'Plan',
+                    'Billing Period',
+                    'Amount',
+                    'Status',
+                    'Invoice',
+                  ].map((col) => (
+                    <th
+                      key={col}
+                      className="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider"
+                    >
+                      {col}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-slate-700">

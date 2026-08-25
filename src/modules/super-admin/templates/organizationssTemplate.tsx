@@ -138,7 +138,7 @@ export const OrganizationsTemplate = () => {
 
   const handleConfirmToggleStatus = () => {
     if (!confirmModal.organization) return;
-    
+
     updateOrganization(
       {
         organizationId: confirmModal.organization.id,

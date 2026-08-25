@@ -13,7 +13,13 @@ interface MemberCardProps {
   isLast?: boolean;
 }
 
-export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast = false }: MemberCardProps) => {
+export const MemberCard = ({
+  member,
+  canManageUsers,
+  onDelete,
+  onClick,
+  isLast = false,
+}: MemberCardProps) => {
   const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
   const open = member.tasks - member.done;
 
@@ -46,7 +52,10 @@ export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast =
         <div className="min-w-0">
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-xs text-gray-500 dark:text-slate-400">Progress</span>
-            <span className="text-xs font-semibold" style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}>
+            <span
+              className="text-xs font-semibold"
+              style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}
+            >
               {pct}%
             </span>
           </div>
@@ -64,7 +73,9 @@ export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast =
         </div>
         {/* Done */}
         <div className="text-center">
-          <p className="text-sm font-semibold" style={{ color: colors.colActive }}>{member.done}</p>
+          <p className="text-sm font-semibold" style={{ color: colors.colActive }}>
+            {member.done}
+          </p>
         </div>
         {/* Open */}
         <div className="text-center">
@@ -77,7 +88,10 @@ export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast =
               variant="ghost"
               size="sm"
               className="!h-8 !w-8 !p-0 text-red-600 opacity-0 transition-opacity hover:bg-red-50 dark:hover:bg-red-900/20 group-hover:opacity-100"
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
               aria-label="Remove member"
             >
               <Trash2 size={15} />
@@ -108,7 +122,10 @@ export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast =
               variant="ghost"
               size="sm"
               className="!h-8 !w-8 !p-0 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
             >
               <Trash2 size={15} />
             </WpButton>
@@ -119,23 +136,33 @@ export const MemberCard = ({ member, canManageUsers, onDelete, onClick, isLast =
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-xs text-gray-500 dark:text-slate-400">Progress</span>
-            <span className="text-xs font-semibold" style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}>
+            <span
+              className="text-xs font-semibold"
+              style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}
+            >
               {pct}%
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700">
-            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: member.avatarColor }} />
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${pct}%`, backgroundColor: member.avatarColor }}
+            />
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 border-t border-gray-100 dark:border-slate-700 pt-3">
           <div className="text-center">
-            <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{member.tasks}</p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">
+              {member.tasks}
+            </p>
             <p className="text-[11px] text-gray-500 dark:text-slate-400">Tasks</p>
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold" style={{ color: colors.colActive }}>{member.done}</p>
+            <p className="text-sm font-semibold" style={{ color: colors.colActive }}>
+              {member.done}
+            </p>
             <p className="text-[11px] text-gray-500 dark:text-slate-400">Done</p>
           </div>
           <div className="text-center">

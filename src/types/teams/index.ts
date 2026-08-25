@@ -29,7 +29,16 @@ export interface TeamMember {
   updated_at: string;
   color?:string
 }
-
+export interface ProjectMember {
+  user_id: string;
+  username: string;
+  full_name: string;
+  role: string;
+  avatar_url: string | null;
+  color: string | null;
+  organization_name: string;
+  project_key: string;
+}
 export interface RemoveUserPayload {
   user_id: string;
 }

@@ -375,9 +375,7 @@ export const SubscriptionsTemplate = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700 dark:text-slate-300">
-                      {sub.members}
-                    </span>
+                    <span className="text-sm text-gray-700 dark:text-slate-300">{sub.members}</span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-700 dark:text-slate-300">
