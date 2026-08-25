@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Trash2, Loader2 } from 'lucide-react';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
@@ -8,16 +8,26 @@ import { AdminProjectsParams } from '@/src/types/superadmin';
 
 export const ProjectsTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // Debounce search query with 1000ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const queryParams = useMemo(() => {
     const params: AdminProjectsParams = { page, page_size: pageSize };
-    if (searchQuery.trim()) {
-      params.search = searchQuery;
+    if (debouncedSearchQuery.trim()) {
+      params.search = debouncedSearchQuery;
     }
     return params;
-  }, [page, pageSize, searchQuery]);
+  }, [page, pageSize, debouncedSearchQuery]);
 
   const { projects = [], meta, isLoadingProjects } = useGetAllProjects(queryParams);
 

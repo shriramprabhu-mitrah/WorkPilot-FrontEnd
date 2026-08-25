@@ -11,6 +11,8 @@ import { useGetOrganization } from '../../organization/hooks/useOrganization';
 import Permissions from '../components/permissions';
 import StatusSettings from '../components/statusSettings';
 import MembersSettings from '../components/memberSetting';
+import { BillingSettings } from '../components/billingSettings';
+
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
   const { isOrganizationLoading } = useGetOrganization();
@@ -28,6 +30,7 @@ export const SettingPageTemplate = () => {
       {activeTab === 'Permissions' && <Permissions />}
       {activeTab === 'Status' && <StatusSettings />}
       {activeTab === 'Security' && <SecuritySetting />}
+      {activeTab === 'Billing' && <BillingSettings />}
     </>
   );
 };

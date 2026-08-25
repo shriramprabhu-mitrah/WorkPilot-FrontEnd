@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppSelector } from '@/src/store';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
-import { LayoutDashboard, Building2, FolderKanban, Users, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Building2, FolderKanban, Users, Settings, LogOut, X, CreditCard } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { getInitials } from '@/src/app/components/common/format';
 
@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Organizations', path: '/super-admin/organizations', icon: Building2 },
   { label: 'Projects', path: '/super-admin/projects', icon: FolderKanban },
   { label: 'Members', path: '/super-admin/members', icon: Users },
+  { label: 'Subscriptions', path: '/super-admin/subscriptions', icon: CreditCard },
   // { label: 'Settings', path: '/super-admin/settings', icon: Settings },
 ];
 

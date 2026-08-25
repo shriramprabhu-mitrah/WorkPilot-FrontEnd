@@ -213,7 +213,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const historyItems = items.filter((i) => i.type === 'history');
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
-    { key: 'all', label: 'All' },
+    // { key: 'all', label: 'All' },
     { key: 'comments', label: 'Comments' },
     { key: 'history', label: 'History' },
   ];
@@ -407,13 +407,6 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
             {isLoadingComments ? (
               <div className="flex items-center justify-center py-8">
                 <div className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-              </div>
-            ) : isErrorComments ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-red-500">Failed to load comments</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {commentsError?.message || 'Unknown error'}
-                </p>
               </div>
             ) : comments.length === 0 ? (
               tab === 'comments' && (
