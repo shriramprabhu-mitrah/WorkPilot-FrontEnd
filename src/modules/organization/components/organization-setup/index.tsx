@@ -215,7 +215,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
             <TrackrLogoSvg />
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-slate-100">Welcome to WorkPilot</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-slate-100">
+            Welcome to WorkPilot
+          </h1>
 
           <p className="mt-3 max-w-xl text-gray-500 dark:text-slate-400">
             You are just a few steps away from creating your teams workspace.
@@ -234,28 +236,45 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
         {/* Stepper */}
         <div className="flex items-center justify-center w-full mb-8 sm:mb-12">
           <div className="flex flex-col items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}
+            >
               {step > 1 ? <Check size={16} /> : '1'}
             </div>
-            <span className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}>
+            <span
+              className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+            >
               Organization
             </span>
           </div>
-          <div className={`flex-1 h-px mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-700'}`} />
+          <div
+            className={`flex-1 h-px mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-700'}`}
+          />
           <div className="flex flex-col items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}
+            >
               {step > 2 ? <Check size={16} /> : '2'}
             </div>
-            <span className={`text-xs mt-2 font-medium ${step >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}>
-              Team Setup <span className="text-gray-400 dark:text-slate-500 font-normal">(opt)</span>
+            <span
+              className={`text-xs mt-2 font-medium ${step >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+            >
+              Team Setup{' '}
+              <span className="text-gray-400 dark:text-slate-500 font-normal">(opt)</span>
             </span>
           </div>
-          <div className={`flex-1 h-px mx-4 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-700'}`} />
+          <div
+            className={`flex-1 h-px mx-4 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-700'}`}
+          />
           <div className="flex flex-col items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500'}`}
+            >
               3
             </div>
-            <span className={`text-xs mt-2 font-medium ${step >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}>
+            <span
+              className={`text-xs mt-2 font-medium ${step >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+            >
               Branding <span className="text-gray-400 dark:text-slate-500 font-normal">(opt)</span>
             </span>
           </div>
@@ -264,8 +283,12 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
         {/* ─── STEP 1 ─── */}
         {step === 1 && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">Set up your organization</h2>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">This step is required to access your workspace.</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
+              Set up your organization
+            </h2>
+            <p className="text-gray-500 dark:text-slate-400 mb-8">
+              This step is required to access your workspace.
+            </p>
 
             <div className="space-y-6">
               <div>
@@ -311,7 +334,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
                     {Object.values(INDUSTRY_TYPE).map((val) => (
-                      <option key={val} value={val}>{toLabel(val)}</option>
+                      <option key={val} value={val}>
+                        {toLabel(val)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -325,7 +350,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
                     {Object.values(COMPANY_SIZE).map((val) => (
-                      <option key={val} value={val}>{val}</option>
+                      <option key={val} value={val}>
+                        {val}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -341,7 +368,10 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                   placeholder="Search country..."
                   value={countrySearch}
                   onFocus={() => setShowCountryDropdown(true)}
-                  onChange={(e) => { setCountrySearch(e.target.value); setShowCountryDropdown(true); }}
+                  onChange={(e) => {
+                    setCountrySearch(e.target.value);
+                    setShowCountryDropdown(true);
+                  }}
                   className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
                 {showCountryDropdown && (
@@ -351,14 +381,20 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                         <button
                           key={country.id}
                           type="button"
-                          onClick={() => { setCountryId(country.id); setCountrySearch(`${country.flag_emoji} ${country.name}`); setShowCountryDropdown(false); }}
+                          onClick={() => {
+                            setCountryId(country.id);
+                            setCountrySearch(`${country.flag_emoji} ${country.name}`);
+                            setShowCountryDropdown(false);
+                          }}
                           className="w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm text-gray-800 dark:text-slate-200"
                         >
                           {country.flag_emoji} {country.name}
                         </button>
                       ))
                     ) : (
-                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">No countries found</div>
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
+                        No countries found
+                      </div>
                     )}
                   </div>
                 )}
@@ -379,7 +415,14 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
               </WpButton>
               <WpButton
                 onClick={handleNextStep}
-                disabled={!orgName.trim() || !orgSlug.trim() || !industry || !orgSize || !countryId || isLoading}
+                disabled={
+                  !orgName.trim() ||
+                  !orgSlug.trim() ||
+                  !industry ||
+                  !orgSize ||
+                  !countryId ||
+                  isLoading
+                }
                 isLoading={isLoading}
               >
                 Next
@@ -392,7 +435,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
         {step === 2 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Invite your team</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                Invite your team
+              </h2>
               <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 text-xs font-medium">
                 Optional
               </span>
@@ -403,7 +448,10 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
 
             <div className="space-y-4 mb-6">
               {teamMembers.map((member, index) => (
-                <div key={index} className="p-4 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50/50 dark:bg-slate-800/50">
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50/50 dark:bg-slate-800/50"
+                >
                   <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                     Member {index + 1}
                   </label>
@@ -478,7 +526,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
         {step === 3 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Brand your workspace</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                Brand your workspace
+              </h2>
               <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 text-xs font-medium">
                 Optional
               </span>
@@ -489,11 +539,17 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
 
             <div className="space-y-8 mb-10">
               <div>
-                <label className="block text-sm font-bold text-gray-900 dark:text-slate-100 mb-3">Company logo</label>
+                <label className="block text-sm font-bold text-gray-900 dark:text-slate-100 mb-3">
+                  Company logo
+                </label>
                 <div className="flex gap-4 items-center">
                   <div className="w-20 h-20 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     {logoPreview ? (
-                      <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                      <img
+                        src={logoPreview}
+                        alt="Logo preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <TrackrLogoSvg />
                     )}
@@ -507,7 +563,9 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     <span className="text-sm font-medium text-gray-700 dark:text-slate-200">
                       {logoFile ? logoFile.name : 'Click to upload'}
                     </span>
-                    <span className="text-xs text-gray-400 dark:text-slate-500 mt-1">PNG, SVG, JPG — up to 2 MB</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                      PNG, SVG, JPG — up to 2 MB
+                    </span>
                   </div>
 
                   <input
@@ -520,7 +578,10 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
 
                   {logoFile && (
                     <button
-                      onClick={() => { setLogoFile(null); setLogoPreview(null); }}
+                      onClick={() => {
+                        setLogoFile(null);
+                        setLogoPreview(null);
+                      }}
                       className="w-9 h-9 flex items-center justify-center border border-gray-200 dark:border-slate-600 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 transition-colors bg-white dark:bg-slate-800 shrink-0"
                     >
                       <X size={14} />
@@ -544,8 +605,12 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 dark:text-slate-100">{orgName || 'Your Organization'}</p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">workpilot.app/{orgSlug || 'your-org'}</p>
+                  <p className="font-bold text-gray-900 dark:text-slate-100">
+                    {orgName || 'Your Organization'}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    workpilot.app/{orgSlug || 'your-org'}
+                  </p>
                 </div>
               </div>
             </div>

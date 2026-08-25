@@ -187,12 +187,12 @@ export const ChildTasksPanel = ({
 
   const [localTasks, setLocalTasks] = useState<TaskResponse[]>([]);
 
- useEffect(() => {
-   const timeout = setTimeout(() => {
+  useEffect(() => {
+    const timeout = setTimeout(() => {
       setLocalTasks(fetchedPages as TaskResponse[]);
-   }, 0);
-   return () => clearTimeout(timeout);
- }, [fetchedPages]);
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [fetchedPages]);
 
   const taskStatusOptions = useMemo(
     () =>
@@ -271,7 +271,6 @@ export const ChildTasksPanel = ({
       fetchNextPageRef.current();
     }
   }, [localTasks]);
-
 
   if (isLoadingChildTasks) {
     return (

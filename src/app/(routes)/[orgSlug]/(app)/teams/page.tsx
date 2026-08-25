@@ -1,5 +1,5 @@
-import { TeamTemplate } from '@/src/modules/teams/templates';
+import AddMember from '@/src/modules/teams/components/AddMember';
 
 export default function Page() {
-  return <TeamTemplate />;
+  return <AddMember />;
 }

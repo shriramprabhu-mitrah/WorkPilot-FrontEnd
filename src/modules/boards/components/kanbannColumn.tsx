@@ -28,8 +28,12 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ backgroundColor: column.color }}
           />
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{column.label}</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">{column.tasks.length}</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            {column.label}
+          </span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+            {column.tasks.length}
+          </span>
         </div>
         <WpButton variant="ghost" size="sm" className="!p-1">
           <Plus size={16} />

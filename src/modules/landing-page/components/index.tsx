@@ -47,7 +47,7 @@ const useScrollReveal = () => {
 export const LandingPage = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const router = useRouter();
- const { resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   useScrollReveal();
 
   return (

@@ -656,7 +656,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         No members selected
                       </p>
                       <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-                        Select members above to assign project roles.
+                        {/* Select members above to assign project roles. */}
                       </p>
                     </div>
                   </div>

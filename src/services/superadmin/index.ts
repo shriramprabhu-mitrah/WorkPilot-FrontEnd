@@ -1,6 +1,12 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService, PaginatedApiResponse } from '../axios';
-import { AdminMembersParams, AdminOrganization, AdminOrganizationMember, AdminProjectsParams, Project } from '@/src/types/superadmin';
+import {
+  AdminMembersParams,
+  AdminOrganization,
+  AdminOrganizationMember,
+  AdminProjectsParams,
+  Project,
+} from '@/src/types/superadmin';
 
 export interface AdminOrganizationsParams {
   page?: number;
@@ -17,8 +23,6 @@ export interface AdminOrganizationsParams {
   [key: string]: string | number | boolean | undefined;
 }
 
-
-
 class AdminService {
   async getOrganizations(
     params?: AdminOrganizationsParams
@@ -26,8 +30,8 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getOrganization;
     const cleanParams = params
       ? (Object.fromEntries(
-        Object.entries(params).filter(([, value]) => value !== undefined)
-      ) as Record<string, string | number | boolean>)
+          Object.entries(params).filter(([, value]) => value !== undefined)
+        ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<AdminOrganization[]>(url);
@@ -39,8 +43,8 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getMembers;
     const cleanParams = params
       ? (Object.fromEntries(
-        Object.entries(params).filter(([, value]) => value !== undefined)
-      ) as Record<string, string | number | boolean>)
+          Object.entries(params).filter(([, value]) => value !== undefined)
+        ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<AdminOrganizationMember[]>(url);
@@ -50,8 +54,8 @@ class AdminService {
     const endpoint = ApiEndpoints.SuperAdmin.getAllProjects;
     const cleanParams = params
       ? (Object.fromEntries(
-        Object.entries(params).filter(([, value]) => value !== undefined)
-      ) as Record<string, string | number | boolean>)
+          Object.entries(params).filter(([, value]) => value !== undefined)
+        ) as Record<string, string | number | boolean>)
       : undefined;
     const url = cleanParams ? endpoint.withQuery(cleanParams) : endpoint.url;
     return apiService.getPaginated<Project[]>(url);

@@ -67,11 +67,16 @@ export const WpDropdown = ({
             .filter(Boolean)
             .join(' ')}
         >
-          <span className={`flex items-center gap-2 ${!selected ? 'text-[var(--color-gray-400)] dark:text-slate-500' : 'text-[var(--color-gray-900)] dark:text-slate-100'}`}>
+          <span
+            className={`flex items-center gap-2 ${!selected ? 'text-[var(--color-gray-400)] dark:text-slate-500' : 'text-[var(--color-gray-900)] dark:text-slate-100'}`}
+          >
             {selected?.icon && <span className="flex items-center">{selected.icon}</span>}
             {selected ? selected.label : placeholder}
           </span>
-          <ChevronDown size={16} className={`text-[var(--color-gray-400)] dark:text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={16}
+            className={`text-[var(--color-gray-400)] dark:text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {open && (
@@ -79,14 +84,19 @@ export const WpDropdown = ({
             {options.map((option) => (
               <li
                 key={option.value}
-                onClick={() => { onChange(option.value); setOpen(false); }}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
                 className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200"
               >
                 <span className="flex items-center gap-2">
                   {option.icon && <span className="flex items-center">{option.icon}</span>}
                   {option.label}
                 </span>
-                {value === option.value && <Check size={14} className="text-[var(--color-primary-focus)]" />}
+                {value === option.value && (
+                  <Check size={14} className="text-[var(--color-primary-focus)]" />
+                )}
               </li>
             ))}
           </ul>

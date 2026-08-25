@@ -1,13 +1,7 @@
 'use client';
 
 export type SettingsTab =
-  | 'General'
-  | 'Notifications'
-  | 'Members'
-  | 'Permissions'
-  | 'Status'
-  | 'Security'
-  | 'Billing';
+  'General' | 'Notifications' | 'Members' | 'Permissions' | 'Status' | 'Security' | 'Billing';
 
 interface SettingsHeaderProps {
   activeTab: SettingsTab;

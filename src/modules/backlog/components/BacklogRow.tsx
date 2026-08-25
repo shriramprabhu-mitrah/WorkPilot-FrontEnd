@@ -97,16 +97,12 @@ export const BacklogRow = ({
         <StatusBadge status={task.status} />
       </div>
 
-      <span
-        className="flex items-center gap-0.5 text-xs w-8 sm:w-10 shrink-0 text-gray-400 dark:text-slate-500"
-      >
+      <span className="flex items-center gap-0.5 text-xs w-8 sm:w-10 shrink-0 text-gray-400 dark:text-slate-500">
         <Hash size={11} />
         {task.story_points ?? task.storyPoints ?? 0}
       </span>
 
-      <span
-        className="hidden sm:flex items-center gap-1 text-xs leading-none w-24 shrink-0 text-gray-400 dark:text-slate-500"
-      >
+      <span className="hidden sm:flex items-center gap-1 text-xs leading-none w-24 shrink-0 text-gray-400 dark:text-slate-500">
         <Calendar size={11} className="shrink-0" />
         <span className="truncate">{formatMonthYear(task.due_date || task.dueDate || '')}</span>
       </span>
@@ -116,11 +112,13 @@ export const BacklogRow = ({
           initials={task.assigneeInitials || task.assignee_name?.charAt(0).toUpperCase() || '?'}
           color={task.assigneeColor || colors.primary}
         />
-        <span className="text-xs truncate text-gray-600 dark:text-slate-400" title={task.assignee_name}>
+        <span
+          className="text-xs truncate text-gray-600 dark:text-slate-400"
+          title={task.assignee_name}
+        >
           {task.assignee_name || 'Unassigned'}
         </span>
       </div>
     </div>
   );
 };
-

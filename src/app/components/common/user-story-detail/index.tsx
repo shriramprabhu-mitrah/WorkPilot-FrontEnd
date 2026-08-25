@@ -173,7 +173,7 @@ export const UserStoryDetailDrawer = ({
   const currentUserStory = fetchedUserStory || initialUserStory;
   const projectId = currentUserStory.project_id ?? '';
   const userStoryId = currentUserStory.id;
-  
+
   const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
 
   const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
@@ -241,18 +241,15 @@ export const UserStoryDetailDrawer = ({
 
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
-    const assigneeName =
-      editableFields.assigneeName ||
-      currentUserStory.assignee_name ||
-      '';
+    const assigneeName = editableFields.assigneeName || currentUserStory.assignee_name || '';
 
     const assigneeInitials = assigneeName
       ? assigneeName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     const reporterName =
@@ -263,11 +260,11 @@ export const UserStoryDetailDrawer = ({
 
     const reporterInitials = reporterName
       ? reporterName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     return {
@@ -289,9 +286,13 @@ export const UserStoryDetailDrawer = ({
       start_date: editableFields.start_date,
       due_date: editableFields.due_date,
     };
-  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name, currentUserStory.reporter?.name ]);
+  }, [
+    editableFields,
+    currentUserStory.assignee_name,
+    currentUserStory.reporter_name,
+    currentUserStory.reporter?.name,
+  ]);
 
-   
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
   useEffect(() => {
@@ -350,9 +351,7 @@ export const UserStoryDetailDrawer = ({
     showReporterMenu
   );
 
-  const { data: customStatuses = [] } = useGetStatus(
-    currentUserStory.project_id ?? ''
-  );
+  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
 
   const { userStoryStatuses = [] } = useGetUserStoryStatuses(currentUserStory.project_id ?? '');
   const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();

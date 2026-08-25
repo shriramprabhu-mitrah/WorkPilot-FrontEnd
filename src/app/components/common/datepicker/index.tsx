@@ -22,8 +22,18 @@ interface WpDatePickerProps {
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function formatDisplay(iso: string, showTime?: boolean) {
@@ -78,13 +88,17 @@ export const WpDatePicker = ({
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
-    else setViewMonth((m) => m - 1);
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else setViewMonth((m) => m - 1);
   };
 
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
-    else setViewMonth((m) => m + 1);
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else setViewMonth((m) => m + 1);
   };
 
   const toISO = (y: number, m: number, d: number) =>
@@ -99,7 +113,10 @@ export const WpDatePicker = ({
     const iso = toISO(viewYear, viewMonth, d);
     const newValue = showTime ? `${iso}T${time}` : iso;
     onChange(newValue);
-    if (!showTime) { setOpen(false); onCommit?.(newValue); }
+    if (!showTime) {
+      setOpen(false);
+      onCommit?.(newValue);
+    }
   };
 
   const handleTimeChange = (newTime: string) => {
@@ -179,7 +196,10 @@ export const WpDatePicker = ({
                   onClick={prevMonth}
                   className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700"
                 >
-                  <ChevronLeft size={16} className="text-[var(--color-gray-600)] dark:text-slate-300" />
+                  <ChevronLeft
+                    size={16}
+                    className="text-[var(--color-gray-600)] dark:text-slate-300"
+                  />
                 </button>
                 <span className="text-xs font-semibold text-[var(--color-gray-900)] dark:text-slate-100">
                   {MONTHS[viewMonth]} {viewYear}
@@ -189,7 +209,10 @@ export const WpDatePicker = ({
                   onClick={nextMonth}
                   className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700"
                 >
-                  <ChevronRight size={16} className="text-[var(--color-gray-600)] dark:text-slate-300" />
+                  <ChevronRight
+                    size={16}
+                    className="text-[var(--color-gray-600)] dark:text-slate-300"
+                  />
                 </button>
               </div>
 

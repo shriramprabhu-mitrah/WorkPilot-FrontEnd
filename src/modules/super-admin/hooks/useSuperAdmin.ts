@@ -1,15 +1,16 @@
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { userAdminService, AdminOrganizationsParams } from '@/src/services/superadmin';
 import {
-  userAdminService,
-  AdminOrganizationsParams,
-} from '@/src/services/superadmin';
-import { AdminMembersParams, AdminProjectsParams, UpdateOrganization } from '@/src/types/superadmin';
+  AdminMembersParams,
+  AdminProjectsParams,
+  UpdateOrganization,
+} from '@/src/types/superadmin';
 
-const QUERY_KEYS={
-  ADMIN_ORGANIZATION:'admin-organizations',
-  ADMIN_MEMBERS:'admin-members',
-  ADMIN_PROJECTS:'admin-projects',
-  ORGANIZATIONS:'organizations'
+const QUERY_KEYS = {
+  ADMIN_ORGANIZATION: 'admin-organizations',
+  ADMIN_MEMBERS: 'admin-members',
+  ADMIN_PROJECTS: 'admin-projects',
+  ORGANIZATIONS: 'organizations',
 } as const;
 
 export const useGetOrganizations = (params?: AdminOrganizationsParams, enabled = true) => {
@@ -67,10 +68,7 @@ export const useUpdateOrganization = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      organizationId,
-      is_active,
-    }: UpdateOrganization) =>
+    mutationFn: ({ organizationId, is_active }: UpdateOrganization) =>
       userAdminService.updateOrganization(organizationId, is_active),
 
     onSuccess: () => {

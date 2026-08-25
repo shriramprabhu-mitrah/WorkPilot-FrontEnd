@@ -10,7 +10,11 @@ interface UpcomingEventsProps {
 
 const eventStyles = {
   Sprint: { color: colors.colInReview, bg: colors.colInReviewBg, date: colors.colInReview },
-  Meeting: { color: colors.priorityHighText, bg: colors.priorityHighBg, date: colors.priorityHighText },
+  Meeting: {
+    color: colors.priorityHighText,
+    bg: colors.priorityHighBg,
+    date: colors.priorityHighText,
+  },
   Task: { color: colors.primary, bg: colors.primaryLight, date: colors.primary },
 };
 
@@ -37,7 +41,10 @@ const UpcomingEvents = ({ events, currentDate }: UpcomingEventsProps) => {
                 <span className="text-[11px] font-medium text-gray-500 dark:text-slate-400">
                   {moment(event.start).format('ddd')}
                 </span>
-                <span className="mt-1 text-2xl font-bold leading-none" style={{ color: style.date }}>
+                <span
+                  className="mt-1 text-2xl font-bold leading-none"
+                  style={{ color: style.date }}
+                >
                   {moment(event.start).format('DD')}
                 </span>
               </div>

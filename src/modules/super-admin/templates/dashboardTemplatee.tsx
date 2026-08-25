@@ -55,7 +55,7 @@ export const DashboardTemplate = () => {
           iconColor="#8b5cf6"
           iconBgColor="#f3e8ff"
         />
-        <MetricCard 
+        <MetricCard
           label="Active Orgs"
           value={activeOrganizations}
           icon={TrendingUp}
@@ -105,7 +105,7 @@ export const DashboardTemplate = () => {
           </h3>
           <div className="space-y-2">
             {recentOrganizations.map((org) => (
-              <OrganizationCard  key={org.id} organization={org} />
+              <OrganizationCard key={org.id} organization={org} />
             ))}
           </div>
         </div>
@@ -117,7 +117,7 @@ export const DashboardTemplate = () => {
           </h3>
           <div className="space-y-2">
             {recentProjects.map((project) => (
-              <ProjectCard  key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </div>
@@ -129,7 +129,7 @@ export const DashboardTemplate = () => {
           </h3>
           <div className="space-y-2">
             {recentMembers.map((member) => (
-              <MemberCard  key={member.id} member={member} />
+              <MemberCard key={member.id} member={member} />
             ))}
           </div>
         </div>

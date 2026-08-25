@@ -171,7 +171,9 @@ export const SecuritySetting = () => {
       <div className="w-2xl rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <CircleAlert size={15} className="text-gray-500 dark:text-slate-400" />
-          <h3 className="text-xs font-semibold text-gray-900 dark:text-slate-100">Recent login activity</h3>
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-slate-100">
+            Recent login activity
+          </h3>
         </div>
 
         <div>
@@ -187,14 +189,20 @@ export const SecuritySetting = () => {
                   }`}
                 />
                 <div>
-                  <p className="text-xs font-medium text-gray-800 dark:text-slate-200">{activity.device}</p>
-                  <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">{activity.location}</p>
+                  <p className="text-xs font-medium text-gray-800 dark:text-slate-200">
+                    {activity.device}
+                  </p>
+                  <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                    {activity.location}
+                  </p>
                 </div>
               </div>
 
               <div className="text-right">
                 <p className="text-[11px] text-gray-500 dark:text-slate-400">{activity.date}</p>
-                <p className={`mt-1 text-[10px] font-medium ${activity.success ? 'text-green-500' : 'text-red-500'}`}>
+                <p
+                  className={`mt-1 text-[10px] font-medium ${activity.success ? 'text-green-500' : 'text-red-500'}`}
+                >
                   {activity.status}
                 </p>
               </div>
