@@ -48,6 +48,7 @@ export interface KanbanTask {
   description?: string;
   subtasks?: SubTask[];
   reporter?: string;
+  reporter_name? : string;
   reporterInitials?: string;
   reporterColor?: string;
   sprint?: string;

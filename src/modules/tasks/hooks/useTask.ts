@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { taskService } from '@/src/services/tasks';
 
@@ -31,6 +32,67 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
     isError: query.isError,
     error: query.error,
     refetchTasks: query.refetch,
+  };
+};
+
+const PAGE_SIZE_CHILD = 4;
+
+export const useGetChildTasks = (
+  projectId: string,
+  userStoryId: string,
+  enabled = true
+) => {
+  const query = useInfiniteQuery({
+    queryKey: [QUERY_KEYS.tasks, projectId, 'child', userStoryId],
+    queryFn: ({ pageParam = 1 }) =>
+      taskService.getTasks(projectId, {
+        page: pageParam as number,
+        page_size: PAGE_SIZE_CHILD,
+        user_story_id: userStoryId,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const items = (lastPage as { data?: unknown[] })?.data ?? [];
+
+      // If the server returned fewer items than we asked for, we've
+      // reached the end — don't fetch further.
+      if (items.length < PAGE_SIZE_CHILD) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
+    enabled: enabled && !!projectId && !!userStoryId,
+  });
+
+  const tasks = useMemo(
+    () => query.data?.pages.flatMap((p) => (p as { data?: unknown[] })?.data ?? []) ?? [],
+    [query.data]
+  );
+
+  // Try to read a real total from common response shapes; fall back to
+  // "how many we've loaded so far" if the API doesn't expose one.
+  const total = useMemo(() => {
+    const firstPage = query.data?.pages[0] as
+      | { count?: number; pagination?: { total?: number; total_count?: number } }
+      | undefined;
+
+    return (
+      firstPage?.count ??
+      firstPage?.pagination?.total ??
+      firstPage?.pagination?.total_count ??
+      tasks.length
+    );
+  }, [query.data, tasks.length]);
+
+  return {
+    childTasks: tasks,
+    totalChildTasks: total,
+    isLoadingChildTasks: query.isPending,
+    isFetchingChildTasks: query.isFetching,
+    hasNextPage: query.hasNextPage,
+    fetchNextPage: query.fetchNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    refetchChildTasks: query.refetch,
   };
 };
 

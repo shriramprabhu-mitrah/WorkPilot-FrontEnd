@@ -62,6 +62,7 @@ import {
 
 import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { useQueryClient } from '@tanstack/react-query';
+import { ChildTasksPanel } from './ChildTasksPanel';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -172,7 +173,7 @@ export const UserStoryDetailDrawer = ({
   const currentUserStory = fetchedUserStory || initialUserStory;
   const projectId = currentUserStory.project_id ?? '';
   const userStoryId = currentUserStory.id;
-
+  
   const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
 
   const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
@@ -195,6 +196,8 @@ export const UserStoryDetailDrawer = ({
     storyPoints: number;
     assigneeId: string;
     assigneeName: string;
+    reporterId: string;
+    reporterName: string;
     sprintId: string;
     sprintName: string;
     start_date: string;
@@ -202,7 +205,8 @@ export const UserStoryDetailDrawer = ({
   };
 
   const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
-    const assigneeName = story.assignee_name ?? story.reporter_name ?? '';
+    const assigneeName = story.assignee_name ?? '';
+    const reporterName = story.reporter_name ?? story.reporter?.name ?? '';
 
     const priority = story.priority
       ? ((story.priority.charAt(0).toUpperCase() +
@@ -219,6 +223,8 @@ export const UserStoryDetailDrawer = ({
       storyPoints: story.story_points ?? 0,
       assigneeId: story.assignee_id ?? '',
       assigneeName,
+      reporterId: story.reporter_id ?? story.reporter?.id ?? '',
+      reporterName,
       sprintId: story.sprint_id ?? '',
       sprintName,
       start_date: story.start_date ?? story.tasks?.[0]?.created_at ?? '',
@@ -235,16 +241,30 @@ export const UserStoryDetailDrawer = ({
     const assigneeName =
       editableFields.assigneeName ||
       currentUserStory.assignee_name ||
-      currentUserStory.reporter_name ||
       '';
 
     const assigneeInitials = assigneeName
       ? assigneeName
-          .split(' ')
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+      : '';
+
+    const reporterName =
+      editableFields.reporterName ||
+      currentUserStory.reporter_name ||
+      currentUserStory.reporter?.name ||
+      '';
+
+    const reporterInitials = reporterName
+      ? reporterName
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
       : '';
 
     return {
@@ -256,12 +276,15 @@ export const UserStoryDetailDrawer = ({
       assigneeId: editableFields.assigneeId,
       assigneeName,
       assigneeInitials,
+      reporterId: editableFields.reporterId,
+      reporterName,
+      reporterInitials,
       sprintId: editableFields.sprintId,
       sprintName: editableFields.sprintName,
       start_date: editableFields.start_date,
       due_date: editableFields.due_date,
     };
-  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name]);
+  }, [editableFields, currentUserStory.assignee_name, currentUserStory.reporter_name, currentUserStory.reporter?.name]);
 
   // Update editable fields only when the user story ID changes (new user story loaded)
   const userStoryIdRef = useRef(currentUserStory.id);
@@ -275,9 +298,11 @@ export const UserStoryDetailDrawer = ({
 
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [showReporterMenu, setShowReporterMenu] = useState(false);
   const [childAssigneeTaskId, setChildAssigneeTaskId] = useState<string | null>(null);
   const [childAssigneeSearch, setChildAssigneeSearch] = useState('');
   const [assigneeSearch, setAssigneeSearch] = useState('');
+  const [reporterSearch, setReporterSearch] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -291,6 +316,7 @@ export const UserStoryDetailDrawer = ({
   const debouncedSprintSearch = useDebounce(sprintSearch, 500);
   const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
+  const debouncedReporterSearch = useDebounce(reporterSearch, 500);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const debouncedChildAssigneeSearch = useDebounce(childAssigneeSearch, 500);
   const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
@@ -308,7 +334,19 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
-  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
+  const {
+    members: reporterMembers,
+    isLoadingMembers: isLoadingReporterMembers,
+    isFetchingMembers: isFetchingReporterMembers,
+  } = useGetProjectMembers(
+    currentUserStory.project_id ?? '',
+    { page: 1, page_size: 10, name: debouncedReporterSearch },
+    showReporterMenu
+  );
+
+  const { data: customStatuses = [] } = useGetStatus(
+    currentUserStory.project_id ?? ''
+  );
 
   const { userStoryStatuses = [] } = useGetUserStoryStatuses(currentUserStory.project_id ?? '');
   const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
@@ -383,6 +421,7 @@ export const UserStoryDetailDrawer = ({
   );
 
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
+  const reporterMenuRef = useRef<HTMLDivElement>(null);
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
@@ -471,6 +510,10 @@ export const UserStoryDetailDrawer = ({
         payload.assignee_id = patch.assigneeId || null;
       }
 
+      if (patch.reporterId !== undefined) {
+        payload.reporter_id = patch.reporterId || null;
+      }
+
       if (patch.sprintId !== undefined) {
         payload.sprint_id = patch.sprintId || null;
       }
@@ -512,6 +555,9 @@ export const UserStoryDetailDrawer = ({
       }
       if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
         setShowAssigneeMenu(false);
+      }
+      if (reporterMenuRef.current && !reporterMenuRef.current.contains(event.target as Node)) {
+        setShowReporterMenu(false);
       }
       if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
         setShowMoreMenu(false);
@@ -1144,497 +1190,12 @@ export const UserStoryDetailDrawer = ({
               </div>
 
               {/* Tasks Section */}
-              <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-                    Tasks ({totalTasks})
-                  </p>
-                  {onCreateTask && (
-                    <button
-                      onClick={onCreateTask}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                    >
-                      <Plus size={14} />
-                      Add
-                    </button>
-                  )}
-                </div>
-
-                {tasks.length === 0 ? (
-                  <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
-                    <p className="text-sm text-gray-500 dark:text-slate-400">No tasks associated</p>
-                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
-                      Create tasks to track work
-                    </p>
-                  </div>
-                ) : (
-                  <div className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-visible bg-white dark:bg-slate-800">
-                    {' '}
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
-                        <tr>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
-                            Work
-                          </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
-                            Priority
-                          </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
-                            Assignee
-                          </th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-slate-200 text-xs uppercase tracking-wider">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                        {tasks.map((task) => (
-                          <tr
-                            key={task.id}
-                            className="hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
-                          >
-                            {/* Work Column */}
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span
-                                  className={`shrink-0 font-medium hover:underline ${
-                                    task.is_final
-                                      ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
-                                      : 'text-blue-600 dark:text-blue-400'
-                                  }`}
-                                  onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
-                                >
-                                  {task.key}
-                                </span>
-                                <span
-                                  title={task.title}
-                                  className={`max-w-[80px] truncate ${
-                                    task.is_final
-                                      ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
-                                      : 'text-gray-900 dark:text-slate-100'
-                                  }`}
-                                >
-                                  {task.title}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Priority Column */}
-                            <td className="px-4 py-3">
-                              <span className="text-gray-700 dark:text-slate-300 capitalize">
-                                {task.priority || 'Medium'}
-                              </span>
-                            </td>
-
-                            {/* Assignee Column */}
-                            <td className="px-4 py-3">
-                              <div
-                                className="relative"
-                                ref={
-                                  childAssigneeTaskId === task.id ? childAssigneeMenuRef : undefined
-                                }
-                              >
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-
-                                    if (childAssigneeTaskId === task.id) {
-                                      setChildAssigneeTaskId(null);
-                                      setChildAssigneeSearch('');
-                                    } else {
-                                      setChildAssigneeTaskId(task.id ?? null);
-                                      setChildAssigneeSearch('');
-                                    }
-                                  }}
-                                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
-                                >
-                                  {task.assignee_id ? (
-                                    <AssigneeAvatar
-                                      initials={
-                                        task.assignee_name
-                                          ? task.assignee_name
-                                              .split(' ')
-                                              .map((name) => name[0])
-                                              .join('')
-                                              .slice(0, 2)
-                                              .toUpperCase()
-                                          : 'UN'
-                                      }
-                                      color={getMemberColor(task.assignee_id)}
-                                      size="sm"
-                                    />
-                                  ) : (
-                                    <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                      <User
-                                        size={12}
-                                        className="text-gray-400 dark:text-slate-500"
-                                      />
-                                    </span>
-                                  )}
-
-                                  <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                                    {task.assignee_name || 'Unassigned'}
-                                  </span>
-
-                                  <ChevronDown
-                                    size={12}
-                                    className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                                  />
-                                </button>
-
-                                {childAssigneeTaskId === task.id && (
-                                  <div
-                                    className="absolute left-0 top-full mt-1 w-64 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-[99999] overflow-hidden"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    {/* Search */}
-                                    <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-                                      <WpInput
-                                        value={childAssigneeSearch}
-                                        onChange={(e) => setChildAssigneeSearch(e.target.value)}
-                                        placeholder="Search assignee..."
-                                        autoFocus
-                                      />
-                                    </div>
-
-                                    {/* Loading */}
-                                    {(isLoadingChildAssignees || isFetchingChildAssignees) && (
-                                      <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
-                                        Searching...
-                                      </div>
-                                    )}
-
-                                    {/* Members */}
-                                    {!isLoadingChildAssignees &&
-                                      !isFetchingChildAssignees &&
-                                      childAssigneeMembers?.map((m) => {
-                                        const name = m.full_name ?? m.user?.name ?? '';
-
-                                        const displayName =
-                                          name ||
-                                          m.user?.email?.split('@')[0] ||
-                                          m.user?.email ||
-                                          'Unknown User';
-
-                                        const initials = getInitials(
-                                          name || m.user?.email?.split('@')[0] || 'U'
-                                        );
-
-                                        const color = getMemberColor(m.user_id);
-
-                                        return (
-                                          <WpButton
-                                            key={m.user_id}
-                                            type="button"
-                                            variant="ghost"
-                                            onClick={async (e) => {
-                                              e.stopPropagation();
-
-                                              const previousAssigneeId = task.assignee_id;
-                                              const previousAssigneeName = task.assignee_name;
-
-                                              const updatedAssigneeName =
-                                                m.full_name ??
-                                                m.user?.name ??
-                                                m.user?.email?.split('@')[0] ??
-                                                'Unknown User';
-
-                                              // Optimistic UI update
-                                              setChildTasks((prevTasks) =>
-                                                prevTasks.map((childTask) =>
-                                                  childTask.id === task.id
-                                                    ? {
-                                                        ...childTask,
-                                                        assignee_id: m.user_id,
-                                                        assignee_name: updatedAssigneeName,
-                                                      }
-                                                    : childTask
-                                                )
-                                              );
-
-                                              // Close dropdown immediately
-                                              setChildAssigneeTaskId(null);
-                                              setChildAssigneeSearch('');
-
-                                              try {
-                                                // API call
-                                                await updateTaskAsync({
-                                                  projectId: currentUserStory.project_id ?? '',
-                                                  taskId: task.id ?? '',
-                                                  payload: {
-                                                    assignee_id: m.user_id,
-                                                  },
-                                                });
-                                                await queryClient.invalidateQueries({
-                                                  queryKey: [
-                                                    'user-story',
-                                                    currentUserStory.project_id,
-                                                  ],
-                                                });
-                                              } catch (error) {
-                                                // Rollback if API fails
-                                                setChildTasks((prevTasks) =>
-                                                  prevTasks.map((childTask) =>
-                                                    childTask.id === task.id
-                                                      ? {
-                                                          ...childTask,
-                                                          assignee_id: previousAssigneeId,
-                                                          assignee_name: previousAssigneeName,
-                                                        }
-                                                      : childTask
-                                                  )
-                                                );
-
-                                                logger.log(
-                                                  'Failed to update child ticket assignee',
-                                                  error
-                                                );
-
-                                                toast.error(
-                                                  'Failed to update child ticket assignee'
-                                                );
-                                              }
-                                            }}
-                                            disabled={isUpdatingTask}
-                                            className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
-                                          >
-                                            <AssigneeAvatar
-                                              initials={initials}
-                                              color={color}
-                                              size="sm"
-                                            />
-
-                                            <span className="truncate">{displayName}</span>
-
-                                            {m.user_id === task.assignee_id && (
-                                              <Check
-                                                size={12}
-                                                className="ml-auto text-blue-600 shrink-0"
-                                              />
-                                            )}
-                                          </WpButton>
-                                        );
-                                      })}
-
-                                    {/* Unassigned */}
-                                    {!isLoadingChildAssignees &&
-                                      !isFetchingChildAssignees &&
-                                      !childAssigneeSearch && (
-                                        <WpButton
-                                          type="button"
-                                          variant="ghost"
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-
-                                            // Use your existing task update API here
-                                            // await updateTask(...)
-
-                                            setChildAssigneeTaskId(null);
-                                            setChildAssigneeSearch('');
-                                          }}
-                                          className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 hover:bg-gray-50"
-                                        >
-                                          <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                                            <User size={11} className="text-gray-400" />
-                                          </span>
-                                          Unassigned
-                                        </WpButton>
-                                      )}
-
-                                    {/* No results */}
-                                    {!isLoadingChildAssignees &&
-                                      !isFetchingChildAssignees &&
-                                      childAssigneeSearch &&
-                                      childAssigneeMembers?.length === 0 && (
-                                        <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                                          No users found
-                                        </div>
-                                      )}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-
-                            {/* Status Column */}
-                            <td className="px-4 py-3">
-                              <div
-                                className="relative"
-                                ref={childStatusTaskId === task.id ? childStatusMenuRef : undefined}
-                              >
-                                {(() => {
-                                  const currentStatus =
-                                    taskStatusConfig[task.status_id ?? ''] ||
-                                    taskStatusConfig[task.status] ||
-                                    taskStatusOptions.find(
-                                      (option) =>
-                                        option.label.toLowerCase() === task.status?.toLowerCase()
-                                    );
-
-                                  return (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-
-                                          setChildStatusTaskId(
-                                            childStatusTaskId === task.id ? null : (task.id ?? null)
-                                          );
-                                        }}
-                                        disabled={isUpdatingTask}
-                                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border"
-                                        style={{
-                                          color: currentStatus?.color || colors.colTodo,
-                                          backgroundColor: currentStatus?.bg || colors.colTodoBg,
-                                          borderColor: `${currentStatus?.dot || colors.colTodo}55`,
-                                        }}
-                                      >
-                                        <span className="flex items-center gap-2 min-w-0">
-                                          <span
-                                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                                            style={{
-                                              backgroundColor: currentStatus?.dot || colors.colTodo,
-                                            }}
-                                          />
-
-                                          <span className="truncate">
-                                            {currentStatus?.label || task.status || 'To Do'}
-                                          </span>
-                                        </span>
-
-                                        <ChevronDown size={13} className="shrink-0" />
-                                      </button>
-
-                                      {childStatusTaskId === task.id && (
-                                        <div
-                                          className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[99999] overflow-hidden"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          {taskStatusOptions.map((option) => {
-                                            const isSelected =
-                                              option.value === task.status_id ||
-                                              option.label.toLowerCase() ===
-                                                task.status?.toLowerCase();
-
-                                            return (
-                                              <button
-                                                key={option.value}
-                                                type="button"
-                                                disabled={isUpdatingTask}
-                                                onClick={async (e) => {
-                                                  e.stopPropagation();
-
-                                                  if (isSelected) {
-                                                    setChildStatusTaskId(null);
-                                                    return;
-                                                  }
-
-                                                  const previousStatus = task.status;
-                                                  const newStatusName = option.label;
-
-                                                  // Immediate UI update
-                                                  setChildTasks((prev) =>
-                                                    prev.map((childTask) =>
-                                                      childTask.id === task.id
-                                                        ? {
-                                                            ...childTask,
-                                                            status: newStatusName,
-                                                            status_id: option.value,
-                                                            status_color: option.color,
-                                                          }
-                                                        : childTask
-                                                    )
-                                                  );
-
-                                                  setChildStatusTaskId(null);
-
-                                                  try {
-                                                    await updateTaskAsync({
-                                                      projectId: currentUserStory.project_id ?? '',
-                                                      taskId: task.id ?? '',
-                                                      payload: {
-                                                        status_id: option.value,
-                                                      },
-                                                    });
-
-                                                    await queryClient.invalidateQueries({
-                                                      queryKey: [
-                                                        'user-story',
-                                                        currentUserStory.project_id,
-                                                        currentUserStory.id,
-                                                      ],
-                                                    });
-                                                  } catch (error) {
-                                                    logger.log(
-                                                      'Failed to update child ticket status',
-                                                      error
-                                                    );
-
-                                                    // Rollback
-                                                    setChildTasks((prev) =>
-                                                      prev.map((childTask) =>
-                                                        childTask.id === task.id
-                                                          ? {
-                                                              ...childTask,
-                                                              status: previousStatus,
-                                                            }
-                                                          : childTask
-                                                      )
-                                                    );
-                                                  }
-                                                }}
-                                                className="w-full text-left px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
-                                                style={{
-                                                  fontWeight: isSelected ? 700 : 500,
-                                                  color: isSelected ? option.color : '#666666',
-                                                  backgroundColor: isSelected
-                                                    ? option.bg
-                                                    : undefined,
-                                                }}
-                                              >
-                                                <span
-                                                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                                                  style={{
-                                                    backgroundColor: option.dot,
-                                                  }}
-                                                />
-
-                                                {/* Status label + final dot */}
-                                                <div className="flex items-center gap-1 min-w-0">
-                                                  <span className="truncate">{option.label}</span>
-
-                                                  {option.is_final === true && (
-                                                    <span
-                                                      title="Final status"
-                                                      className="w-2 h-2 rounded-full bg-green-600 shrink-0"
-                                                    />
-                                                  )}
-                                                </div>
-
-                                                {/* Selected check */}
-                                                <div className="ml-auto flex items-center">
-                                                  {isSelected && (
-                                                    <Check size={13} className="shrink-0" />
-                                                  )}
-                                                </div>
-                                              </button>
-                                            );
-                                          })}
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                })()}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              <ChildTasksPanel
+                projectId={currentUserStory.project_id ?? ''}
+                userStoryId={currentUserStory.id ?? ''}
+                onCreateTask={onCreateTask}
+                totalTasks = {totalTasks}
+              />
 
               {/* Activity Section */}
               <div>
@@ -2048,13 +1609,11 @@ export const UserStoryDetailDrawer = ({
             >
               {/* Status */}
               <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
-                <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
-                  Status
-                </p>
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-100 mb-2">Status</p>
                 <div className="relative" ref={statusMenuRef}>
                   <button
                     onClick={() => setShowStatusMenu(!showStatusMenu)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-gray-100"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-slate-100"
                     style={{
                       backgroundColor:
                         userStoryStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
@@ -2296,9 +1855,118 @@ export const UserStoryDetailDrawer = ({
                 </DetailRow>
 
                 <DetailRow label="Reporter">
-                  <span className="text-sm text-gray-700">
-                    {currentUserStory.reporter_name || '-'}
-                  </span>
+                  <div className="relative" ref={reporterMenuRef}>
+                    <button
+                      onClick={() => setShowReporterMenu((v) => !v)}
+                      className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
+                    >
+                      {userStoryData.reporterId ? (
+                        <AssigneeAvatar
+                          initials={userStoryData.reporterInitials}
+                          color={getMemberColor(userStoryData.reporterId)}
+                          size="sm"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
+                          <User size={12} className="text-gray-400 dark:text-slate-400" />
+                        </span>
+                      )}
+                      <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
+                        {userStoryData.reporterName || 'Unassigned'}
+                      </span>
+                      <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                    </button>
+
+                    {showReporterMenu && (
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                        {/* Search */}
+                        <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                          <WpInput
+                            value={reporterSearch}
+                            onChange={(e) => setReporterSearch(e.target.value)}
+                            placeholder="Search reporter..."
+                          />
+                        </div>
+
+                        {/* Loading */}
+                        {(isLoadingReporterMembers || isFetchingReporterMembers) && (
+                          <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
+                            Searching...
+                          </div>
+                        )}
+
+                        {/* Member list */}
+                        {!isLoadingReporterMembers &&
+                          !isFetchingReporterMembers &&
+                          reporterMembers?.map((m) => {
+                            const name = m.full_name ?? m.user?.name ?? '';
+                            const displayName =
+                              name ||
+                              m.user?.email?.split('@')[0] ||
+                              m.user?.email ||
+                              'Unknown User';
+                            const initials = getInitials(
+                              name || m.user?.email?.split('@')[0] || 'U'
+                            );
+                            const color = getMemberColor(m.user_id);
+                            const isSelected = m.user_id === userStoryData.reporterId;
+                            return (
+                              <WpButton
+                                key={m.user_id}
+                                type="button"
+                                variant="ghost"
+                                onClick={async () => {
+                                  setShowReporterMenu(false);
+                                  setReporterSearch('');
+                                  await handleUpdate({
+                                    reporterId: m.user_id,
+                                    reporterName: displayName,
+                                  });
+                                }}
+                                className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
+                              >
+                                <AssigneeAvatar initials={initials} color={color} size="sm" />
+                                <span className="truncate">{displayName}</span>
+                                {isSelected && (
+                                  <Check size={12} className="ml-auto text-blue-600 dark:text-blue-400 shrink-0" />
+                                )}
+                              </WpButton>
+                            );
+                          })}
+
+                        {/* No results */}
+                        {!isLoadingReporterMembers &&
+                          !isFetchingReporterMembers &&
+                          reporterSearch &&
+                          reporterMembers?.length === 0 && (
+                            <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
+                              No members found
+                            </div>
+                          )}
+
+                        {/* Unassigned option */}
+                        {!isLoadingReporterMembers &&
+                          !isFetchingReporterMembers &&
+                          !reporterSearch && (
+                            <WpButton
+                              type="button"
+                              variant="ghost"
+                              onClick={async () => {
+                                setShowReporterMenu(false);
+                                setReporterSearch('');
+                                await handleUpdate({ reporterId: '', reporterName: '' });
+                              }}
+                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+                            >
+                              <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
+                                <User size={11} className="text-gray-400 dark:text-slate-400" />
+                              </span>
+                              Unassigned
+                            </WpButton>
+                          )}
+                      </div>
+                    )}
+                  </div>
                 </DetailRow>
 
                 <DetailRow label="Priority">

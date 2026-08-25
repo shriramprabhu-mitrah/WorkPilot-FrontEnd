@@ -102,16 +102,23 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     assigneeColor: task.assigneeColor,
     assigneeId: '',
     assigneeName: '',
+    reporterId: task.reporter_name ? task.reporter_name : '',
+    reporterName: task.reporter_name ?? '',
+    reporterInitials: task.reporterInitials ?? '',
+    reporterColor: task.reporterColor ?? '',
   });
   // const [members, setMembers] = useState<ProjectMember[]>([]);
 
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
+  const [showReporterMenu, setShowReporterMenu] = useState(false);
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [keepAssignee, setKeepAssignee] = useState(true);
   const [assigneeSearch, setAssigneeSearch] = useState('');
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
+  const [reporterSearch, setReporterSearch] = useState('');
+  const debouncedReporterSearch = useDebounce(reporterSearch, 500);
   const [userStorySearch, setUserStorySearch] = useState('');
   const [showUserStoryMenu, setShowUserStoryMenu] = useState(false);
   const debouncedUserStorySearch = useDebounce(userStorySearch, 500);
@@ -134,6 +141,20 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     showAssigneeMenu
   );
 
+  const {
+    members: reporterMembers,
+    isLoadingMembers: isLoadingReporterMembers,
+    isFetchingMembers: isFetchingReporterMembers,
+  } = useGetProjectMembers(
+    task.projectId ?? '',
+    {
+      page: 1,
+      page_size: 10,
+      name: debouncedReporterSearch,
+    },
+    showReporterMenu
+  );
+
   const { userStories, isLoadingUserStories, isFetchingUserStories } = useGetUserStories(
     taskData.project_id,
     {
@@ -143,6 +164,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     }
   );
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
+  const reporterMenuRef = useRef<HTMLDivElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -262,6 +284,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           payload.assignee_id = patch.assigneeId || null;
         }
 
+        if (patch.reporterId !== undefined) {
+          payload.reporter_id = patch.reporterId || null;
+        }
+
         setIsSaving(true);
 
         await taskService.updateTask(task.projectId, task.taskId, payload);
@@ -313,6 +339,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
             status: d.status ?? prev.status,
+            reporterName: d.reporter_name ?? prev.reporterName,
             user_story_title: d.user_story_title ?? prev.user_story_title,
             dueDate: d.due_date ? d.due_date?.replace(/Z$/, '') : '',
             storyPoints: d.story_points ?? prev.storyPoints,
@@ -351,6 +378,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       }
       if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
         setShowAssigneeMenu(false);
+      }
+      if (reporterMenuRef.current && !reporterMenuRef.current.contains(event.target as Node)) {
+        setShowReporterMenu(false);
       }
       if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
         setShowActionMenu(false);
@@ -1190,18 +1220,153 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </DetailRow>
 
               <DetailRow label="Reporter">
-                {task.reporterInitials ? (
-                  <div className="flex items-center gap-2">
-                    <AssigneeAvatar
-                      initials={task.reporterInitials}
-                      color={task.reporterColor ?? colors.avatarIndigo}
-                      size="sm"
-                    />
-                    <span className="text-sm text-gray-700">{task.reporter}</span>
-                  </div>
-                ) : (
-                  <span className="text-gray-400 text-sm">None</span>
-                )}
+                <div className="relative" ref={reporterMenuRef}>
+                  <button
+                    onClick={() => setShowReporterMenu((v) => !v)}
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
+                  >
+                    {taskData.reporterId ? (
+                      <AssigneeAvatar
+                        initials={taskData.reporterInitials || getInitials(taskData.reporterName)}
+                        color={taskData.reporterColor || colors.avatarIndigo}
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
+                        <User size={12} className="text-gray-400 dark:text-slate-400" />
+                      </span>
+                    )}
+                    <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
+                      {taskData.reporterName || 'None'}
+                    </span>
+                    <ChevronDown size={12} className="ml-auto text-gray-400 dark:text-slate-500 shrink-0" />
+                  </button>
+
+                  {showReporterMenu && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                      {/* Search */}
+                      <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={reporterSearch}
+                          onChange={(e) => setReporterSearch(e.target.value)}
+                          placeholder="Search reporter..."
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Loading */}
+                      {(isLoadingReporterMembers || isFetchingReporterMembers) && (
+                        <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
+                          Searching...
+                        </div>
+                      )}
+
+                      {/* Member list */}
+                      {!isLoadingReporterMembers &&
+                        !isFetchingReporterMembers &&
+                        reporterMembers?.map((m) => {
+                          const name = m.full_name ?? m.user?.name ?? '';
+                          const displayName =
+                            name ||
+                            m.user?.email?.split('@')[0] ||
+                            m.user?.email ||
+                            'Unknown User';
+                          const initials = getInitials(
+                            name || m.user?.email?.split('@')[0] || 'U'
+                          );
+                          const color = getMemberColor(m.user_id);
+                          const isSelected = m.user_id === taskData.reporterId;
+                          return (
+                            <WpButton
+                              key={m.user_id}
+                              type="button"
+                              variant="ghost"
+                              onClick={async () => {
+                                setTaskData((prev) => ({
+                                  ...prev,
+                                  reporterId: m.user_id,
+                                  reporterName: displayName,
+                                  reporterInitials: initials,
+                                  reporterColor: color,
+                                }));
+                                setShowReporterMenu(false);
+                                setReporterSearch('');
+                                if (!task.projectId || !task.taskId) return;
+                                try {
+                                  await taskService.updateTask(task.projectId, task.taskId, {
+                                    reporter_id: m.user_id,
+                                  });
+                                } catch (error) {
+                                  logger.log('Failed to update reporter', error);
+                                  setTaskData((prev) => ({
+                                    ...prev,
+                                    reporterId: taskData.reporterId,
+                                    reporterName: taskData.reporterName,
+                                    reporterInitials: taskData.reporterInitials,
+                                    reporterColor: taskData.reporterColor,
+                                  }));
+                                }
+                              }}
+                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
+                            >
+                              <AssigneeAvatar initials={initials} color={color} size="sm" />
+                              <span className="truncate">{displayName}</span>
+                              {isSelected && (
+                                <Check size={12} className="ml-auto text-blue-600 dark:text-blue-400 shrink-0" />
+                              )}
+                            </WpButton>
+                          );
+                        })}
+
+                      {/* No results */}
+                      {!isLoadingReporterMembers &&
+                        !isFetchingReporterMembers &&
+                        reporterSearch &&
+                        (!reporterMembers || reporterMembers.length === 0) && (
+                          <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
+                            No members found
+                          </div>
+                        )}
+
+                      {/* None option */}
+                      {!isLoadingReporterMembers &&
+                        !isFetchingReporterMembers &&
+                        !reporterSearch && (
+                          <WpButton
+                            type="button"
+                            variant="ghost"
+                            onClick={async () => {
+                              setTaskData((prev) => ({
+                                ...prev,
+                                reporterId: '',
+                                reporterName: '',
+                                reporterInitials: '',
+                                reporterColor: '',
+                              }));
+                              setShowReporterMenu(false);
+                              setReporterSearch('');
+                                if (!task.projectId || !task.taskId) return;
+                              try {
+                                await taskService.updateTask(task.projectId, task.taskId, {
+                                  reporter_id: null,
+                                });
+                              } catch (error) {
+                                logger.log('Failed to clear reporter', error);
+                              }
+                            }}
+                            className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+                          >
+                            <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
+                              <User size={11} className="text-gray-400 dark:text-slate-400" />
+                            </span>
+                            None
+                          </WpButton>
+                        )}
+                    </div>
+                  )}
+                </div>
               </DetailRow>
 
               <DetailRow label="Priority">

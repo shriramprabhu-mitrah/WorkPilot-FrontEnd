@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { useTheme } from 'next-themes';
 import {
   $getRoot,
   $getSelection,
@@ -131,9 +132,9 @@ function ImageComponent({
       onMouseLeave={() => setHovered(false)}
     >
       {!loaded && !hasError && (
-        <div className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-md border border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+        <div className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-md border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 dark:border-slate-600 border-t-gray-600 dark:border-t-slate-300" />
             Loading image...
           </div>
         </div>
@@ -160,7 +161,7 @@ function ImageComponent({
             setLoaded(false);
             setHasError(true);
           }}
-          className={`max-w-full rounded-md border border-gray-200 ${loaded ? 'block' : 'hidden'}`}
+          className={`max-w-full rounded-md border border-gray-200 dark:border-slate-700 ${loaded ? 'block' : 'hidden'}`}
           style={{
             maxHeight: 320,
             width: 'auto',
@@ -345,8 +346,8 @@ function ToolbarButton({
         disabled:opacity-40
         ${
           active
-            ? 'bg-gray-200 text-gray-900'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
+            : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
         }
       `}
     >
@@ -356,7 +357,7 @@ function ToolbarButton({
 }
 
 function ToolbarDivider() {
-  return <div className="mx-1 h-5 w-px shrink-0 bg-gray-200" />;
+  return <div className="mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-slate-600" />;
 }
 
 function TextColorPicker({
@@ -420,12 +421,12 @@ function TextColorPicker({
         absolute left-1/2 top-full z-[100]
         mt-2 w-[225px]
         -translate-x-1/2
-        rounded-xl border border-gray-200
-        bg-white p-3
+        rounded-xl border border-gray-200 dark:border-slate-700
+        bg-white dark:bg-slate-800 p-3
         shadow-xl
       "
     >
-      <div className="mb-3 text-sm font-semibold text-gray-700">Text color</div>
+      <div className="mb-3 text-sm font-semibold text-gray-700 dark:text-slate-200">Text color</div>
 
       <div className="grid grid-cols-7 gap-2">
         {colors.map((color, index) => (
@@ -438,7 +439,7 @@ function TextColorPicker({
             className="
               relative flex h-6 w-6
               items-center justify-center
-              rounded-md border border-gray-200
+              rounded-md border border-gray-200 dark:border-slate-600
               transition-transform
               hover:scale-110
             "
@@ -456,11 +457,11 @@ function TextColorPicker({
         className="
           mt-3 flex h-9 w-full
           items-center justify-center
-          rounded-md border border-gray-200
+          rounded-md border border-gray-200 dark:border-slate-600
           text-sm font-medium
-          text-gray-700
+          text-gray-700 dark:text-slate-200
           transition-colors
-          hover:bg-gray-50
+          hover:bg-gray-50 dark:hover:bg-slate-700
         "
       >
         Remove color
@@ -489,8 +490,8 @@ function CodeSnippetToolbar({
         mt-2 flex
         -translate-x-1/2
         items-center gap-1
-        rounded-lg border border-gray-200
-        bg-white px-2 py-2
+        rounded-lg border border-gray-200 dark:border-slate-700
+        bg-white dark:bg-slate-800 px-2 py-2
         shadow-xl
       "
     >
@@ -500,9 +501,9 @@ function CodeSnippetToolbar({
         className="
           h-8 min-w-[125px]
           rounded-md border-0
-          bg-transparent
+          bg-transparent dark:bg-slate-800
           px-2 text-sm
-          text-gray-700
+          text-gray-700 dark:text-slate-200
           outline-none
           focus:ring-0
         "
@@ -518,7 +519,7 @@ function CodeSnippetToolbar({
         <option>SQL</option>
       </select>
 
-      <div className="h-6 w-px bg-gray-200" />
+      <div className="h-6 w-px bg-gray-200 dark:bg-slate-600" />
       <ToolbarButton title="Decrease indent" onClick={() => {}}>
         <Minus size={15} />
       </ToolbarButton>
@@ -565,6 +566,8 @@ function InitialValuePlugin({ value }: { value?: string }) {
 
 function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Promise<string> }) {
   const [editor] = useLexicalComposerContext();
+  const { resolvedTheme } = useTheme();
+  const emojiTheme = resolvedTheme === 'dark' ? Theme.DARK : Theme.LIGHT;
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isBold, setIsBold] = useState(false);
@@ -673,7 +676,8 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         flex min-h-12
         items-center gap-1
         overflow-visible
-        border-b border-gray-200
+        border-b border-gray-200 dark:border-slate-700
+        bg-white dark:bg-slate-800
         px-3 py-2
       "
     >
@@ -725,7 +729,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             className="
             flex h-5 w-5
             items-center justify-center
-            rounded border border-gray-300
+            rounded border border-gray-300 dark:border-slate-500
             text-xs font-semibold
           "
           >
@@ -770,9 +774,9 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
               absolute left-1/2 top-full z-[100]
               mt-2 w-[220px]
               -translate-x-1/2
-              rounded-md border border-red-200
-              bg-red-50 px-3 py-2
-              text-xs text-red-600
+              rounded-md border border-red-200 dark:border-red-800
+              bg-red-50 dark:bg-red-900/20 px-3 py-2
+              text-xs text-red-600 dark:text-red-400
               shadow-lg
             "
           >
@@ -821,7 +825,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
           >
             <EmojiPicker
               onEmojiClick={handleEmojiClick}
-              theme={Theme.LIGHT}
+              theme={emojiTheme}
               width={350}
               height={450}
               searchDisabled={false}
@@ -855,15 +859,14 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         w-[320px]
         -translate-x-1/2
         rounded-lg
-        border
-        border-gray-200
-        bg-white
+        border border-gray-200 dark:border-slate-700
+        bg-white dark:bg-slate-800
         p-3
         shadow-xl
       "
           >
             <div className="mb-3">
-              <label className="mb-1.5 block text-sm text-gray-600">Paste or search for link</label>
+              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">Paste or search for link</label>
               <input
                 autoFocus
                 type="text"
@@ -883,10 +886,10 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             h-10
             w-full
             rounded-md
-            border
-            border-gray-300
+            border border-gray-300 dark:border-slate-600
+            bg-white dark:bg-slate-700
             px-3
-            text-sm
+            text-sm text-gray-900 dark:text-slate-100
             outline-none
             focus:border-blue-500
             focus:ring-1
@@ -896,7 +899,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             </div>
 
             <div className="mb-3">
-              <label className="mb-1.5 block text-sm text-gray-600">Display text (optional)</label>
+              <label className="mb-1.5 block text-sm text-gray-600 dark:text-slate-300">Display text (optional)</label>
               <input
                 type="text"
                 value={linkText}
@@ -914,10 +917,10 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             h-10
             w-full
             rounded-md
-            border
-            border-gray-300
+            border border-gray-300 dark:border-slate-600
+            bg-white dark:bg-slate-700
             px-3
-            text-sm
+            text-sm text-gray-900 dark:text-slate-100
             outline-none
             focus:border-blue-500
             focus:ring-1
@@ -939,8 +942,8 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
             px-3
             py-1.5
             text-sm
-            text-gray-600
-            hover:bg-gray-100
+            text-gray-600 dark:text-slate-300
+            hover:bg-gray-100 dark:hover:bg-slate-700
           "
               >
                 Cancel
@@ -996,7 +999,7 @@ function EditorPlaceholder({ text }: { text: string }) {
       className="
         pointer-events-none
         absolute left-4 top-4
-        text-sm text-gray-500
+        text-sm text-gray-400 dark:text-slate-500
       "
     >
       {text}
@@ -1024,12 +1027,12 @@ export default function WpRichTextEditor({
     <div
       className={`
         relative overflow-visible
-        rounded-lg border border-gray-300
-        bg-white
+        rounded-lg border border-gray-300 dark:border-slate-600
+        bg-white dark:bg-slate-800
         transition-colors
         ${
           disabled
-            ? 'pointer-events-none bg-gray-50 opacity-60'
+            ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
             : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
         }
         ${className}
@@ -1045,9 +1048,9 @@ export default function WpRichTextEditor({
                 className="
                   w-full overflow-auto
                   px-4 py-3
-                  text-sm text-gray-800
+                  text-sm text-gray-800 dark:text-slate-100
                   outline-none
-                  [&_a]:text-blue-600
+                  [&_a]:text-blue-600 dark:[&_a]:text-blue-400
                   [&_a]:underline
                   [&_ol]:ml-6
                   [&_ol]:list-decimal
@@ -1057,7 +1060,7 @@ export default function WpRichTextEditor({
                   [&_pre]:my-2
                   [&_pre]:overflow-x-auto
                   [&_pre]:rounded-md
-                  [&_pre]:bg-gray-100
+                  [&_pre]:bg-gray-100 dark:[&_pre]:bg-slate-700
                   [&_pre]:p-4
                   [&_pre]:font-mono
                   [&_pre]:text-sm
