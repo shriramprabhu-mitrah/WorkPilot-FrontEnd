@@ -6,6 +6,7 @@ import {
   AddProjectMembersPayload,
   GetProjectQueryParams,
   GetProjectMembersParams,
+  ActivityFilters,
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '../types/project';
 
@@ -229,3 +230,41 @@ export const useUpdateProjectRole = () => {
     error: mutation.error,
   };
 };
+
+export const useGetProjectActivities = (
+  projectId: string,
+  filters: ActivityFilters,
+  enabled = true
+) => {
+  const query = useQuery({
+    queryKey: [
+      'projectActivities',
+      projectId,
+      filters.type,
+      filters.page,
+      filters.page_size,
+      filters.resource_type,
+      filters.resource_id,
+      filters.user_story_id,
+      filters.task_id,
+      filters.sprint_id,
+      filters.user_id,
+      filters.activity_type,
+      filters.start_date,
+      filters.end_date,
+    ],
+    queryFn: () => projectService.getActivities(projectId, filters),
+    enabled: enabled && Boolean(projectId),
+    staleTime: 30 * 1000,
+  });
+
+  return {
+    activities: query.data?.data ?? [],
+    meta: query.data?.meta,
+    isLoadingActivities: query.isLoading,
+    isFetchingActivities: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+  };
+};
+

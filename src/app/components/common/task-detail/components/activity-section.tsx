@@ -15,6 +15,7 @@ import {
 } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
+import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 
 type ActivityTab = 'all' | 'comments' | 'history';
 interface UploadedAttachment {
@@ -37,6 +38,16 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2) || '?';
 
+const AVATAR_COLORS = [
+  colors.avatarBlue,
+  colors.avatarGreen,
+  colors.avatarPink,
+  colors.avatarAmber,
+  colors.avatarIndigo,
+];
+const getMemberColor = (userId: string) =>
+  userId ? AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length] : colors.avatarBlue;
+
 const formatTime = (iso: string) => {
   const d = new Date(iso);
   return isNaN(d.getTime()) ? iso : d.toLocaleString();
@@ -46,6 +57,20 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const [tab, setTab] = useState<ActivityTab>('all');
   const [comment, setComment] = useState('');
   const [showCommentEditor, setShowCommentEditor] = useState(false);
+
+  // Hooks for activities
+  const { activities, isLoadingActivities } = useGetProjectActivities(
+    projectId ?? '',
+    {
+      type: 'activity',
+      resource_type: 'task',
+      resource_id: taskId,
+      task_id: taskId,
+      page: 1,
+      page_size: 50,
+    },
+    tab === 'history' && !!projectId && !!taskId
+  );
 
   // Hooks for comments
   const { comments, isLoadingComments, isErrorComments, commentsError } = useGetTaskComments(
@@ -421,28 +446,113 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
           </>
         )}
 
-        {(tab === 'all' || tab === 'history') &&
-          historyItems.map((item) => (
-            <div key={item.id} className="flex gap-3">
-              <AssigneeAvatar initials={item.userInitials} color={item.userColor} size="md" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-sm font-semibold text-gray-800">{item.user}</span>
-                  <span className="text-xs text-gray-500">{item.action}</span>
-                  {item.target && (
-                    <span className="text-xs font-semibold text-gray-700">{item.target}</span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">{item.timestamp}</p>
-                <span
-                  className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: colors.gray100, color: colors.gray500 }}
-                >
-                  HISTORY
-                </span>
+        {tab === 'history' && (
+          <div className="space-y-4">
+            {isLoadingActivities ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
               </div>
-            </div>
-          ))}
+            ) : activities && activities.length > 0 ? (
+              <div className="space-y-3">
+                {activities.map((activity) => {
+                  const activityDate = new Date(activity.timestamp);
+                  const formattedDate = activityDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+                  const formattedTime = activityDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  });
+
+                  const userName = activity.user?.name || 'Unknown User';
+                  const userInitials = getInitials(userName);
+                  const userColor = getMemberColor(activity.user?.id || '');
+
+                  let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
+                  let changeText: React.ReactNode = null;
+                  
+                  if (activity.details) {
+                    const changeMatch = activity.details.match(/:\s*(.+) changed from (.+) to (.+)$/);
+                    if (changeMatch) {
+                      const field = changeMatch[1];
+                      const fromVal = changeMatch[2].replace(/'/g, '');
+                      const toVal = changeMatch[3].replace(/'/g, '');
+                      titleAction = `changed the ${field.charAt(0).toUpperCase() + field.slice(1)}`;
+                      
+                      const formatVal = (val: string) => val === 'nil' ? 'None' : val;
+                      changeText = (
+                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-700 dark:text-slate-300">
+                          <span className="text-gray-500">{formatVal(fromVal)}</span>
+                          <span className="text-gray-400">→</span>
+                          <span>{formatVal(toVal)}</span>
+                        </div>
+                      );
+                    } else if (activity.details.includes('details updated')) {
+                      titleAction = `updated the details`;
+                    } else if (activity.details.includes('created by')) {
+                      titleAction = `created the ${activity.resource_type.replace('_', ' ')}`;
+                    } else if (activity.resource_type === 'comment') {
+                      titleAction = `commented`;
+                      const commentMatch = activity.details.match(/ as (.*)$/);
+                      if (commentMatch) {
+                         changeText = (
+                           <div 
+                             className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert" 
+                             dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
+                           />
+                         );
+                      } else {
+                         changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                      }
+                    } else if (activity.resource_type === 'user_story_attachment' || activity.resource_type === 'task_attachment') {
+                      titleAction = `uploaded an attachment`;
+                      changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                    } else {
+                      changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                    }
+                  }
+
+                  return (
+                    <div key={activity.id} className="flex gap-4">
+                      {/* Avatar */}
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+                        style={{ backgroundColor: userColor }}
+                      >
+                        {userInitials}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-gray-900 dark:text-slate-100 text-[15px]">
+                            {userName}
+                          </span>
+                          <span className="text-gray-700 dark:text-slate-300 text-[15px]">
+                            {titleAction}
+                          </span>
+                        </div>
+
+                        <div className="text-[13px] text-gray-500 dark:text-slate-400 mt-1">
+                          {formattedDate} at {formattedTime}
+                        </div>
+
+                        {changeText}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-slate-400 py-8 text-center">
+                <p>No history yet.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {(tab === 'all' || tab === 'comments') && (

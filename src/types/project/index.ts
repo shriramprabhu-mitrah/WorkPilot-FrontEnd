@@ -149,3 +149,54 @@ export interface GetProjectMembersParams {
   page_size?: number;
   name?: string;
 }
+
+export interface ActivityUser {
+  avatar_url: string;
+  email: string;
+  id: string;
+  name: string;
+  role: string;
+}
+
+export interface Activity {
+  action: string;
+  details: string;
+  id: string;
+  organization_id: string;
+  project_id: string;
+  project_name: string;
+  resource_id: string;
+  resource_type: string;
+  sprint_name: string;
+  task_key: string;
+  task_name: string;
+  timestamp: string;
+  title: string;
+  user: ActivityUser;
+  user_story_name: string;
+}
+
+export type ActivityType = 'view' | 'activity';
+
+export type ActivityResourceType =
+  | 'project'
+  | 'task'
+  | 'userstory'
+  | 'sprint'
+  | 'comment';
+
+export interface ActivityFilters {
+  type: ActivityType;
+  page?: number;
+  page_size?: number;
+  action?: string;
+  resource_type?: ActivityResourceType;
+  resource_id?: string;
+  task_id?: string;
+  user_story_id?: string;
+  sprint_id?: string;
+  user_id?: string;
+  activity_type?:string;
+  start_date?:string;
+  end_date?:string;
+}
