@@ -11,7 +11,10 @@ export interface UserProfile {
   created_at?: string;
   username?: string;
   is_active?: boolean;
-  color?: string
+  color?: string;
+  organization_id?:string;
+  organization_name?:string;
+  require_password_change?:boolean;
 }
 
 export interface UserUpdatePayload {

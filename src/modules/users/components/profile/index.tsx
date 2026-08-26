@@ -16,9 +16,11 @@ import { PasswordStrength } from '@/src/app/components/common/password-strength/
 import { useSearchParams } from 'next/navigation';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import Image from 'next/image';
+import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
     useUser();
+  const { handleLogOutAsync } = useSignin();
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const searchParams = useSearchParams();
@@ -26,6 +28,7 @@ export default function Profile() {
   const { push, replace } = useOrgNavigation();
 
   const shouldChangePassword = searchParams.get('changePassword') === 'true';
+  const requirePasswordChange = user?.require_password_change || false;
   const [pwdData, setPwdData] = useState({
     old_password: '',
     new_password: '',
@@ -50,8 +53,17 @@ export default function Profile() {
       setTimeout(() => {
         setIsChangingPwd(false);
         setPwdSuccess(false);
-        if (shouldChangePassword) {
-          replace('/profile');
+        if (shouldChangePassword || requirePasswordChange) {
+          // After successful password change, redirect to dashboard
+          if (user?.role === 'super_admin') {
+            push('/super-admin/dashboard');
+          } else if (user?.organization_name) {
+            // Get org slug from URL or user data
+            const orgSlug = window.location.pathname.split('/')[1];
+            push(`/${orgSlug}/dashboard`);
+          } else {
+            replace('/profile');
+          }
         }
       }, 2000);
     } catch (err: unknown) {
@@ -59,7 +71,7 @@ export default function Profile() {
     }
   };
   useEffect(() => {
-    if (!shouldChangePassword) return;
+    if (!shouldChangePassword && !requirePasswordChange) return;
 
     const timer = setTimeout(() => {
       changePasswordRef.current?.scrollIntoView({
@@ -69,7 +81,19 @@ export default function Profile() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [shouldChangePassword]);
+  }, [shouldChangePassword, requirePasswordChange]);
+
+  // Auto-open password change form when required
+  useEffect(() => {
+    if (requirePasswordChange || shouldChangePassword) {
+      // Use setTimeout to avoid cascading renders
+      const timer = setTimeout(() => {
+        setIsChangingPwd(true);
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [requirePasswordChange, shouldChangePassword]);
   const getInitials = (name: string) => {
     if (!name) return 'U';
     const parts = name.split(' ');
@@ -222,7 +246,7 @@ export default function Profile() {
             </div>
             <WpButton
               type="button"
-              disabled={isEditing}
+              disabled={isEditing || requirePasswordChange || shouldChangePassword}
               onClick={() => {
                 setFullName(user?.name || '');
                 setAvatarPreview(user?.avatar_url || '');
@@ -235,6 +259,7 @@ export default function Profile() {
             </WpButton>
             <WpButton
               type="button"
+              disabled={requirePasswordChange || shouldChangePassword}
               onClick={() => {
                 const nextState = !isChangingPwd;
 
@@ -350,6 +375,18 @@ export default function Profile() {
               ref={changePasswordRef}
               className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
             >
+              {(requirePasswordChange || shouldChangePassword) && (
+                <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                    ⚠️ Password change required
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                    You must change your password before you can access the dashboard. Click
+                    &quot;Cancel&quot; to logout.
+                  </p>
+                </div>
+              )}
+
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
                 Change Password
               </h3>
@@ -398,11 +435,12 @@ export default function Profile() {
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <WpButton
                     type="button"
-                    onClick={() => {
-                      setIsChangingPwd(false);
-
-                      if (shouldChangePassword) {
-                        replace('/profile');
+                    onClick={async () => {
+                      // If password change is required, logout on cancel
+                      if (requirePasswordChange || shouldChangePassword) {
+                        await handleLogOutAsync();
+                      } else {
+                        setIsChangingPwd(false);
                       }
                     }}
                     variant="warning"
@@ -416,9 +454,9 @@ export default function Profile() {
               </form>
             </div>
           )}
-          <div className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+          {/* <div className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
             <h3 className="font-semibold text-gray-900 dark:text-slate-100">My Recent Tasks</h3>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
