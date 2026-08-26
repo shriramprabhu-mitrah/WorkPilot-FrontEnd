@@ -25,7 +25,7 @@ import {
 } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetTasks, useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { BacklogRow } from '../components/BacklogRow';
-import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
+import { useCompleteSprint, useGetSprints, useStartSprint, } from '@/src/modules/project/hooks/useSprint';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
 import StartSprintModal from '../components/startSprintModal';
@@ -45,7 +45,8 @@ import { PaginatedApiResponse } from '@/src/services/axios';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
-
+import { SprintDetail } from '@/src/types/project';
+import CompleteSprintModal from '../components/CompleteSprint';
 const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   id: task.key || task.id || '',
   taskId: task.id || '',
@@ -56,7 +57,7 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   description: task.description || '',
   priority: task.priority
     ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+      task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
     : 'Medium',
   labels: [],
   dueDate: task.due_date ? task.due_date.split('T')[0] : '',
@@ -66,11 +67,11 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   user_story_title: task.user_story_title,
   assigneeInitials: task.assignee_name
     ? task.assignee_name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     : '',
   assigneeColor: colors.avatarBlue,
 });
@@ -145,13 +146,29 @@ export const BacklogTemplate = () => {
   >(new Map());
   const [unassignedTasksOpen, setUnassignedTasksOpen] = useState(true);
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
+  const [selectedCompleteSprint, setSelectedCompleteSprint] =
+    useState<SprintDetail | null>(null);
+  const [actionSprint, setActionSprint] = useState<SprintDetail | null>(null);
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const selectedProject = selectedApiProject?.id ?? '';
   const selectedSprint = selectedSprintStore?.id ?? '';
+
+
+
   // Debounce member search for API calls
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
   // Get project members with search
+  const {
+    startSprintAsync,
+    isStartingSprint,
+  } = useStartSprint(selectedProject);
+
+  const {
+    completeSprint,
+    isCompletingSprint,
+  } = useCompleteSprint(selectedProject);
+
   const {
     members: projectMembers,
     isLoadingMembers: isLoadingProjectMembers,
@@ -518,16 +535,16 @@ export const BacklogTemplate = () => {
             ? { ...rawTask, id: actualTaskId, user_story_id: storyId }
             : currentActiveTask
               ? {
-                  id: actualTaskId,
-                  key: currentActiveTask.id,
-                  title: currentActiveTask.title,
-                  status: currentActiveTask.status || 'todo',
-                  estimated_hours: 0,
-                  user_story_id: storyId,
-                  project_id: currentActiveTask.projectId || selectedProject,
-                  story_points: currentActiveTask.storyPoints,
-                  due_date: currentActiveTask.dueDate,
-                }
+                id: actualTaskId,
+                key: currentActiveTask.id,
+                title: currentActiveTask.title,
+                status: currentActiveTask.status || 'todo',
+                estimated_hours: 0,
+                user_story_id: storyId,
+                project_id: currentActiveTask.projectId || selectedProject,
+                story_points: currentActiveTask.storyPoints,
+                due_date: currentActiveTask.dueDate,
+              }
               : undefined;
 
           queryClient.setQueriesData<{ data: UserStoryResponse[] }>(
@@ -539,10 +556,10 @@ export const BacklogTemplate = () => {
                 data: old.data.map((s) =>
                   s.id === storyId
                     ? {
-                        ...s,
-                        total_tasks: (s.total_tasks ?? 0) + 1,
-                        tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
-                      }
+                      ...s,
+                      total_tasks: (s.total_tasks ?? 0) + 1,
+                      tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
+                    }
                     : s
                 ),
               };
@@ -560,10 +577,10 @@ export const BacklogTemplate = () => {
                   data: (page.data ?? []).map((s) =>
                     s.id === storyId
                       ? {
-                          ...s,
-                          total_tasks: (s.total_tasks ?? 0) + 1,
-                          tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
-                        }
+                        ...s,
+                        total_tasks: (s.total_tasks ?? 0) + 1,
+                        tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
+                      }
                       : s
                   ),
                 }));
@@ -648,23 +665,23 @@ export const BacklogTemplate = () => {
             ? { ...matchedTask, id: actualTaskId, sprint_id: sprintId, user_story_id: undefined }
             : currentActiveTask
               ? {
-                  id: actualTaskId,
-                  key: currentActiveTask.id,
-                  title: currentActiveTask.title,
-                  status: currentActiveTask.status || 'todo',
-                  estimated_hours: 0,
-                  sprint_id: sprintId,
-                  project_id: currentActiveTask.projectId || effectiveProjectId,
-                  story_points: currentActiveTask.storyPoints,
-                  due_date: currentActiveTask.dueDate,
-                }
+                id: actualTaskId,
+                key: currentActiveTask.id,
+                title: currentActiveTask.title,
+                status: currentActiveTask.status || 'todo',
+                estimated_hours: 0,
+                sprint_id: sprintId,
+                project_id: currentActiveTask.projectId || effectiveProjectId,
+                story_points: currentActiveTask.storyPoints,
+                due_date: currentActiveTask.dueDate,
+              }
               : {
-                  id: actualTaskId,
-                  title: 'Task',
-                  status: 'todo',
-                  estimated_hours: 0,
-                  sprint_id: sprintId,
-                };
+                id: actualTaskId,
+                title: 'Task',
+                status: 'todo',
+                estimated_hours: 0,
+                sprint_id: sprintId,
+              };
 
           // Optimistic UI update: immediately move to target sprint
           setOptimisticTaskUpdates((prev) => {
@@ -748,15 +765,15 @@ export const BacklogTemplate = () => {
             (active.data.current?.task as TaskResponse | undefined) ||
             (currentActiveTask
               ? {
-                  id: actualTaskId,
-                  key: currentActiveTask.id,
-                  title: currentActiveTask.title,
-                  status: currentActiveTask.status || 'todo',
-                  estimated_hours: 0,
-                  project_id: currentActiveTask.projectId || effectiveProjectId,
-                  story_points: currentActiveTask.storyPoints,
-                  due_date: currentActiveTask.dueDate,
-                }
+                id: actualTaskId,
+                key: currentActiveTask.id,
+                title: currentActiveTask.title,
+                status: currentActiveTask.status || 'todo',
+                estimated_hours: 0,
+                project_id: currentActiveTask.projectId || effectiveProjectId,
+                story_points: currentActiveTask.storyPoints,
+                due_date: currentActiveTask.dueDate,
+              }
               : undefined);
 
           // Optimistic UI update: explicitly set sprintId: null and userStoryId: null
@@ -767,11 +784,11 @@ export const BacklogTemplate = () => {
               userStoryId: null,
               task: taskObj
                 ? {
-                    ...taskObj,
-                    id: actualTaskId,
-                    sprint_id: undefined,
-                    user_story_id: undefined,
-                  }
+                  ...taskObj,
+                  id: actualTaskId,
+                  sprint_id: undefined,
+                  user_story_id: undefined,
+                }
                 : undefined,
               timestamp: Date.now(),
             });
@@ -1138,7 +1155,31 @@ export const BacklogTemplate = () => {
     : activeStory
       ? 'story'
       : null;
+  const sprintUserStories = selectedCompleteSprint
+    ? userStories.filter(
+      (story) => story.sprint_id === selectedCompleteSprint.id
+    )
+    : [];
 
+  const completedUserStories = sprintUserStories.filter((story) => {
+    const status = String(story.status ?? '').toLowerCase();
+
+    return (
+      status === 'completed' ||
+      status === 'complete' ||
+      status === 'done'
+    );
+  }).length;
+
+  const inProgressUserStories = sprintUserStories.filter((story) => {
+    const status = String(story.status ?? '').toLowerCase();
+
+    return (
+      status === 'in progress' ||
+      status === 'in_progress' ||
+      status === 'in-progress'
+    );
+  }).length;
   return (
     <DndContext
       sensors={sensors}
@@ -1183,26 +1224,6 @@ export const BacklogTemplate = () => {
                 <span className="hidden sm:inline">Create User Story</span>
                 <span className="sm:hidden">Create</span>
               </WpButton>
-
-              <div className="flex items-center gap-2">
-                {/* Start Sprint */}
-                <WpButton
-                  size="sm"
-                  variant="secondary"
-                  disabled={!selectedProject}
-                  onClick={() => setShowStartSprintModal(true)}
-                  className="whitespace-nowrap"
-                >
-                  <span className="hidden sm:inline">Start Sprint</span>
-                  <span className="sm:hidden">Start</span>
-                </WpButton>
-
-                {/* Complete Sprint */}
-                <WpButton size="sm" variant="secondary" disabled className="whitespace-nowrap">
-                  <span className="hidden sm:inline">Complete Sprint</span>
-                  <span className="sm:hidden">Complete</span>
-                </WpButton>
-              </div>
             </div>
           </div>
         </div>
@@ -1223,18 +1244,16 @@ export const BacklogTemplate = () => {
                 <div
                   ref={backlogRefCallback}
                   data-backlog-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
-                    isOverBacklog
-                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
-                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                  }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${isOverBacklog
+                    ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <div
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
-                      isOverBacklog
-                        ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
-                        : 'border-gray-100 dark:border-slate-700'
-                    }`}
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${isOverBacklog
+                      ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
+                      : 'border-gray-100 dark:border-slate-700'
+                      }`}
                   >
                     <span
                       className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-slate-100'}`}
@@ -1242,11 +1261,10 @@ export const BacklogTemplate = () => {
                       Unassigned UserStories
                     </span>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-                        isOverBacklog
-                          ? 'bg-green-200 text-green-800 scale-110'
-                          : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
-                      }`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${isOverBacklog
+                        ? 'bg-green-200 text-green-800 scale-110'
+                        : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
+                        }`}
                     >
                       {unassignedStories.length}{' '}
                       {unassignedStories.length === 1 ? 'story' : 'stories'}
@@ -1324,11 +1342,10 @@ export const BacklogTemplate = () => {
                 <div
                   ref={setUnassignedTasksNodeRef}
                   data-tasks-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
-                    isOverUnassignedTasks && (activeTask || activeDragType === 'task')
-                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
-                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                  }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${isOverUnassignedTasks && (activeTask || activeDragType === 'task')
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
+                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <div
                     className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors select-none border-b border-gray-100 dark:border-slate-700"
@@ -1487,7 +1504,19 @@ export const BacklogTemplate = () => {
                   projectId={selectedProject}
                   activeDragType={activeDragType}
                   onStoryClick={(story) => setSelectedUserStory(story)}
-                  onTaskClick={(task) => setSelectedTask(mapTaskResponseToKanbanTask(task))}
+                  onTaskClick={(task) =>
+                    setSelectedTask(mapTaskResponseToKanbanTask(task))
+                  }
+                  onStartSprint={(sprint) => {
+                    setActionSprint(sprint);
+                    setShowStartSprintModal(true);
+                  }}
+                  onCompleteSprint={(sprint) => {
+                    setSelectedCompleteSprint(sprint);
+                  }}
+                  isCompletingSprint={
+                    isCompletingSprint && selectedCompleteSprint?.id === sprint.id
+                  }
                 />
               ))
             )}
@@ -1655,13 +1684,48 @@ export const BacklogTemplate = () => {
         />
       )}
 
-      {showStartSprintModal && (
+      {showStartSprintModal && actionSprint && (
         <StartSprintModal
-          sprint={selectedSprintStore ?? { id: '', name: '' }}
-          onClose={() => setShowStartSprintModal(false)}
-          onStart={() => {
+          sprint={actionSprint}
+          onClose={() => {
             setShowStartSprintModal(false);
-            refetchSprints();
+            setActionSprint(null);
+          }}
+          onStart={async (payload) => {
+            try {
+              await startSprintAsync({
+                sprintId: actionSprint.id,
+                payload,
+              });
+
+              setShowStartSprintModal(false);
+              setActionSprint(null);
+
+              await refetchSprints();
+            } catch {
+              // API error is handled by apiService
+            }
+          }}
+        />
+      )}
+      {selectedCompleteSprint && (
+        <CompleteSprintModal
+          sprint={selectedCompleteSprint}
+          completedUserStories={completedUserStories}
+          inProgressUserStories={inProgressUserStories}
+          onClose={() => setSelectedCompleteSprint(null)}
+          isCompleting={isCompletingSprint}
+          onComplete={async () => {
+            try {
+              await completeSprint(selectedCompleteSprint.id);
+
+              toast.success('Sprint completed successfully');
+
+              setSelectedCompleteSprint(null);
+              await refetchSprints();
+            } catch {
+              toast.error('Failed to complete sprint');
+            }
           }}
         />
       )}

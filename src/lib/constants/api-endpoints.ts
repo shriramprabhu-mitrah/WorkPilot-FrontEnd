@@ -187,6 +187,8 @@ export const ApiEndpoints = {
     getSprintById: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
     updateSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
     deleteSprint: createEndpoint('/projects/{projectId}/sprint/{sprintId}'),
+    startSprint: createQueryEndpoint('/projects/{projectId}/sprint/start'),
+    completeSprint: createQueryEndpoint('/projects/{projectId}/sprint/complete'),
   },
 
   Dashboard: {
@@ -325,6 +327,8 @@ export const ApiEndpoints = {
     getAllProjects: createQueryEndpoint('/project/all-projects'),
     activeOrganization: createEndpoint('/organization/status/{organizationId}'),
   },
+
+
 };
 
 export type ApiEndpointType = typeof ApiEndpoints;

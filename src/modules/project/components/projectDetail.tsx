@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
+import { useGetSprintUserStories } from '../../tasks/hooks/useUserStory';
+
 import {
   useAddProjectMembers,
   useDeleteProject,
@@ -31,7 +33,9 @@ import { setSelectedProject } from '@/src/store/slices/project';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
-
+import StartSprintModal from '../../backlog/components/startSprintModal';
+import CompleteSprintModal from '../../backlog/components/CompleteSprint';
+import { sprintService } from '@/src/services/sprint';
 interface ProjectDetailProps {
   project: Project & { id?: string };
 }
@@ -55,7 +59,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     null
   );
   const { hasPermission, isAdmin, isProjectManager } = usePermissions();
+  const [showStartSprintModal, setShowStartSprintModal] = useState(false);
+  const [showCompleteSprintModal, setShowCompleteSprintModal] = useState(false);
 
+  const [selectedSprint, setSelectedSprint] = useState<Sprint | null>(null);
+  const [isStartingSprint, setIsStartingSprint] = useState(false);
+  const [isCompletingSprint, setIsCompletingSprint] = useState(false);
   const { data: rolesResponse, isLoading: isRolesLoading } = useGetRoles();
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
@@ -189,7 +198,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const getInitials = (name: string) => {
@@ -287,7 +296,66 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       setIsRefreshingSprints(false);
     }
   };
+  const handleStartSprint = async (payload: {
+    start_date: string;
+    end_date: string;
+  }) => {
+    if (!selectedSprint || !project.id) return;
 
+    try {
+      setIsStartingSprint(true);
+
+      await sprintService.startSprint(
+        project.id,
+        selectedSprint.id,
+        payload
+      );
+
+      setShowStartSprintModal(false);
+      setSelectedSprint(null);
+
+      await refetchSprints();
+    } catch (error) {
+      // Error is already handled by apiService
+    } finally {
+      setIsStartingSprint(false);
+    }
+  };
+  const handleCompleteSprint = async () => {
+    if (!selectedSprint || !project.id) return;
+
+    try {
+      setIsCompletingSprint(true);
+
+      await sprintService.completeSprint(
+        project.id,
+        selectedSprint.id
+      );
+
+      setShowCompleteSprintModal(false);
+      setSelectedSprint(null);
+
+      await refetchSprints();
+    } catch (error) {
+      // Error is already handled by apiService
+    } finally {
+      setIsCompletingSprint(false);
+    }
+  };
+const {
+  userStories: sprintUserStories,
+} = useGetSprintUserStories(
+  project.id || '',
+  selectedSprint?.id || '',
+  !!selectedSprint && showCompleteSprintModal
+);
+const completedUserStories = sprintUserStories.filter(
+  (story) => story.status === 'completed'
+).length;
+
+const inProgressUserStories = sprintUserStories.filter(
+  (story) => story.status === 'in_progress'
+).length;
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -513,17 +581,47 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     </div>
                   </button>
                   <div className="flex items-center gap-2">
+                    {sprint.status === 'Planned' && (
+                      <WpButton
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedSprint(sprint);
+                          setShowStartSprintModal(true);
+                        }}
+                      >
+                        Start Sprint
+                      </WpButton>
+                    )}
+
+                    {sprint.status === 'Active' && (
+                      <WpButton
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedSprint(sprint);
+                          setShowCompleteSprintModal(true);
+                        }}
+                      >
+                        Complete Sprint
+                      </WpButton>
+                    )}
+
                     <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
                       {sprint.status}
                     </span>
+
                     <button
                       type="button"
                       onClick={() => setExpandedSprint(isExpanded ? null : sprint.id)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition-colors"
+                      className="rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </button>
                   </div>
@@ -579,7 +677,35 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           onLoadingChange={setIsUpdatingProject}
         />
       )}
-
+      {showStartSprintModal && selectedSprint && (
+        <StartSprintModal
+          sprint={{
+            id: selectedSprint.id,
+            name: selectedSprint.name,
+          }}
+          onClose={() => {
+            setShowStartSprintModal(false);
+            setSelectedSprint(null);
+          }}
+          onStart={handleStartSprint}
+        />
+      )}
+{showCompleteSprintModal && selectedSprint && (
+  <CompleteSprintModal
+    sprint={{
+      id: selectedSprint.id,
+      name: selectedSprint.name,
+    }}
+    completedUserStories={completedUserStories}
+    inProgressUserStories={inProgressUserStories}
+    onClose={() => {
+      setShowCompleteSprintModal(false);
+      setSelectedSprint(null);
+    }}
+    isCompleting={isCompletingSprint}
+    onComplete={handleCompleteSprint}
+  />
+)}
       {/* Add Member modal */}
       {showAddMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">

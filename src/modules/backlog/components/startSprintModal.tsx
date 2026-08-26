@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Calendar } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
+import { StartSprintPayload } from '../../sprint/types/sprint';
 
 interface StartSprintModalProps {
   sprint: {
@@ -10,9 +11,8 @@ interface StartSprintModalProps {
     name: string;
   };
   onClose: () => void;
-  onStart: () => void;
+  onStart: (payload: StartSprintPayload) => void;
 }
-
 const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) => {
   const getToday = () => {
     const date = new Date();
@@ -32,26 +32,36 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
   const [startDate, setStartDate] = useState(getToday());
   const [startTime, setStartTime] = useState(getCurrentTime());
   const [duration, setDuration] = useState('2');
-  const [autoComplete, setAutoComplete] = useState(false);
-  const [sprintName, setSprintName] = useState(sprint.name);
+  const [customEndDate, setCustomEndDate] = useState('');
+  // const [autoComplete, setAutoComplete] = useState(false);
   const calculateEndDate = () => {
     if (!startDate) return '';
+
+    if (duration === 'custom') {
+      return customEndDate;
+    }
 
     const date = new Date(`${startDate}T00:00:00`);
 
     date.setDate(date.getDate() + Number(duration) * 7 - 1);
 
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    return date.toISOString().split('T')[0];
+  };
+  const endDate = calculateEndDate();
+  const formatDisplayDate = (date: string) => {
+    if (!date) return '';
+
+    const [year, month, day] = date.split('-');
+
+    return `${month}/${day}/${year}`;
   };
 
-  const endDate = calculateEndDate();
-
+  const displayEndDate = formatDisplayDate(endDate);
   const handleStart = () => {
-    onStart();
+    onStart({
+      start_date: startDate,
+      end_date: endDate,
+    });
   };
 
   const getTimeInputValue = () => {
@@ -119,18 +129,6 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
           </p>
 
           <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
-                Sprint name <span className="text-red-500">*</span>
-              </label>
-
-              <input
-                type="text"
-                value={sprintName}
-                onChange={(e) => setSprintName(e.target.value)}
-                className="h-9 w-full rounded-md border border-gray-300 bg-white px-2.5 text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-blue-500"
-              />
-            </div>
 
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
@@ -146,6 +144,7 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
                 <option value="2">2 weeks</option>
                 <option value="3">3 weeks</option>
                 <option value="4">4 weeks</option>
+                <option value="custom">Custom</option>
               </select>
             </div>
 
@@ -155,7 +154,10 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800">
-                <Calendar size={16} className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400" />
+                <Calendar
+                  size={16}
+                  className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400"
+                />
 
                 <input
                   type="date"
@@ -194,41 +196,70 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900">
-                <Calendar size={16} className="ml-2.5 text-gray-400 dark:text-slate-500" />
-
-                <input
-                  type="text"
-                  value={endDate}
-                  disabled
-                  readOnly
-                  className="flex-1 border-0 bg-transparent px-2 text-sm text-gray-400 outline-none dark:text-slate-500"
+                <Calendar
+                  size={16}
+                  className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500"
                 />
 
-                <span className="mr-3 text-sm text-gray-400 dark:text-slate-500">{startTime}</span>
+                {duration === 'custom' ? (
+                  <>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      min={startDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100"
+                    />
+
+                    <input
+                      type="time"
+                      value={getTimeInputValue()}
+                      onChange={(e) => handleTimeChange(e.target.value)}
+                      className="mr-2 h-full w-[95px] border-0 bg-transparent text-sm text-gray-700 outline-none dark:text-slate-100"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={displayEndDate}
+                      disabled
+                      readOnly
+                      className="flex-1 border-0 bg-transparent px-2 text-sm text-gray-400 outline-none dark:text-slate-500"
+                    />
+
+                    <span className="mr-3 text-sm text-gray-400 dark:text-slate-500">
+                      {startTime}
+                    </span>
+                  </>
+                )}
               </div>
+
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                Date format: MM/DD/YYYY. Time format: e.g. 1:00 PM.
+              </p>
             </div>
 
-            <div className="flex items-center gap-2">
+
+            {/* <div className="flex items-center gap-2">
               <button
                 type="button"
                 role="switch"
                 aria-checked={autoComplete}
                 onClick={() => setAutoComplete((prev) => !prev)}
-                className={`relative flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${
-                  autoComplete ? 'bg-blue-600' : 'bg-gray-700 dark:bg-slate-600'
-                }`}
+                className={`relative flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${autoComplete ? 'bg-blue-600' : 'bg-gray-700 dark:bg-slate-600'
+                  }`}
               >
                 <span
-                  className={`block h-3 w-3 rounded-full bg-white transition-transform ${
-                    autoComplete ? 'translate-x-3.5' : 'translate-x-0.5'
-                  }`}
+                  className={`block h-3 w-3 rounded-full bg-white transition-transform ${autoComplete ? 'translate-x-3.5' : 'translate-x-0.5'
+                    }`}
                 />
               </button>
 
               <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
                 Automatically complete sprint
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
 

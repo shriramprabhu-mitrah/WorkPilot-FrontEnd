@@ -2,7 +2,7 @@ import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
 import { SprintDetail, SprintPayload, UpdateSprintPayload } from '@/src/types/project';
-
+import { StartSprintPayload } from '@/src/modules/sprint/types/sprint';
 class SprintService {
   async getSprints(
     projectId: string,
@@ -32,6 +32,44 @@ class SprintService {
     });
   }
 
+async startSprint(
+  projectId: string,
+  sprintId: string,
+  payload: StartSprintPayload
+): Promise<ApiResponse<SprintDetail>> {
+  const endpoint = ApiEndpoints.Sprint.startSprint.withNamedParams({
+    projectId,
+  });
+
+  const url = endpoint.withQuery({
+    sprint_id: sprintId,
+  });
+
+  return apiService.post<SprintDetail>(url, payload, {
+    showSuccessToast: true,
+    successMessage: 'Sprint started successfully',
+  });
+}
+
+
+  async completeSprint(
+    projectId: string,
+    sprintId: string
+  ): Promise<ApiResponse<unknown>> {
+    const endpoint = ApiEndpoints.Sprint.completeSprint.withNamedParams({
+      projectId,
+    });
+
+    const url = endpoint.withQuery({
+      sprint_id: sprintId,
+    });
+
+    return apiService.post<unknown>(url, undefined, {
+      showSuccessToast: true,
+      successMessage: 'Sprint completed successfully',
+    });
+  }
+  
   async getSprintById(projectId: string, sprintId: string): Promise<ApiResponse<SprintDetail>> {
     const url = ApiEndpoints.Sprint.getSprintById.withParams({ projectId, sprintId });
     return apiService.get<SprintDetail>(url);
