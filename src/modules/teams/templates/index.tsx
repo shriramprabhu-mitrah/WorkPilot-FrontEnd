@@ -65,7 +65,7 @@ export const TeamTemplate = () => {
             Manage Members
           </h1>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Manage organization members and their roles
+            Manage your growing organization with ease
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export const TeamTemplate = () => {
                 avatarColor: member?.color || '',
                 tasks: 0,
                 done: 0,
-                status:member?.status
+                status: member?.status,
               };
 
               return (

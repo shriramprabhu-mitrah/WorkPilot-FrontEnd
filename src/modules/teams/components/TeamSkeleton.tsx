@@ -72,3 +72,66 @@ export default function TeamMemberCardSkeleton() {
     </div>
   );
 }
+
+/* Only table rows skeleton for filter loading */
+export function TeamMemberTableSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="
+            grid
+            grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px]
+            items-center
+            gap-4
+            border-b
+            border-gray-200
+            bg-white
+            px-5
+            py-4
+            last:border-b-0
+            dark:border-slate-700
+            dark:bg-slate-800
+          "
+        >
+          {/* Member */}
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-9 rounded-lg" />
+
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div className="pr-6">
+            <Skeleton className="mb-2 h-3 w-16" />
+            <Skeleton className="h-2 w-full rounded-full" />
+          </div>
+
+          {/* Tasks */}
+          <div className="flex justify-center">
+            <Skeleton className="h-4 w-6" />
+          </div>
+
+          {/* Done */}
+          <div className="flex justify-center">
+            <Skeleton className="h-4 w-6" />
+          </div>
+
+          {/* Open */}
+          <div className="flex justify-center">
+            <Skeleton className="h-4 w-6" />
+          </div>
+
+          {/* Action */}
+          <div className="flex justify-center">
+            <Skeleton className="h-4 w-6" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}

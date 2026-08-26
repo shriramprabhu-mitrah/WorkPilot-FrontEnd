@@ -43,7 +43,8 @@ export const useSignin = () => {
           role: userProfile.role,
           avatar_url: userProfile.avatar_url,
           is_active: userProfile.is_active,
-          color: userProfile.color
+          color: userProfile.color,
+          require_password_change: userProfile.require_password_change ?? false,
         })
       );
 
@@ -76,29 +77,18 @@ export const useSignin = () => {
       const token = data?.data?.access_token;
       const orgSlug = data?.organization?.slug;
       const userRole = data?.userProfile?.role;
-      const requirePasswordChange = data?.userProfile?.require_password_change;
 
       if (isMobile && token) {
         const mobileToken = token;
         await signupService.logOut();
         window.location.href = `workpilot://auth?token=${encodeURIComponent(mobileToken)}`;
       } else {
-        // Check if password change is required
-        if (requirePasswordChange) {
-          router.push(`/${orgSlug}/profile?changePassword=true`);
-          return;
-        }
-
         // Check if user is super_admin
         if (userRole === 'super_admin') {
-          // Redirect super admin to super admin dashboard
           router.push('/super-admin/dashboard');
         } else if (orgSlug) {
-          // Regular users: redirect to organization dashboard
-          // Organization data is already in Redux from mutationFn
           router.push(`/${orgSlug}/dashboard`);
         } else {
-          // No organization found, redirect to setup
           router.push('/setup');
         }
       }
