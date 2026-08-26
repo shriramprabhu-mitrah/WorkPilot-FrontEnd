@@ -1,6 +1,6 @@
 import { apiService } from '@/src/services/axios';
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
-import { UserProfile, UserUpdatePayload } from '@/src/types/user';
+import { UserInsights, UserProfile, UserUpdatePayload } from '@/src/types/user';
 
 class UserService {
   async getUserProfile(): Promise<UserProfile> {
@@ -32,6 +32,19 @@ class UserService {
     );
     if (!response.data) {
       throw new Error('Failed to update user profile');
+    }
+    return response.data;
+  }
+
+    async getUserInsights(): Promise<UserInsights> {
+    const response = await apiService.get<UserInsights>(
+      ApiEndpoints.User.getUserInsights.url,
+      {
+        showErrorToast: true,
+      }
+    );
+    if (!response.data) {
+      throw new Error('Failed to fetch user insights');
     }
     return response.data;
   }

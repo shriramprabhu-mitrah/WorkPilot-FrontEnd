@@ -35,19 +35,32 @@ export const PriorityBadge = ({ priority }: { priority: string | Priority }) => 
 
 // ─── Status ──────────────────────────────────────────────────────────────────
 
-export type TaskStatus = 'Backlog' | 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Testing';
+export type TaskStatus =
+  'Backlog' | 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Testing' | 'Completed';
 
-const statusConfig: Record<TaskStatus, { color: string; bg: string }> = {
-  Backlog: { color: colors.colBacklog, bg: colors.colBacklogBg },
-  'To Do': { color: colors.colTodo, bg: colors.colTodoBg },
-  'In Progress': { color: colors.colInProgress, bg: colors.colInProgressBg },
-  'In Review': { color: colors.colInReview, bg: colors.colInReviewBg },
-  Done: { color: colors.colDone, bg: colors.colDoneBg },
-  Testing: { color: colors.priorityMediumText, bg: colors.priorityMediumBg },
+interface StatusBadgeProps {
+  status: string | TaskStatus;
+  color?: string;
+}
+
+const hexToRgba = (hex: string, opacity: number) => {
+  if (!hex) return `rgba(156, 163, 175, ${opacity})`;
+
+  const cleanHex = hex.replace('#', '');
+
+  if (cleanHex.length !== 6) {
+    return hex;
+  }
+
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
-export const StatusBadge = ({ status }: { status: string | TaskStatus }) => {
-  const statusMap: Record<string, TaskStatus> = {
+export const StatusBadge = ({ status, color }: StatusBadgeProps) => {
+  const statusMap: Record<string, string> = {
     backlog: 'Backlog',
     todo: 'To Do',
     'to do': 'To Do',
@@ -56,17 +69,36 @@ export const StatusBadge = ({ status }: { status: string | TaskStatus }) => {
     in_review: 'In Review',
     'in review': 'In Review',
     done: 'Done',
+    completed: 'Completed',
     testing: 'Testing',
   };
 
-  const normalizedStatus =
-    (status ? statusMap[status.toLowerCase()] : undefined) || status || 'To Do';
-  const config = statusConfig[normalizedStatus as TaskStatus] || {
-    color: colors.gray500,
-    bg: colors.gray100,
-  };
+  const normalizedStatus = (status && statusMap[status.toLowerCase()]) || status || 'To Do';
 
-  return <Chip label={normalizedStatus} color={config.color} bg={config.bg} />;
+  // API color takes priority
+  const statusColor = color || colors.gray500;
+
+  // Very light version of API color
+  const statusBg = color ? hexToRgba(color, 0.08) : colors.gray100;
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap"
+      style={{
+        color: statusColor,
+        backgroundColor: statusBg,
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{
+          backgroundColor: statusColor,
+        }}
+      />
+
+      {normalizedStatus}
+    </span>
+  );
 };
 
 // ─── Assignee Avatar ─────────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ import {
   User,
 } from '@/src/types/teams';
 import { AddProjectMembersPayload, ProjectMember } from '@/src/types/project';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 export const QUERY_KEYS = {
   TEAM_MEMBERS: 'team-members',
   PROJECT_MEMBERS: 'project-members',
@@ -54,18 +54,35 @@ export const useAddProjectMembers = () => {
   };
 };
 
-export const useGetTeamMembers = (page: number, pageSize: number) => {
+export const useGetTeamMembers = (pageSize: number, status?: string) => {
   const {
-    data: teamMembers,
+    data,
     isLoading: isTeamMembersLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetch: refetchTeamMembers,
-  } = useQuery({
-    queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize],
-    queryFn: () => teamService.getTeamMembers(page, pageSize),
+  } = useInfiniteQuery({
+    queryKey: [QUERY_KEYS.TEAM_MEMBERS, pageSize, status],
+    queryFn: ({ pageParam }) => teamService.getTeamMembers(pageParam, pageSize, status),
+
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage?.data || lastPage.data.length < pageSize) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
   });
+  const teamMembers = {
+    data: data?.pages.flatMap((page) => page.data ?? []) ?? [],
+  };
   return {
     teamMembers,
     isTeamMembersLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetchTeamMembers,
   };
 };

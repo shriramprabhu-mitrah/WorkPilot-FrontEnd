@@ -32,6 +32,7 @@ export interface DashboardActivityUser {
   email: string;
   avatar_url: string | null;
   role: string;
+  color?:string
 }
 
 export interface DashboardActivity {

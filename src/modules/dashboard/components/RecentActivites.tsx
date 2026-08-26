@@ -26,7 +26,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
                       .toUpperCase()
                   : 'U'
               }
-              color={colors.avatarBlue}
+              color={user?.color || ''}
               size="md"
             />
 

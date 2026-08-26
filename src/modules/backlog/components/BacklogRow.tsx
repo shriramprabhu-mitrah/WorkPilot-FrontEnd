@@ -48,6 +48,18 @@ export const BacklogRow = ({
     }
   };
 
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -55,7 +67,7 @@ export const BacklogRow = ({
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      className={`group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
+      className={`group flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
         onClick ? 'cursor-pointer' : ''
       } ${
         isDragging
@@ -74,50 +86,44 @@ export const BacklogRow = ({
       </span>
 
       <span
-        className="text-[11px] sm:text-xs font-semibold w-12 sm:w-14 shrink-0"
+        className="w-12 shrink-0 text-[11px] font-semibold sm:w-14 sm:text-xs"
         style={{ color: colors.primary }}
       >
         {task.key || '-'}
       </span>
-      <span className="text-sm flex-1 min-w-0 truncate text-gray-800 dark:text-slate-200">
+
+      <span className="ml-2 min-w-0 flex-1 truncate text-sm font-semibold text-gray-800 dark:text-slate-200">
         {task.title}
       </span>
 
-      <div className="w-16 sm:w-20 shrink-0">
+      {/* Assignee */}
+      <div className="flex w-20 shrink-0 items-center justify-center">
+        <div
+          className="flex items-center justify-center"
+          title={task.assignee_name || 'Unassigned'}
+        >
+          <AssigneeAvatar
+            initials={task.assigneeInitials || getInitials(task.assignee_name)}
+            color={task.assignee?.color || task.assigneeColor || colors.avatarBlue}
+          />
+        </div>
+      </div>
+
+      {/* Priority */}
+      <div className="flex w-16 shrink-0 items-center justify-center">
         <PriorityBadge priority={task.priority || 'Medium'} />
       </div>
 
-      <div className="hidden sm:flex items-center gap-1 shrink-0 min-w-0 max-w-[160px] overflow-hidden">
+      {/* Labels */}
+      {/* <div className="hidden w-32 shrink-0 items-center gap-1 overflow-hidden sm:flex">
         {(task.labels || []).map((label: string) => (
           <TaskLabel key={label} label={label} />
         ))}
-      </div>
+      </div> */}
 
-      <div className="hidden md:flex w-24 shrink-0 justify-start">
-        <StatusBadge status={task.status} />
-      </div>
-
-      <span className="flex items-center gap-0.5 text-xs w-8 sm:w-10 shrink-0 text-gray-400 dark:text-slate-500">
-        <Hash size={11} />
-        {task.story_points ?? task.storyPoints ?? 0}
-      </span>
-
-      <span className="hidden sm:flex items-center gap-1 text-xs leading-none w-24 shrink-0 text-gray-400 dark:text-slate-500">
-        <Calendar size={11} className="shrink-0" />
-        <span className="truncate">{formatMonthYear(task.due_date || task.dueDate || '')}</span>
-      </span>
-
-      <div className="flex items-center gap-2 w-32 shrink-0">
-        <AssigneeAvatar
-          initials={task.assigneeInitials || task.assignee_name?.charAt(0).toUpperCase() || '?'}
-          color={task.assigneeColor || colors.primary}
-        />
-        <span
-          className="text-xs truncate text-gray-600 dark:text-slate-400"
-          title={task.assignee_name}
-        >
-          {task.assignee_name || 'Unassigned'}
-        </span>
+      {/* Status */}
+      <div className="flex w-24 shrink-0 items-center justify-center">
+        <StatusBadge status={task.status} color={task.status_color} />
       </div>
     </div>
   );

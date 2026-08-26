@@ -18,3 +18,9 @@ export interface UserUpdatePayload {
   full_name: string;
   avatar?: File;
 }
+export interface UserInsights {
+  total_assigned: number;
+  in_progress: number;
+  completed: number;
+  completion_percentage: number;
+}

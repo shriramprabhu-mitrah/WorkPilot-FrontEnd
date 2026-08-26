@@ -32,16 +32,52 @@ export const MemberCard = ({
       <div className="hidden md:grid grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px] items-center gap-4">
         {/* Member */}
         <div className="flex min-w-0 items-center gap-3">
+          {/* Avatar */}
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
+            className="flex h-10 w-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
             style={{ backgroundColor: member.avatarColor }}
           >
             {member.initials}
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
-              {member.name}
-            </p>
+
+          {/* Name + Status + Role */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center">
+              {/* Fixed name area */}
+              <p className="w-[100px] truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
+                {member.name}
+              </p>
+
+              {/* Status */}
+              {member.status && (
+                <span
+                  className={`
+            ml-2 inline-flex shrink-0 items-center
+            rounded-full
+            border
+            px-2 py-0.5
+            text-[10px]
+            font-semibold
+            uppercase
+            tracking-wide
+            leading-none
+            ${
+              member.status === 'active'
+                ? 'border-green-200 bg-green-50 text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
+                : member.status === 'pending'
+                  ? 'border-yellow-200 bg-yellow-50 text-yellow-600 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                  : member.status === 'expired'
+                    ? 'border-red-200 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
+                    : 'border-gray-200 bg-gray-50 text-gray-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300'
+            }
+          `}
+                >
+                  {member.status}
+                </span>
+              )}
+            </div>
+
+            {/* Role */}
             <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-slate-400">
               {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
             </p>
