@@ -66,7 +66,7 @@ export const SuperAdminSidebar = ({ isOpen = true, onClose }: SuperAdminSidebarP
               <TrackrLogoSvg />
             </div>
             <div>
-              <h1 className="text-white font-bold text-base">Trackr</h1>
+              <h1 className="text-white font-bold text-base">WorkPilot</h1>
               <p className="text-purple-300 text-[10px] font-medium tracking-wide uppercase">
                 Super Admin
               </p>
@@ -119,7 +119,7 @@ export const SuperAdminSidebar = ({ isOpen = true, onClose }: SuperAdminSidebarP
               <p className="text-white text-sm font-semibold truncate">
                 {user.name || 'Super Admin'}
               </p>
-              <p className="text-purple-300 text-xs truncate">{user.email || 'admin@trackr.com'}</p>
+              <p className="text-purple-300 text-xs truncate">{user.email || 'admin@workpilot.com'}</p>
             </div>
           </div>
           <button

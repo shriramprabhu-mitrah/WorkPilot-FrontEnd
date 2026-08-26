@@ -19,7 +19,7 @@ export const SignInTemplate = () => {
           <h2 className="templateTitle">Ship projects faster, together</h2>
 
           <p className="description">
-            Trackr brings your team&apos;s work together — sprint planning, kanban boards, and
+            WorkPilot brings your team&apos;s work together — sprint planning, kanban boards, and
             real-time analytics in one place.
           </p>
 

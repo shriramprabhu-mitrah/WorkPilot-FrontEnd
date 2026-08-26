@@ -12,7 +12,7 @@
   "totalTasks": "Total Tasks",
   "completed": "Completed",
   "pending": "Pending",
-  "trackr": "Trackr",
+  "trackr": "WorkPilot",
   "remember": "Remember me",
   "welcomeBack": "Welcome back",
   "signContent": "Sign in to your workspace to continue.",
@@ -20,7 +20,7 @@
   "createAcc": "Create account",
   "continueGoogle": "Continue with Google",
   "shipProjects": "Ship projects faster, together",
-  "trackerContent": "Trackr brings your team's work together — sprint planning, kanban boards, and real-time analytics in one place.",
+  "trackerContent": "WorkPilot brings your team's work together — sprint planning, kanban boards, and real-time analytics in one place.",
   "projects": "Projects",
   "tasksDone": "Tasks done",
   "teams": "Teams"
