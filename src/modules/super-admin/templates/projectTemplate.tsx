@@ -120,9 +120,6 @@ export const ProjectsTemplate = () => {
               ) : (
                 projects.map((project) => {
                   const statusStyle = getStatusStyle(project.status);
-                  const projectKey = project.name
-                    ? project.name.substring(0, 3).toUpperCase()
-                    : 'PRJ'; // Mock project key since it doesn't exist on Project
 
                   return (
                     <tr
@@ -132,7 +129,7 @@ export const ProjectsTemplate = () => {
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
-                            {projectKey}
+                            {project.project_key}
                           </div>
                           <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {project.name}
@@ -146,7 +143,7 @@ export const ProjectsTemplate = () => {
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-600 dark:text-slate-400">
-                          {projectKey}
+                          {project.project_key}
                         </span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
