@@ -2,6 +2,7 @@
 
 import { Sidebar } from '@/src/app/components/common/sidebar';
 import { Navbar } from '@/src/app/components/common/navbar';
+import { ForceChangePasswordModal } from '@/src/app/components/common/force-change-password';
 import { useCallback, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/src/store';
@@ -13,6 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const orgSlug = params.orgSlug as string;
   const organization = useAppSelector((state) => state.organization);
+  const requirePasswordChange = useAppSelector((state) => state.user.require_password_change);
   const { isOrganizationLoading } = useGetOrganization();
 
   // Validate organization slug
@@ -43,6 +45,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f4f5f7] dark:bg-slate-950">
+      {/* Mandatory password-change modal — blocks all dashboard interaction */}
+      {requirePasswordChange && <ForceChangePasswordModal />}
+
       {/* Desktop sidebar - always visible */}
       <div className="hidden lg:block">
         <Sidebar />

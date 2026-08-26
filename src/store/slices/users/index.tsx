@@ -7,7 +7,8 @@ export interface UserState {
   role: string | null;
   avatar_url: string | null;
   is_active: boolean | null;
-  color:string | null;
+  color: string | null;
+  require_password_change: boolean | null;
 }
 
 const initialState: UserState = {
@@ -17,7 +18,8 @@ const initialState: UserState = {
   role: null,
   avatar_url: null,
   is_active: null,
-  color:null
+  color: null,
+  require_password_change: null,
 };
 
 export const userSlice = createSlice({
@@ -31,7 +33,9 @@ export const userSlice = createSlice({
       if (action.payload.role !== undefined) state.role = action.payload.role;
       if (action.payload.avatar_url !== undefined) state.avatar_url = action.payload.avatar_url;
       if (action.payload.is_active !== undefined) state.is_active = action.payload.is_active;
-      if (action.payload.color !== undefined) state.color = action.payload.color
+      if (action.payload.color !== undefined) state.color = action.payload.color;
+      if (action.payload.require_password_change !== undefined)
+        state.require_password_change = action.payload.require_password_change;
     },
     clearUser: (state) => {
       state.name = null;
@@ -40,6 +44,8 @@ export const userSlice = createSlice({
       state.role = null;
       state.avatar_url = null;
       state.is_active = null;
+      state.color = null;
+      state.require_password_change = null;
     },
   },
 });
