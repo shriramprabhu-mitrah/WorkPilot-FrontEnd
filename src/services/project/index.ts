@@ -10,6 +10,8 @@ import {
   AddProjectMembersPayload,
   GetProjectQueryParams,
   GetProjectMembersParams,
+  Activity,
+  ActivityFilters,
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '@/src/modules/project/types/project';
 
@@ -130,6 +132,59 @@ class ProjectService {
         showErrorToast: true,
       }
     );
+  }
+
+  async getActivities(
+    projectId: string,
+    params: ActivityFilters
+  ): Promise<PaginatedApiResponse<Activity[]>> {
+    const url = ApiEndpoints.Project.getProjectActivity.withNamedParams({ 
+      projectId, 
+      type: String(params.type) 
+    }).url;
+
+    const searchParams = new URLSearchParams();
+    if (params.page !== undefined) {
+      searchParams.append('page', String(params.page));
+    }
+    if (params.page_size !== undefined) {
+      searchParams.append('page_size', String(params.page_size));
+    }
+    if (params.action) {
+      searchParams.append('action', params.action);
+    }
+    if (params.resource_type) {
+      searchParams.append('resource_type', params.resource_type);
+    }
+    if (params.resource_id) {
+      searchParams.append('resource_id', params.resource_id);
+    }
+    if (params.task_id) {
+      searchParams.append('task_id', params.task_id);
+    }
+    if (params.user_story_id) {
+      searchParams.append('user_story_id', params.user_story_id);
+    }
+    if (params.sprint_id) {
+      searchParams.append('sprint_id', params.sprint_id);
+    }
+    if (params.user_id) {
+      searchParams.append('user_id', params.user_id);
+    }
+    if (params.activity_type) {
+      searchParams.append('activity_type', params.activity_type);
+    }
+    if (params.start_date) {
+      searchParams.append('start_date', params.start_date);
+    }
+    if (params.end_date) {
+      searchParams.append('end_date', params.end_date);
+    }
+
+    const query = searchParams.toString();
+    const finalUrl = query ? `${url}?${query}` : url;
+
+    return apiService.getPaginated<Activity[]>(finalUrl);
   }
 }
 
