@@ -36,3 +36,7 @@ export interface Workload {
   completed: number;
   total: number;
 }
+export interface StartSprintPayload {
+  start_date: string;
+  end_date: string;
+}

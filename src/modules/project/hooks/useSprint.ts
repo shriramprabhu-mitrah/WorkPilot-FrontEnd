@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sprintService } from '@/src/services/sprint';
-import { SprintPayload, UpdateSprintPayload } from '@/src/types/project';
-
+import { SprintPayload, UpdateSprintPayload, } from '@/src/types/project';
+import { StartSprintPayload } from '../../sprint/types/sprint';
 export const useGetSprints = (
   projectId: string,
   params?: {
@@ -105,6 +105,68 @@ export const useDeleteSprint = (projectId: string) => {
     deleteSprint: mutation.mutate,
     deleteSprintAsync: mutation.mutateAsync,
     isDeletingSprint: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};
+
+export const useStartSprint = (projectId: string) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({
+      sprintId,
+      payload,
+    }: {
+      sprintId: string;
+      payload: StartSprintPayload;
+    }) => sprintService.startSprint(projectId, sprintId, payload),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['sprints', projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['projectDetail', projectId],
+      });
+    },
+  });
+
+  return {
+    startSprint: mutation.mutate,
+    startSprintAsync: mutation.mutateAsync,
+    isStartingSprint: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+};
+
+
+export const useCompleteSprint = (projectId: string) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (sprintId: string) =>
+      sprintService.completeSprint(projectId, sprintId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['sprints', projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['projectDetail', projectId],
+      });
+    },
+  });
+
+  return {
+    completeSprint: mutation.mutate,
+    completeSprintAsync: mutation.mutateAsync,
+    isCompletingSprint: mutation.isPending,
     isSuccess: mutation.isSuccess,
     isError: mutation.isError,
     error: mutation.error,
