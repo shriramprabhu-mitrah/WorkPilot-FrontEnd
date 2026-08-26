@@ -76,12 +76,19 @@ export const useSignin = () => {
       const token = data?.data?.access_token;
       const orgSlug = data?.organization?.slug;
       const userRole = data?.userProfile?.role;
+      const requirePasswordChange = data?.userProfile?.require_password_change;
 
       if (isMobile && token) {
         const mobileToken = token;
         await signupService.logOut();
         window.location.href = `workpilot://auth?token=${encodeURIComponent(mobileToken)}`;
       } else {
+        // Check if password change is required
+        if (requirePasswordChange) {
+          router.push(`/${orgSlug}/profile?changePassword=true`);
+          return;
+        }
+
         // Check if user is super_admin
         if (userRole === 'super_admin') {
           // Redirect super admin to super admin dashboard
