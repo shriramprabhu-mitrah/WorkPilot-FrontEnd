@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useUser } from '../../hooks/useUser';
+import { useUser, useUserInsights } from '../../hooks/useUser';
 import StatCard from '@/src/app/components/common/statcard/statcard';
 import { Briefcase, CheckCircle2, Ban, Pencil, X, Check } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
@@ -22,7 +22,7 @@ export default function Profile() {
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const searchParams = useSearchParams();
-
+  const { insights, isLoading: isInsightsLoading } = useUserInsights();
   const { push, replace } = useOrgNavigation();
 
   const shouldChangePassword = searchParams.get('changePassword') === 'true';
@@ -259,22 +259,39 @@ export default function Profile() {
         {/* Right Column */}
         <div className="w-full min-w-0 flex-1 space-y-6">
           {/* Top Stats */}
-          <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-            {STATS.map((stat) => (
-              <StatCard key={stat.label} label={stat.label} value={stat.value} color={stat.color} />
-            ))}
-          </div>
+          <div className="w-full min-w-0 flex-1 space-y-6">
+            {/* Top Stats */}
+            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+              <StatCard label="Assigned" value={insights?.total_assigned ?? 0} color="blue" />
 
-          {/* Overall Completion */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-medium text-gray-900 dark:text-white">Overall Completion</h3>
-              <span className="text-blue-600 font-bold">0%</span>
+              <StatCard label="In Progress" value={insights?.in_progress ?? 0} color="orange" />
+
+              <StatCard label="Completed" value={insights?.completed ?? 0} color="green" />
             </div>
-            <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
-              <div className="h-full bg-blue-600 rounded-full" style={{ width: '0%' }}></div>
+
+            {/* Overall Completion */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-medium text-gray-900 dark:text-white">Overall Completion</h3>
+
+                <span className="font-bold text-blue-600">
+                  {insights?.completion_percentage ?? 0}%
+                </span>
+              </div>
+
+              <div className="mb-3 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                  style={{
+                    width: `${insights?.completion_percentage ?? 0}%`,
+                  }}
+                />
+              </div>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {insights?.completed ?? 0} of {insights?.total_assigned ?? 0} tasks completed
+              </p>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">0 of 0 tasks completed</p>
           </div>
 
           {/* Role Description */}

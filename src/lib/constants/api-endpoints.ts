@@ -157,6 +157,7 @@ export const ApiEndpoints = {
   User: {
     userUpdate: createEndpoint('auth/update'),
     getUser: createQueryEndpoint('auth/me'),
+    getUserInsights: createQueryEndpoint('auth/me/insights'),
   },
   Country: {
     getCountry: createEndpoint('/countries'),

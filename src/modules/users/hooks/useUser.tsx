@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserProfile, UserUpdatePayload } from '@/src/types/user';
+import { UserInsights, UserProfile, UserUpdatePayload } from '@/src/types/user';
 import { userService } from '@/src/services/user';
 import { useAppDispatch } from '@/src/store';
 import { setUser as setUserRedux } from '@/src/store/slices/users';
@@ -57,5 +57,20 @@ export const useUser = () => {
     fetchUser,
     updateUser,
     changePassword,
+  };
+};
+
+
+export const useUserInsights = () => {
+  const { data, isLoading, isFetching, error, refetch } = useQuery<UserInsights>({
+    queryKey: ['userInsights'],
+    queryFn: () => userService.getUserInsights(),
+  });
+  return {
+    insights: data,
+    isLoading,
+    isFetching,
+    error: error ? error.message : null,
+    fetchInsights: refetch,
   };
 };

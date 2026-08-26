@@ -18,7 +18,7 @@ import TeamMemberCardSkeleton from '../../teams/components/TeamSkeleton';
 
 export const MemberSettings = () => {
   const [page] = useState(1);
-  const pageSize = 10;
+  const pageSize = '10';
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,7 +48,7 @@ export const MemberSettings = () => {
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Manage organization members and their roles
+            Manage organization members and 
           </p>
         </div>
 

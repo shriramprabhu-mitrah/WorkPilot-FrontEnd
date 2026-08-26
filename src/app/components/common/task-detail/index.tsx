@@ -1220,7 +1220,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                             try {
                               await taskService.updateTask(task.projectId, task.taskId, {
-                                assignee_id: undefined,
+                                assignee_id: null,
                               });
 
                               setTaskData((prev) => ({
@@ -1391,10 +1391,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                             }}
                             className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
                           >
-                            <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
-                              <User size={11} className="text-gray-400 dark:text-slate-400" />
-                            </span>
-                            None
                           </WpButton>
                         )}
                     </div>

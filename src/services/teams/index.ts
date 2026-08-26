@@ -12,12 +12,23 @@ import { apiService } from '../axios';
 import { Project } from '@/src/types/project';
 import { AddProjectMembersPayload } from '@/src/types/project';
 class TeamService {
-  async getTeamMembers(page: number, pageSize: number): Promise<ApiResponse<TeamMember[]>> {
-    const url = `${ApiEndpoints.Team.getUsers.url}?page=${page}&page_size=${pageSize}&is_active=true`;
-    return apiService.get<TeamMember[]>(url, {
-      showErrorToast: true,
-    });
+  async getTeamMembers(
+  page: number,
+  pageSize: number,
+  status?: string
+): Promise<ApiResponse<TeamMember[]>> {
+  const params = new URLSearchParams({
+    page: String(page),
+    page_size: String(pageSize),
+  });
+  if (status) {
+    params.set('status', status);
   }
+  const url = `${ApiEndpoints.Team.getUsers.url}?${params.toString()}`;
+  return apiService.get<TeamMember[]>(url, {
+    showErrorToast: true,
+  });
+}
 
   async getProjectMembers(
     projectId: string,

@@ -8,6 +8,7 @@ export interface Member {
   avatarColor: string;
   tasks: number;
   done: number;
+  status?:string
 }
 export interface RoleCard {
   name: string;
@@ -28,6 +29,7 @@ export interface TeamMember {
   created_at: string;
   updated_at: string;
   color?:string
+  status?:string
 }
 export interface ProjectMember {
   user_id: string;
