@@ -1,8 +1,9 @@
 'use client';
 
-import { Trophy, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
-
+import { TrackrLogoSvg } from '@/src/assets/svgs';
+import { colors } from '@/src/styles/colors';
 interface CompleteSprintModalProps {
     sprint: {
         id: string;
@@ -32,18 +33,13 @@ const CompleteSprintModal = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="relative flex h-[165px] items-center justify-center overflow-hidden bg-[#5B83D8] dark:bg-blue-700">
-                    <div className="absolute -left-10 top-0 h-20 w-[120%] rotate-[-5deg] rounded-[50%] bg-[#6F94E2]/40" />
-                    <div className="absolute -left-10 top-14 h-20 w-[120%] rotate-[4deg] rounded-[50%] bg-[#4D76CC]/30" />
+                <div className="relative flex h-[165px] items-center justify-center overflow-hidden bg-[#155DFC] dark:bg-blue-100">
+                    <div className="absolute -left-10 top-0 h-20 w-[120%] rotate-[-5deg] rounded-[50%] bg-[#3B7CFF]/40" />
+                    <div className="absolute -left-10 top-14 h-20 w-[120%] rotate-[4deg] rounded-[50%] bg-[#0F4ED8]/30" />
 
-                    <div className="relative z-10 flex items-center justify-center">
-                        <Trophy
-                            size={82}
-                            strokeWidth={1.5}
-                            className="fill-amber-400 text-amber-500"
-                        />
+                    <div className="relative z-10 flex h-15 w-15 items-center justify-center text-white">
+                        <TrackrLogoSvg />
                     </div>
-
                     <button
                         type="button"
                         onClick={onClose}

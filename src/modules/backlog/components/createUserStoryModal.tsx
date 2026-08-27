@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Paperclip, FileText, Trash2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
@@ -23,6 +23,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [priority, setPriority] = useState<PRIORITY_TYPE>(PRIORITY_TYPE.MEDIUM);
   const [storyPoints, setStoryPoints] = useState('');
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const descriptionRef = useRef<HTMLDivElement>(null);
   const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
   const selectedProject = useAppSelector((state) => state.project.selectedProject);
   const projectId = selectedProject?.id ?? '';
@@ -38,7 +39,24 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
     setPendingImages((prev) => new Map(prev).set(blobUrl, file));
     return blobUrl;
   };
+  useEffect(() => {
+    if (!isEditingDescription) return;
 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        descriptionRef.current &&
+        !descriptionRef.current.contains(event.target as Node)
+      ) {
+        setIsEditingDescription(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditingDescription]);
   const handleCreate = async () => {
     if (!title.trim() || !projectId) return;
 
@@ -91,7 +109,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       });
 
       onClose();
-    } catch (error) {}
+    } catch (error) { }
   };
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -113,7 +131,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-800 shadow-2xl"
+        className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-800 shadow-2xl flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 px-5 py-4">
@@ -131,7 +149,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
           </button>
         </div>
 
-        <div className="space-y-4 px-5 py-5">
+        <div className="space-y-4 px-5 py-5 overflow-y-auto flex-1 min-h-0">
           <WpInput
             label="Title"
             value={title}
@@ -139,7 +157,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             placeholder="Enter story title"
             showRequired
           />
-          <div>
+          <div ref={descriptionRef}>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
               Description
             </label>
@@ -154,12 +172,16 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
                 className="w-full resize-none rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-400 px-3 py-2.5 text-sm outline-none transition cursor-text focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             ) : (
-              <WpRichTextEditor
-                value={description}
-                onChange={(value) => setDescription(value)}
-                placeholder="Enter story description"
-                onImageUpload={handleEditorImageUpload}
-              />
+              <div className="max-h-52 overflow-y-auto rounded-xl border border-gray-200 dark:border-slate-600 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
+                <WpRichTextEditor
+                  value={description}
+                  onChange={(value) => setDescription(value)}
+                  placeholder="Enter story description"
+                  onImageUpload={handleEditorImageUpload}
+                  className="border-0 ring-0 focus-within:ring-0 focus-within:border-0 rounded-none"
+                  minHeight="80px"
+                />
+              </div>
             )}
           </div>
           <div>

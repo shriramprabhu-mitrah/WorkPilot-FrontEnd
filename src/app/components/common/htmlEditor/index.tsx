@@ -309,7 +309,7 @@ const theme = {
 const initialConfig = {
   namespace: 'WpRichTextEditor',
   theme,
-  onError(error: Error) {},
+  onError(error: Error) { },
   nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, ImageNode],
 };
 
@@ -344,10 +344,9 @@ function ToolbarButton({
         transition-colors
         disabled:cursor-not-allowed
         disabled:opacity-40
-        ${
-          active
-            ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
-            : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
+        ${active
+          ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
+          : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
         }
       `}
     >
@@ -520,13 +519,13 @@ function CodeSnippetToolbar({
       </select>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600" />
-      <ToolbarButton title="Decrease indent" onClick={() => {}}>
+      <ToolbarButton title="Decrease indent" onClick={() => { }}>
         <Minus size={15} />
       </ToolbarButton>
-      <ToolbarButton title="Numbered lines" onClick={() => {}}>
+      <ToolbarButton title="Numbered lines" onClick={() => { }}>
         <span className="text-xs font-semibold">1≡</span>
       </ToolbarButton>
-      <ToolbarButton title="More" onClick={() => {}}>
+      <ToolbarButton title="More" onClick={() => { }}>
         <MoreHorizontal size={16} />
       </ToolbarButton>
     </div>
@@ -681,7 +680,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         px-3 py-2
       "
     >
-      <ToolbarButton title="Text style" onClick={() => {}}>
+      <ToolbarButton title="Text style" onClick={() => { }}>
         <span className="text-sm font-medium">T</span>
         <ChevronDown size={12} className="ml-0.5" />
       </ToolbarButton>
@@ -984,15 +983,15 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         <Redo2 size={16} />
       </ToolbarButton>
 
-      <ToolbarButton title="More" onClick={() => {}}>
+      <ToolbarButton title="More" onClick={() => { }}>
         <MoreHorizontal size={17} />
       </ToolbarButton>
 
-      <div className="flex-1" />
-
-      <ToolbarButton title="Voice input" onClick={() => {}}>
+      <ToolbarButton title="Voice input" onClick={() => { }}>
         <Mic size={16} />
       </ToolbarButton>
+
+      <div className="flex-1" />
     </div>
   );
 }
@@ -1034,10 +1033,9 @@ export default function WpRichTextEditor({
         rounded-lg border border-gray-300 dark:border-slate-600
         bg-white dark:bg-slate-800
         transition-colors
-        ${
-          disabled
-            ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
-            : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
+        ${disabled
+          ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
+          : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
         }
         ${className}
       `}

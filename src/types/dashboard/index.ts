@@ -6,15 +6,31 @@ export interface DashboardOverview {
   due_soon: number;
 }
 
+export interface DashboardTaskStatusItem {
+  color: string;
+  count: number;
+}
+
+export interface DashboardTaskStatusItem {
+  color: string;
+  count: number;
+}
+
 export interface DashboardTaskStatus {
-  [status: string]: number;
+  [status: string]: DashboardTaskStatusItem;
+}
+
+export interface SprintBurndownData {
+  day: number;
+  date: string;
+  ideal_hours: number;
+  actual_hours: number;
 }
 
 export interface SprintBurndown {
-  day: number;
-  date: string;
-  ideal_points: number;
-  remaining_points: number;
+  sprint_id: string;
+  sprint_name: string;
+  data: SprintBurndownData[];
 }
 
 export interface TeamWorkload {
@@ -22,8 +38,16 @@ export interface TeamWorkload {
   user_name: string;
   full_name: string;
   avatar_url: string;
+  color?: string;
   task_count: number;
   points: number;
+}
+
+export interface DashboardData {
+  overview: DashboardOverview;
+  task_status: DashboardTaskStatus;
+  sprint_burndown: SprintBurndown[] | SprintBurndown | null;
+  team_workload: TeamWorkload[];
 }
 
 export interface DashboardActivityUser {
@@ -32,7 +56,7 @@ export interface DashboardActivityUser {
   email: string;
   avatar_url: string | null;
   role: string;
-  color?:string
+  color?: string;
 }
 
 export interface DashboardActivity {
@@ -49,27 +73,11 @@ export interface DashboardActivity {
   details?: string;
   task_key?: string;
 }
-export interface DashboardActivityMeta {
-  page: number;
-  page_size: number;
-  total_items: number;
-  total_pages: number;
-  has_next: boolean;
-  has_previous: boolean;
-}
-
-export interface DashboardData {
-  overview: DashboardOverview;
-  task_status: DashboardTaskStatus;
-  sprint_burndown: SprintBurndown[];
-  team_workload: TeamWorkload[];
-}
 
 export interface DashboardActivitiesResponse {
   user: DashboardActivityUser;
   activities: DashboardActivity[];
 }
-
 // Global Search Types
 export interface SearchTaskResult {
   id: string;

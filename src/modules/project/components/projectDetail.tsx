@@ -554,9 +554,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     className="flex flex-1 items-start text-left"
                   >
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">
-                        {sprint.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-slate-100">
+                          {sprint.name}
+                        </h3>
+                        <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                          {sprint.status}
+                        </span>
+                      </div>
                       <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                         {sprint.startDate || 'No start date'} → {sprint.endDate || 'No end date'}
                       </p>
@@ -590,10 +595,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         Complete Sprint
                       </WpButton>
                     )}
-
-                    <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-                      {sprint.status}
-                    </span>
 
                     <button
                       type="button"

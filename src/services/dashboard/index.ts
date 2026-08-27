@@ -5,13 +5,11 @@ import { DashboardData, DashboardActivitiesResponse } from '@/src/types/dashboar
 
 class DashboardService {
   async getDashboard(
-    organizationId: string,
+    projectId: string,
     sprintId?: string
   ): Promise<ApiResponse<DashboardData>> {
-    const url = ApiEndpoints.Dashboard.getDashboard.withParams(organizationId).withQuery({
-      sprint_id: sprintId ?? '',
-    });
-
+    const endpoint = ApiEndpoints.Dashboard.getDashboard.withParams(projectId);
+    const url = sprintId ? endpoint.withQuery({ sprint_id: sprintId }) : endpoint.url;
     return apiService.get<DashboardData>(url);
   }
 
@@ -23,7 +21,6 @@ class DashboardService {
       page: String(page),
       page_size: String(pageSize),
     });
-
     return apiService.getPaginated<DashboardActivitiesResponse>(url);
   }
 
