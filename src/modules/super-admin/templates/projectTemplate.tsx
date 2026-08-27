@@ -98,7 +98,6 @@ export const ProjectsTemplate = () => {
                   'Sprints',
                   'Members',
                   'Created',
-                  'Actions',
                 ].map((col) => (
                   <th
                     key={col}
@@ -168,14 +167,14 @@ export const ProjectsTemplate = () => {
                           {new Date(project.created_at).toLocaleDateString()}
                         </span>
                       </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
+                      {/* <td className="px-5 py-4 whitespace-nowrap">
                         <button
                           className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
                           title="Delete project"
                         >
                           <Trash2 size={16} />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   );
                 })
