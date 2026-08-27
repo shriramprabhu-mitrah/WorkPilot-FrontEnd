@@ -14,8 +14,7 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Secure Login
 - Remember Me
 - Forgot Password
-- Google Sign-In (Optional)
-- Role Selection during Registration
+
 
 ### Organization Management
 
@@ -179,10 +178,6 @@ Example:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
-
-NEXT_PUBLIC_APP_NAME=WorkPilot
-
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
 ```
 
 > Replace the values with your own configuration.
