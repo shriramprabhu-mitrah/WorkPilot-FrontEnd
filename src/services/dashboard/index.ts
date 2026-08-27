@@ -26,6 +26,18 @@ class DashboardService {
 
     return apiService.getPaginated<DashboardActivitiesResponse>(url);
   }
+
+  async getGlobalSearch(
+    query: string,
+    organizationId: string
+  ): Promise<ApiResponse<{ tasks: string[]; projects: string[] }>> {
+    const url = ApiEndpoints.Dashboard.globalSearch.withQuery({
+      q: query,
+      organization_id: organizationId,
+    });
+
+    return apiService.get<{ tasks: string[]; projects: string[] }>(url);
+  }
 }
 
 export const dashboardService = new DashboardService();
