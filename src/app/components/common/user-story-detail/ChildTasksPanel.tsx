@@ -19,6 +19,8 @@ import { KanbanTask, ColumnId } from '@/src/types/board';
 import { logger } from '@/src/lib/utils/logger';
 import toast from 'react-hot-toast';
 
+import { usePermissions } from '@/src/hooks/usePermissions';
+
 interface ChildTasksPanelProps {
   projectId: string;
   userStoryId: string;
@@ -173,6 +175,7 @@ export const ChildTasksPanel = ({
   totalTasks,
 }: ChildTasksPanelProps) => {
   const queryClient = useQueryClient();
+  const { canCreateTask, canEditTask } = usePermissions();
 
   const {
     childTasks: fetchedPages,
@@ -202,7 +205,7 @@ export const ChildTasksPanel = ({
         color: status.color,
         bg: `${status.color}18`,
         dot: status.color,
-        is_final: status.is_final ?? false,
+        is_final: status.is_final,
       })),
     [customStatuses]
   );
@@ -213,11 +216,14 @@ export const ChildTasksPanel = ({
   );
 
   const [childAssigneeTaskId, setChildAssigneeTaskId] = useState<string | null>(null);
-  const [assigneeAnchorEl, setAssigneeAnchorEl] = useState<HTMLElement | null>(null);
   const [childAssigneeSearch, setChildAssigneeSearch] = useState('');
-  const debouncedChildAssigneeSearch = useDebounce(childAssigneeSearch, 500);
+  const [assigneeAnchorEl, setAssigneeAnchorEl] = useState<HTMLElement | null>(null);
+  const debouncedChildAssigneeSearch = useDebounce(childAssigneeSearch, 400);
+
   const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
   const [statusAnchorEl, setStatusAnchorEl] = useState<HTMLElement | null>(null);
+
+  const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
 
   const {
     members: childAssigneeMembers,
@@ -228,8 +234,6 @@ export const ChildTasksPanel = ({
     { page: 1, page_size: 10, name: debouncedChildAssigneeSearch },
     !!childAssigneeTaskId
   );
-
-  const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
 
   const closeAssigneeDropdown = useCallback(() => {
     setChildAssigneeTaskId(null);
@@ -242,23 +246,24 @@ export const ChildTasksPanel = ({
     setStatusAnchorEl(null);
   }, []);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const hasNextPageRef = useRef(hasNextPage);
   const isFetchingNextPageRef = useRef(isFetchingNextPage);
   const fetchNextPageRef = useRef(fetchNextPage);
+
   useEffect(() => {
     hasNextPageRef.current = hasNextPage;
     isFetchingNextPageRef.current = isFetchingNextPage;
     fetchNextPageRef.current = fetchNextPage;
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    if (distanceFromBottom < 60 && hasNextPageRef.current && !isFetchingNextPageRef.current) {
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (
+      scrollHeight - scrollTop - clientHeight < 50 &&
+      hasNextPageRef.current &&
+      !isFetchingNextPageRef.current
+    ) {
       fetchNextPageRef.current();
     }
   }, []);
@@ -292,7 +297,7 @@ export const ChildTasksPanel = ({
         <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
           Tasks ({totalTasks})
         </p>
-        {onCreateTask && (
+        {onCreateTask && canCreateTask && (
           <button
             onClick={onCreateTask}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
@@ -374,8 +379,10 @@ export const ChildTasksPanel = ({
                     <td className="px-4 py-3">
                       <button
                         type="button"
+                        disabled={isUpdatingTask || !canEditTask}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (!canEditTask) return;
                           if (childAssigneeTaskId === task.id) {
                             closeAssigneeDropdown();
                           } else {
@@ -384,7 +391,9 @@ export const ChildTasksPanel = ({
                             setChildAssigneeSearch('');
                           }
                         }}
-                        className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                        }`}
                       >
                         {task.assignee_id ? (
                           <AssigneeAvatar
@@ -400,13 +409,15 @@ export const ChildTasksPanel = ({
                         <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                           {task.assignee_name || 'Unassigned'}
                         </span>
-                        <ChevronDown
-                          size={12}
-                          className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                        />
+                        {canEditTask && (
+                          <ChevronDown
+                            size={12}
+                            className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                          />
+                        )}
                       </button>
 
-                      {childAssigneeTaskId === task.id && (
+                      {childAssigneeTaskId === task.id && canEditTask && (
                         <DropdownPortal
                           anchorEl={assigneeAnchorEl}
                           onClose={closeAssigneeDropdown}
@@ -498,7 +509,10 @@ export const ChildTasksPanel = ({
                                     <AssigneeAvatar initials={initials} color={color} size="sm" />
                                     <span className="truncate">{displayName}</span>
                                     {m.user_id === task.assignee_id && (
-                                      <Check size={12} className="ml-auto text-blue-600 shrink-0" />
+                                      <Check
+                                        size={12}
+                                        className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
+                                      />
                                     )}
                                   </WpButton>
                                 );
@@ -584,9 +598,10 @@ export const ChildTasksPanel = ({
                           <>
                             <button
                               type="button"
-                              disabled={isUpdatingTask}
+                              disabled={isUpdatingTask || !canEditTask}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                if (!canEditTask) return;
                                 if (childStatusTaskId === task.id) {
                                   closeStatusDropdown();
                                 } else {
@@ -594,7 +609,9 @@ export const ChildTasksPanel = ({
                                   setStatusAnchorEl(e.currentTarget);
                                 }
                               }}
-                              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border"
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border ${
+                                !canEditTask ? 'cursor-default' : ''
+                              }`}
                               style={{
                                 color: currentStatus?.color || colors.colTodo,
                                 backgroundColor: currentStatus?.bg || colors.colTodoBg,
@@ -612,10 +629,10 @@ export const ChildTasksPanel = ({
                                   {currentStatus?.label || task.status || 'To Do'}
                                 </span>
                               </span>
-                              <ChevronDown size={13} className="shrink-0" />
+                              {canEditTask && <ChevronDown size={13} className="shrink-0" />}
                             </button>
 
-                            {childStatusTaskId === task.id && (
+                            {childStatusTaskId === task.id && canEditTask && (
                               <DropdownPortal
                                 anchorEl={statusAnchorEl}
                                 onClose={closeStatusDropdown}

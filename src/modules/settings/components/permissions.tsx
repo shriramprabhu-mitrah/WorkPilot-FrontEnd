@@ -36,53 +36,30 @@ interface RoleListProps {
   handleAddRole: () => void;
 }
 
-const PERMISSION_SECTIONS: PermissionSection[] = [
-  {
-    id: 'sprints',
-    sectionKey: 'sprints',
-    name: 'Sprints',
-    permissions: [
-      { key: 'view', label: 'View sprints' },
-      { key: 'add', label: 'Add sprints' },
-      { key: 'modify', label: 'Modify sprints' },
-      { key: 'delete', label: 'Delete sprints' },
-    ],
-  },
-  {
-    id: 'user_stories',
-    sectionKey: 'user_stories',
-    name: 'User Stories',
-    permissions: [
-      { key: 'view', label: 'View user stories' },
-      { key: 'add', label: 'Add user stories' },
-      { key: 'modify', label: 'Modify user stories' },
-      { key: 'delete', label: 'Delete user stories' },
-    ],
-  },
-  {
-    id: 'tasks',
-    sectionKey: 'tasks',
-    name: 'Tasks',
-    permissions: [
-      { key: 'view', label: 'View tasks' },
-      { key: 'add', label: 'Add tasks' },
-      { key: 'modify', label: 'Modify tasks' },
-      { key: 'delete', label: 'Delete tasks' },
-    ],
-  },
-  {
-    id: 'comments',
-    sectionKey: 'comments',
-    name: 'Comments',
-    permissions: [
-      { key: 'view', label: 'View comments' },
-      { key: 'add', label: 'Add comments' },
-      { key: 'comment', label: 'Comment on items' },
-      { key: 'modify', label: 'Modify comments' },
-      { key: 'delete', label: 'Delete comments' },
-    ],
-  },
-];
+const formatSectionName = (key: string): string => {
+  return key
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const formatActionLabel = (action: string, sectionName: string): string => {
+  const lowerSection = sectionName.toLowerCase();
+  switch (action) {
+    case 'view':
+      return `View ${lowerSection}`;
+    case 'add':
+      return `Add ${lowerSection}`;
+    case 'modify':
+      return `Modify ${lowerSection}`;
+    case 'delete':
+      return `Delete ${lowerSection}`;
+    case 'comment':
+      return `Comment on ${lowerSection}`;
+    default:
+      return `${action.charAt(0).toUpperCase() + action.slice(1)} ${lowerSection}`;
+  }
+};
 
 const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
   projects: { view: true, add: false, modify: false, delete: false },
@@ -251,6 +228,58 @@ const Permissions = () => {
     }
   }, [selectedRole?.id, selectedRole?.permissions]);
 
+  const permissionSections: PermissionSection[] = useMemo(() => {
+    const perms = selectedRole?.permissions || DEFAULT_ROLE_PERMISSIONS;
+    const sectionKeys = Object.keys(perms) as Array<keyof RolePermissions>;
+
+    const SECTION_ORDER: Array<keyof RolePermissions> = [
+      'projects',
+      'sprints',
+      'user_stories',
+      'tasks',
+      'comments',
+      'issues',
+    ];
+
+    const sortedKeys = [...sectionKeys].sort((a, b) => {
+      const idxA = SECTION_ORDER.indexOf(a);
+      const idxB = SECTION_ORDER.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    const ACTION_ORDER = ['view', 'add', 'modify', 'delete', 'comment'];
+
+    return sortedKeys.map((secKey) => {
+      const sectionName = formatSectionName(secKey);
+      const sectionObj = (perms[secKey] || {}) as Record<string, boolean>;
+      const actionKeys = Object.keys(sectionObj);
+
+      const sortedActions = [...actionKeys].sort((a, b) => {
+        const idxA = ACTION_ORDER.indexOf(a);
+        const idxB = ACTION_ORDER.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
+      const permissions: PermissionAction[] = sortedActions.map((actKey) => ({
+        key: actKey,
+        label: formatActionLabel(actKey, sectionName),
+      }));
+
+      return {
+        id: secKey,
+        sectionKey: secKey,
+        name: sectionName,
+        permissions,
+      };
+    });
+  }, [selectedRole?.permissions]);
+
   const hasChanges = useMemo(() => {
     if (!selectedRole) return false;
     return JSON.stringify(localPermissions) !== JSON.stringify(selectedRole.permissions || {});
@@ -273,17 +302,12 @@ const Permissions = () => {
     const newVal = !currentVal;
 
     setLocalPermissions((prev) => {
-      const defaultSectionPerms =
-        section.sectionKey === 'comments'
-          ? { view: false, add: false, modify: false, delete: false, comment: false }
-          : { view: false, add: false, modify: false, delete: false };
-
-      const currentSectionPerms = (prev[section.sectionKey] ||
-        defaultSectionPerms) as unknown as Record<string, boolean>;
+      const sectionKey = section.sectionKey;
+      const currentSectionPerms = (prev[sectionKey] || {}) as unknown as Record<string, boolean>;
 
       return {
         ...prev,
-        [section.sectionKey]: {
+        [sectionKey]: {
           ...currentSectionPerms,
           [action.key]: newVal,
         },
@@ -493,7 +517,7 @@ const Permissions = () => {
             </div>
 
             <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-              {PERMISSION_SECTIONS.map((section, idx) => {
+              {permissionSections.map((section, idx) => {
                 const isExpanded = expandedSection === section.id;
                 const allowedCount = section.permissions.filter((p) =>
                   isPermissionEnabled(section, p)
@@ -504,7 +528,7 @@ const Permissions = () => {
                   <div
                     key={section.id}
                     className={
-                      idx !== PERMISSION_SECTIONS.length - 1
+                      idx !== permissionSections.length - 1
                         ? 'border-b border-slate-200 dark:border-slate-700'
                         : ''
                     }

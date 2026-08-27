@@ -12,6 +12,7 @@ import {
 import { colors } from '@/src/styles/colors';
 import { formatMonthYear } from '@/src/app/components/common/format';
 import { TaskResponse } from '@/src/types/task';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 export const BacklogRow = ({
   task,

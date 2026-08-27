@@ -76,11 +76,10 @@ const ProjectPage = () => {
   const router = useRouter();
   const { push, replace } = useOrgNavigation();
   const searchParams = useSearchParams();
-  const { hasPermission } = usePermissions();
+  const { canCreateProject } = usePermissions();
 
   // Derive initial modal state from URL params
-  const shouldOpenModal =
-    searchParams.get('openCreate') === 'true' && hasPermission('PROJECT_CREATE');
+  const shouldOpenModal = searchParams.get('openCreate') === 'true' && canCreateProject;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
@@ -216,7 +215,7 @@ const ProjectPage = () => {
           </div>
 
           <div className="self-start mr-12 flex items-center gap-2">
-            {hasPermission('PROJECT_CREATE') && (
+            {canCreateProject && (
               <WpButton size="sm" onClick={() => setIsModalOpen(true)}>
                 + New Project
               </WpButton>
@@ -294,7 +293,7 @@ const ProjectPage = () => {
                   project to get started.
                 </p>
 
-                {hasPermission('PROJECT_CREATE') && (
+                {canCreateProject && (
                   <WpButton size="sm" className="mt-8" onClick={() => setIsModalOpen(true)}>
                     + Create Project
                   </WpButton>

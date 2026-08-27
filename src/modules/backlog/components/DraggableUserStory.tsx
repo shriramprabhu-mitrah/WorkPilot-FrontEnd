@@ -6,6 +6,7 @@ import { colors } from '@/src/styles/colors';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
 import { GripVertical, PlusCircle } from 'lucide-react';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 interface DraggableUserStoryProps {
   story: UserStoryResponse;

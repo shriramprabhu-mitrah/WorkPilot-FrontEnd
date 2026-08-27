@@ -11,8 +11,10 @@ import { Priority } from '@/src/types/board';
 import { TaskStatus } from '@/src/app/components/common/task';
 import { useAppSelector } from '@/src/store';
 import { formatMonthYear } from '@/src/app/components/common/format';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 export const TaskTemplate = () => {
+  const { canViewTasks, canDeleteTask } = usePermissions();
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const projectId = selectedApiProject?.id ?? '';
@@ -36,7 +38,7 @@ export const TaskTemplate = () => {
   const { tasksList, isLoadingTasks } = useGetTasks(
     mergedFilters.project,
     { sprint_id: mergedFilters.sprint || undefined },
-    !!mergedFilters.project
+    !!mergedFilters.project && canViewTasks
   );
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -103,6 +105,15 @@ export const TaskTemplate = () => {
       {isLoadingTasks && mergedFilters.project ? (
         <div className="mt-4">
           <TaskSkeleton />
+        </div>
+      ) : !canViewTasks ? (
+        <div className="flex flex-1 items-center justify-center py-16 px-3 sm:px-0">
+          <div className="flex flex-col items-center justify-center text-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Access Restricted</h2>
+            <p className="mt-2 max-w-md text-center text-gray-500 dark:text-gray-400 text-sm">
+              You do not have permission to view tasks.
+            </p>
+          </div>
         </div>
       ) : (
         <TaskTable

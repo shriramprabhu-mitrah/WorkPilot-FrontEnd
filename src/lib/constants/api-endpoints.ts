@@ -179,7 +179,8 @@ export const ApiEndpoints = {
     getProjectMembers: createEndpoint('/project/members/{projectId}'),
     removeMember: createEndpoint('/project/{projectId}/member/{userId}'),
     updateProjectRole: createEndpoint('/project/{projectId}/member/{userId}'),
-    getProjectActivity: createQueryEndpoint('/project/{projectId}/activity/{type}')
+    getProjectActivity: createQueryEndpoint('/project/{projectId}/activity/{type}'),
+    getUserProjectRole: createEndpoint('/project/{projectId}/user-role'),
   },
   Sprint: {
     getSprints: createQueryEndpoint('/projects/{projectId}/sprint'),

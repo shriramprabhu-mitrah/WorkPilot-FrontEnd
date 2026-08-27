@@ -39,14 +39,20 @@ const SprintDetail = () => {
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
   const [selectedUserStoryIds, setSelectedUserStoryIds] = useState<string[]>([]);
   const [taskUserStoryId, setTaskUserStoryId] = useState<string>('');
-  const { hasPermission } = usePermissions();
+  const {
+    canEditSprint,
+    canDeleteSprint,
+    canViewUserStories,
+    canDeleteUserStory,
+    canCreateTask,
+  } = usePermissions();
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
   const { deleteSprintAsync, isDeletingSprint } = useDeleteSprint(projectId);
   const {
     userStories: tasksList,
     isLoadingUserStories: isLoadingTasks,
     isFetchingUserStories: isFetchingTasks,
-  } = useGetUserStories(projectId, { sprint_id: sprintId });
+  } = useGetUserStories(projectId, { sprint_id: sprintId }, !!projectId && canViewUserStories);
 
   const { deleteTaskAsync, isDeletingTask } = useDeleteTask(projectId);
   const deleteUserStoryMutation = useDeleteUserStory();
@@ -220,7 +226,7 @@ const SprintDetail = () => {
               {sprint.status.charAt(0).toUpperCase() + sprint.status.slice(1)}
             </span>
 
-            {hasPermission('SPRINT_EDIT') && (
+            {canEditSprint && (
               <WpButton
                 variant="secondary"
                 size="sm"
@@ -232,7 +238,7 @@ const SprintDetail = () => {
               </WpButton>
             )}
 
-            {hasPermission('SPRINT_DELETE') && (
+            {canDeleteSprint && (
               <WpButton
                 variant="ghost"
                 size="sm"
@@ -272,7 +278,7 @@ const SprintDetail = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">User Stories</h2>
         <div className="flex items-center gap-2">
-          {selectedUserStoryIds.length > 0 && (
+          {canDeleteUserStory && selectedUserStoryIds.length > 0 && (
             <WpButton
               type="button"
               variant="ghost"
@@ -289,7 +295,22 @@ const SprintDetail = () => {
       </div>
 
       {/* User Stories list */}
-      {isFetchingTasks ? (
+      {!canViewUserStories ? (
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/kanban method-pana.svg"
+            alt="Access Restricted"
+            className="h-32 w-32 opacity-60 mb-2"
+          />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Access Restricted
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+            You do not have permission to view user stories.
+          </p>
+        </div>
+      ) : isFetchingTasks ? (
         <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-blue-600" />
@@ -314,13 +335,17 @@ const SprintDetail = () => {
         <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
           {/* Table header */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-            <input
-              type="checkbox"
-              checked={allUserStoriesSelected}
-              onChange={handleSelectAll}
-              className="h-4 w-4 cursor-pointer rounded border-gray-300 dark:border-slate-600"
-            />
-            <span className="text-xs text-gray-500 dark:text-slate-400">Select all</span>
+            {canDeleteUserStory && (
+              <input
+                type="checkbox"
+                checked={allUserStoriesSelected}
+                onChange={handleSelectAll}
+                className="h-4 w-4 cursor-pointer rounded border-gray-300 dark:border-slate-600"
+              />
+            )}
+            {canDeleteUserStory && (
+              <span className="text-xs text-gray-500 dark:text-slate-400">Select all</span>
+            )}
             <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300">
               {(tasksList || []).length} {(tasksList || []).length === 1 ? 'story' : 'stories'}
             </span>
@@ -343,13 +368,15 @@ const SprintDetail = () => {
                   ${isSelected ? 'bg-blue-50/30 dark:bg-blue-900/20 border-l-4 border-l-blue-400' : ''}
                 `}
               >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => handleUserStorySelection(userStoryId)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 dark:border-slate-600"
-                />
+                {canDeleteUserStory && (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleUserStorySelection(userStoryId)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 dark:border-slate-600"
+                  />
+                )}
 
                 {/* Story title */}
                 <div
@@ -435,20 +462,28 @@ const SprintDetail = () => {
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
           }}
-          onCreateTask={() => {
-            setTaskUserStoryId(selectedUserStory.id);
-            setShowAddTaskModal(true);
-          }}
-          onDelete={async () => {
-            try {
-              await deleteUserStoryMutation.mutateAsync({
-                projectId,
-                userStoryId: selectedUserStory.id,
-              });
-              queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-              setSelectedUserStory(null);
-            } catch (error) {}
-          }}
+          onCreateTask={
+            canCreateTask
+              ? () => {
+                  setTaskUserStoryId(selectedUserStory.id);
+                  setShowAddTaskModal(true);
+                }
+              : undefined
+          }
+          onDelete={
+            canDeleteUserStory
+              ? async () => {
+                  try {
+                    await deleteUserStoryMutation.mutateAsync({
+                      projectId,
+                      userStoryId: selectedUserStory.id,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+                    setSelectedUserStory(null);
+                  } catch (error) {}
+                }
+              : undefined
+          }
         />
       )}
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Filter } from 'lucide-react';
+import { Filter, Layers } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
 import { useAppSelector } from '@/src/store';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
@@ -10,7 +10,7 @@ import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { taskService } from '@/src/services/tasks';
 import { useQueryClient } from '@tanstack/react-query';
-import { GetTasksQueryParams, Task } from '@/src/types/task';
+import { GetTasksQueryParams, Task, TaskResponse } from '@/src/types/task';
 import { taskTypeOptions } from '@/src/app/components/common/enum';
 import { createPortal } from 'react-dom';
 import {
@@ -48,6 +48,7 @@ import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import { useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
 import toast from 'react-hot-toast';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 // Task card component for the swimlane
 const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void }) => {
@@ -184,19 +185,29 @@ const UserStoryRow = ({
   const [showStoryPopup, setShowStoryPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
+  const isSpecialStory = story.id === 'direct-sprint-tasks' || story.id === 'no-story';
+
   return (
-    <div className="border-b border-gray-200">
+    <div
+      className={`border-b border-gray-200 ${isSpecialStory ? 'bg-indigo-50/20 dark:bg-indigo-950/10' : ''}`}
+    >
       <div className="flex items-stretch">
         {/* Sticky User Story Column on the left */}
-        <div className="sticky left-0 z-10 bg-gray-50 border-r border-gray-200 w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start">
+        <div
+          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${
+            isSpecialStory
+              ? 'bg-indigo-50 border-indigo-200/80 dark:bg-slate-900/90 dark:border-indigo-900/50'
+              : 'bg-gray-50 border-gray-200 dark:bg-gray-800/90 dark:border-gray-700'
+          }`}
+        >
           <div className="flex items-start gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 active:scale-95 rounded transition-all duration-200 mt-0.5"
+              className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 rounded transition-all duration-200 mt-0.5"
               aria-label={isExpanded ? 'Collapse story tasks' : 'Expand story tasks'}
             >
               <svg
-                className={`w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out ${
+                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${
                   isExpanded ? 'rotate-90' : ''
                 }`}
                 fill="none"
@@ -212,8 +223,13 @@ const UserStoryRow = ({
               </svg>
             </button>
             <div
-              onClick={() => onUserStoryClick(story)}
+              onClick={() => {
+                if (!isSpecialStory) {
+                  onUserStoryClick(story);
+                }
+              }}
               onMouseEnter={(e) => {
+                if (isSpecialStory) return;
                 setShowStoryPopup(true);
                 setPopupPosition({
                   x: e.clientX,
@@ -221,37 +237,56 @@ const UserStoryRow = ({
                 });
               }}
               onMouseMove={(e) => {
+                if (isSpecialStory) return;
                 setPopupPosition({
                   x: e.clientX,
                   y: e.clientY,
                 });
               }}
               onMouseLeave={() => setShowStoryPopup(false)}
-              className="relative flex items-start gap-2 flex-1 min-w-0 cursor-pointer group"
+              className={`relative flex items-start gap-2 flex-1 min-w-0 ${
+                !isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
+              }`}
             >
-              <div
-                className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
-                style={{
-                  backgroundColor:
-                    story.priority === 'high'
-                      ? '#dc2626'
-                      : story.priority === 'medium'
-                        ? '#f59e0b'
-                        : '#10b981',
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <h3
-                  className={`text-sm font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors dark:text-slate-100 ${
-                    story.is_closed ? 'line-through' : ''
-                  }`}
-                >
-                  {story.title}
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {story.total_tasks ?? 0} tasks · {story.story_points ?? 0} pts
-                </p>
-              </div>
+              {isSpecialStory ? (
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-200 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs">
+                      <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      Storyless Tasks
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 pl-0.5">
+                    {story.total_tasks ?? 0} {story.total_tasks === 1 ? 'task' : 'tasks'} (no story)
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+                    style={{
+                      backgroundColor:
+                        story.priority === 'high'
+                          ? '#dc2626'
+                          : story.priority === 'medium'
+                            ? '#f59e0b'
+                            : '#10b981',
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${
+                        !isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
+                      } ${story.is_closed ? 'line-through' : ''}`}
+                    >
+                      {story.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {story.total_tasks ?? 0} tasks · {story.story_points ?? 0} pts
+                    </p>
+                  </div>
+                </>
+              )}
               {showStoryPopup &&
                 typeof document !== 'undefined' &&
                 createPortal(
@@ -423,6 +458,16 @@ export const KanbanBoardTemplate = () => {
 
   const queryClient = useQueryClient();
   const deleteUserStoryMutation = useDeleteUserStory();
+  const {
+    canViewTasks,
+    canCreateTask,
+    canEditTask,
+    canDeleteTask,
+    canViewUserStories,
+    canEditUserStory,
+    canDeleteUserStory,
+    canViewSprints,
+  } = usePermissions();
 
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -471,7 +516,7 @@ export const KanbanBoardTemplate = () => {
       page_size: 10,
       name: debouncedMemberSearch,
     },
-    showAddTaskModal // Only fetch when modal is open
+    showAddTaskModal && canCreateTask // Only fetch when modal is open and has permission
   );
 
   // Generate assignee options from fetched members
@@ -483,46 +528,53 @@ export const KanbanBoardTemplate = () => {
 
   useOutsideClick(filterRef, () => setShowFilter(false));
 
-  // Build query params from filters
-  const queryParams = useMemo((): GetTasksQueryParams => {
-    const params: GetTasksQueryParams = {};
+  // 1. Direct Sprint Tasks query params (tasks with no user story, in current sprint)
+  const directSprintQueryParams = useMemo((): GetTasksQueryParams => {
+    const params: GetTasksQueryParams = {
+      user_story_id: null,
+      page_size: 100,
+    };
 
     if (selectedSprint) {
       params.sprint_id = selectedSprint;
     }
 
-    // Add priority filter - comma-separated for multiple selections
     if (filters.priorities.length > 0) {
       params.priority = filters.priorities.map((p) => p.toLowerCase()).join(',');
     }
-
-    // Add assignee filter - comma-separated for multiple selections
     if (assigneeIdFilter.length > 0) {
       params.assignee_id = assigneeIdFilter.join(',');
     }
-
-    // Add type filter - comma-separated for multiple selections
     if (filters.types.length > 0) {
       params.type = filters.types.map((t) => t.toLowerCase()).join(',');
     }
-
-    // Add status filter - comma-separated for multiple selections
     if (filters.statuses.length > 0) {
       params.status_id = filters.statuses.join(',');
     }
 
-    logger.log('Board query params updated:', params);
     return params;
   }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
 
-  // Fetch tasks directly with filters
-  const { tasksList, isLoadingTasks, refetchTasks } = useGetTasks(selectedProject, queryParams);
+  const canViewBoard = canViewTasks && canViewUserStories && canViewSprints;
+
+  // Fetch Direct Sprint Tasks
+  const {
+    tasksList: directSprintTasksList,
+    isLoadingTasks: isLoadingDirectSprintTasks,
+    refetchTasks: refetchDirectSprintTasks,
+  } = useGetTasks(selectedProject, directSprintQueryParams, !!selectedProject && canViewBoard);
 
   // Also fetch user stories for grouping (without filters)
-  const { userStories, isLoadingUserStories } = useGetUserStories(
+  const { userStories, isLoadingUserStories, refetchUserStories } = useGetUserStories(
     selectedProject,
-    selectedSprint ? { sprint_id: selectedSprint } : {}
+    selectedSprint ? { sprint_id: selectedSprint, page_size: 100 } : { page_size: 100 },
+    !!selectedProject && canViewBoard
   );
+
+  const handleRefetch = useCallback(() => {
+    refetchUserStories();
+    refetchDirectSprintTasks();
+  }, [refetchUserStories, refetchDirectSprintTasks]);
 
   // Fetch status columns
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
@@ -533,7 +585,9 @@ export const KanbanBoardTemplate = () => {
   );
 
   const boardLoading =
-    !!selectedProject && (isLoadingTasks || isLoadingUserStories || isLoadingStatus);
+    !!selectedProject &&
+    canViewBoard &&
+    (isLoadingDirectSprintTasks || isLoadingUserStories || isLoadingStatus);
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
@@ -550,33 +604,91 @@ export const KanbanBoardTemplate = () => {
     filters.types.length > 0 ||
     filters.statuses.length > 0;
 
-  // Process tasks and organize by user story and status
-  const processedStories = useMemo(() => {
-    // Group filtered tasks by user story
-    const tasksByStory = new Map<string, Map<string, KanbanTask[]>>();
+  // Helper to resolve status ID for a task
+  const resolveStatusId = useCallback(
+    (task: TaskResponse): string => {
+      // 1. If task has status_id and it directly matches a custom status
+      if (task.status_id && statuses.some((s) => s.id === task.status_id)) {
+        return task.status_id;
+      }
 
-    tasksList?.forEach((task) => {
-      // Check if there's an optimistic update for this task
+      // 2. If task.status matches a status id
+      if (task.status && statuses.some((s) => s.id === task.status)) {
+        return task.status;
+      }
+
+      // 3. Match by name (case-insensitive) against task.status or task.status_id
+      const targetStatusName = (task.status || task.status_id || '')
+        .toLowerCase()
+        .replace(/_/g, ' ');
+      const matchedByName = statuses.find((s) => {
+        const sName = s.name.toLowerCase().replace(/_/g, ' ');
+        return sName === targetStatusName;
+      });
+
+      if (matchedByName) {
+        return matchedByName.id;
+      }
+
+      // 4. Fallback to first custom status or task status_id
+      return task.status_id || task.status || statuses[0]?.id || '';
+    },
+    [statuses]
+  );
+
+  // Helper to filter tasks based on active filters
+  const taskMatchesFilters = useCallback(
+    (task: TaskResponse): boolean => {
+      // Priority filter
+      if (filters.priorities.length > 0) {
+        const taskPriority = (task.priority || '').toLowerCase();
+        if (!filters.priorities.some((p) => p.toLowerCase() === taskPriority)) {
+          return false;
+        }
+      }
+
+      // Assignee filter
+      if (assigneeIdFilter.length > 0) {
+        const taskAssigneeId =
+          task.assignee_id || task.assignee?.id || (task.assignee as { user_id?: string })?.user_id;
+        if (!taskAssigneeId || !assigneeIdFilter.includes(taskAssigneeId)) {
+          return false;
+        }
+      }
+
+      // Type filter
+      if (filters.types.length > 0) {
+        const taskType = (task.type || '').toLowerCase();
+        if (!filters.types.some((t) => t.toLowerCase() === taskType)) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (filters.statuses.length > 0) {
+        const resolved = resolveStatusId(task);
+        if (
+          !filters.statuses.includes(resolved) &&
+          !filters.statuses.includes(task.status_id || '') &&
+          !filters.statuses.includes(task.status || '')
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    [filters, assigneeIdFilter, resolveStatusId]
+  );
+
+  // Helper to map a TaskResponse to KanbanTask
+  const mapToKanbanTask = useCallback(
+    (task: TaskResponse, parentStoryId: string, resolvedStatusId: string): KanbanTask => {
       const taskKey = task.key ?? task.id ?? '';
-      const optimisticUpdate = optimisticUpdates.get(taskKey);
-
-      // Use optimistic update for both storyId and statusId if available
-      const storyId = optimisticUpdate?.storyId ?? task.user_story_id ?? 'no-story';
-      const statusId = optimisticUpdate?.statusId ?? task.status_id ?? '';
-
-      if (!tasksByStory.has(storyId)) {
-        tasksByStory.set(storyId, new Map());
-      }
-
-      const storyTasks = tasksByStory.get(storyId)!;
-      if (!storyTasks.has(statusId)) {
-        storyTasks.set(statusId, []);
-      }
-
-      storyTasks.get(statusId)?.push({
+      return {
         id: taskKey,
         taskId: task.id ?? '',
-        projectId: selectedProject,
+        projectId: task.project_id ?? selectedProject,
         title: task.title ?? '',
         priority: task.priority
           ? ((task.priority.charAt(0).toUpperCase() +
@@ -594,27 +706,147 @@ export const KanbanBoardTemplate = () => {
         assigneeColor: task?.assignee?.color ?? '',
         storyPoints: task.story_points ?? 0,
         dueDate: task.due_date ? task.due_date.split('T')[0] : '',
-        columnId: statusId,
+        columnId: resolvedStatusId,
         sprint: task.sprint_name ?? '',
-        parent: storyId,
-      });
+        parent: parentStoryId,
+      };
+    },
+    [selectedProject]
+  );
+
+  // Process tasks and organize by user story and status
+  const processedStories = useMemo(() => {
+    // Collect all unique tasks mapped by task key/id
+    const taskMap = new Map<string, { task: TaskResponse; defaultStoryId: string }>();
+
+    // 1. Add all tasks from user stories (from userStory API)
+    userStories?.forEach((story) => {
+      if (Array.isArray(story.tasks)) {
+        story.tasks.forEach((task) => {
+          const key = task.key || task.id;
+          if (key) {
+            taskMap.set(key, { task, defaultStoryId: story.id });
+          }
+        });
+      }
     });
 
-    // Map user stories with their filtered tasks
-    return userStories
-      .map((story) => {
-        const tasksByStatus = tasksByStory.get(story.id ?? '') || new Map();
-        return {
-          ...story,
-          tasksByStatus,
-          total_tasks: Array.from(tasksByStatus.values()).reduce(
-            (sum, tasks) => sum + tasks.length,
-            0
-          ),
-        };
-      })
-      .filter((story) => story.total_tasks > 0 || !hasActiveFilter); // Hide empty stories when filtering
-  }, [tasksList, userStories, selectedProject, optimisticUpdates, hasActiveFilter]);
+    // 2. Add Direct Sprint Tasks (from directSprintTasksList)
+    directSprintTasksList?.forEach((task) => {
+      const key = task.key || task.id;
+      if (key) {
+        const existing = taskMap.get(key);
+        if (existing) {
+          taskMap.set(key, {
+            task: { ...existing.task, ...task },
+            defaultStoryId: task.user_story_id || existing.defaultStoryId || 'direct-sprint-tasks',
+          });
+        } else {
+          taskMap.set(key, {
+            task,
+            defaultStoryId: task.user_story_id || 'direct-sprint-tasks',
+          });
+        }
+      }
+    });
+
+    // 3. Group filtered tasks by user story and status
+    const tasksByStory = new Map<string, Map<string, KanbanTask[]>>();
+
+    taskMap.forEach(({ task, defaultStoryId }) => {
+      // Check filters if active
+      if (hasActiveFilter && !taskMatchesFilters(task)) {
+        return;
+      }
+
+      // If a specific sprint is selected, filter out direct sprint tasks that belong to OTHER sprints
+      if (selectedSprint && !task.user_story_id) {
+        if (task.sprint_id && task.sprint_id !== selectedSprint) {
+          return;
+        }
+      }
+
+      const taskKey = task.key ?? task.id ?? '';
+      const optimisticUpdate = optimisticUpdates.get(taskKey);
+
+      let effectiveStoryId = optimisticUpdate?.storyId;
+      if (!effectiveStoryId) {
+        if (task.user_story_id) {
+          effectiveStoryId = task.user_story_id;
+        } else if (
+          defaultStoryId &&
+          defaultStoryId !== 'direct-sprint-tasks' &&
+          defaultStoryId !== 'no-story'
+        ) {
+          effectiveStoryId = defaultStoryId;
+        } else {
+          effectiveStoryId = 'direct-sprint-tasks';
+        }
+      }
+
+      const resolvedStatus = resolveStatusId(task);
+      const statusId = optimisticUpdate?.statusId ?? resolvedStatus;
+
+      if (!tasksByStory.has(effectiveStoryId)) {
+        tasksByStory.set(effectiveStoryId, new Map());
+      }
+
+      const storyTasks = tasksByStory.get(effectiveStoryId)!;
+      if (!storyTasks.has(statusId)) {
+        storyTasks.set(statusId, []);
+      }
+
+      storyTasks.get(statusId)!.push(mapToKanbanTask(task, effectiveStoryId, statusId));
+    });
+
+    // 4. Map user stories with their tasks
+    const mappedStories = userStories.map((story) => {
+      const tasksByStatus = tasksByStory.get(story.id ?? '') || new Map();
+      return {
+        ...story,
+        tasksByStatus,
+        total_tasks: Array.from(tasksByStatus.values()).reduce(
+          (sum, tasks) => sum + tasks.length,
+          0
+        ),
+      };
+    });
+
+    // 5. Add "Storyless Tasks" row (assigned to sprint, no user story)
+    const directSprintTasks = tasksByStory.get('direct-sprint-tasks') || new Map();
+    const directSprintTotal = Array.from(directSprintTasks.values()).reduce(
+      (sum, tasks) => sum + tasks.length,
+      0
+    );
+
+    if (directSprintTotal > 0 || (!!selectedSprint && !hasActiveFilter)) {
+      mappedStories.push({
+        id: 'direct-sprint-tasks',
+        title: 'Storyless Tasks',
+        description: selectedSprint
+          ? 'Tasks assigned to this sprint without a user story'
+          : 'Tasks assigned to sprints without a user story',
+        priority: 'medium',
+        status: 'in_progress',
+        tasksByStatus: directSprintTasks,
+        total_tasks: directSprintTotal,
+      } as unknown as UserStoryResponse & {
+        tasksByStatus: Map<string, KanbanTask[]>;
+        total_tasks: number;
+      });
+    }
+
+    return mappedStories.filter((story) => story.total_tasks > 0 || !hasActiveFilter);
+  }, [
+    userStories,
+    directSprintTasksList,
+    selectedSprint,
+    hasActiveFilter,
+    taskMatchesFilters,
+    optimisticUpdates,
+    resolveStatusId,
+    mapToKanbanTask,
+  ]);
 
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
@@ -630,7 +862,6 @@ export const KanbanBoardTemplate = () => {
       .filter((assignee) => assignee.name !== '')
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [filterMembers]);
- 
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
@@ -786,6 +1017,11 @@ export const KanbanBoardTemplate = () => {
 
       if (!over) return;
 
+      if (!canEditTask) {
+        toast.error("You don't have permission to modify tasks");
+        return;
+      }
+
       // Get the status ID and story ID from the droppable's data
       const overData = over.data.current;
       let targetStatusId: string | null = null;
@@ -846,13 +1082,24 @@ export const KanbanBoardTemplate = () => {
       });
 
       // Build the update payload
-      const updatePayload: { status_id: string; user_story_id?: string } = {
+      const updatePayload: {
+        status_id: string;
+        user_story_id?: string | null;
+        sprint_id?: string | null;
+      } = {
         status_id: targetStatusId,
       };
 
-      // If the user story changed, include it in the payload
+      // If the user story / section changed, include it in the payload
       if (storyChanged) {
-        updatePayload.user_story_id = targetStoryId;
+        if (targetStoryId === 'direct-sprint-tasks' || targetStoryId === 'no-story') {
+          updatePayload.user_story_id = null;
+          if (selectedSprint) {
+            updatePayload.sprint_id = selectedSprint;
+          }
+        } else {
+          updatePayload.user_story_id = targetStoryId;
+        }
       }
 
       // Call the API and update cache manually (no refetch)
@@ -863,52 +1110,9 @@ export const KanbanBoardTemplate = () => {
             // API succeeded - update the cache manually without refetching
             const projectId = task.projectId ?? '';
 
-            // Update tasks cache
-            queryClient.setQueryData(
-              ['tasks', projectId, queryParams],
-              (oldData: { data: Task[] } | undefined) => {
-                if (!oldData) return oldData;
-                return {
-                  ...oldData,
-                  data: oldData.data.map((t) =>
-                    t.id === task.taskId
-                      ? {
-                          ...t,
-                          status_id: targetStatusId,
-                          ...(storyChanged && { user_story_id: targetStoryId }),
-                        }
-                      : t
-                  ),
-                };
-              }
-            );
-
-            // Update user stories cache to reflect task counts
-            queryClient.setQueryData(
-              ['user-stories', projectId, selectedSprint ? { sprint_id: selectedSprint } : {}],
-              (oldData: { data: UserStoryResponse[] } | undefined) => {
-                if (!oldData) return oldData;
-                return {
-                  ...oldData,
-                  data: oldData.data.map((story) => {
-                    // Recalculate task counts if this story was affected
-                    if (story.id === sourceStoryId || story.id === targetStoryId) {
-                      const taskCount = story.total_tasks ?? 0;
-                      return {
-                        ...story,
-                        total_tasks:
-                          story.id === sourceStoryId && storyChanged
-                            ? Math.max(0, taskCount - 1)
-                            : story.id === targetStoryId && storyChanged
-                              ? taskCount + 1
-                              : taskCount,
-                      };
-                    }
-                    return story;
-                  }),
-                };
-              }
-            );
+            // Invalidate queries so caches stay updated
+            queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
 
             // Clear the optimistic update
             setOptimisticUpdates((prev) => {
@@ -928,7 +1132,7 @@ export const KanbanBoardTemplate = () => {
           });
       }
     },
-    [processedStories, queryClient, queryParams, selectedSprint]
+    [processedStories, queryClient, selectedSprint, canEditTask]
   );
 
   return (
@@ -1019,7 +1223,26 @@ export const KanbanBoardTemplate = () => {
       </div>
 
       {/* Board */}
-      {boardLoading ? (
+      {!canViewBoard ? (
+        <div className="flex flex-1 items-center justify-center px-3 sm:px-0">
+          <div className="flex flex-col items-center justify-center text-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/kanban method-pana.svg"
+              alt="Access Restricted"
+              className="h-90 w-90 opacity-60"
+            />
+
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Access Restricted
+            </h2>
+
+            <p className="mt-3 max-w-md text-center text-gray-500 dark:text-gray-400">
+              You do not have permission to view tasks on this board.
+            </p>
+          </div>
+        </div>
+      ) : boardLoading ? (
         <BoardSkeleton />
       ) : !hasTasks ? (
         <div className="flex flex-1 items-center justify-center px-3 sm:px-0">
@@ -1154,7 +1377,7 @@ export const KanbanBoardTemplate = () => {
                   statuses={statuses}
                   overCell={overCell}
                   onUserStoryClick={setSelectedUserStory}
-                  onRefetch={refetchTasks}
+                  onRefetch={handleRefetch}
                   collapsedStatuses={collapsedStatuses}
                 />
               ))}
@@ -1182,32 +1405,40 @@ export const KanbanBoardTemplate = () => {
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-            refetchTasks();
+            handleRefetch();
           }}
-          onCreateTask={() => {
-            // Keep user story drawer open, task modal will appear on top
-            setTaskUserStoryId(selectedUserStory.id);
-            setShowAddTaskModal(true);
-          }}
-          onDelete={async () => {
-            try {
-              await deleteUserStoryMutation.mutateAsync({
-                projectId: selectedProject,
-                userStoryId: selectedUserStory.id,
-              });
-              queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
-              queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-              refetchTasks();
-              setSelectedUserStory(null);
-            } catch (error) {
-              // Error is already handled by the mutation
-            }
-          }}
+          onCreateTask={
+            canCreateTask
+              ? () => {
+                  // Keep user story drawer open, task modal will appear on top
+                  setTaskUserStoryId(selectedUserStory.id);
+                  setShowAddTaskModal(true);
+                }
+              : undefined
+          }
+          onDelete={
+            canDeleteUserStory
+              ? async () => {
+                  try {
+                    await deleteUserStoryMutation.mutateAsync({
+                      projectId: selectedProject,
+                      userStoryId: selectedUserStory.id,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+                    queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+                    handleRefetch();
+                    setSelectedUserStory(null);
+                  } catch (error) {
+                    // Error is already handled by the mutation
+                  }
+                }
+              : undefined
+          }
         />
       )}
 
       {/* Add Task Modal */}
-      {showAddTaskModal && (
+      {showAddTaskModal && canCreateTask && (
         <AddTaskModal
           projectId={selectedProject}
           sprintId={taskUserStoryId ? '' : selectedSprint}
@@ -1231,7 +1462,7 @@ export const KanbanBoardTemplate = () => {
                 queryKey: ['user-story', selectedProject, taskUserStoryId],
               });
             }
-            refetchTasks();
+            handleRefetch();
             setTaskUserStoryId('');
             setMemberSearch(''); // Clear search after creation
           }}

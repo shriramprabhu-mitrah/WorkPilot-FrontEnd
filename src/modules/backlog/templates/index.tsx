@@ -25,7 +25,11 @@ import {
 } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetTasks, useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { BacklogRow } from '../components/BacklogRow';
-import { useCompleteSprint, useGetSprints, useStartSprint, } from '@/src/modules/project/hooks/useSprint';
+import {
+  useCompleteSprint,
+  useGetSprints,
+  useStartSprint,
+} from '@/src/modules/project/hooks/useSprint';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
 import StartSprintModal from '../components/startSprintModal';
@@ -57,7 +61,7 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   description: task.description || '',
   priority: task.priority
     ? ((task.priority.charAt(0).toUpperCase() +
-      task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
     : 'Medium',
   labels: [],
   dueDate: task.due_date ? task.due_date.split('T')[0] : '',
@@ -67,11 +71,11 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   user_story_title: task.user_story_title,
   assigneeInitials: task.assignee_name
     ? task.assignee_name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : '',
   assigneeColor: colors.avatarBlue,
 });
@@ -119,7 +123,20 @@ function removeFromInfiniteCache<T extends { id?: string; key?: string }>(
 
 export const BacklogTemplate = () => {
   const queryClient = useQueryClient();
-  const { hasPermission } = usePermissions();
+  const {
+    canViewUserStories,
+    canCreateUserStory,
+    canEditUserStory,
+    canDeleteUserStory,
+    canViewTasks,
+    canCreateTask,
+    canEditTask,
+    canDeleteTask,
+    canViewSprints,
+    canCreateSprint,
+    canEditSprint,
+    canDeleteSprint,
+  } = usePermissions();
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
@@ -146,28 +163,19 @@ export const BacklogTemplate = () => {
   >(new Map());
   const [unassignedTasksOpen, setUnassignedTasksOpen] = useState(true);
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
-  const [selectedCompleteSprint, setSelectedCompleteSprint] =
-    useState<SprintDetail | null>(null);
+  const [selectedCompleteSprint, setSelectedCompleteSprint] = useState<SprintDetail | null>(null);
   const [actionSprint, setActionSprint] = useState<SprintDetail | null>(null);
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const selectedProject = selectedApiProject?.id ?? '';
   const selectedSprint = selectedSprintStore?.id ?? '';
 
-
-
   // Debounce member search for API calls
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
   // Get project members with search
-  const {
-    startSprintAsync,
-    isStartingSprint,
-  } = useStartSprint(selectedProject);
+  const { startSprintAsync, isStartingSprint } = useStartSprint(selectedProject);
 
-  const {
-    completeSprint,
-    isCompletingSprint,
-  } = useCompleteSprint(selectedProject);
+  const { completeSprint, isCompletingSprint } = useCompleteSprint(selectedProject);
 
   const {
     members: projectMembers,
@@ -212,15 +220,19 @@ export const BacklogTemplate = () => {
   const { userStories, isLoadingUserStories } = useGetUserStories(
     selectedProject,
     {},
-    !!selectedProject
+    !!selectedProject && canViewUserStories
   );
 
-  const { tasksList, isLoadingTasks } = useGetTasks(selectedProject, undefined, !!selectedProject);
+  const { tasksList, isLoadingTasks } = useGetTasks(
+    selectedProject,
+    undefined,
+    !!selectedProject && canViewTasks
+  );
 
   const { sprints, isLoadingSprints, refetchSprints } = useGetSprints(
     selectedProject,
     undefined,
-    !!selectedProject
+    !!selectedProject && canViewSprints
   );
 
   const updateUserStoryMutation = useUpdateUserStory();
@@ -236,6 +248,10 @@ export const BacklogTemplate = () => {
       const type = active.data.current?.type;
 
       if (type === 'task' || taskId) {
+        if (!canEditTask) {
+          toast.error("You don't have permission to modify tasks");
+          return;
+        }
         const foundTask =
           (tasksList ?? []).find((t) => t.id === taskId || t.key === taskId) ?? task;
         if (foundTask) {
@@ -243,6 +259,10 @@ export const BacklogTemplate = () => {
           setActiveStory(null);
         }
       } else if (type === 'story' || storyId) {
+        if (!canEditUserStory) {
+          toast.error("You don't have permission to modify user stories");
+          return;
+        }
         const foundStory = userStories.find((s) => s.id === storyId);
         if (foundStory) {
           setActiveStory(foundStory);
@@ -250,7 +270,7 @@ export const BacklogTemplate = () => {
         }
       }
     },
-    [userStories, tasksList]
+    [userStories, tasksList, canEditTask, canEditUserStory]
   );
 
   // Debounced API update function for user story sprint changes
@@ -481,6 +501,11 @@ export const BacklogTemplate = () => {
       // CASE 1: TASK DRAGGED
       // ----------------------
       if (isTaskDrag) {
+        if (!canEditTask) {
+          toast.error("You don't have permission to modify tasks");
+          return;
+        }
+
         const taskId = (active.data.current?.task?.id ||
           active.data.current?.taskId ||
           currentActiveTask?.taskId ||
@@ -535,65 +560,69 @@ export const BacklogTemplate = () => {
             ? { ...rawTask, id: actualTaskId, user_story_id: storyId }
             : currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                user_story_id: storyId,
-                project_id: currentActiveTask.projectId || selectedProject,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  user_story_id: storyId,
+                  project_id: currentActiveTask.projectId || selectedProject,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : undefined;
 
-          queryClient.setQueriesData<{ data: UserStoryResponse[] }>(
-            { queryKey: ['user-stories', selectedProject] },
-            (old) => {
-              if (!old?.data) return old;
-              return {
-                ...old,
-                data: old.data.map((s) =>
-                  s.id === storyId
-                    ? {
-                      ...s,
-                      total_tasks: (s.total_tasks ?? 0) + 1,
-                      tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
-                    }
-                    : s
-                ),
-              };
-            }
-          );
-
-          // Optimistically update sprint user stories infinite cache
-          if (targetStory?.sprint_id) {
-            queryClient.setQueriesData<InfiniteStoryData>(
-              { queryKey: ['sprint-user-stories', selectedProject, targetStory.sprint_id] },
+          if (taskToAppend) {
+            queryClient.setQueriesData<{ data: UserStoryResponse[] }>(
+              { queryKey: ['user-stories', selectedProject] },
               (old) => {
-                if (!old?.pages?.length) return old;
-                const pages = old.pages.map((page) => ({
-                  ...page,
-                  data: (page.data ?? []).map((s) =>
-                    s.id === storyId
-                      ? {
-                        ...s,
-                        total_tasks: (s.total_tasks ?? 0) + 1,
-                        tasks: taskToAppend ? [...(s.tasks ?? []), taskToAppend] : s.tasks,
-                      }
-                      : s
-                  ),
-                }));
-                return { ...old, pages };
+                if (!old?.data) return old;
+                return {
+                  ...old,
+                  data: old.data.map((s) => {
+                    if (s.id !== storyId) return s;
+                    const currentTasks = s.tasks ?? [];
+                    const alreadyExists = currentTasks.some(
+                      (t) => t.id === actualTaskId || t.key === taskToAppend.key
+                    );
+                    if (alreadyExists) return s;
+                    return {
+                      ...s,
+                      tasks: [...currentTasks, taskToAppend],
+                      total_tasks: (s.total_tasks ?? currentTasks.length) + 1,
+                    };
+                  }),
+                };
               }
             );
-          }
 
-          // Optimistically remove from orphan tasks in all sprints
-          queryClient.setQueriesData<InfiniteTaskData>(
-            { queryKey: ['sprint-orphan-tasks', selectedProject] },
-            (old) => removeFromInfiniteCache(old, taskId)
-          );
+            // Optimistically update sprint user stories infinite cache
+            if (targetStory?.sprint_id) {
+              queryClient.setQueriesData<InfiniteStoryData>(
+                { queryKey: ['sprint-user-stories', selectedProject, targetStory.sprint_id] },
+                (old) => {
+                  if (!old?.pages?.length) return old;
+                  const pages = old.pages.map((page) => ({
+                    ...page,
+                    data: (page.data ?? []).map((s) => {
+                      if (s.id !== storyId) return s;
+                      const currentTasks = s.tasks ?? [];
+                      const alreadyExists = currentTasks.some(
+                        (t) => t.id === actualTaskId || t.key === taskToAppend.key
+                      );
+                      if (alreadyExists) return s;
+                      return {
+                        ...s,
+                        tasks: [...currentTasks, taskToAppend],
+                        total_tasks: (s.total_tasks ?? currentTasks.length) + 1,
+                      };
+                    }),
+                  }));
+                  return { ...old, pages };
+                }
+              );
+            }
+          }
 
           try {
             await updateTaskAsync({
@@ -633,6 +662,10 @@ export const BacklogTemplate = () => {
           overIdStr.startsWith('sprint-');
 
         if (isSprintDrop) {
+          if (!canEditSprint) {
+            toast.error("You don't have permission to modify sprints");
+            return;
+          }
           const sprintId =
             targetSprintId || overIdStr.replace('sprint-direct-', '').replace('sprint-', '');
           const targetSprint = (sprints ?? []).find((s) => s.id === sprintId);
@@ -665,23 +698,23 @@ export const BacklogTemplate = () => {
             ? { ...matchedTask, id: actualTaskId, sprint_id: sprintId, user_story_id: undefined }
             : currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                sprint_id: sprintId,
-                project_id: currentActiveTask.projectId || effectiveProjectId,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  sprint_id: sprintId,
+                  project_id: currentActiveTask.projectId || effectiveProjectId,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : {
-                id: actualTaskId,
-                title: 'Task',
-                status: 'todo',
-                estimated_hours: 0,
-                sprint_id: sprintId,
-              };
+                  id: actualTaskId,
+                  title: 'Task',
+                  status: 'todo',
+                  estimated_hours: 0,
+                  sprint_id: sprintId,
+                };
 
           // Optimistic UI update: immediately move to target sprint
           setOptimisticTaskUpdates((prev) => {
@@ -765,15 +798,15 @@ export const BacklogTemplate = () => {
             (active.data.current?.task as TaskResponse | undefined) ||
             (currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                project_id: currentActiveTask.projectId || effectiveProjectId,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  project_id: currentActiveTask.projectId || effectiveProjectId,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : undefined);
 
           // Optimistic UI update: explicitly set sprintId: null and userStoryId: null
@@ -784,11 +817,11 @@ export const BacklogTemplate = () => {
               userStoryId: null,
               task: taskObj
                 ? {
-                  ...taskObj,
-                  id: actualTaskId,
-                  sprint_id: undefined,
-                  user_story_id: undefined,
-                }
+                    ...taskObj,
+                    id: actualTaskId,
+                    sprint_id: undefined,
+                    user_story_id: undefined,
+                  }
                 : undefined,
               timestamp: Date.now(),
             });
@@ -851,10 +884,20 @@ export const BacklogTemplate = () => {
       // CASE 2: STORY DRAGGED
       // ----------------------
       if (isStoryDrag) {
+        if (!canEditUserStory) {
+          toast.error("You don't have permission to modify user stories");
+          return;
+        }
+
         const storyId = (active.data.current?.storyId || activeStory?.id) as string;
         const targetSprintId = finalOver.data.current?.sprintId;
 
         if (!storyId) return;
+
+        if (targetSprintId && !canEditSprint) {
+          toast.error("You don't have permission to modify sprints");
+          return;
+        }
 
         // Find the current story to check if sprint changed
         const currentStory = userStories.find((s) => s.id === storyId);
@@ -912,6 +955,9 @@ export const BacklogTemplate = () => {
       activeStory,
       sprints,
       queryClient,
+      canEditTask,
+      canEditUserStory,
+      canEditSprint,
     ]
   );
 
@@ -1156,29 +1202,19 @@ export const BacklogTemplate = () => {
       ? 'story'
       : null;
   const sprintUserStories = selectedCompleteSprint
-    ? userStories.filter(
-      (story) => story.sprint_id === selectedCompleteSprint.id
-    )
+    ? userStories.filter((story) => story.sprint_id === selectedCompleteSprint.id)
     : [];
 
   const completedUserStories = sprintUserStories.filter((story) => {
     const status = String(story.status ?? '').toLowerCase();
 
-    return (
-      status === 'completed' ||
-      status === 'complete' ||
-      status === 'done'
-    );
+    return status === 'completed' || status === 'complete' || status === 'done';
   }).length;
 
   const inProgressUserStories = sprintUserStories.filter((story) => {
     const status = String(story.status ?? '').toLowerCase();
 
-    return (
-      status === 'in progress' ||
-      status === 'in_progress' ||
-      status === 'in-progress'
-    );
+    return status === 'in progress' || status === 'in_progress' || status === 'in-progress';
   }).length;
   return (
     <DndContext
@@ -1214,16 +1250,17 @@ export const BacklogTemplate = () => {
             </div>
             <div className="flex flex-col items-end gap-2 flex-shrink-0">
               {/* Create User Story */}
-              <WpButton
-                size="sm"
-                leftIcon={<Plus size={14} />}
-                disabled={!selectedProject}
-                onClick={() => setShowCreateStoryModal(true)}
-                className="whitespace-nowrap"
-              >
-                <span className="hidden sm:inline">Create User Story</span>
-                <span className="sm:hidden">Create</span>
-              </WpButton>
+              {canCreateUserStory && selectedProject && (
+                <WpButton
+                  size="sm"
+                  leftIcon={<Plus size={14} />}
+                  onClick={() => setShowCreateStoryModal(true)}
+                  className="whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Create User Story</span>
+                  <span className="sm:hidden">Create</span>
+                </WpButton>
+              )}
             </div>
           </div>
         </div>
@@ -1240,43 +1277,95 @@ export const BacklogTemplate = () => {
               </div>
             ) : (
               <>
-                {/* Unassigned User Stories Section - Full droppable area */}
+                {/* Unassigned User Stories Section */}
                 <div
-                  ref={backlogRefCallback}
+                  ref={canViewUserStories ? backlogRefCallback : undefined}
                   data-backlog-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${isOverBacklog
-                    ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
-                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                    }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
+                    canViewUserStories && isOverBacklog
+                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
+                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                  }`}
                 >
                   <div
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${isOverBacklog
-                      ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
-                      : 'border-gray-100 dark:border-slate-700'
-                      }`}
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
+                      canViewUserStories && isOverBacklog
+                        ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
+                        : 'border-gray-100 dark:border-slate-700'
+                    }`}
                   >
                     <span
-                      className={`font-semibold text-sm transition-colors ${isOverBacklog ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-slate-100'}`}
+                      className={`font-semibold text-sm transition-colors ${
+                        canViewUserStories && isOverBacklog
+                          ? 'text-green-700 dark:text-green-400'
+                          : 'text-gray-900 dark:text-slate-100'
+                      }`}
                     >
                       Unassigned UserStories
                     </span>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${isOverBacklog
-                        ? 'bg-green-200 text-green-800 scale-110'
-                        : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
+                    {canViewUserStories && (
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
+                          isOverBacklog
+                            ? 'bg-green-200 text-green-800 scale-110'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
                         }`}
-                    >
-                      {unassignedStories.length}{' '}
-                      {unassignedStories.length === 1 ? 'story' : 'stories'}
-                    </span>
+                      >
+                        {unassignedStories.length}{' '}
+                        {unassignedStories.length === 1 ? 'story' : 'stories'}
+                      </span>
+                    )}
                   </div>
 
-                  {isOverBacklog && (
-                    <div className="px-3 sm:px-4 pt-2 pb-1">
-                      <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
-                        <div className="flex items-center justify-center gap-2">
+                  {!canViewUserStories ? (
+                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/images/kanban method-pana.svg"
+                        alt="Access Restricted"
+                        className="h-28 w-28 opacity-60 mb-2"
+                      />
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        Access Restricted
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                        You do not have permission to view user stories.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {isOverBacklog && (
+                        <div className="px-3 sm:px-4 pt-2 pb-1">
+                          <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
+                            <div className="flex items-center justify-center gap-2">
+                              <svg
+                                className="w-5 h-5 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              <p className="text-sm text-green-700 font-semibold">
+                                {activeDragType === 'task'
+                                  ? 'Drop task here to unassign from sprint'
+                                  : 'Drop here to remove from sprint'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Empty state or user stories */}
+                      {unassignedStories.length === 0 && !isOverBacklog ? (
+                        <div className="flex flex-col items-center justify-center py-12 px-4">
                           <svg
-                            className="w-5 h-5 text-green-600"
+                            className="w-8 h-8 text-gray-300 mb-2"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -1285,67 +1374,46 @@ export const BacklogTemplate = () => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                             />
                           </svg>
-                          <p className="text-sm text-green-700 font-semibold">
-                            {activeDragType === 'task'
-                              ? 'Drop task here to unassign from sprint'
-                              : 'Drop here to remove from sprint'}
+                          <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                            {!selectedProject
+                              ? 'Select a project to view stories'
+                              : 'No unassigned user stories'}
                           </p>
+                          {selectedProject && canCreateUserStory && (
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-center">
+                              Create one or drag stories from sprints
+                            </p>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Empty state or user stories */}
-                  {unassignedStories.length === 0 && !isOverBacklog ? (
-                    <div className="flex flex-col items-center justify-center py-12 px-4">
-                      <svg
-                        className="w-8 h-8 text-gray-300 mb-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
-                        {!selectedProject
-                          ? 'Select a project to view stories'
-                          : 'No unassigned user stories'}
-                      </p>
-                      {selectedProject && (
-                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-center">
-                          Create one or drag stories from sprints
-                        </p>
+                      ) : (
+                        unassignedStories.map((story) => (
+                          <DraggableUserStory
+                            key={story.id}
+                            story={story}
+                            projectId={selectedProject}
+                            tasks={optimisticTasks}
+                            onStoryClick={(story) => setSelectedUserStory(story)}
+                          />
+                        ))
                       )}
-                    </div>
-                  ) : (
-                    unassignedStories.map((story) => (
-                      <DraggableUserStory
-                        key={story.id}
-                        story={story}
-                        projectId={selectedProject}
-                        tasks={optimisticTasks}
-                        onStoryClick={(story) => setSelectedUserStory(story)}
-                      />
-                    ))
+                    </>
                   )}
                 </div>
 
-                {/* Unassigned Tasks Section - Droppable for unassigning */}
+                {/* Unassigned Tasks Section */}
                 <div
-                  ref={setUnassignedTasksNodeRef}
+                  ref={canViewTasks ? setUnassignedTasksNodeRef : undefined}
                   data-tasks-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${isOverUnassignedTasks && (activeTask || activeDragType === 'task')
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
-                    : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                    }`}
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
+                    canViewTasks &&
+                    isOverUnassignedTasks &&
+                    (activeTask || activeDragType === 'task')
+                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
+                      : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
+                  }`}
                 >
                   <div
                     className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors select-none border-b border-gray-100 dark:border-slate-700"
@@ -1362,12 +1430,14 @@ export const BacklogTemplate = () => {
                       <span className="font-semibold text-sm text-gray-900 dark:text-slate-100 truncate">
                         Unassigned Tasks
                       </span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
-                        {isLoadingTasks ? '...' : filteredUnassignedTasks.length}{' '}
-                        {filteredUnassignedTasks.length === 1 ? 'task' : 'tasks'}
-                      </span>
+                      {canViewTasks && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
+                          {isLoadingTasks ? '...' : filteredUnassignedTasks.length}{' '}
+                          {filteredUnassignedTasks.length === 1 ? 'task' : 'tasks'}
+                        </span>
+                      )}
                     </div>
-                    {hasPermission('TASK_CREATE') && selectedProject && (
+                    {canViewTasks && canCreateTask && selectedProject && (
                       <WpButton
                         size="sm"
                         variant="primary"
@@ -1385,77 +1455,96 @@ export const BacklogTemplate = () => {
                     )}
                   </div>
 
-                  {isOverUnassignedTasks && (activeTask || activeDragType === 'task') && (
-                    <div className="px-3 sm:px-4 pt-2 pb-1">
-                      <div className="border-2 border-dashed border-blue-400 rounded-lg p-3 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
-                        <div className="flex items-center justify-center gap-2">
-                          <Inbox className="w-4 h-4 text-blue-600" />
-                          <p className="text-xs text-blue-700 font-semibold">
-                            Drop here to unassign from sprint and user story
-                          </p>
-                        </div>
-                      </div>
+                  {!canViewTasks ? (
+                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/images/kanban method-pana.svg"
+                        alt="Access Restricted"
+                        className="h-28 w-28 opacity-60 mb-2"
+                      />
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        Access Restricted
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                        You do not have permission to view tasks.
+                      </p>
                     </div>
-                  )}
-
-                  {unassignedTasksOpen && (
-                    <div>
-                      {isLoadingTasks ? (
-                        <div className="flex flex-col gap-2 p-4">
-                          {[...Array(3)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-10 rounded-lg bg-gray-100 dark:bg-slate-700 animate-pulse"
-                            />
-                          ))}
-                        </div>
-                      ) : !filteredUnassignedTasks || filteredUnassignedTasks.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-10 px-4">
-                          <svg
-                            className="w-8 h-8 text-gray-300 dark:text-slate-600 mb-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                            />
-                          </svg>
-                          <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
-                            {!selectedProject
-                              ? 'Select a project to view tasks'
-                              : 'No unassigned tasks found'}
-                          </p>
-                          {selectedProject && hasPermission('TASK_CREATE') && (
-                            <div className="mt-3">
-                              <WpButton
-                                size="sm"
-                                variant="secondary"
-                                leftIcon={<Plus size={14} />}
-                                onClick={() => {
-                                  setTaskUserStoryId('');
-                                  setShowAddTaskModal(true);
-                                }}
-                                className="text-xs"
-                              >
-                                Create Task
-                              </WpButton>
+                  ) : (
+                    <>
+                      {isOverUnassignedTasks && (activeTask || activeDragType === 'task') && (
+                        <div className="px-3 sm:px-4 pt-2 pb-1">
+                          <div className="border-2 border-dashed border-blue-400 rounded-lg p-3 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
+                            <div className="flex items-center justify-center gap-2">
+                              <Inbox className="w-4 h-4 text-blue-600" />
+                              <p className="text-xs text-blue-700 font-semibold">
+                                Drop here to unassign from sprint and user story
+                              </p>
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {unassignedTasksOpen && (
+                        <div>
+                          {isLoadingTasks ? (
+                            <div className="flex flex-col gap-2 p-4">
+                              {[...Array(3)].map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="h-10 rounded-lg bg-gray-100 dark:bg-slate-700 animate-pulse"
+                                />
+                              ))}
+                            </div>
+                          ) : !filteredUnassignedTasks || filteredUnassignedTasks.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 px-4">
+                              <svg
+                                className="w-8 h-8 text-gray-300 dark:text-slate-600 mb-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                />
+                              </svg>
+                              <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                                {!selectedProject
+                                  ? 'Select a project to view tasks'
+                                  : 'No unassigned tasks found'}
+                              </p>
+                              {selectedProject && canCreateTask && (
+                                <div className="mt-3">
+                                  <WpButton
+                                    size="sm"
+                                    variant="secondary"
+                                    leftIcon={<Plus size={14} />}
+                                    onClick={() => {
+                                      setTaskUserStoryId('');
+                                      setShowAddTaskModal(true);
+                                    }}
+                                    className="text-xs"
+                                  >
+                                    Create Task
+                                  </WpButton>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            filteredUnassignedTasks.map((task) => (
+                              <BacklogRow
+                                key={task.id || task.key}
+                                task={task}
+                                onClick={() => setSelectedTask(mapTaskResponseToKanbanTask(task))}
+                              />
+                            ))
                           )}
                         </div>
-                      ) : (
-                        filteredUnassignedTasks.map((task) => (
-                          <BacklogRow
-                            key={task.id || task.key}
-                            task={task}
-                            onClick={() => setSelectedTask(mapTaskResponseToKanbanTask(task))}
-                          />
-                        ))
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
               </>
@@ -1463,64 +1552,66 @@ export const BacklogTemplate = () => {
           </div>
 
           {/* Right Section: Sprint Drop Zones */}
-          <div className="w-full lg:w-[480px] xl:w-[560px] 2xl:w-[640px] flex-shrink-0 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l dark:border-slate-700 pt-4 lg:pt-0 lg:pl-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-sm text-gray-900 dark:text-slate-100">Sprints</h2>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700">
-                  {allSprints.length} sprints
-                </span>
+          {canViewSprints && (
+            <div className="w-full lg:w-[480px] xl:w-[560px] 2xl:w-[640px] flex-shrink-0 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l dark:border-slate-700 pt-4 lg:pt-0 lg:pl-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-sm text-gray-900 dark:text-slate-100">
+                    Sprints
+                  </h2>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700">
+                    {allSprints.length} sprints
+                  </span>
+                </div>
+                {canCreateSprint && selectedProject && (
+                  <WpButton
+                    size="sm"
+                    variant="primary"
+                    leftIcon={<Plus size={14} />}
+                    onClick={() => setShowAddSprintModal(true)}
+                    className="!py-1 !px-2 text-xs"
+                  >
+                    New
+                  </WpButton>
+                )}
               </div>
-              {hasPermission('SPRINT_CREATE') && selectedProject && (
-                <WpButton
-                  size="sm"
-                  variant="primary"
-                  leftIcon={<Plus size={14} />}
-                  onClick={() => setShowAddSprintModal(true)}
-                  className="!py-1 !px-2 text-xs"
-                >
-                  New
-                </WpButton>
+
+              {isLoadingSprints ? (
+                <div className="text-sm text-gray-500 dark:text-slate-400 text-center py-4">
+                  Loading sprints...
+                </div>
+              ) : allSprints.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                    {!selectedProject
+                      ? 'Select a project to view sprints.'
+                      : 'No sprints found. Create a sprint to organize user stories.'}
+                  </p>
+                </div>
+              ) : (
+                allSprints.map((sprint) => (
+                  <SprintDropZone
+                    key={sprint.id}
+                    sprint={sprint}
+                    projectId={selectedProject}
+                    activeDragType={activeDragType}
+                    onStoryClick={(story) => setSelectedUserStory(story)}
+                    onTaskClick={(task) => setSelectedTask(mapTaskResponseToKanbanTask(task))}
+                    onStartSprint={(sprint) => {
+                      setActionSprint(sprint);
+                      setShowStartSprintModal(true);
+                    }}
+                    onCompleteSprint={(sprint) => {
+                      setSelectedCompleteSprint(sprint);
+                    }}
+                    isCompletingSprint={
+                      isCompletingSprint && selectedCompleteSprint?.id === sprint.id
+                    }
+                  />
+                ))
               )}
             </div>
-
-            {isLoadingSprints ? (
-              <div className="text-sm text-gray-500 dark:text-slate-400 text-center py-4">
-                Loading sprints...
-              </div>
-            ) : allSprints.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
-                  {!selectedProject
-                    ? 'Select a project to view sprints.'
-                    : 'No sprints found. Create a sprint to organize user stories.'}
-                </p>
-              </div>
-            ) : (
-              allSprints.map((sprint) => (
-                <SprintDropZone
-                  key={sprint.id}
-                  sprint={sprint}
-                  projectId={selectedProject}
-                  activeDragType={activeDragType}
-                  onStoryClick={(story) => setSelectedUserStory(story)}
-                  onTaskClick={(task) =>
-                    setSelectedTask(mapTaskResponseToKanbanTask(task))
-                  }
-                  onStartSprint={(sprint) => {
-                    setActionSprint(sprint);
-                    setShowStartSprintModal(true);
-                  }}
-                  onCompleteSprint={(sprint) => {
-                    setSelectedCompleteSprint(sprint);
-                  }}
-                  isCompletingSprint={
-                    isCompletingSprint && selectedCompleteSprint?.id === sprint.id
-                  }
-                />
-              ))
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -1608,7 +1699,7 @@ export const BacklogTemplate = () => {
         ) : null}
       </DragOverlay>
 
-      {showAddTaskModal && (
+      {showAddTaskModal && canCreateTask && (
         <AddTaskModal
           projectId={selectedProject}
           sprintId={taskUserStoryId ? '' : selectedSprint}
@@ -1670,10 +1761,10 @@ export const BacklogTemplate = () => {
           }}
         />
       )}
-      {showCreateStoryModal && (
+      {showCreateStoryModal && canCreateUserStory && (
         <CreateUserStoryModal onClose={() => setShowCreateStoryModal(false)} />
       )}
-      {showAddSprintModal && (
+      {showAddSprintModal && canCreateSprint && (
         <AddSprintModal
           projectId={selectedProject}
           onClose={() => setShowAddSprintModal(false)}
@@ -1684,7 +1775,7 @@ export const BacklogTemplate = () => {
         />
       )}
 
-      {showStartSprintModal && actionSprint && (
+      {showStartSprintModal && actionSprint && canEditSprint && (
         <StartSprintModal
           sprint={actionSprint}
           onClose={() => {
@@ -1708,7 +1799,7 @@ export const BacklogTemplate = () => {
           }}
         />
       )}
-      {selectedCompleteSprint && (
+      {selectedCompleteSprint && canEditSprint && (
         <CompleteSprintModal
           sprint={selectedCompleteSprint}
           completedUserStories={completedUserStories}

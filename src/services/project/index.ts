@@ -15,6 +15,14 @@ import {
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '@/src/modules/project/types/project';
 
+export interface UserProjectRole {
+  project_id: string;
+  project_name: string;
+  project_key: string;
+  role_id: string;
+  role: string;
+}
+
 class ProjectService {
   async createProject(payload: CreateProjectPayload): Promise<ApiResponse<Project>> {
     const url = ApiEndpoints.Project.createProject.url;
@@ -185,6 +193,11 @@ class ProjectService {
     const finalUrl = query ? `${url}?${query}` : url;
 
     return apiService.getPaginated<Activity[]>(finalUrl);
+  }
+
+  async getUserProjectRole(projectId: string): Promise<ApiResponse<UserProjectRole>> {
+    const url = ApiEndpoints.Project.getUserProjectRole.withParams({ projectId });
+    return apiService.get<UserProjectRole>(url);
   }
 }
 

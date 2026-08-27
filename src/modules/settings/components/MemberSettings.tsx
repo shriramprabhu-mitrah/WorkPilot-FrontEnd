@@ -7,10 +7,7 @@ import { colors } from '@/src/styles/colors';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '@/src/modules/teams/components/invitePopup';
-import {
-  useGetTeamMembers,
-  useRemoveUser,
-} from '@/src/modules/teams/hooks/useTeams';
+import { useGetTeamMembers, useRemoveUser } from '@/src/modules/teams/hooks/useTeams';
 
 import { Member } from '@/src/types/teams';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -25,12 +22,9 @@ export const MemberSettings = () => {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const { mutate: removeUser } = useRemoveUser();
-  const { hasPermission, isAdmin } = usePermissions();
+  const { isOrgAdmin } = usePermissions();
 
-  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
-    page,
-    pageSize
-  );
+  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(page, pageSize);
 
   const members = teamMembers?.data ?? [];
 
@@ -48,11 +42,11 @@ export const MemberSettings = () => {
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Manage organization members and 
+            Manage organization members and
           </p>
         </div>
 
-        {isAdmin() && (
+        {isOrgAdmin && (
           <WpButton
             size="sm"
             leftIcon={<UserPlus size={16} />}
@@ -97,7 +91,7 @@ export const MemberSettings = () => {
               <MemberCard
                 key={member.id}
                 member={memberData}
-                canManageUsers={hasPermission('TEAMS_DELETE')}
+                canManageUsers={isOrgAdmin}
                 onDelete={() => {
                   setSelectedMember(memberData);
                   setShowDeleteModal(true);
@@ -111,10 +105,7 @@ export const MemberSettings = () => {
             <div className="flex min-h-[160px] items-center justify-center">
               <div className="text-center">
                 <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
-                  <UserPlus
-                    size={18}
-                    className="text-blue-600 dark:text-blue-400"
-                  />
+                  <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
                 </div>
 
                 <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">
@@ -131,10 +122,7 @@ export const MemberSettings = () => {
       </div>
 
       {/* Invite Member */}
-      <InviteTeamModal
-        open={isInviteModalOpen}
-        onClose={() => setIsInviteModalOpen(false)}
-      />
+      <InviteTeamModal open={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
 
       {/* Delete Confirmation */}
       {showDeleteModal && (

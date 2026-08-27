@@ -42,6 +42,7 @@ import { CustomStatus } from '@/src/types/colors';
 import { useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -83,6 +84,7 @@ const useResizable = (initial: number, min: number, max: number) => {
 };
 
 export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDetailDrawerProps) => {
+  const { canEditTask, canDeleteTask, canCreateTask, canViewUserStories } = usePermissions();
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
@@ -161,7 +163,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       page: 1,
       page_size: 10,
       search: debouncedUserStorySearch,
-    }
+    },
+    !!taskData.project_id && canViewUserStories
   );
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const reporterMenuRef = useRef<HTMLDivElement>(null);
@@ -533,68 +536,76 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           </div>
           <div className="flex items-center gap-1">
             {/* Three-dot menu */}
-            <div className="relative" ref={actionMenuRef}>
-              <button
-                onClick={() => setShowActionMenu(!showActionMenu)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
-              >
-                <MoreVertical size={17} />
-              </button>
+            {(canEditTask || canCreateTask || canDeleteTask) && (
+              <div className="relative" ref={actionMenuRef}>
+                <button
+                  onClick={() => setShowActionMenu(!showActionMenu)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
+                >
+                  <MoreVertical size={17} />
+                </button>
 
-              {showActionMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowActionMenu(false);
+                {showActionMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
+                    {canEditTask && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowActionMenu(false);
 
-                      // Store original values for Cancel
-                      setOriginalTaskTitle(taskData.title || task.title || '');
-                      setOriginalTaskDescription(taskData.description || '');
+                          // Store original values for Cancel
+                          setOriginalTaskTitle(taskData.title || task.title || '');
+                          setOriginalTaskDescription(taskData.description || '');
 
-                      // Initialize edit values
-                      setEditTaskTitle(taskData.title || task.title || '');
-                      setEditTaskDescription(taskData.description || '');
+                          // Initialize edit values
+                          setEditTaskTitle(taskData.title || task.title || '');
+                          setEditTaskDescription(taskData.description || '');
 
-                      // Enable edit mode
-                      setIsEditingTask(true);
+                          // Enable edit mode
+                          setIsEditingTask(true);
 
-                      // Open description editor
-                      setUiState((prev) => ({
-                        ...prev,
-                        editingDesc: true,
-                      }));
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <Pencil size={14} />
-                    Update
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowActionMenu(false);
-                      setShowCloneModal(true);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <Copy size={14} />
-                    Clone
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowActionMenu(false);
-                      setShowDeleteConfirm(true);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
+                          // Open description editor
+                          setUiState((prev) => ({
+                            ...prev,
+                            editingDesc: true,
+                          }));
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <Pencil size={14} />
+                        Update
+                      </button>
+                    )}
+                    {canCreateTask && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowActionMenu(false);
+                          setShowCloneModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <Copy size={14} />
+                        Clone
+                      </button>
+                    )}
+                    {canDeleteTask && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowActionMenu(false);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Close button */}
             <button
@@ -819,6 +830,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               ) : (
                 <div
                   onClick={() => {
+                    if (!canEditTask) return;
                     setEditTaskDescription(taskData.description ?? '');
                     setSavedDescription(taskData.description ?? '');
                     setUiState((prev) => ({
@@ -826,7 +838,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       editingDesc: true,
                     }));
                   }}
-                  className="w-full min-h-[48px] cursor-text"
+                  className={`w-full min-h-[48px] ${canEditTask ? 'cursor-text' : 'cursor-default'}`}
                 >
                   {taskData.description ? (
                     <div
@@ -858,29 +870,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             {/* Attachments */}
             <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                <p className="text-base font-semibold text-gray-800 dark:text-slate-200">
                   Attachments
                 </p>
-
-                <input
-                  ref={attachmentInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={handleAttachmentUpload}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => attachmentInputRef.current?.click()}
-                  disabled={uploadAttachment.isPending}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
-                >
-                  <Paperclip size={14} />
-                  {uploadAttachment.isPending ? 'Uploading...' : 'Add'}
-                </button>
+                {canEditTask && (
+                  <label className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
+                    <Plus size={14} />
+                    Add
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={handleAttachmentUpload}
+                    />
+                  </label>
+                )}
               </div>
 
-              {/* Empty state */}
               {isLoadingAttachments || isFetchingAttachments ? (
                 <div className="border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
                   <p className="text-sm text-gray-400 dark:text-slate-500">
@@ -939,15 +944,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       </button>
 
                       {/* Delete */}
-                      <button
-                        type="button"
-                        onClick={() => deleteAttachment.mutate(attachment.id)}
-                        disabled={deleteAttachment.isPending}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                        title="Delete"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {(canEditTask || canDeleteTask) && (
+                        <button
+                          type="button"
+                          onClick={() => deleteAttachment.mutate(attachment.id)}
+                          disabled={deleteAttachment.isPending}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          title="Delete"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -977,17 +984,19 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
                 Status
               </p>
-
               <div className="relative" ref={statusMenuRef}>
                 <button
                   type="button"
+                  disabled={!canEditTask}
                   onClick={() =>
                     setUiState((prev) => ({
                       ...prev,
                       showStatusMenu: !prev.showStatusMenu,
                     }))
                   }
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border"
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
+                    !canEditTask ? 'cursor-default' : ''
+                  }`}
                   style={{
                     color: selectedStatus?.color ?? '#6B7280',
                     backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
@@ -1005,10 +1014,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     {selectedStatus?.label ?? taskData.status ?? 'Select status'}
                   </span>
 
-                  <ChevronDown size={14} />
+                  {canEditTask && <ChevronDown size={14} />}
                 </button>
 
-                {uiState.showStatusMenu && (
+                {uiState.showStatusMenu && canEditTask && (
                   <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
                     {isLoadingStatus ? (
                       <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
@@ -1052,55 +1061,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         );
                       })
                     )}
-
-                    {/* Divider */}
-                    {/* <div className="my-1 border-t border-gray-200" /> */}
-
-                    {/* Add Status */}
-                    {/* <button
-                      type="button"
-                      onClick={() => {
-                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-                        setSelecteddStatus(null);
-                        setStatusModalMode('add');
-                        setShowStatusModal(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Add Status
-                    </button> */}
-
-                    {/* Edit Status */}
-                    {/* <button
-                      type="button"
-                      onClick={() => {
-                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-
-                        const statusToEdit = resolveStatusToEdit(taskData.status);
-                        if (!statusToEdit) return;
-
-                        setSelecteddStatus(statusToEdit);
-                        setStatusModalMode('edit');
-                        setShowStatusModal(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Edit Status
-                    </button> */}
-
-                    {/* Delete Status */}
-                    {/* <button
-                      type="button"
-                      onClick={() => {
-                        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-                        setSelecteddStatus(null);
-                        setStatusModalMode('delete');
-                        setShowStatusModal(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 transition-colors"
-                    >
-                      Delete Status
-                    </button> */}
                   </div>
                 )}
               </div>
@@ -1114,8 +1074,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               <DetailRow label="Assignee">
                 <div className="relative" ref={assigneeMenuRef}>
                   <button
+                    disabled={!canEditTask}
                     onClick={() => setShowAssigneeMenu((v) => !v)}
-                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                    }`}
                   >
                     {taskData.assigneeId ? (
                       <AssigneeAvatar
@@ -1131,13 +1094,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.assigneeName || 'Unassigned'}
                     </span>
-                    <ChevronDown
-                      size={12}
-                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                    />
+                    {canEditTask && (
+                      <ChevronDown
+                        size={12}
+                        className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                      />
+                    )}
                   </button>
-                  {showAssigneeMenu && (
-                    <div className="absolute top-full left-0 mt-1 w-full  bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                  {showAssigneeMenu && canEditTask && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                       {/* Search */}
                       <div className="p-2 border-b border-gray-200 dark:border-slate-700">
                         <WpInput
@@ -1160,40 +1125,56 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                             name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
                           const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
                           const color = getMemberColor(m.user_id);
+                          const isSelected = m.user_id === taskData.assigneeId;
+
                           return (
                             <WpButton
                               key={m.user_id}
                               type="button"
                               variant="ghost"
                               onClick={async () => {
-                                if (!task.projectId || !task.taskId) return;
                                 setTaskData((prev) => ({
                                   ...prev,
-                                  assignee: initials,
                                   assigneeId: m.user_id,
                                   assigneeName: displayName,
+                                  assignee: initials,
                                   assigneeColor: color,
                                 }));
+                                setShowAssigneeMenu(false);
+                                setAssigneeSearch('');
+
                                 onUpdate?.({
                                   assigneeInitials: initials,
                                   assigneeColor: color,
                                 });
-                                setShowAssigneeMenu(false);
-                                setAssigneeSearch('');
+
+                                if (!task.projectId || !task.taskId) return;
+
                                 try {
                                   await taskService.updateTask(task.projectId, task.taskId, {
                                     assignee_id: m.user_id,
                                   });
                                 } catch (error) {
                                   logger.log('Failed to update assignee', error);
+                                  // Rollback on error
+                                  setTaskData((prev) => ({
+                                    ...prev,
+                                    assigneeId: taskData.assigneeId,
+                                    assigneeName: taskData.assigneeName,
+                                    assignee: taskData.assignee,
+                                    assigneeColor: taskData.assigneeColor,
+                                  }));
                                 }
                               }}
-                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 text-gray-900"
+                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
                             >
                               <AssigneeAvatar initials={initials} color={color} size="sm" />
                               <span className="truncate">{displayName}</span>
-                              {m.user_id === taskData.assigneeId && (
-                                <Check size={12} className="ml-auto text-blue-600 shrink-0" />
+                              {isSelected && (
+                                <Check
+                                  size={12}
+                                  className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
+                                />
                               )}
                             </WpButton>
                           );
@@ -1202,21 +1183,21 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         !isFetchingMembers &&
                         assigneeSearch &&
                         (!members || members.length === 0) && (
-                          <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                          <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
                             No members found
                           </div>
                         )}
 
-                      {/* Unassigned */}
+                      {/* Unassigned option */}
                       {!isLoadingMembers && !isFetchingMembers && !assigneeSearch && (
                         <WpButton
                           type="button"
                           variant="ghost"
                           onClick={async () => {
-                            if (!task.projectId || !task.taskId) return;
-
                             setShowAssigneeMenu(false);
                             setAssigneeSearch('');
+
+                            if (!task.projectId || !task.taskId) return;
 
                             try {
                               await taskService.updateTask(task.projectId, task.taskId, {
@@ -1254,8 +1235,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               <DetailRow label="Reporter">
                 <div className="relative" ref={reporterMenuRef}>
                   <button
+                    disabled={!canEditTask}
                     onClick={() => setShowReporterMenu((v) => !v)}
-                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                    }`}
                   >
                     {taskData.reporterId ? (
                       <AssigneeAvatar
@@ -1271,13 +1255,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.reporterName || 'None'}
                     </span>
-                    <ChevronDown
-                      size={12}
-                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                    />
+                    {canEditTask && (
+                      <ChevronDown
+                        size={12}
+                        className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                      />
+                    )}
                   </button>
 
-                  {showReporterMenu && (
+                  {showReporterMenu && canEditTask && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                       {/* Search */}
                       <div className="p-2 border-b border-gray-200 dark:border-slate-700">
@@ -1402,6 +1388,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 <EditablePriority
                   value={taskData.priority}
                   onChange={(priority) => handleUpdate({ priority })}
+                  disabled={!canEditTask}
                 />
               </DetailRow>
 
@@ -1410,6 +1397,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   value={taskData.sprint}
                   onChange={(sprint) => setTaskData((prev) => ({ ...prev, sprint }))}
                   placeholder="No sprint"
+                  disabled={!canEditTask}
                 />
               </DetailRow>
 
@@ -1417,27 +1405,29 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 <div className="relative">
                   <button
                     type="button"
-                    disabled={isUpdatingUserStory}
+                    disabled={isUpdatingUserStory || !canEditTask}
                     onClick={() => {
-                      if (isUpdatingUserStory) return;
+                      if (isUpdatingUserStory || !canEditTask) return;
 
                       setShowUserStoryMenu((v) => !v);
                     }}
                     className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                      isUpdatingUserStory ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                      isUpdatingUserStory || !canEditTask ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
                     }`}
                   >
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.user_story_title || 'No user story'}
                     </span>
 
-                    <ChevronDown
-                      size={12}
-                      className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                    />
+                    {canEditTask && (
+                      <ChevronDown
+                        size={12}
+                        className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                      />
+                    )}
                   </button>
 
-                  {showUserStoryMenu && !isUpdatingUserStory && (
+                  {showUserStoryMenu && !isUpdatingUserStory && canEditTask && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[100] overflow-hidden">
                       {/* Search */}
                       <div className="p-2 border-b border-gray-200 dark:border-slate-700">
@@ -1531,6 +1521,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 <EditableLabels
                   value={taskData.labels}
                   onChange={(labels) => setTaskData((prev) => ({ ...prev, labels }))}
+                  disabled={!canEditTask}
                 />
               </DetailRow>
 
@@ -1540,6 +1531,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   onChange={(dueDate) => handleUpdate({ dueDate })}
                   placeholder="Set due date"
                   includeTime={false}
+                  disabled={!canEditTask}
                 />
               </DetailRow>
 
@@ -1556,6 +1548,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 <EditableNumber
                   value={taskData.storyPoints}
                   onChange={(storyPoints) => handleUpdate({ storyPoints })}
+                  disabled={!canEditTask}
                 />
               </DetailRow>
               {/* need discussion */}

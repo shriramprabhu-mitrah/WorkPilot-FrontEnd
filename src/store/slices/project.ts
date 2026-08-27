@@ -6,6 +6,8 @@ interface ProjectState {
   selectedSprint: SprintDetail | null; // null = All Sprints
   sprints: SprintDetail[];
   isLoading: boolean;
+  projectRole: string | null;
+  projectRoleId: string | null;
 }
 
 const initialState: ProjectState = {
@@ -13,6 +15,8 @@ const initialState: ProjectState = {
   selectedSprint: null,
   sprints: [],
   isLoading: false,
+  projectRole: null,
+  projectRoleId: null,
 };
 
 const projectSlice = createSlice({
@@ -23,11 +27,15 @@ const projectSlice = createSlice({
       state.selectedProject = action.payload;
       state.selectedSprint = null;
       state.sprints = [];
+      state.projectRole = null;
+      state.projectRoleId = null;
     },
     clearSelectedProject: (state) => {
       state.selectedProject = null;
       state.selectedSprint = null;
       state.sprints = [];
+      state.projectRole = null;
+      state.projectRoleId = null;
     },
     setProjectLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -38,6 +46,10 @@ const projectSlice = createSlice({
     setSprints: (state, action: PayloadAction<SprintDetail[]>) => {
       state.sprints = action.payload;
     },
+    setProjectRole: (state, action: PayloadAction<{ role: string; roleId: string }>) => {
+      state.projectRole = action.payload.role;
+      state.projectRoleId = action.payload.roleId;
+    },
   },
 });
 
@@ -47,6 +59,7 @@ export const {
   setProjectLoading,
   setSelectedSprint,
   setSprints,
+  setProjectRole,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;
