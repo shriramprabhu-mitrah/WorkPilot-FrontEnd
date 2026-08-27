@@ -36,11 +36,13 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [memberSearch, setMemberSearch] = useState('');
-  const { hasPermission } = usePermissions();
+  const { canViewUserStories, canEditUserStory, canDeleteUserStory, canCreateTask } =
+    usePermissions();
 
   const { userStory, isLoadingUserStory, isError, refetchUserStory } = useGetUserStoryById(
     projectId,
-    storyId
+    storyId,
+    !!projectId && !!storyId && canViewUserStories
   );
 
   const { relatedTasks, isLoadingRelatedTasks, isFetchingRelatedTasks, refetchRelatedTasks } =
@@ -203,7 +205,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           </div>
 
           <div className="flex items-center gap-2">
-            {hasPermission('USER_STORY_EDIT') && (
+            {canEditUserStory && (
               <WpButton
                 variant="secondary"
                 size="sm"
@@ -215,7 +217,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
               </WpButton>
             )}
 
-            {hasPermission('USER_STORY_DELETE') && (
+            {canDeleteUserStory && (
               <WpButton
                 variant="ghost"
                 size="sm"
@@ -272,16 +274,17 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       {/* Tasks Section */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold dark:text-slate-100">Tasks ({tasks.length})</h2>
-        <WpButton
-          type="button"
-          variant="primary"
-          size="md"
-          onClick={() => setShowCreateTaskModal(true)}
-          leftIcon={<Plus size={16} />}
-          disabled={!hasPermission('TASK_CREATE')}
-        >
-          Create Task
-        </WpButton>
+        {canCreateTask && (
+          <WpButton
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={() => setShowCreateTaskModal(true)}
+            leftIcon={<Plus size={16} />}
+          >
+            Create Task
+          </WpButton>
+        )}
       </div>
 
       {/* Tasks List */}

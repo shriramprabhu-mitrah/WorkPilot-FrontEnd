@@ -17,6 +17,8 @@ import toast from 'react-hot-toast';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 
+import { usePermissions } from '@/src/hooks/usePermissions';
+
 type ActivityTab = 'all' | 'comments' | 'history';
 interface UploadedAttachment {
   url?: string;
@@ -54,7 +56,10 @@ const formatTime = (iso: string) => {
 };
 
 export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionProps) => {
-  const [tab, setTab] = useState<ActivityTab>('all');
+  const { canViewComments, canAddComments, canComment, canEditComments, canDeleteComments } =
+    usePermissions();
+  const canCreateComment = canAddComments;
+  const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [comment, setComment] = useState('');
   const [showCommentEditor, setShowCommentEditor] = useState(false);
 
@@ -77,7 +82,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
     taskId ?? '',
     1,
     50,
-    !!taskId
+    !!taskId && canViewComments
   );
   const { createCommentAsync, isCreatingComment } = useCreateTaskComment(taskId ?? '');
 
@@ -238,9 +243,8 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const historyItems = items.filter((i) => i.type === 'history');
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
-    // { key: 'all', label: 'All' },
-    { key: 'comments', label: 'Comments' },
-    { key: 'history', label: 'History' },
+    ...(canViewComments ? [{ key: 'comments' as ActivityTab, label: 'Comments' }] : []),
+    { key: 'history' as ActivityTab, label: 'History' },
   ];
 
   const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
@@ -258,19 +262,17 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`${isReply ? 'text-xs' : 'text-sm'} font-semibold text-gray-900`}>
-                {name}
-              </span>
-              <span className="text-xs text-gray-500">{formatTime(c.created_at)}</span>
+              <span className="font-semibold text-xs text-gray-900">{name}</span>
+              <span className="text-xs text-gray-400">{formatTime(c.created_at)}</span>
             </div>
 
             {isEditing ? (
-              <div className="space-y-2">
+              <div className="space-y-2 mt-2">
                 <WpRichTextEditor
                   value={editContent}
                   onChange={setEditContent}
                   placeholder="Edit comment..."
-                  minHeight={isReply ? '80px' : '100px'}
+                  minHeight="100px"
                   onImageUpload={handleEditorImageUpload}
                 />
                 <div className="flex items-center gap-2">
@@ -278,7 +280,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                     type="button"
                     variant="primary"
                     size="sm"
-                    disabled={!editContent.trim() || isUpdatingComment}
+                    disabled={isUpdatingComment || !editContent.trim()}
                     onClick={() => saveEdit(c.id, parentCommentId)}
                   >
                     {isUpdatingComment ? 'Saving...' : 'Save'}
@@ -306,29 +308,35 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                     dangerouslySetInnerHTML={{ __html: c.content }}
                   />
 
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setEditingId(c.id);
-                        setEditContent(c.content);
-                      }}
-                      className="p-1 rounded hover:bg-gray-200 transition-colors"
-                      title="Edit comment"
-                    >
-                      <Pencil size={isReply ? 12 : 14} className="text-gray-600" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteComment(c.id, parentCommentId)}
-                      className="p-1 rounded hover:bg-red-100 transition-colors"
-                      title="Delete comment"
-                      disabled={deletingId === c.id}
-                    >
-                      <Trash2 size={isReply ? 12 : 14} className="text-red-600" />
-                    </button>
-                  </div>
+                  {(canEditComments || canDeleteComments) && (
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      {canEditComments && (
+                        <button
+                          onClick={() => {
+                            setEditingId(c.id);
+                            setEditContent(c.content);
+                          }}
+                          className="p-1 rounded hover:bg-gray-200 transition-colors"
+                          title="Edit comment"
+                        >
+                          <Pencil size={isReply ? 12 : 14} className="text-gray-600" />
+                        </button>
+                      )}
+                      {canDeleteComments && (
+                        <button
+                          onClick={() => handleDeleteComment(c.id, parentCommentId)}
+                          className="p-1 rounded hover:bg-red-100 transition-colors"
+                          title="Delete comment"
+                          disabled={deletingId === c.id}
+                        >
+                          <Trash2 size={isReply ? 12 : 14} className="text-red-600" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {!isReply && (
+                {!isReply && canCreateComment && (
                   <div className="mt-2">
                     <button
                       onClick={() => toggleReplies(c.id, name)}
@@ -360,7 +368,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
             )}
 
             {/* Reply Input */}
-            {replyingTo === c.id && (
+            {replyingTo === c.id && canCreateComment && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                   <CornerDownRight size={12} />
@@ -473,16 +481,18 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
 
                   let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                   let changeText: React.ReactNode = null;
-                  
+
                   if (activity.details) {
-                    const changeMatch = activity.details.match(/:\s*(.+) changed from (.+) to (.+)$/);
+                    const changeMatch = activity.details.match(
+                      /:\s*(.+) changed from (.+) to (.+)$/
+                    );
                     if (changeMatch) {
                       const field = changeMatch[1];
                       const fromVal = changeMatch[2].replace(/'/g, '');
                       const toVal = changeMatch[3].replace(/'/g, '');
                       titleAction = `changed the ${field.charAt(0).toUpperCase() + field.slice(1)}`;
-                      
-                      const formatVal = (val: string) => val === 'nil' ? 'None' : val;
+
+                      const formatVal = (val: string) => (val === 'nil' ? 'None' : val);
                       changeText = (
                         <div className="flex items-center gap-2 mt-2 text-sm text-gray-700 dark:text-slate-300">
                           <span className="text-gray-500">{formatVal(fromVal)}</span>
@@ -498,20 +508,35 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                       titleAction = `commented`;
                       const commentMatch = activity.details.match(/ as (.*)$/);
                       if (commentMatch) {
-                         changeText = (
-                           <div 
-                             className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert" 
-                             dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
-                           />
-                         );
+                        changeText = (
+                          <div
+                            className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
+                            dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
+                          />
+                        );
                       } else {
-                         changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                        changeText = (
+                          <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                            {activity.details}
+                          </div>
+                        );
                       }
-                    } else if (activity.resource_type === 'user_story_attachment' || activity.resource_type === 'task_attachment') {
+                    } else if (
+                      activity.resource_type === 'user_story_attachment' ||
+                      activity.resource_type === 'task_attachment'
+                    ) {
                       titleAction = `uploaded an attachment`;
-                      changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                      changeText = (
+                        <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                          {activity.details}
+                        </div>
+                      );
                     } else {
-                      changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                      changeText = (
+                        <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                          {activity.details}
+                        </div>
+                      );
                     }
                   }
 
@@ -555,7 +580,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
         )}
       </div>
 
-      {(tab === 'all' || tab === 'comments') && (
+      {(tab === 'all' || tab === 'comments') && canCreateComment && (
         <div className="flex gap-2 items-start">
           <AssigneeAvatar initials="Y" color={colors.avatarIndigo} size="md" />
 

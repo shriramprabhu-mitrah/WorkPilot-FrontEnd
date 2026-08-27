@@ -48,10 +48,8 @@ export const TaskTable = ({
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const rowsPerPage = 10;
-  const { hasPermission } = usePermissions();
+  const { canEditTask: canEdit, canDeleteTask: canDelete } = usePermissions();
   const { deleteTask, isDeletingTask } = useDeleteTask(projectId);
-  const canEdit = hasPermission('TASK_EDIT');
-  const canDelete = hasPermission('TASK_DELETE');
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {

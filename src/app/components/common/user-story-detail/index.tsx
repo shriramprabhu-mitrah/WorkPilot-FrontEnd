@@ -27,7 +27,10 @@ import { useResize } from '@/src/hooks/useResize';
 import { userStoryService } from '@/src/services/userstory';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { useGetProjectMembers, useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
+import {
+  useGetProjectMembers,
+  useGetProjectActivities,
+} from '@/src/modules/project/hooks/useProject';
 import {
   useGetUserStoryById,
   useGetUserStoryStatuses,
@@ -63,6 +66,7 @@ import {
 import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChildTasksPanel } from './ChildTasksPanel';
+import usePermissions from '@/src/hooks/usePermissions';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -160,7 +164,18 @@ export const UserStoryDetailDrawer = ({
   onCreateTask,
   onDelete,
 }: UserStoryDetailDrawerProps) => {
-  const [tab, setTab] = useState<ActivityTab>('all');
+  const {
+    canEditUserStory,
+    canDeleteUserStory,
+    canViewComments,
+    canAddComments,
+    canComment,
+    canEditComments,
+    canDeleteComments,
+  } = usePermissions();
+  const canCreateComment = canAddComments;
+
+  const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [showCommentEditor, setShowCommentEditor] = useState(true);
 
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
@@ -202,7 +217,7 @@ export const UserStoryDetailDrawer = ({
     sprintName: string;
     start_date: string;
     due_date: string;
-    color?:string
+    color?: string;
   };
 
   const createEditableFields = (story: UserStoryResponse): EditableUserStoryFields => {
@@ -237,7 +252,6 @@ export const UserStoryDetailDrawer = ({
   const [editableFields, setEditableFields] = useState<EditableUserStoryFields>(() =>
     createEditableFields(currentUserStory)
   );
-  
 
   // Derive non-editable fields directly from currentUserStory - no state needed
   const userStoryData = useMemo(() => {
@@ -274,13 +288,13 @@ export const UserStoryDetailDrawer = ({
       status: editableFields.status,
       storyPoints: editableFields.storyPoints,
       assigneeId: editableFields.assigneeId,
-      assigneeColor:currentUserStory?.assignee?.color ,
+      assigneeColor: currentUserStory?.assignee?.color,
       assigneeName,
       assigneeInitials,
       reporterId: editableFields.reporterId,
       reporterName,
       reporterInitials,
-      reporterColor:currentUserStory?.reporter?.color,
+      reporterColor: currentUserStory?.reporter?.color,
       sprintId: editableFields.sprintId,
       sprintName: editableFields.sprintName,
       start_date: editableFields.start_date,
@@ -365,7 +379,7 @@ export const UserStoryDetailDrawer = ({
     currentUserStory.project_id ?? '',
     currentUserStory.id,
     { page: 1, page_size: 50 },
-    true
+    !!currentUserStory.project_id && !!currentUserStory.id && canViewComments
   );
 
   useEffect(() => {
@@ -817,9 +831,8 @@ export const UserStoryDetailDrawer = ({
   const completedTasks = currentUserStory.completed_tasks ?? 0;
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
-    // { key: 'all', label: 'All' },
-    { key: 'comments', label: 'Comments' },
-    { key: 'history', label: 'History' },
+    ...(canViewComments ? [{ key: 'comments' as ActivityTab, label: 'Comments' }] : []),
+    { key: 'history' as ActivityTab, label: 'History' },
   ];
 
   const taskStatusOptions = customStatuses.map((status) => ({
@@ -905,38 +918,44 @@ export const UserStoryDetailDrawer = ({
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="relative" ref={moreMenuRef}>
-                <button
-                  onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
-                >
-                  <MoreHorizontal size={17} />
-                </button>
-                {showMoreMenu && (
-                  <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                    <button
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        setEditingTitle(true);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
-                    >
-                      <Pencil size={14} />
-                      Update
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        setShowDeleteConfirm(true);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 size={14} />
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
+              {(canEditUserStory || canDeleteUserStory) && (
+                <div className="relative" ref={moreMenuRef}>
+                  <button
+                    onClick={() => setShowMoreMenu(!showMoreMenu)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
+                  >
+                    <MoreHorizontal size={17} />
+                  </button>
+                  {showMoreMenu && (
+                    <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                      {canEditUserStory && (
+                        <button
+                          onClick={() => {
+                            setShowMoreMenu(false);
+                            setEditingTitle(true);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                        >
+                          <Pencil size={14} />
+                          Update
+                        </button>
+                      )}
+                      {canDeleteUserStory && (
+                        <button
+                          onClick={() => {
+                            setShowMoreMenu(false);
+                            setShowDeleteConfirm(true);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <button
                 onClick={onClose}
                 className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
@@ -1078,8 +1097,15 @@ export const UserStoryDetailDrawer = ({
                   </div>
                 ) : (
                   <div
-                    onClick={() => setEditingDesc(true)}
-                    className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed cursor-text rounded-lg px-3 py-2.5 -mx-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors min-h-[48px]"
+                    onClick={() => {
+                      if (!canEditUserStory) return;
+                      setEditingDesc(true);
+                    }}
+                    className={`text-sm text-gray-600 dark:text-slate-300 leading-relaxed rounded-lg px-3 py-2.5 -mx-3 transition-colors min-h-[48px] ${
+                      canEditUserStory
+                        ? 'cursor-text hover:bg-gray-50 dark:hover:bg-slate-800'
+                        : 'cursor-default'
+                    }`}
                   >
                     {userStoryData.description ? (
                       <div
@@ -1103,23 +1129,27 @@ export const UserStoryDetailDrawer = ({
                     Attachments
                   </p>
 
-                  <label
-                    htmlFor="user-story-attachment"
-                    className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
-                      isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
-                    }`}
-                  >
-                    <Plus size={14} />
-                    {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
-                  </label>
+                  {canEditUserStory && (
+                    <>
+                      <label
+                        htmlFor="user-story-attachment"
+                        className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
+                          isUploadingUserStoryAttachment ? 'pointer-events-none opacity-50' : ''
+                        }`}
+                      >
+                        <Plus size={14} />
+                        {isUploadingUserStoryAttachment ? 'Uploading...' : 'Add'}
+                      </label>
 
-                  <input
-                    id="user-story-attachment"
-                    type="file"
-                    className="hidden"
-                    onChange={handleAttachmentUpload}
-                    disabled={isUploadingUserStoryAttachment}
-                  />
+                      <input
+                        id="user-story-attachment"
+                        type="file"
+                        className="hidden"
+                        onChange={handleAttachmentUpload}
+                        disabled={isUploadingUserStoryAttachment}
+                      />
+                    </>
+                  )}
                 </div>
 
                 {isLoadingAttachments ? (
@@ -1189,18 +1219,21 @@ export const UserStoryDetailDrawer = ({
                             Download
                           </button>
 
-                          <button
-                            type="button"
-                            disabled={isDeletingAttachment}
-                            onClick={async () => {
-                              try {
-                                await deleteAttachmentAsync(attachment.id);
-                              } catch (error) {}
-                            }}
-                            className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          {(canEditUserStory || canDeleteUserStory) && (
+                            <button
+                              type="button"
+                              disabled={isDeletingAttachment}
+                              onClick={async () => {
+                                try {
+                                  await deleteAttachmentAsync(attachment.id);
+                                } catch (error) {}
+                              }}
+                              className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                              title="Delete attachment"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1252,7 +1285,7 @@ export const UserStoryDetailDrawer = ({
                 {tab === 'comments' && (
                   <div className="space-y-4">
                     {/* Show editor only when true */}
-                    {showCommentEditor && (
+                    {showCommentEditor && canCreateComment && (
                       <>
                         <WpRichTextEditor
                           value={comment}
@@ -1287,7 +1320,7 @@ export const UserStoryDetailDrawer = ({
                     )}
 
                     {/* Show this when editor is hidden */}
-                    {!showCommentEditor && (
+                    {!showCommentEditor && canCreateComment && (
                       <button
                         type="button"
                         onClick={() => setShowCommentEditor(true)}
@@ -1380,54 +1413,62 @@ export const UserStoryDetailDrawer = ({
                                         dangerouslySetInnerHTML={{ __html: commentItem.content }}
                                       />
 
-                                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                        <button
-                                          onClick={() => {
-                                            setEditingCommentId(commentItem.id);
-                                            setEditingCommentContent(commentItem.content);
-                                          }}
-                                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-                                          title="Edit comment"
-                                        >
-                                          <Pencil
-                                            size={14}
-                                            className="text-gray-600 dark:text-slate-400"
-                                          />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteComment(commentItem.id)}
-                                          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
-                                          title="Delete comment"
-                                          disabled={deletingCommentId === commentItem.id}
-                                        >
-                                          <Trash2
-                                            size={14}
-                                            className="text-red-600 dark:text-red-400"
-                                          />
-                                        </button>
-                                      </div>
+                                      {(canEditComments || canDeleteComments) && (
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                          {canEditComments && (
+                                            <button
+                                              onClick={() => {
+                                                setEditingCommentId(commentItem.id);
+                                                setEditingCommentContent(commentItem.content);
+                                              }}
+                                              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                                              title="Edit comment"
+                                            >
+                                              <Pencil
+                                                size={14}
+                                                className="text-gray-600 dark:text-slate-400"
+                                              />
+                                            </button>
+                                          )}
+                                          {canDeleteComments && (
+                                            <button
+                                              onClick={() => handleDeleteComment(commentItem.id)}
+                                              className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                                              title="Delete comment"
+                                              disabled={deletingCommentId === commentItem.id}
+                                            >
+                                              <Trash2
+                                                size={14}
+                                                className="text-red-600 dark:text-red-400"
+                                              />
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
 
                                     {/* Reply Button */}
-                                    <div className="mt-2">
-                                      <button
-                                        onClick={() =>
-                                          handleToggleReplies(
-                                            commentItem.id,
-                                            commentItem.user_name || 'User'
-                                          )
-                                        }
-                                        className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                      >
-                                        <CornerDownRight size={14} />
-                                        <span>Reply</span>
-                                        {commentItem.replies_count > 0 && (
-                                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                                            ({commentItem.replies_count})
-                                          </span>
-                                        )}
-                                      </button>
-                                    </div>
+                                    {canCreateComment && (
+                                      <div className="mt-2">
+                                        <button
+                                          onClick={() =>
+                                            handleToggleReplies(
+                                              commentItem.id,
+                                              commentItem.user_name || 'User'
+                                            )
+                                          }
+                                          className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                        >
+                                          <CornerDownRight size={14} />
+                                          <span>Reply</span>
+                                          {commentItem.replies_count > 0 && (
+                                            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                                              ({commentItem.replies_count})
+                                            </span>
+                                          )}
+                                        </button>
+                                      </div>
+                                    )}
                                   </>
                                 )}
 
@@ -1513,37 +1554,47 @@ export const UserStoryDetailDrawer = ({
                                                           __html: reply.content,
                                                         }}
                                                       />
-                                                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                                        <button
-                                                          onClick={() => {
-                                                            setEditingReplyId(reply.id);
-                                                            setEditingReplyContent(reply.content);
-                                                          }}
-                                                          className="p-1 rounded hover:bg-gray-200 transition-colors"
-                                                          title="Edit reply"
-                                                        >
-                                                          <Pencil
-                                                            size={12}
-                                                            className="text-gray-600"
-                                                          />
-                                                        </button>
-                                                        <button
-                                                          onClick={() =>
-                                                            handleDeleteReply(
-                                                              reply.id,
-                                                              commentItem.id
-                                                            )
-                                                          }
-                                                          className="p-1 rounded hover:bg-red-100 transition-colors"
-                                                          title="Delete reply"
-                                                          disabled={deletingReplyId === reply.id}
-                                                        >
-                                                          <Trash2
-                                                            size={12}
-                                                            className="text-red-600"
-                                                          />
-                                                        </button>
-                                                      </div>
+                                                      {(canEditComments || canDeleteComments) && (
+                                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                          {canEditComments && (
+                                                            <button
+                                                              onClick={() => {
+                                                                setEditingReplyId(reply.id);
+                                                                setEditingReplyContent(
+                                                                  reply.content
+                                                                );
+                                                              }}
+                                                              className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                                              title="Edit reply"
+                                                            >
+                                                              <Pencil
+                                                                size={12}
+                                                                className="text-gray-600"
+                                                              />
+                                                            </button>
+                                                          )}
+                                                          {canDeleteComments && (
+                                                            <button
+                                                              onClick={() =>
+                                                                handleDeleteReply(
+                                                                  reply.id,
+                                                                  commentItem.id
+                                                                )
+                                                              }
+                                                              className="p-1 rounded hover:bg-red-100 transition-colors"
+                                                              title="Delete reply"
+                                                              disabled={
+                                                                deletingReplyId === reply.id
+                                                              }
+                                                            >
+                                                              <Trash2
+                                                                size={12}
+                                                                className="text-red-600"
+                                                              />
+                                                            </button>
+                                                          )}
+                                                        </div>
+                                                      )}
                                                     </div>
                                                   )}
                                                 </div>
@@ -1553,7 +1604,7 @@ export const UserStoryDetailDrawer = ({
                                       )}
 
                                     {/* Reply Input After existing replies */}
-                                    {replyingToCommentId === commentItem.id && (
+                                    {replyingToCommentId === commentItem.id && canCreateComment && (
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-1 text-xs text-gray-500">
                                           <CornerDownRight size={12} />
@@ -1584,7 +1635,10 @@ export const UserStoryDetailDrawer = ({
                                             type="button"
                                             variant="secondary"
                                             size="sm"
-                                            onClick={handleCancelReply}
+                                            onClick={() => {
+                                              setReplyingToCommentId(null);
+                                              setReplyContent('');
+                                            }}
                                           >
                                             Cancel
                                           </WpButton>
@@ -1629,16 +1683,18 @@ export const UserStoryDetailDrawer = ({
 
                           let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                           let changeText: React.ReactNode = null;
-                          
+
                           if (activity.details) {
-                            const changeMatch = activity.details.match(/:\s*(.+) changed from (.+) to (.+)$/);
+                            const changeMatch = activity.details.match(
+                              /:\s*(.+) changed from (.+) to (.+)$/
+                            );
                             if (changeMatch) {
                               const field = changeMatch[1];
                               const fromVal = changeMatch[2].replace(/'/g, '');
                               const toVal = changeMatch[3].replace(/'/g, '');
                               titleAction = `changed the ${field.charAt(0).toUpperCase() + field.slice(1)}`;
-                              
-                              const formatVal = (val: string) => val === 'nil' ? 'None' : val;
+
+                              const formatVal = (val: string) => (val === 'nil' ? 'None' : val);
                               changeText = (
                                 <div className="flex items-center gap-2 mt-2 text-sm text-gray-700 dark:text-slate-300">
                                   <span className="text-gray-500">{formatVal(fromVal)}</span>
@@ -1654,20 +1710,32 @@ export const UserStoryDetailDrawer = ({
                               titleAction = `commented`;
                               const commentMatch = activity.details.match(/ as (.*)$/);
                               if (commentMatch) {
-                                 changeText = (
-                                   <div 
-                                     className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert" 
-                                     dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
-                                   />
-                                 );
+                                changeText = (
+                                  <div
+                                    className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
+                                    dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
+                                  />
+                                );
                               } else {
-                                 changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                                changeText = (
+                                  <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                                    {activity.details}
+                                  </div>
+                                );
                               }
                             } else if (activity.resource_type === 'user_story_attachment') {
                               titleAction = `uploaded an attachment`;
-                              changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                              changeText = (
+                                <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                                  {activity.details}
+                                </div>
+                              );
                             } else {
-                              changeText = <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">{activity.details}</div>;
+                              changeText = (
+                                <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                                  {activity.details}
+                                </div>
+                              );
                             }
                           }
 
@@ -1735,8 +1803,14 @@ export const UserStoryDetailDrawer = ({
                 </p>
                 <div className="relative" ref={statusMenuRef}>
                   <button
-                    onClick={() => setShowStatusMenu(!showStatusMenu)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-slate-100"
+                    disabled={!canEditUserStory}
+                    onClick={() => {
+                      if (!canEditUserStory) return;
+                      setShowStatusMenu(!showStatusMenu);
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border text-gray-900 dark:text-slate-100 ${
+                      !canEditUserStory ? 'cursor-default' : ''
+                    }`}
                     style={{
                       backgroundColor:
                         userStoryStatusConfig[userStoryData.status]?.bg || colors.colTodoBg,
@@ -1753,9 +1827,9 @@ export const UserStoryDetailDrawer = ({
                       />
                       {userStoryStatusConfig[userStoryData.status]?.label || 'To Do'}
                     </span>
-                    <ChevronDown size={14} />
+                    {canEditUserStory && <ChevronDown size={14} />}
                   </button>
-                  {showStatusMenu && (
+                  {showStatusMenu && canEditUserStory && (
                     <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
                       {/* Status Options */}
                       {userStoryStatusOptions.map((option) => (
@@ -1778,103 +1852,8 @@ export const UserStoryDetailDrawer = ({
                               {option.label}
                             </span>
                           </div>
-
-                          {/* Right: Final status indicator */}
-                          {/* {option.is_final && (
-                            <span
-                              className="w-2 h-2 rounded-full bg-red-700 shrink-0"
-                              title="Final status"
-                            />
-                          )} */}
                         </button>
                       ))}
-
-                      {/* Divider */}
-                      {/* <div className="my-1 border-t border-gray-200" /> */}
-
-                      {/* Add Task */}
-                      {/* <button
-                        type="button"
-                        onClick={() => {
-                          setShowStatusMenu(false);
-                          setSelectedStatus(null);
-                          setStatusModalMode('add');
-                          setShowStatusModal(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        Add Status
-                      </button> */}
-
-                      {/* Edit Task */}
-                      {/* <button
-                        type="button"
-                        onClick={() => {
-                          setShowStatusMenu(false);
-                          let statusToEdit = customStatuses.find(
-                            (status) => status.id === userStoryData.status
-                          );
-                          if (!statusToEdit) {
-                            const currentStatus = String(userStoryData.status)
-                              .toLowerCase()
-                              .replace(/[_-]/g, ' ')
-                              .trim();
-
-                            statusToEdit = customStatuses.find((status) => {
-                              const statusName = status.name
-                                .toLowerCase()
-                                .replace(/[_-]/g, ' ')
-                                .trim();
-
-                              return statusName === currentStatus;
-                            });
-                          }
-
-                          if (!statusToEdit) {
-                            statusToEdit = customStatuses.find((status) => status.is_default);
-                          }
-
-                          // Final fallback
-                          if (!statusToEdit && customStatuses.length > 0) {
-                            statusToEdit = customStatuses[0];
-                          }
-
-                          if (!statusToEdit) {
-                            return;
-                          }
-
-                          setSelectedStatus(statusToEdit);
-                          setStatusModalMode('edit');
-                          setShowStatusModal(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        Edit Status
-                      </button> */}
-                      {/* <button
-                        type="button"
-                        onClick={() => {
-                          setShowStatusMenu(false);
-
-                          setSelectedStatus(null);
-                          setStatusModalMode('delete');
-                          setShowStatusModal(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 transition-colors"
-                      >
-                        Delete Status
-                      </button>
-                      View Workflow
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowStatusMenu(false);
-                          setShowWorkflowModal(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        View workflow
-                      </button> */}
                     </div>
                   )}
                 </div>
@@ -1889,8 +1868,14 @@ export const UserStoryDetailDrawer = ({
                 <DetailRow label="Assignee">
                   <div className="relative" ref={assigneeMenuRef}>
                     <button
-                      onClick={() => setShowAssigneeMenu((v) => !v)}
-                      className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                      disabled={!canEditUserStory}
+                      onClick={() => {
+                        if (!canEditUserStory) return;
+                        setShowAssigneeMenu((v) => !v);
+                      }}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                        !canEditUserStory ? 'cursor-default' : 'hover:bg-gray-100'
+                      }`}
                     >
                       {userStoryData.assigneeId ? (
                         <AssigneeAvatar
@@ -1906,9 +1891,11 @@ export const UserStoryDetailDrawer = ({
                       <span className="text-sm text-gray-700 truncate">
                         {userStoryData.assigneeName || 'Unassigned'}
                       </span>
-                      <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                      {canEditUserStory && (
+                        <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                      )}
                     </button>
-                    {showAssigneeMenu && (
+                    {showAssigneeMenu && canEditUserStory && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                         <div className="p-2 border-b border-gray-200">
                           <WpInput
@@ -1980,8 +1967,16 @@ export const UserStoryDetailDrawer = ({
                 <DetailRow label="Reporter">
                   <div className="relative" ref={reporterMenuRef}>
                     <button
-                      onClick={() => setShowReporterMenu((v) => !v)}
-                      className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors w-full text-left"
+                      disabled={!canEditUserStory}
+                      onClick={() => {
+                        if (!canEditUserStory) return;
+                        setShowReporterMenu((v) => !v);
+                      }}
+                      className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                        !canEditUserStory
+                          ? 'cursor-default'
+                          : 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                      }`}
                     >
                       {userStoryData.reporterId ? (
                         <AssigneeAvatar
@@ -1997,13 +1992,15 @@ export const UserStoryDetailDrawer = ({
                       <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                         {userStoryData.reporterName || 'Unassigned'}
                       </span>
-                      <ChevronDown
-                        size={12}
-                        className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                      />
+                      {canEditUserStory && (
+                        <ChevronDown
+                          size={12}
+                          className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
+                        />
+                      )}
                     </button>
 
-                    {showReporterMenu && (
+                    {showReporterMenu && canEditUserStory && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                         {/* Search */}
                         <div className="p-2 border-b border-gray-200 dark:border-slate-700">
@@ -2102,6 +2099,7 @@ export const UserStoryDetailDrawer = ({
                   <EditablePriority
                     value={userStoryData.priority}
                     onChange={(priority) => handleUpdate({ priority })}
+                    disabled={!canEditUserStory}
                   />
                 </DetailRow>
 
@@ -2109,6 +2107,7 @@ export const UserStoryDetailDrawer = ({
                   <EditableNumber
                     value={userStoryData.storyPoints}
                     onChange={(storyPoints) => handleUpdate({ storyPoints })}
+                    disabled={!canEditUserStory}
                   />
                 </DetailRow>
 
@@ -2117,14 +2116,17 @@ export const UserStoryDetailDrawer = ({
                     {/* Selected Sprint */}
                     <button
                       type="button"
-                      disabled={isUpdatingSprint}
+                      disabled={isUpdatingSprint || !canEditUserStory}
                       onClick={() => {
-                        if (isUpdatingSprint) return;
-
+                        if (isUpdatingSprint || !canEditUserStory) return;
                         setShowSprintMenu((v) => !v);
                       }}
                       className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
-                        isUpdatingSprint ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                        !canEditUserStory
+                          ? 'cursor-default'
+                          : isUpdatingSprint
+                            ? 'opacity-60 cursor-not-allowed'
+                            : 'hover:bg-gray-100'
                       }`}
                     >
                       <span className="text-sm text-gray-700 truncate">
@@ -2135,11 +2137,13 @@ export const UserStoryDetailDrawer = ({
                             : 'No sprint')}
                       </span>
 
-                      <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                      {canEditUserStory && (
+                        <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                      )}
                     </button>
 
                     {/* Sprint Dropdown */}
-                    {showSprintMenu && !isUpdatingSprint && (
+                    {showSprintMenu && !isUpdatingSprint && canEditUserStory && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
                         {/* Search */}
                         <div className="p-2 border-b border-gray-200">
@@ -2238,6 +2242,7 @@ export const UserStoryDetailDrawer = ({
                     onChange={(dueDate) => handleUpdate({ due_date: dueDate })}
                     placeholder="Set due date"
                     includeTime={false}
+                    disabled={!canEditUserStory}
                   />
                 </DetailRow>
               </div>

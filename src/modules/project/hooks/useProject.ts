@@ -9,6 +9,9 @@ import {
   ActivityFilters,
 } from '@/src/types/project';
 import { UpdateProjectRolePayload } from '../types/project';
+import { useAppDispatch } from '@/src/store';
+import { setProjectRole } from '@/src/store/slices/project';
+import { useEffect } from 'react';
 
 export const useGetProjectsWithSprints = () => {
   const query = useQuery({
@@ -265,6 +268,36 @@ export const useGetProjectActivities = (
     isFetchingActivities: query.isFetching,
     isError: query.isError,
     error: query.error,
+  };
+};
+
+export const useGetUserProjectRole = (projectId: string | undefined) => {
+  const dispatch = useAppDispatch();
+
+  const query = useQuery({
+    queryKey: ['user-project-role', projectId],
+    queryFn: () => projectService.getUserProjectRole(projectId!),
+    enabled: !!projectId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    if (query.data?.data) {
+      dispatch(
+        setProjectRole({
+          role: query.data.data.role,
+          roleId: query.data.data.role_id,
+        })
+      );
+    }
+  }, [query.data, dispatch]);
+
+  return {
+    userProjectRole: query.data?.data ?? null,
+    isLoadingUserProjectRole: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetchUserProjectRole: query.refetch,
   };
 };
 

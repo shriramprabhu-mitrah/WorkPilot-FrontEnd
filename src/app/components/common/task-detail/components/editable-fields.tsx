@@ -10,11 +10,13 @@ export const EditableText = ({
   onChange,
   placeholder = 'None',
   className = '',
+  disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -28,6 +30,14 @@ export const EditableText = ({
     onChange(draft.trim() || '');
     setEditing(false);
   };
+
+  if (disabled) {
+    return (
+      <span className={`text-sm font-medium ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'}`}>
+        {value || placeholder}
+      </span>
+    );
+  }
 
   if (editing) {
     return (
@@ -72,11 +82,13 @@ export const EditableDate = ({
   onChange,
   placeholder = 'None',
   includeTime = false,
+  disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   includeTime?: boolean;
+  disabled?: boolean;
 }) => {
   const [localValue, setLocalValue] = useState('');
   useEffect(() => {
@@ -86,13 +98,23 @@ export const EditableDate = ({
     return () => clearTimeout(timer);
   }, [value]);
   const handleChange = (newValue: string) => {
+    if (disabled) return;
     setLocalValue(newValue);
   };
   const handleCommit = (newValue: string) => {
+    if (disabled) return;
     // Update local UI
     setLocalValue(newValue);
     onChange(newValue);
   };
+
+  if (disabled) {
+    return (
+      <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
+        {localValue ? new Date(localValue).toLocaleDateString() : placeholder}
+      </span>
+    );
+  }
 
   return (
     <div className="relative">
@@ -110,9 +132,11 @@ export const EditableDate = ({
 export const EditableNumber = ({
   value,
   onChange,
+  disabled = false,
 }: {
   value: number;
   onChange: (v: number) => void;
+  disabled?: boolean;
 }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value));
@@ -127,6 +151,15 @@ export const EditableNumber = ({
     onChange(Number.isNaN(n) ? value : n);
     setEditing(false);
   };
+
+  if (disabled) {
+    return (
+      <span className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-slate-100">
+        <Hash size={12} className="text-gray-400" />
+        {value}
+      </span>
+    );
+  }
 
   if (editing) {
     return (
@@ -171,9 +204,11 @@ const PRIORITY_LIST: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
 export const EditablePriority = ({
   value,
   onChange,
+  disabled = false,
 }: {
   value: Priority;
   onChange: (v: Priority) => void;
+  disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -186,6 +221,14 @@ export const EditablePriority = ({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  if (disabled) {
+    return (
+      <div className="flex items-center gap-1">
+        <PriorityDot priority={value} />
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -220,9 +263,11 @@ export const EditablePriority = ({
 export const EditableLabels = ({
   value,
   onChange,
+  disabled = false,
 }: {
   value: string[];
   onChange: (v: string[]) => void;
+  disabled?: boolean;
 }) => {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
@@ -248,38 +293,41 @@ export const EditableLabels = ({
           style={{ backgroundColor: colors.primaryLight, color: colors.primary }}
         >
           {label}
-          <button
-            onClick={() => onChange(value.filter((item) => item !== label))}
-            className="hover:text-red-500 transition-colors leading-none"
-          >
-            ×
-          </button>
+          {!disabled && (
+            <button
+              onClick={() => onChange(value.filter((item) => item !== label))}
+              className="hover:text-red-500 transition-colors leading-none"
+            >
+              ×
+            </button>
+          )}
         </span>
       ))}
-      {adding ? (
-        <input
-          ref={inputRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={addLabel}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') addLabel();
-            if (e.key === 'Escape') {
-              setDraft('');
-              setAdding(false);
-            }
-          }}
-          placeholder="Label…"
-          className="text-xs border border-blue-400 rounded-full px-2 py-0.5 w-20 focus:outline-none focus:ring-1 focus:ring-blue-200"
-        />
-      ) : (
-        <button
-          onClick={() => setAdding(true)}
-          className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors px-1"
-        >
-          <Plus size={11} /> Add
-        </button>
-      )}
+      {!disabled &&
+        (adding ? (
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={addLabel}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') addLabel();
+              if (e.key === 'Escape') {
+                setDraft('');
+                setAdding(false);
+              }
+            }}
+            placeholder="Label…"
+            className="text-xs border border-blue-400 rounded-full px-2 py-0.5 w-20 focus:outline-none focus:ring-1 focus:ring-blue-200"
+          />
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-500 transition-colors px-1"
+          >
+            <Plus size={11} /> Add
+          </button>
+        ))}
     </div>
   );
 };

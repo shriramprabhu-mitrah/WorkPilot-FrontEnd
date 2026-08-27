@@ -58,7 +58,14 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(
     null
   );
-  const { hasPermission, isAdmin, isProjectManager } = usePermissions();
+  const {
+    canEditProject,
+    canDeleteProject,
+    canCreateSprint,
+    canEditSprint,
+    isOrgAdmin,
+    canManageProjects,
+  } = usePermissions();
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
   const [showCompleteSprintModal, setShowCompleteSprintModal] = useState(false);
 
@@ -198,7 +205,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getInitials = (name: string) => {
@@ -225,24 +232,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     return colors[hash % colors.length];
   };
 
-  const isOrgAdminRole = (role?: string): boolean => {
-    if (!role) return false;
-    const lower = role.toLowerCase().replace(/[\s_-]+/g, '');
-    return (
-      lower === 'orgadmin' ||
-      lower === 'organizationadmin' ||
-      lower === 'admin' ||
-      lower === 'superadmin'
-    );
-  };
-
-  const canRemoveMember = (memberRole: string): boolean => {
-    if (isOrgAdminRole(memberRole)) return false;
-    if (!isAdmin() && !isProjectManager()) return false;
-    return true;
-  };
-
   const updateMember = async (member: ProjectDetailMember) => {
+    if (!canManageProjects()) {
+      showToast.error('You do not have permission to update member roles');
+      return;
+    }
     if (!selectedRole) return;
     if (!selectedApiProject?.id) return;
     try {
@@ -296,20 +290,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       setIsRefreshingSprints(false);
     }
   };
-  const handleStartSprint = async (payload: {
-    start_date: string;
-    end_date: string;
-  }) => {
+  const handleStartSprint = async (payload: { start_date: string; end_date: string }) => {
     if (!selectedSprint || !project.id) return;
 
     try {
       setIsStartingSprint(true);
 
-      await sprintService.startSprint(
-        project.id,
-        selectedSprint.id,
-        payload
-      );
+      await sprintService.startSprint(project.id, selectedSprint.id, payload);
 
       setShowStartSprintModal(false);
       setSelectedSprint(null);
@@ -327,10 +314,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     try {
       setIsCompletingSprint(true);
 
-      await sprintService.completeSprint(
-        project.id,
-        selectedSprint.id
-      );
+      await sprintService.completeSprint(project.id, selectedSprint.id);
 
       setShowCompleteSprintModal(false);
       setSelectedSprint(null);
@@ -342,20 +326,18 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       setIsCompletingSprint(false);
     }
   };
-const {
-  userStories: sprintUserStories,
-} = useGetSprintUserStories(
-  project.id || '',
-  selectedSprint?.id || '',
-  !!selectedSprint && showCompleteSprintModal
-);
-const completedUserStories = sprintUserStories.filter(
-  (story) => story.status === 'completed'
-).length;
+  const { userStories: sprintUserStories } = useGetSprintUserStories(
+    project.id || '',
+    selectedSprint?.id || '',
+    !!selectedSprint && showCompleteSprintModal
+  );
+  const completedUserStories = sprintUserStories.filter(
+    (story) => story.status === 'completed'
+  ).length;
 
-const inProgressUserStories = sprintUserStories.filter(
-  (story) => story.status === 'in_progress'
-).length;
+  const inProgressUserStories = sprintUserStories.filter(
+    (story) => story.status === 'in_progress'
+  ).length;
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -401,7 +383,7 @@ const inProgressUserStories = sprintUserStories.filter(
             <span className="rounded-full bg-green-50 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-600 dark:text-green-400">
               {project?.status}
             </span>
-            {hasPermission('PROJECT_EDIT') && (
+            {canEditProject && (
               <WpButton
                 variant="secondary"
                 size="sm"
@@ -412,7 +394,7 @@ const inProgressUserStories = sprintUserStories.filter(
                 <Pencil size={16} />
               </WpButton>
             )}
-            {hasPermission('PROJECT_DELETE') && (
+            {canDeleteProject && (
               <WpButton
                 variant="ghost"
                 size="sm"
@@ -508,12 +490,12 @@ const inProgressUserStories = sprintUserStories.filter(
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Sprints</h2>
         <div className="flex items-center gap-3">
-          {hasPermission('MEMBER_ADD') && (
+          {canManageProjects() && (
             <WpButton variant="primary" size="md" onClick={() => setShowAddMemberModal(true)}>
               + Add Member
             </WpButton>
           )}
-          {hasPermission('SPRINT_CREATE') && (
+          {canCreateSprint && (
             <WpButton variant="primary" size="md" onClick={() => setShowAddSprintModal(true)}>
               + Add Sprint
             </WpButton>
@@ -545,7 +527,7 @@ const inProgressUserStories = sprintUserStories.filter(
               <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                 Create your first sprint to start planning work.
               </p>
-              {hasPermission('SPRINT_CREATE') && (
+              {canCreateSprint && (
                 <WpButton
                   variant="primary"
                   size="md"
@@ -581,7 +563,7 @@ const inProgressUserStories = sprintUserStories.filter(
                     </div>
                   </button>
                   <div className="flex items-center gap-2">
-                    {sprint.status === 'Planned' && (
+                    {sprint.status === 'Planned' && canEditSprint && (
                       <WpButton
                         type="button"
                         variant="secondary"
@@ -595,7 +577,7 @@ const inProgressUserStories = sprintUserStories.filter(
                       </WpButton>
                     )}
 
-                    {sprint.status === 'Active' && (
+                    {sprint.status === 'Active' && canEditSprint && (
                       <WpButton
                         type="button"
                         variant="secondary"
@@ -620,8 +602,9 @@ const inProgressUserStories = sprintUserStories.filter(
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
-                          }`}
+                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
                       />
                     </button>
                   </div>
@@ -690,22 +673,22 @@ const inProgressUserStories = sprintUserStories.filter(
           onStart={handleStartSprint}
         />
       )}
-{showCompleteSprintModal && selectedSprint && (
-  <CompleteSprintModal
-    sprint={{
-      id: selectedSprint.id,
-      name: selectedSprint.name,
-    }}
-    completedUserStories={completedUserStories}
-    inProgressUserStories={inProgressUserStories}
-    onClose={() => {
-      setShowCompleteSprintModal(false);
-      setSelectedSprint(null);
-    }}
-    isCompleting={isCompletingSprint}
-    onComplete={handleCompleteSprint}
-  />
-)}
+      {showCompleteSprintModal && selectedSprint && (
+        <CompleteSprintModal
+          sprint={{
+            id: selectedSprint.id,
+            name: selectedSprint.name,
+          }}
+          completedUserStories={completedUserStories}
+          inProgressUserStories={inProgressUserStories}
+          onClose={() => {
+            setShowCompleteSprintModal(false);
+            setSelectedSprint(null);
+          }}
+          isCompleting={isCompletingSprint}
+          onComplete={handleCompleteSprint}
+        />
+      )}
       {/* Add Member modal */}
       {showAddMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -894,9 +877,7 @@ const inProgressUserStories = sprintUserStories.filter(
               <div className="space-y-2">
                 {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
                   selectedApiProject.members.map((member) => {
-                    const isOrgAdmin = isOrgAdminRole(member.role);
-                    const canDelete =
-                      !isOrgAdmin && hasPermission('MEMBER_REMOVE') && canRemoveMember(member.role);
+                    const canDelete = canManageProjects();
                     return (
                       <div
                         key={member.user_id}
@@ -964,7 +945,7 @@ const inProgressUserStories = sprintUserStories.filter(
                               >
                                 <X size={16} />
                               </WpButton>
-                              {hasPermission('MEMBER_REMOVE') && canDelete && (
+                              {canDelete && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
@@ -983,7 +964,7 @@ const inProgressUserStories = sprintUserStories.filter(
                             </>
                           ) : (
                             <>
-                              {(isAdmin() || isProjectManager()) && !isOrgAdmin && (
+                              {canManageProjects() && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"
@@ -1001,7 +982,7 @@ const inProgressUserStories = sprintUserStories.filter(
                                   <Pencil size={16} />
                                 </WpButton>
                               )}
-                              {hasPermission('MEMBER_REMOVE') && canDelete && (
+                              {canDelete && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"

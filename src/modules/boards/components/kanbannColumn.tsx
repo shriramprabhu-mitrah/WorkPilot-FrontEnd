@@ -8,12 +8,15 @@ import { KanbanCard } from './kanbannCards';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 
+import { usePermissions } from '@/src/hooks/usePermissions';
+
 interface Props {
   column: KanbanColumnType;
   isOver: boolean;
 }
 
 export const KanbanColumn = ({ column, isOver }: Props) => {
+  const { canCreateTask } = usePermissions();
   const { setNodeRef } = useDroppable({
     id: column.id,
     data: { type: 'column', columnId: column.id },
@@ -35,9 +38,11 @@ export const KanbanColumn = ({ column, isOver }: Props) => {
             {column.tasks.length}
           </span>
         </div>
-        <WpButton variant="ghost" size="sm" className="!p-1">
-          <Plus size={16} />
-        </WpButton>
+        {canCreateTask && (
+          <WpButton variant="ghost" size="sm" className="!p-1">
+            <Plus size={16} />
+          </WpButton>
+        )}
       </div>
 
       {/* Drop zone */}

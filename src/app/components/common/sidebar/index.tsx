@@ -30,7 +30,11 @@ import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Project, SprintDetail } from '@/src/types/project';
-import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
+import {
+  useGetProjectsWithSprints,
+  useGetUserProjectRole,
+} from '@/src/modules/project/hooks/useProject';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 const navItemsBase = [
   { label: 'Dashboard', path: 'dashboard', icon: LayoutDashboard },
@@ -59,7 +63,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const orgSlug = params.orgSlug as string;
 
   const user = useAppSelector((state) => state.user);
-  const isOrgAdmin = user.role === 'org_admin';
+  const { isOrgAdmin, canCreateSprint, canCreateProject } = usePermissions();
   const { selectedProject, selectedSprint, sprints } = useAppSelector((state) => state.project);
   const [isExpanded, setIsExpanded] = useState(false);
   const { handleLogOutAsync, logOut } = useSignin();
@@ -67,11 +71,13 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   // Build navigation items with organization slug
   const navItems = useMemo(() => {
     if (!orgSlug) return [];
-    return navItemsBase.map((item) => ({
-      ...item,
-      href: `/${orgSlug}/${item.path}`,
-    }));
-  }, [orgSlug]);
+    return navItemsBase
+      .filter((item) => item.path !== 'settings' || isOrgAdmin)
+      .map((item) => ({
+        ...item,
+        href: `/${orgSlug}/${item.path}`,
+      }));
+  }, [orgSlug, isOrgAdmin]);
 
   // Manage Project modal state
   const [showManageProject, setShowManageProject] = useState(false);
@@ -81,6 +87,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const prevTempProjectId = useRef<string | undefined>(undefined);
 
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Fetch user's role for the selected project (auto-dispatches to Redux)
+  useGetUserProjectRole(selectedProject?.id);
 
   // Derive sprints from projectsWithSprints based on tempProject
   const tempSprints = useMemo(() => {
@@ -333,7 +342,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 <p className="text-xs font-semibold text-gray-700 dark:text-slate-100">
                   Projects <span className="text-red-500">*</span>
                 </p>
-                {isOrgAdmin && (
+                {(canCreateProject || isOrgAdmin) && (
                   <button
                     onClick={() => {
                       setShowManageProject(false);
@@ -411,7 +420,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 <p className="text-xs font-semibold text-gray-700 dark:text-slate-100">
                   Sprints <span className="text-red-500">*</span>
                 </p>
-                {isOrgAdmin && (
+                {(canCreateSprint || isOrgAdmin) && (
                   <button
                     onClick={() => {
                       if (!tempProject) return;

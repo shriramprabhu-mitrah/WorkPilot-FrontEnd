@@ -66,6 +66,7 @@ export interface TaskResponse {
   assignee?: {
     name?: string;
     color?: string;
+    id?: string;
   };
   reporter?: {
     name?: string;

@@ -23,6 +23,7 @@ import { setIsLoggingOut } from '@/src/lib/config/axios-client';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import { useEffect, useRef, useState } from 'react';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -31,6 +32,7 @@ interface NavbarProps {
 export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const pathname = usePathname();
   const { push } = useOrgNavigation();
+  const { isOrgAdmin } = usePermissions();
   const segments = pathname.split('/').filter(Boolean);
   const title = segments[1] ? segments[1].charAt(0).toUpperCase() + segments[1].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
@@ -128,15 +130,17 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         {/* Theme toggle */}
         <ThemeToggle />
 
-        <WpButton
-          variant="ghost"
-          size="sm"
-          className="!p-1.5 text-gray-500 dark:text-slate-300 hidden md:flex"
-          onClick={() => push('/settings')}
-          aria-label="Settings"
-        >
-          <Settings size={17} />
-        </WpButton>
+        {isOrgAdmin && (
+          <WpButton
+            variant="ghost"
+            size="sm"
+            className="!p-1.5 text-gray-500 dark:text-slate-300 hidden md:flex"
+            onClick={() => push('/settings')}
+            aria-label="Settings"
+          >
+            <Settings size={17} />
+          </WpButton>
+        )}
 
         {/* Divider */}
         <div className="w-px h-5 bg-gray-300 dark:bg-slate-600 hidden md:block" />

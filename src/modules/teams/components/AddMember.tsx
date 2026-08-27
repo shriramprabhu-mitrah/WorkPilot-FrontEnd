@@ -41,7 +41,7 @@ const MembersSettings = () => {
     page,
     pageSize
   );
-  const { isAdmin, hasPermission } = usePermissions();
+  const { isOrgAdmin } = usePermissions();
 
   const members = projectMembers?.data ?? [];
   const visibleMembers = showAll ? members : members.slice(0, 10);
@@ -151,7 +151,7 @@ const MembersSettings = () => {
               Manage Project members and their roles
             </p>
           </div>
-          {isAdmin() && (
+          {isOrgAdmin && (
             <WpButton
               size="sm"
               leftIcon={<UserPlus size={15} />}
@@ -199,7 +199,10 @@ const MembersSettings = () => {
                 >
                   {/* Member info */}
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-slate-100 dark:text-blue-300" style={{backgroundColor:member.color || ''}}>
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-slate-100 dark:text-blue-300"
+                      style={{ backgroundColor: member.color || '' }}
+                    >
                       {initials || 'U'}
                     </div>
                     <div className="min-w-0">
@@ -236,8 +239,8 @@ const MembersSettings = () => {
                     <select
                       value={member.role ?? ''}
                       onChange={() => {}}
-                      disabled={isRolesLoading}
-                      className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+                      disabled={!isOrgAdmin || isRolesLoading}
+                      className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {roles.map((role) => (
                         <option key={role.id} value={role.name}>
@@ -260,7 +263,7 @@ const MembersSettings = () => {
 
                   {/* Delete */}
                   <div className="flex justify-end md:justify-end">
-                    {hasPermission('TEAMS_DELETE') && (
+                    {isOrgAdmin && (
                       <button
                         type="button"
                         onClick={() => {

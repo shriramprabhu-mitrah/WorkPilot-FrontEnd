@@ -22,7 +22,7 @@ export const TeamTemplate = () => {
   const [status, setStatus] = useState('');
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { mutate: removeUser } = useRemoveUser();
-  const { hasPermission, isAdmin } = usePermissions();
+  const { isOrgAdmin } = usePermissions();
   const { teamMembers, isTeamMembersLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useGetTeamMembers(pageSize, status || undefined);
   const visibleMembers = teamMembers?.data ?? [];
@@ -88,7 +88,7 @@ export const TeamTemplate = () => {
           </div>
 
           {/* Invite Member */}
-          {isAdmin() && (
+          {isOrgAdmin && (
             <WpButton
               size="sm"
               leftIcon={<UserPlus size={16} />}
@@ -165,7 +165,7 @@ export const TeamTemplate = () => {
                 <MemberCard
                   key={member.id}
                   member={memberData}
-                  canManageUsers={hasPermission('TEAMS_DELETE')}
+                  canManageUsers={isOrgAdmin}
                   onDelete={() => {
                     setSelectedMember(memberData);
                     setShowDeleteModal(true);

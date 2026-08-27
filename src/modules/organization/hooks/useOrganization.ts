@@ -7,7 +7,7 @@ import { CountryService } from '@/src/services/common/countryservice';
 import Cookies from 'js-cookie';
 
 // Hook for fetching organization data
-export const useGetOrganization = () => {
+export const useGetOrganization = (enabled = true) => {
   const {
     data: organization,
     isLoading: isOrganizationLoading,
@@ -15,6 +15,7 @@ export const useGetOrganization = () => {
   } = useQuery({
     queryKey: ['organization'],
     queryFn: organizationService.getOrganization,
+    enabled,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes (formerly cacheTime)
   });
