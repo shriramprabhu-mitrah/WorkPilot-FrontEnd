@@ -193,7 +193,7 @@ export const ApiEndpoints = {
   },
 
   Dashboard: {
-    getDashboard: createQueryEndpoint('/{organizationId}/dashboard'),
+    getDashboard: createQueryEndpoint('/{projectId}/dashboard'),
     globalSearch: createQueryEndpoint('/search')
   },
 
@@ -225,23 +225,15 @@ export const ApiEndpoints = {
   TaskAttachment: {
     uploadTaskAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
     listTaskAttachments: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments'),
-    downloadTaskAttachment: createEndpoint(
-      '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/download'
-    ),
-    deleteTaskAttachment: createEndpoint(
-      '/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}'
-    ),
+    downloadTaskAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/download'),
+    deleteTaskAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}'),
   },
 
   CommentAttachment: {
     uploadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
     listCommentAttachments: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
-    downloadCommentAttachment: createEndpoint(
-      '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}/download'
-    ),
-    deleteCommentAttachment: createEndpoint(
-      '/task/{taskId}/comments/{commentId}/attachments/{attachmentId}'
-    ),
+    downloadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments/{attachmentId}/download'),
+    deleteCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments/{attachmentId}'),
   },
 
   TaskStoryRelationship: {
@@ -284,35 +276,19 @@ export const ApiEndpoints = {
   },
 
   UserStoryAttachment: {
-    uploadUserStoryAttachment: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/attachments'
-    ),
-    getUserStoryAttachments: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/attachments'
-    ),
-    downloadUserStoryAttachment: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}/download'
-    ),
-    deleteUserStoryAttachment: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}'
-    ),
+    uploadUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments'),
+    getUserStoryAttachments: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments'),
+    downloadUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}/download'),
+    deleteUserStoryAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/attachments/{attachmentId}'),
   },
 
   UserStoryComment: {
     createComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments'),
     getComments: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments'),
-    getCommentById: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'
-    ),
-    getReplies: createQueryEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/comments/replies/{commentId}'
-    ),
-    updateComment: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'
-    ),
-    deleteComment: createEndpoint(
-      '/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'
-    ),
+    getCommentById: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+    getReplies: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/replies/{commentId}'),
+    updateComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+    deleteComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
   },
 
   Role: {

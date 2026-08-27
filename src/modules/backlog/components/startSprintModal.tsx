@@ -125,14 +125,14 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
           </p>
 
           <p className="mb-2 text-sm text-gray-700 dark:text-slate-300">
-            Required fields are marked with an asterisk <span className="text-red-500">*</span>
+            {/* Required fields are marked with an asterisk <span className="text-red-500"></span> */}
           </p>
 
           <div className="space-y-4">
 
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
-                Duration <span className="text-red-500">*</span>
+                Duration <span className="text-red-500"></span>
               </label>
 
               <select
@@ -150,7 +150,7 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
 
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
-                Start date <span className="text-red-500">*</span>
+                Start date <span className="text-red-500"></span>
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800">
@@ -192,7 +192,7 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
 
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
-                End date <span className="text-red-500">*</span>
+                End date <span className="text-red-500"></span>
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900">

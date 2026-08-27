@@ -98,6 +98,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     user_story_title: task.user_story_title ?? '',
     user_story_id: task.user_story_id ?? '',
     storyPoints: task.storyPoints,
+    estimatedHours: 0,
+    actualHours: 0,
+
     sprint: task.sprint ?? '',
     parent: task.parent ?? '',
     assignee: task.assigneeInitials,
@@ -278,7 +281,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         if (patch.storyPoints !== undefined) {
           payload.story_points = patch.storyPoints;
         }
+        if (patch.estimatedHours !== undefined) {
+          payload.estimated_hours = patch.estimatedHours;
+        }
 
+        if (patch.actualHours !== undefined) {
+          payload.actual_hours = patch.actualHours;
+        }
         if (patch.user_story_id !== undefined) {
           payload.user_story_id = patch.user_story_id;
         }
@@ -311,23 +320,23 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     },
     [task.projectId, task.taskId, taskData, onUpdate]
   );
-   const getInitials = (name: string) =>
-     name
-       .split(' ')
-       .map((n) => n[0])
-       .join('')
-       .toUpperCase()
-       .slice(0, 2);
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
 
-   const AVATAR_COLORS = [
-     colors.avatarBlue,
-     colors.avatarGreen,
-     colors.avatarPink,
-     colors.avatarAmber,
-     colors.avatarIndigo,
-   ];
-   const getMemberColor = (userId: string) =>
-     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
+  const AVATAR_COLORS = [
+    colors.avatarBlue,
+    colors.avatarGreen,
+    colors.avatarPink,
+    colors.avatarAmber,
+    colors.avatarIndigo,
+  ];
+  const getMemberColor = (userId: string) =>
+    AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
   useEffect(() => {
     if (hasFetched.current === task.taskId) return;
@@ -348,22 +357,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           const reporterName = d.reporter_name ?? '';
           const reporterInitials = reporterName
             ? reporterName
-                .split(' ')
-                .filter(Boolean)
-                .map((n: string) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
+              .split(' ')
+              .filter(Boolean)
+              .map((n: string) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
             : '';
           const reporterColor = d.reporter?.color ?? '';
           const initials = assigneeName
             ? assigneeName
-                .split(' ')
-                .filter(Boolean)
-                .map((n: string) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
+              .split(' ')
+              .filter(Boolean)
+              .map((n: string) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
             : task.assigneeInitials;
 
           setTaskData((prev) => ({
@@ -373,7 +382,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
             priority: d.priority
               ? ((d.priority.charAt(0).toUpperCase() +
-                  d.priority.slice(1).toLowerCase()) as Priority)
+                d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
 
             status: d.status ?? prev.status,
@@ -389,7 +398,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             dueDate: d.due_date ? d.due_date.replace(/Z$/, '') : '',
 
             storyPoints: d.story_points ?? prev.storyPoints,
-
+            estimatedHours: d.estimated_hours ?? prev.estimatedHours,
+            actualHours: d.actual_hours ?? prev.actualHours,
             sprint: d.sprint_name ?? prev.sprint,
 
             // Assignee
@@ -442,7 +452,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
- 
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -464,7 +474,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) {}
+    } catch (error) { }
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -508,6 +518,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       toast.error('Failed to delete task');
     }
   };
+  const hasHours =
+    Number(taskData.estimatedHours) > 0 &&
+    Number(taskData.actualHours) > 0;
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -621,21 +634,19 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
           <button
             onClick={() => setMobileTab('content')}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'content'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 dark:text-slate-400'
-            }`}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 dark:text-slate-400'
+              }`}
           >
             Content
           </button>
           <button
             onClick={() => setMobileTab('details')}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              mobileTab === 'details'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 dark:text-slate-400'
-            }`}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 dark:text-slate-400'
+              }`}
           >
             Details
           </button>
@@ -651,9 +662,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             </div>
           )}
           <div
-            className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
-              mobileTab === 'details' ? 'hidden sm:block' : 'block'
-            }`}
+            className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
+              }`}
           >
             {isEditingTask ? (
               <div className="mb-5">
@@ -975,9 +985,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           </div>
 
           <div
-            className={`overflow-y-auto bg-gray-50/60 ${
-              mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-            }`}
+            className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+              }`}
             style={{ width: isMobile ? undefined : rightWidth }}
           >
             <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
@@ -985,22 +994,32 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 Status
               </p>
               <div className="relative" ref={statusMenuRef}>
+
                 <button
                   type="button"
                   disabled={!canEditTask}
-                  onClick={() =>
+                  onClick={() => {
+                    if (!hasHours) {
+                      toast.error('Enter Estimated Hours and Actual Hours first');
+                      return;
+                    }
+
                     setUiState((prev) => ({
                       ...prev,
                       showStatusMenu: !prev.showStatusMenu,
-                    }))
-                  }
+                    }));
+                  }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
                     !canEditTask ? 'cursor-default' : ''
                   }`}
                   style={{
                     color: selectedStatus?.color ?? '#6B7280',
-                    backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
-                    borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
+                    backgroundColor: selectedStatus
+                      ? `${selectedStatus.color}15`
+                      : '#F3F4F6',
+                    borderColor: selectedStatus
+                      ? `${selectedStatus.color}55`
+                      : '#D1D5DB',
                   }}
                 >
                   <span className="flex items-center gap-2">
@@ -1411,9 +1430,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                       setShowUserStoryMenu((v) => !v);
                     }}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                      isUpdatingUserStory || !canEditTask ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
-                    }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${isUpdatingUserStory || !canEditTask ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
+                      }`}
                   >
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.user_story_title || 'No user story'}
@@ -1489,11 +1507,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                                   setIsUpdatingUserStory(false);
                                 }
                               }}
-                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
-                                isUpdatingUserStory
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : 'hover:bg-gray-50'
-                              }`}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${isUpdatingUserStory
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'hover:bg-gray-50'
+                                }`}
                             >
                               <span className="truncate">{story.title}</span>
 
@@ -1549,6 +1566,40 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   value={taskData.storyPoints}
                   onChange={(storyPoints) => handleUpdate({ storyPoints })}
                   disabled={!canEditTask}
+                />
+              </DetailRow>
+              <DetailRow label="Estimated Hours">
+                <EditableNumber
+                  value={taskData.estimatedHours}
+                  onChange={(estimatedHours) =>
+                    handleUpdate({ estimatedHours })
+                  }
+                />
+              </DetailRow>
+
+              <DetailRow label="Actual Hours">
+                <EditableNumber
+                  value={taskData.actualHours}
+                  onChange={(actualHours) =>
+                    handleUpdate({ actualHours })
+                  }
+                />
+              </DetailRow>
+              <DetailRow label="Estimated Hours">
+                <EditableNumber
+                  value={taskData.estimatedHours}
+                  onChange={(estimatedHours) =>
+                    handleUpdate({ estimatedHours })
+                  }
+                />
+              </DetailRow>
+
+              <DetailRow label="Actual Hours">
+                <EditableNumber
+                  value={taskData.actualHours}
+                  onChange={(actualHours) =>
+                    handleUpdate({ actualHours })
+                  }
                 />
               </DetailRow>
               {/* need discussion */}

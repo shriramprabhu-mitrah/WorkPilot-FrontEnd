@@ -1,13 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
-
 import { dashboardService } from '@/src/services/dashboard';
 
-export const useGetDashboard = (organizationId: string, sprintId?: string, enabled = true) => {
+export const useGetDashboard = (
+  projectId: string,
+  sprintId?: string,
+  enabled = true
+) => {
   const query = useQuery({
-    queryKey: ['dashboard', organizationId, sprintId],
-    queryFn: () => dashboardService.getDashboard(organizationId, sprintId),
-    enabled: enabled && !!organizationId,
+    queryKey: ['dashboard', projectId, sprintId ?? 'all'],
+    queryFn: () => dashboardService.getDashboard(projectId, sprintId),
+    enabled: enabled && !!projectId,
+    staleTime: 0,
   });
 
   return {
@@ -23,9 +27,7 @@ export const useGetDashboard = (organizationId: string, sprintId?: string, enabl
 export const useGetRecentActivities = (page = 1, pageSize = 10, enabled = true) => {
   const query = useQuery({
     queryKey: ['recentActivities', page, pageSize],
-
     queryFn: () => dashboardService.getRecentActivities(page, pageSize),
-
     enabled,
   });
 
@@ -33,13 +35,10 @@ export const useGetRecentActivities = (page = 1, pageSize = 10, enabled = true) 
     activities: query.data?.data?.activities ?? [],
     activityUser: query.data?.data?.user,
     meta: query.data?.meta,
-
     isLoadingActivities: query.isLoading,
     isFetchingActivities: query.isFetching,
-
     isError: query.isError,
     error: query.error,
-
     refetchActivities: query.refetch,
   };
 };
