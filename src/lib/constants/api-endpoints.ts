@@ -194,6 +194,7 @@ export const ApiEndpoints = {
 
   Dashboard: {
     getDashboard: createQueryEndpoint('/{organizationId}/dashboard'),
+    globalSearch: createQueryEndpoint('/search')
   },
 
   Audit: {

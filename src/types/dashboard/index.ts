@@ -69,3 +69,31 @@ export interface DashboardActivitiesResponse {
   user: DashboardActivityUser;
   activities: DashboardActivity[];
 }
+
+// Global Search Types
+export interface SearchTaskResult {
+  id: string;
+  key: string;
+  title: string;
+  project_id: string;
+  project_name: string;
+  type: string;
+  priority: string;
+  status: string;
+  assignee_name?: string;
+  description?: string;
+}
+
+export interface SearchProjectResult {
+  id: string;
+  name: string;
+  key: string;
+  description?: string;
+  status: string;
+  organization_id: string;
+}
+
+export interface GlobalSearchResponse {
+  tasks: SearchTaskResult[];
+  projects: SearchProjectResult[];
+}
