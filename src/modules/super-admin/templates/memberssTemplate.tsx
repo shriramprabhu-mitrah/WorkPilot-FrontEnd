@@ -168,7 +168,7 @@ export const MembersTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined', 'Actions'].map(
+                {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined'].map(
                   (col) => (
                     <th
                       key={col}
@@ -246,14 +246,6 @@ export const MembersTemplate = () => {
                         <span className="text-sm text-gray-500 dark:text-slate-400">
                           {new Date(member.joined_at).toLocaleDateString()}
                         </span>
-                      </td>
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <button
-                          className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
-                          title="Remove member"
-                        >
-                          <Trash2 size={16} />
-                        </button>
                       </td>
                     </tr>
                   );
