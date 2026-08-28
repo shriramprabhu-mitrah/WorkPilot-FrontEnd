@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Calendar } from 'lucide-react';
+import { X, Calendar, Loader2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { StartSprintPayload } from '../../sprint/types/sprint';
 
@@ -11,9 +11,15 @@ interface StartSprintModalProps {
     name: string;
   };
   onClose: () => void;
-  onStart: (payload: StartSprintPayload) => void;
+  onStart: (payload: StartSprintPayload) => Promise<void>;
+  isStarting: boolean;
 }
-const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) => {
+const StartSprintModal = ({
+  sprint,
+  onClose,
+  onStart,
+  isStarting,
+}: StartSprintModalProps) => {
   const getToday = () => {
     const date = new Date();
     return date.toISOString().split('T')[0];
@@ -33,6 +39,8 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
   const [startTime, setStartTime] = useState(getCurrentTime());
   const [duration, setDuration] = useState('2');
   const [customEndDate, setCustomEndDate] = useState('');
+  const [isStartingLocal, setIsStartingLocal] = useState(false);
+  // const [isStarting, setIsStarting] = useState(false);
   // const [autoComplete, setAutoComplete] = useState(false);
   const calculateEndDate = () => {
     if (!startDate) return '';
@@ -57,11 +65,17 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
   };
 
   const displayEndDate = formatDisplayDate(endDate);
-  const handleStart = () => {
-    onStart({
-      start_date: startDate,
-      end_date: endDate,
-    });
+  const handleStart = async () => {
+    setIsStartingLocal(true);
+
+    try {
+      await onStart({
+        start_date: startDate,
+        end_date: endDate,
+      });
+    } finally {
+      setIsStartingLocal(false);
+    }
   };
 
   const getTimeInputValue = () => {
@@ -101,7 +115,9 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4 dark:bg-black/60"
-      onClick={onClose}
+      onClick={() => {
+        if (!isStarting) onClose();
+      }}
     >
       <div
         className="w-full max-w-[520px] rounded-xl bg-white shadow-2xl dark:bg-slate-800"
@@ -267,8 +283,14 @@ const StartSprintModal = ({ sprint, onClose, onStart }: StartSprintModalProps) =
           <WpButton type="button" variant="secondary" size="md" onClick={onClose}>
             Cancel
           </WpButton>
-
-          <WpButton type="button" variant="primary" size="md" onClick={handleStart}>
+          <WpButton
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={handleStart}
+            isLoading={isStartingLocal}
+            loadingText="Starting..."
+          >
             Start
           </WpButton>
         </div>

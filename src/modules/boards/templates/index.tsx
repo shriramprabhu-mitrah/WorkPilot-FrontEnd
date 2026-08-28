@@ -290,21 +290,24 @@ const UserStoryRow = ({
               {showStoryPopup &&
                 typeof document !== 'undefined' &&
                 createPortal(
-                  <div
-                    className="fixed z-[99999] w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+<div
+  className="fixed z-[99999] min-w-72 w-fit max-w-[500px] rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
                     style={{
                       left: popupPosition.x + 12,
                       top: popupPosition.y + 12,
                     }}
                   >
                     {/* Name */}
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Name</span>
+{/* Name */}
+<div className="flex items-start justify-between gap-4">
+  <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+    Name
+  </span>
 
-                      <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
-                        {story.title}
-                      </span>
-                    </div>
+  <span className="text-sm font-medium text-gray-800 dark:text-gray-100 text-right break-words">
+    {story.title}
+  </span>
+</div>
                     <div className="space-y-3">
                       {/* Status */}
                       <div className="flex items-center justify-between gap-4">

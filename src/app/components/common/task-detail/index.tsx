@@ -181,6 +181,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const reporterMenuRef = useRef<HTMLDivElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
+  const descriptionEditorRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedDescription, setSavedDescription] = useState('');
@@ -466,25 +467,54 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
-  useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
-        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-      }
-      if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
-        setShowAssigneeMenu(false);
-      }
-      if (reporterMenuRef.current && !reporterMenuRef.current.contains(event.target as Node)) {
-        setShowReporterMenu(false);
-      }
-      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
-        setShowActionMenu(false);
-      }
-    };
+useEffect(() => {
+  const handler = (event: MouseEvent) => {
+    // Close description editor when clicking outside
+    if (
+      descriptionEditorRef.current &&
+      !descriptionEditorRef.current.contains(event.target as Node)
+    ) {
+      setUiState((prev) => ({
+        ...prev,
+        editingDesc: false,
+      }));
+    }
 
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    if (
+      statusMenuRef.current &&
+      !statusMenuRef.current.contains(event.target as Node)
+    ) {
+      setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+    }
+
+    if (
+      assigneeMenuRef.current &&
+      !assigneeMenuRef.current.contains(event.target as Node)
+    ) {
+      setShowAssigneeMenu(false);
+    }
+
+    if (
+      reporterMenuRef.current &&
+      !reporterMenuRef.current.contains(event.target as Node)
+    ) {
+      setShowReporterMenu(false);
+    }
+
+    if (
+      actionMenuRef.current &&
+      !actionMenuRef.current.contains(event.target as Node)
+    ) {
+      setShowActionMenu(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handler);
+
+  return () => {
+    document.removeEventListener('mousedown', handler);
+  };
+}, []);
 
 
 
@@ -735,8 +765,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </p>
 
               {uiState.editingDesc ? (
-                <div>
-                  <WpRichTextEditor
+  <div ref={descriptionEditorRef}>
+    <WpRichTextEditor
                     value={editTaskDescription}
                     onChange={(value) => {
                       setEditTaskDescription(value);
