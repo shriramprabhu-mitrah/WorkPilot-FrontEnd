@@ -184,7 +184,7 @@ export const DraggableUserStory = ({
                 color: story.is_closed ? undefined : isDragging ? colors.primary : undefined,
               }}
             >
-              {story.title}
+              {story.title.length > 40 ? `${story.title.slice(0, 40)}...` : story.title}
             </span>
           </div>
           {isOver && (

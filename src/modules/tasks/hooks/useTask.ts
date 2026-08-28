@@ -569,10 +569,7 @@ export const useAssignTaskToMe = () => {
     }) => taskService.assignTaskToMe(projectId, taskId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks', variables.projectId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['task', variables.taskId],
+        queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
       });
     },
   });

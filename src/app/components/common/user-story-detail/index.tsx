@@ -67,6 +67,7 @@ import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChildTasksPanel } from './ChildTasksPanel';
 import usePermissions from '@/src/hooks/usePermissions';
+import { useAppSelector } from '@/src/store';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -190,6 +191,9 @@ export const UserStoryDetailDrawer = ({
   const userStoryId = currentUserStory.id;
 
   const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
+  const currentUser = useAppSelector((state) => state.user);
+
+  
 
   const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
     useUploadUserStoryAttachment(projectId);
@@ -215,6 +219,7 @@ export const UserStoryDetailDrawer = ({
     reporterName: string;
     sprintId: string;
     sprintName: string;
+    assigneeColor?: string;
     start_date: string;
     due_date: string;
     color?: string;
@@ -239,6 +244,7 @@ export const UserStoryDetailDrawer = ({
       storyPoints: story.story_points ?? 0,
       assigneeId: story.assignee_id ?? '',
       color: story.color ?? '',
+      assigneeColor: story.assignee?.color ?? '',
       assigneeName,
       reporterId: story.reporter_id ?? story.reporter?.id ?? '',
       reporterName,
@@ -288,7 +294,7 @@ export const UserStoryDetailDrawer = ({
       status: editableFields.status,
       storyPoints: editableFields.storyPoints,
       assigneeId: editableFields.assigneeId,
-      assigneeColor: currentUserStory?.assignee?.color,
+      // assigneeColor: currentUserStory?.assignee?.color,
       assigneeName,
       assigneeInitials,
       reporterId: editableFields.reporterId,
@@ -299,6 +305,7 @@ export const UserStoryDetailDrawer = ({
       sprintName: editableFields.sprintName,
       start_date: editableFields.start_date,
       due_date: editableFields.due_date,
+      assigneeColor: editableFields.assigneeColor || currentUserStory?.assignee?.color,
     };
   }, [
     editableFields,
@@ -580,6 +587,19 @@ export const UserStoryDetailDrawer = ({
     },
     [currentUserStory.project_id, currentUserStory.id, editableFields, queryClient]
   );
+const handleAssignToMe = () => {
+  if (!currentUser?.userid) {
+    toast.error('Unable to determine current user');
+    return;
+  }
+  const displayName = currentUser.name || currentUser.username || currentUser.email || '';
+  const color = currentUser.color || colors.avatarBlue;
+  handleUpdate({
+    assigneeId: currentUser.userid,
+    assigneeName: displayName,
+    assigneeColor: color,
+  });
+};
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
@@ -1040,7 +1060,7 @@ export const UserStoryDetailDrawer = ({
                 </div>
               ) : (
                 <h1
-                  className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
+                  className="mb-5 break-words text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
                   title={userStoryData.title}
                 >
                   {userStoryData.title}
@@ -1930,7 +1950,11 @@ export const UserStoryDetailDrawer = ({
                                 onClick={async () => {
                                   setShowAssigneeMenu(false);
                                   setAssigneeSearch('');
-                                  await handleUpdate({ assigneeId: m.user_id });
+                                  await handleUpdate({
+                                    assigneeId: m.user_id,
+                                    assigneeName: displayName,
+                                    assigneeColor: color,
+                                  });
                                 }}
                                 className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 text-gray-900"
                               >
@@ -1962,6 +1986,16 @@ export const UserStoryDetailDrawer = ({
                       </div>
                     )}
                   </div>
+                  {canEditUserStory && userStoryData.assigneeId !== currentUser?.userid && (
+                    <WpButton
+                      variant="ghost"
+                      onClick={handleAssignToMe}
+                      disabled={isSaving}
+                      className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                    >
+                      {isSaving ? 'Assigning...' : 'Assign to me'}
+                    </WpButton>
+                  )}
                 </DetailRow>
 
                 <DetailRow label="Reporter">

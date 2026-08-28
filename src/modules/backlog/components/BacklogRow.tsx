@@ -93,8 +93,13 @@ export const BacklogRow = ({
         {task.key || '-'}
       </span>
 
-      <span className="ml-2 min-w-0 flex-1 truncate text-sm font-semibold text-gray-800 dark:text-slate-200">
-        {task.title}
+      <span
+        className="ml-2 min-w-0 flex-1 truncate text-sm font-semibold text-gray-800 dark:text-slate-200"
+        title={task.title ?? ''}
+      >
+        {(task.title ?? '').length > 50
+          ? `${(task.title ?? '').slice(0, 50)}...`
+          : (task.title ?? '')}
       </span>
 
       {/* Assignee */}
