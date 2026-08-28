@@ -579,6 +579,24 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
   const [showCodeToolbar, setShowCodeToolbar] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+ const toolbarRef = useRef<HTMLDivElement>(null);
+
+ useEffect(() => {
+   const anyPopupOpen = showColorPicker || showCodeToolbar || showEmojiPicker || showLinkPopup;
+   if (!anyPopupOpen) return;
+   const handleClickOutside = (event: MouseEvent) => {
+     if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+       setShowColorPicker(false);
+       setShowCodeToolbar(false);
+       setShowEmojiPicker(false);
+       setShowLinkPopup(false);
+     }
+   };
+   document.addEventListener('mousedown', handleClickOutside);
+   return () => {
+     document.removeEventListener('mousedown', handleClickOutside);
+   };
+ }, [showColorPicker, showCodeToolbar, showEmojiPicker, showLinkPopup]);
 
   const handleInsertLink = () => {
     const url = linkUrl.trim();
@@ -670,6 +688,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
 
   return (
     <div
+      ref={toolbarRef}
       className="
         relative z-20
         flex min-h-12
@@ -680,7 +699,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         px-3 py-2
       "
     >
-      <ToolbarButton title="Text style" onClick={() => { }}>
+      <ToolbarButton title="Text style" onClick={() => {}}>
         <span className="text-sm font-medium">T</span>
         <ChevronDown size={12} className="ml-0.5" />
       </ToolbarButton>
@@ -983,11 +1002,11 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         <Redo2 size={16} />
       </ToolbarButton>
 
-      <ToolbarButton title="More" onClick={() => { }}>
+      <ToolbarButton title="More" onClick={() => {}}>
         <MoreHorizontal size={17} />
       </ToolbarButton>
 
-      <ToolbarButton title="Voice input" onClick={() => { }}>
+      <ToolbarButton title="Voice input" onClick={() => {}}>
         <Mic size={16} />
       </ToolbarButton>
 

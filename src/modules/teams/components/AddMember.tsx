@@ -2,7 +2,7 @@
 import { X } from 'lucide-react';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
-import { useAddProjectMembers } from '@/src/modules/project/hooks/useProject';
+import { useAddProjectMembers, useUpdateProjectRole } from '@/src/modules/project/hooks/useProject';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { AddProjectMembersPayload } from '@/src/types/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
@@ -42,9 +42,28 @@ const MembersSettings = () => {
     pageSize
   );
   const { isOrgAdmin } = usePermissions();
+  const { updateProjectRoleAsync, isUpdatingProjectRole } = useUpdateProjectRole();
 
   const members = projectMembers?.data ?? [];
   const visibleMembers = showAll ? members : members.slice(0, 10);
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+
+  const handleRoleChange = async (userId: string, roleId: string) => {
+    if (!projectId || !userId || !roleId) return;
+    setUpdatingMemberId(userId);
+    try {
+      await updateProjectRoleAsync({
+        project_id: projectId,
+        user_id: userId,
+        role_id: roleId,
+      });
+      await refetchProjectMembers();
+    } catch (error) {
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
   const memberOptions = useMemo(() => {
     if (!users || users.length === 0) return [];
     return users.map((user) => ({
@@ -187,6 +206,9 @@ const MembersSettings = () => {
                 .toUpperCase()
                 .slice(0, 2);
               const isMemberAdmin = member.role?.toLowerCase().includes('admin');
+              const currentRole = roles.find(
+                (role) => role.name.toLowerCase() === member.role?.toLowerCase()
+              );
 
               return (
                 <div
@@ -237,13 +259,15 @@ const MembersSettings = () => {
                       Role:
                     </span>
                     <select
-                      value={member.role ?? ''}
-                      onChange={() => {}}
-                      disabled={!isOrgAdmin || isRolesLoading}
-                      className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:opacity-60 disabled:cursor-not-allowed"
+                      value={currentRole?.id ?? ''}
+                      onChange={(e) => handleRoleChange(member.user_id, e.target.value)}
+                      disabled={
+                        !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
+                      }
+                      className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {roles.map((role) => (
-                        <option key={role.id} value={role.name}>
+                        <option key={role.id} value={role.id}>
                           {role.name}
                         </option>
                       ))}

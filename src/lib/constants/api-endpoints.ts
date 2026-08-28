@@ -220,6 +220,7 @@ export const ApiEndpoints = {
     updateComment: createEndpoint('/task/{taskId}/comments/{commentId}'),
     deleteComment: createEndpoint('/task/{taskId}/comments/{commentId}'),
     getReplies: createQueryEndpoint('/task/{taskId}/comments/replies/{commentId}'),
+    assignToMe: createEndpoint('/projects/{projectId}/tasks/{taskId}/assign-to-me'),
   },
 
   TaskAttachment: {

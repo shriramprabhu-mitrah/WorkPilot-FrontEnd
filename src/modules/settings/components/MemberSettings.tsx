@@ -15,7 +15,7 @@ import TeamMemberCardSkeleton from '../../teams/components/TeamSkeleton';
 
 export const MemberSettings = () => {
   const [page] = useState(1);
-  const pageSize = '10';
+  const pageSize = 10;
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

@@ -39,7 +39,7 @@ import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from './components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 // adjust path to wherever StatusModal.tsx actually lives relative to this file
-import { useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
+import { useAssignTaskToMe, useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -140,6 +140,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
   const [selecteddStatus, setSelecteddStatus] = useState<CustomStatus | null>(null);
+  const [isAssignedToMe, setIsAssignedToMe] = useState(false);
+
+  const { mutate: assignTaskToMe, isPending: isAssigning } = useAssignTaskToMe();
+  
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     task.projectId ?? '',
     {
@@ -200,6 +204,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
+  const handleAssignToMe = () => {
+    if (!task.projectId || !task.taskId) return;
+    setIsAssignedToMe(true);
+    assignTaskToMe(
+      {
+        projectId: task.projectId,
+        taskId: task.taskId,
+      },
+      {
+        onError: () => {
+          setIsAssignedToMe(false);
+          toast.error('Failed to assign task');
+        },
+      }
+    );
+  };
 
   interface Attachment {
     url?: string;
@@ -1261,6 +1281,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     </div>
                   )}
                 </div>
+                <WpButton
+                  variant="ghost"
+                  onClick={handleAssignToMe}
+                  disabled={isAssigning || isAssignedToMe}
+                  className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                >
+                  {isAssignedToMe ? 'Assigned to me' : 'Assign to me'}
+                </WpButton>
               </DetailRow>
 
               <DetailRow label="Reporter">

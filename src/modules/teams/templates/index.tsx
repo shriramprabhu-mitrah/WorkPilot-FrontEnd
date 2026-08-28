@@ -10,47 +10,37 @@ import { Member } from '@/src/types/teams';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '../components/TeamSkeleton';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
+import { Pagination } from '@/src/app/components/common/pagination/pagination';
 
 export const TeamTemplate = () => {
-  const pageSize = 8;
-
+ const [page, setPage] = useState(1);
+ const [pageSize, setPageSize] = useState(10);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [status, setStatus] = useState('');
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
-  const { teamMembers, isTeamMembersLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useGetTeamMembers(pageSize, status || undefined);
+  const { teamMembers, isTeamMembersLoading, isTeamMembersFetching } = useGetTeamMembers(
+    page,
+    pageSize,
+    status || undefined
+  );
   const visibleMembers = teamMembers?.data ?? [];
   const { user, isUserLoading } = useGetUserById(selectedUserId);
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
   const projects = userProjects?.data?.project ?? [];
 
-  // Infinite scroll
-  useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element || !hasNextPage) {
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      {
-        threshold: 0.1,
-      }
-    );
-    observer.observe(element);
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   if (isTeamMembersLoading) {
     return <TeamMemberCardSkeleton />;
@@ -156,8 +146,10 @@ export const TeamTemplate = () => {
                   .toUpperCase()
                   .slice(0, 4),
                 avatarColor: member?.color || '',
-                tasks: 0,
-                done: 0,
+                tasks: member.total_assigned ?? 0,
+                done: member.completed ?? 0,
+                inProgress: member.in_progress ?? 0,
+                completionPercentage: member.completion_percentage ?? 0,
                 status: member?.status,
               };
 
@@ -198,13 +190,13 @@ export const TeamTemplate = () => {
               </div>
             )}
           </div>
-
-          {/* Infinite Scroll */}
-          <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center">
-            {isFetchingNextPage && (
-              <p className="text-sm text-gray-500 dark:text-slate-400">Loading more members...</p>
-            )}
-          </div>
+          <Pagination
+            meta={teamMembers?.meta}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </div>
       </div>
 
