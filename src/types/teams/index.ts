@@ -6,8 +6,10 @@ export interface Member {
   role: string;
   initials: string;
   avatarColor: string;
-  tasks: number;
-  done: number;
+   tasks?: number;
+  done?: number;
+  inProgress?: number;
+  completionPercentage?: number;
   status?:string
 }
 export interface RoleCard {
@@ -30,6 +32,10 @@ export interface TeamMember {
   updated_at: string;
   color?:string
   status?:string
+  total_assigned?: number;
+  completed?: number;
+  in_progress?: number;
+  completion_percentage?: number;
 }
 export interface ProjectMember {
   user_id: string;

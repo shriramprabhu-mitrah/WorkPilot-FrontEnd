@@ -54,35 +54,22 @@ export const useAddProjectMembers = () => {
   };
 };
 
-export const useGetTeamMembers = (pageSize: number, status?: string) => {
+export const useGetTeamMembers = (page: number, pageSize: number, status?: string) => {
   const {
     data,
     isLoading: isTeamMembersLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
+    isFetching: isTeamMembersFetching,
     refetch: refetchTeamMembers,
-  } = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.TEAM_MEMBERS, pageSize, status],
-    queryFn: ({ pageParam }) => teamService.getTeamMembers(pageParam, pageSize, status),
-
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage?.data || lastPage.data.length < pageSize) {
-        return undefined;
-      }
-      return allPages.length + 1;
-    },
+  } = useQuery({
+    queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize, status],
+    queryFn: () => teamService.getTeamMembers(page, pageSize, status),
+    placeholderData: (previousData) => previousData,
   });
-  const teamMembers = {
-    data: data?.pages.flatMap((page) => page.data ?? []) ?? [],
-  };
+
   return {
-    teamMembers,
+    teamMembers: data,
     isTeamMembersLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
+    isTeamMembersFetching,
     refetchTeamMembers,
   };
 };

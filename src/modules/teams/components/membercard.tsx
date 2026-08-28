@@ -20,8 +20,8 @@ export const MemberCard = ({
   onClick,
   isLast = false,
 }: MemberCardProps) => {
-  const pct = member.tasks === 0 ? 0 : Math.round((member.done / member.tasks) * 100);
-  const open = member.tasks - member.done;
+  const pct = member.completionPercentage ?? 0;
+  const open = member.inProgress ?? 0;
 
   return (
     <div
@@ -88,17 +88,12 @@ export const MemberCard = ({
         <div className="min-w-0">
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-xs text-gray-500 dark:text-slate-400">Progress</span>
-            <span
-              className="text-xs font-semibold"
-              style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}
-            >
-              {pct}%
-            </span>
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{pct}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">
             <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${pct}%`, backgroundColor: member.avatarColor }}
+              className="h-full rounded-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${pct}%` }}
             />
           </div>
         </div>
@@ -172,18 +167,10 @@ export const MemberCard = ({
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-xs text-gray-500 dark:text-slate-400">Progress</span>
-            <span
-              className="text-xs font-semibold"
-              style={{ color: pct > 0 ? member.avatarColor : colors.gray500 }}
-            >
-              {pct}%
-            </span>
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{pct}%</span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${pct}%`, backgroundColor: member.avatarColor }}
-            />
+            <div className="h-full rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
           </div>
         </div>
 

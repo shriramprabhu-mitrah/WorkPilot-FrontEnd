@@ -96,6 +96,8 @@ const processResponse = <T>(
     data = data.result;
   }
 
+   const meta = response?.data?.meta ?? data?.meta;
+
   // Show success toast if requested
   if (options?.showSuccessToast) {
     const successMessage = options?.successMessage ?? response?.data?.message ?? 'Success!';
@@ -104,6 +106,7 @@ const processResponse = <T>(
 
   return {
     data,
+    meta,
     message: response?.data?.message,
     status: response.status,
   };

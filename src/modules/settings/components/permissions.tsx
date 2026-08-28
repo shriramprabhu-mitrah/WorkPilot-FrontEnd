@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { WpInput } from '@/src/app/components/common/input';
 import { useGetRoles, useCreateRole, useUpdateRole, useDeleteRole } from '../hooks/useSettings';
 import { Role, RolePermissions } from '@/src/types/settings';
@@ -87,7 +87,7 @@ const RoleList = ({
 }: RoleListProps) => {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">
+      <div className=" overflow-y-auto">
         {roles.map((role) => {
           const isSelected = selectedRole?.id === role.id;
 
@@ -100,7 +100,7 @@ const RoleList = ({
                 setExpandedSection(null);
                 setSidebarOpen(false);
               }}
-              className={`group relative flex h-[52px] w-full items-center justify-between border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${
+              className={`group relative flex h-[50px] w-full items-center justify-between border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${
                 isSelected
                   ? 'bg-white font-semibold text-blue-600 dark:bg-slate-800 dark:text-blue-400'
                   : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
@@ -153,34 +153,47 @@ const RoleList = ({
             ref={newRoleRef}
             className="rounded-lg border border-blue-200 bg-white p-2 shadow dark:border-blue-700 dark:bg-slate-800"
           >
-            <WpInput
-              type="text"
-              autoFocus
-              value={newRoleName}
-              placeholder="Role name"
-              error={roleError}
-              onChange={(e) => {
-                setNewRoleName(e.target.value);
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <WpInput
+                  type="text"
+                  autoFocus
+                  value={newRoleName}
+                  placeholder="Role name"
+                  error={roleError}
+                  onChange={(e) => {
+                    setNewRoleName(e.target.value);
 
-                if (roleError) {
-                  setRoleError('');
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddRole();
-                }
+                    if (roleError) {
+                      setRoleError('');
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddRole();
+                    }
 
-                if (e.key === 'Escape') {
-                  setIsAddingRole(false);
-                  setNewRoleName('');
-                  setRoleError('');
-                }
-              }}
-              className="h-[34px] rounded-md px-3 py-0 text-[13px]"
-              wrapperClassName="mb-0"
-            />
+                    if (e.key === 'Escape') {
+                      setIsAddingRole(false);
+                      setNewRoleName('');
+                      setRoleError('');
+                    }
+                  }}
+                  className="h-[34px] rounded-md px-3 py-0 text-[13px]"
+                  wrapperClassName="mb-0"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddRole}
+                className="mt-0.5 flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                title="Create role"
+              >
+                <CornerDownLeft size={16} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -290,6 +303,9 @@ const Permissions = () => {
   };
 
   const isPermissionEnabled = (section: PermissionSection, action: PermissionAction): boolean => {
+    if (action.key === 'view') {
+      return true;
+    }
     const sectionPerms = localPermissions[section.sectionKey] as
       Record<string, boolean> | undefined;
     return sectionPerms?.[action.key] ?? false;
@@ -609,11 +625,16 @@ const Permissions = () => {
                                 type="button"
                                 role="switch"
                                 aria-checked={isEnabled}
+                                disabled={action.key === 'view'}
                                 onClick={() => handlePermissionToggle(section, action)}
                                 className={`relative ml-auto h-5 w-9 shrink-0 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                                   isEnabled
                                     ? 'border-blue-600 bg-blue-600'
                                     : 'border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700'
+                                } ${
+                                  action.key === 'view'
+                                    ? 'cursor-not-allowed opacity-70'
+                                    : 'cursor-pointer'
                                 }`}
                               >
                                 <span
