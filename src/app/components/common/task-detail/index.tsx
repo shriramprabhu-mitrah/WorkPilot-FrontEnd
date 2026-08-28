@@ -113,6 +113,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     reporterColor: task.reporterColor ?? '',
   });
   // const [members, setMembers] = useState<ProjectMember[]>([]);
+  const [estimatedHoursInput, setEstimatedHoursInput] = useState('');
+  const [estimatedMinutesInput, setEstimatedMinutesInput] = useState('');
+  const [actualHoursInput, setActualHoursInput] = useState('');
+  const [actualMinutesInput, setActualMinutesInput] = useState('');
 
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [showReporterMenu, setShowReporterMenu] = useState(false);
@@ -335,6 +339,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     colors.avatarAmber,
     colors.avatarIndigo,
   ];
+
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
@@ -351,6 +356,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         const taskRes = await taskService.getTaskById(task.projectId, task.taskId);
         if (taskRes.data) {
           const d = taskRes.data;
+
+          const estimated = Number(d.estimated_hours ?? 0);
+          const actual = Number(d.actual_hours ?? 0);
+
+          setEstimatedHoursInput(String(Math.floor(estimated)));
+          setEstimatedMinutesInput(String(Math.round((estimated % 1) * 60)));
+
+          setActualHoursInput(String(Math.floor(actual)));
+          setActualMinutesInput(String(Math.round((actual % 1) * 60)));
           const apiDescription = d.description ?? '';
           const assigneeName = d.assignee_name ?? '';
           const reporterId = d.reporter_id ?? '';
@@ -1009,9 +1023,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       showStatusMenu: !prev.showStatusMenu,
                     }));
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
-                    !canEditTask ? 'cursor-default' : ''
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
+                    }`}
                   style={{
                     color: selectedStatus?.color ?? '#6B7280',
                     backgroundColor: selectedStatus
@@ -1095,9 +1108,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   <button
                     disabled={!canEditTask}
                     onClick={() => setShowAssigneeMenu((v) => !v)}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                    }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                      }`}
                   >
                     {taskData.assigneeId ? (
                       <AssigneeAvatar
@@ -1256,9 +1268,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   <button
                     disabled={!canEditTask}
                     onClick={() => setShowReporterMenu((v) => !v)}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                    }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                      }`}
                   >
                     {taskData.reporterId ? (
                       <AssigneeAvatar
@@ -1569,38 +1580,109 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 />
               </DetailRow>
               <DetailRow label="Estimated Hours">
-                <EditableNumber
-                  value={taskData.estimatedHours}
-                  onChange={(estimatedHours) =>
-                    handleUpdate({ estimatedHours })
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  {/* Hours */}
+                  <input
+                    type="number"
+                    min={0}
+                    value={estimatedHoursInput}
+                    onChange={(e) => {
+                      const hours = Number(e.target.value) || 0;
+                      setEstimatedHoursInput(e.target.value);
+
+                      const minutes = Number(estimatedMinutesInput) || 0;
+
+                      handleUpdate({
+                        estimatedHours: hours + minutes / 60,
+                      });
+                    }}
+                    className="w-14 px-2 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600"
+                    placeholder="Hrs"
+                    disabled={!canEditTask}
+                  />
+
+                  <span className="text-sm text-gray-500">h</span>
+
+                  {/* Minutes */}
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={estimatedMinutesInput}
+                    onChange={(e) => {
+                      const minutes = Math.min(
+                        59,
+                        Math.max(0, Number(e.target.value) || 0)
+                      );
+
+                      setEstimatedMinutesInput(e.target.value);
+
+                      const hours = Number(estimatedHoursInput) || 0;
+
+                      handleUpdate({
+                        estimatedHours: hours + minutes / 60,
+                      });
+                    }}
+                    className="w-14 px-2 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600"
+                    placeholder="Min"
+                    disabled={!canEditTask}
+                  />
+
+                  <span className="text-sm text-gray-500">m</span>
+                </div>
               </DetailRow>
 
               <DetailRow label="Actual Hours">
-                <EditableNumber
-                  value={taskData.actualHours}
-                  onChange={(actualHours) =>
-                    handleUpdate({ actualHours })
-                  }
-                />
-              </DetailRow>
-              <DetailRow label="Estimated Hours">
-                <EditableNumber
-                  value={taskData.estimatedHours}
-                  onChange={(estimatedHours) =>
-                    handleUpdate({ estimatedHours })
-                  }
-                />
-              </DetailRow>
+                <div className="flex items-center gap-2">
+                  {/* Hours */}
+                  <input
+                    type="number"
+                    min={0}
+                    value={actualHoursInput}
+                    onChange={(e) => {
+                      const hours = Number(e.target.value) || 0;
+                      setActualHoursInput(e.target.value);
 
-              <DetailRow label="Actual Hours">
-                <EditableNumber
-                  value={taskData.actualHours}
-                  onChange={(actualHours) =>
-                    handleUpdate({ actualHours })
-                  }
-                />
+                      const minutes = Number(actualMinutesInput) || 0;
+
+                      handleUpdate({
+                        actualHours: hours + minutes / 60,
+                      });
+                    }}
+                    className="w-14 px-2 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600"
+                    placeholder="Hrs"
+                    disabled={!canEditTask}
+                  />
+
+                  <span className="text-sm text-gray-500">h</span>
+
+                  {/* Minutes */}
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={actualMinutesInput}
+                    onChange={(e) => {
+                      const minutes = Math.min(
+                        59,
+                        Math.max(0, Number(e.target.value) || 0)
+                      );
+
+                      setActualMinutesInput(e.target.value);
+
+                      const hours = Number(actualHoursInput) || 0;
+
+                      handleUpdate({
+                        actualHours: hours + minutes / 60,
+                      });
+                    }}
+                    className="w-14 px-2 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600"
+                    placeholder="Min"
+                    disabled={!canEditTask}
+                  />
+
+                  <span className="text-sm text-gray-500">m</span>
+                </div>
               </DetailRow>
               {/* need discussion */}
               {/* <DetailRow label="Parent">

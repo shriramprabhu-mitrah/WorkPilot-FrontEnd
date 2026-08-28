@@ -205,7 +205,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const getInitials = (name: string) => {
@@ -603,9 +603,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
+                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </button>
                   </div>

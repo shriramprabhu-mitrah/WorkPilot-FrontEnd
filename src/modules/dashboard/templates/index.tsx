@@ -16,7 +16,7 @@ import { ProjectSelectionPopover } from '@/src/app/components/common/project-sel
 import { useGetProjectsWithSprints } from '../../project/hooks/useProject';
 import DashboardSkeleton from '../components/dashboardSkeletons';
 import { colors } from '@/src/styles/colors';
-import type { SprintBurndown } from '@/src/types/dashboard';
+import type { SprintBurndownBlock } from '@/src/types/dashboard';
 
 const POPOVER_DISMISSED_KEY = 'project-selection-popover-dismissed';
 const CREATE_PROJECT_POPOVER_DISMISSED_KEY = 'create-project-popover-dismissed';
@@ -47,10 +47,11 @@ export const DashBoardTemplate = () => {
   const teamWorkload = Array.isArray(dashboard?.team_workload)
     ? dashboard.team_workload
     : [];
-  const burndownSprints: SprintBurndown[] = Array.isArray(sprintBurndown)
+  // Normalize: with sprint_id → single object; without → array
+  const burndownSprints: SprintBurndownBlock[] = Array.isArray(sprintBurndown)
     ? sprintBurndown
-    : sprintBurndown
-      ? [sprintBurndown]
+    : sprintBurndown && typeof sprintBurndown === 'object' && 'sprint_id' in sprintBurndown
+      ? [sprintBurndown as SprintBurndownBlock]
       : [];
   const teamLabels = teamWorkload.map((m) => m.full_name);
 

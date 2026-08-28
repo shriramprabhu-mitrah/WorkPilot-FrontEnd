@@ -59,7 +59,9 @@ interface FormValues {
   dueDate: string;
   storyPoints: string;
   estimatedHours: string;
+  estimatedMinutes: string;
   actualHours: string;
+  actualMinutes: string;
 }
 
 const AddTaskModal = ({
@@ -92,7 +94,9 @@ const AddTaskModal = ({
       dueDate: '',
       storyPoints: '',
       estimatedHours: '',
+      estimatedMinutes: '',
       actualHours: '',
+      actualMinutes: '',
     },
   });
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
@@ -215,8 +219,11 @@ const AddTaskModal = ({
         payload.status_id = data.status_id;
       }
 
-      if (data.estimatedHours) {
-        payload.estimated_hours = Number(data.estimatedHours);
+      if (data.estimatedHours || data.estimatedMinutes) {
+        const hours = Number(data.estimatedHours) || 0;
+        const minutes = Number(data.estimatedMinutes) || 0;
+
+        payload.estimated_hours = hours + minutes / 60;
       }
 
       if (data.description.trim()) {
@@ -239,8 +246,11 @@ const AddTaskModal = ({
         payload.story_points = Number(data.storyPoints);
       }
 
-      if (data.actualHours) {
-        payload.actual_hours = Number(data.actualHours);
+      if (data.actualHours || data.actualMinutes) {
+        const hours = Number(data.actualHours) || 0;
+        const minutes = Number(data.actualMinutes) || 0;
+
+        payload.actual_hours = hours + minutes / 60;
       }
       const response = await createTaskAsync(payload);
       const createdTask = response.data?.[0];
@@ -260,7 +270,7 @@ const AddTaskModal = ({
         });
       }
       onClose();
-    } catch (error) {}
+    } catch (error) { }
   };
   const taskNameRegister = register('taskName');
   const descriptionRegister = register('description');
@@ -472,34 +482,95 @@ const AddTaskModal = ({
                 }
               }}
             />
-            <WpInput
-              id="estimatedHours"
-              label="Estimated Hours"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="0"
-              {...estimatedHoursRegister}
-              error={errors.estimatedHours?.message}
-              onChange={(e) => {
-                estimatedHoursRegister.onChange(e);
-                clearFieldError('estimatedHours');
-              }}
-            />
-            <WpInput
-              id="actualHours"
-              label="Actual Hours"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="0"
-              {...actualHoursRegister}
-              error={errors.actualHours?.message}
-              onChange={(e) => {
-                actualHoursRegister.onChange(e);
-                clearFieldError('actualHours');
-              }}
-            />
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-slate-300">
+                Estimated Hours
+              </label>
+
+              <div className="flex items-end gap-2">
+                <div className="flex flex-col gap-1">
+
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    {...register('estimatedHours')}
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
+                  h
+                </span>
+
+                <div className="flex flex-col gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="0"
+                    {...register('estimatedMinutes')}
+                    className="w-16 mt-1 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
+                  m
+                </span>
+              </div>
+
+              {errors.estimatedHours?.message && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.estimatedHours.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-slate-300">
+              Actual Hours
+            </label>
+
+            <div className="flex items-end gap-2">
+              <div className="flex flex-col gap-1">
+
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  {...register('actualHours')}
+                  className="w-16 mt-1 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                />
+              </div>
+
+              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
+                h
+              </span>
+
+              <div className="flex flex-col gap-1">
+
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="0"
+                  {...register('actualMinutes')}
+                  className="w-16 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                />
+              </div>
+
+              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
+                m
+              </span>
+            </div>
+
+            {errors.actualHours?.message && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.actualHours.message}
+              </p>
+            )}
           </div>
         </div>
 

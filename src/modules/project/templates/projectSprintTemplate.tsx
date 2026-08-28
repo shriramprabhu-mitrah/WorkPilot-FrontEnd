@@ -81,10 +81,10 @@ const ProjectSprintTemplate = () => {
       tasks: '0',
       date: selectedApiProject.created_at
         ? new Date(selectedApiProject.created_at).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
         : '',
       owner: selectedApiProject?.creator || 'Unassigned',
     };

@@ -6,31 +6,28 @@ export interface DashboardOverview {
   due_soon: number;
 }
 
-export interface DashboardTaskStatusItem {
-  color: string;
-  count: number;
-}
-
-export interface DashboardTaskStatusItem {
+// Each status entry now has color + count
+export interface DashboardTaskStatusEntry {
   color: string;
   count: number;
 }
 
 export interface DashboardTaskStatus {
-  [status: string]: DashboardTaskStatusItem;
+  [status: string]: DashboardTaskStatusEntry;
 }
 
-export interface SprintBurndownData {
+export interface SprintBurndown {
   day: number;
   date: string;
   ideal_hours: number;
   actual_hours: number;
 }
 
-export interface SprintBurndown {
+// A single sprint's burndown block
+export interface SprintBurndownBlock {
   sprint_id: string;
   sprint_name: string;
-  data: SprintBurndownData[];
+  data: SprintBurndown[];
 }
 
 export interface TeamWorkload {
@@ -43,10 +40,11 @@ export interface TeamWorkload {
   points: number;
 }
 
+// sprint_burndown is an object when sprint_id is passed, array when not
 export interface DashboardData {
   overview: DashboardOverview;
   task_status: DashboardTaskStatus;
-  sprint_burndown: SprintBurndown[] | SprintBurndown | null;
+  sprint_burndown: SprintBurndownBlock | SprintBurndownBlock[] | null;
   team_workload: TeamWorkload[];
 }
 
@@ -77,31 +75,4 @@ export interface DashboardActivity {
 export interface DashboardActivitiesResponse {
   user: DashboardActivityUser;
   activities: DashboardActivity[];
-}
-// Global Search Types
-export interface SearchTaskResult {
-  id: string;
-  key: string;
-  title: string;
-  project_id: string;
-  project_name: string;
-  type: string;
-  priority: string;
-  status: string;
-  assignee_name?: string;
-  description?: string;
-}
-
-export interface SearchProjectResult {
-  id: string;
-  name: string;
-  key: string;
-  description?: string;
-  status: string;
-  organization_id: string;
-}
-
-export interface GlobalSearchResponse {
-  tasks: SearchTaskResult[];
-  projects: SearchProjectResult[];
 }
