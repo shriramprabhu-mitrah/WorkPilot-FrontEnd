@@ -47,21 +47,45 @@ const MembersSettings = () => {
   const members = projectMembers?.data ?? [];
   const visibleMembers = showAll ? members : members.slice(0, 10);
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const [pendingRoleChange, setPendingRoleChange] = useState<{
+    userId: string;
+    userName: string;
+    roleId: string;
+    roleName: string;
+  } | null>(null);
+  const [showRoleConfirmModal, setShowRoleConfirmModal] = useState(false);
 
-  const handleRoleChange = async (userId: string, roleId: string) => {
-    if (!projectId || !userId || !roleId) return;
+  const handleRoleSelect = (userId: string, userName: string, roleId: string, roleName: string) => {
+    setPendingRoleChange({ userId, userName, roleId, roleName });
+    setShowRoleConfirmModal(true);
+  };
+
+  const handleConfirmRoleChange = async () => {
+    if (!pendingRoleChange || !projectId) return;
+
+    const { userId, roleId } = pendingRoleChange;
+
     setUpdatingMemberId(userId);
+    setShowRoleConfirmModal(false);
+
     try {
       await updateProjectRoleAsync({
         project_id: projectId,
         user_id: userId,
         role_id: roleId,
       });
+
       await refetchProjectMembers();
     } catch (error) {
     } finally {
       setUpdatingMemberId(null);
+      setPendingRoleChange(null);
     }
+  };
+
+  const handleCancelRoleChange = () => {
+    setShowRoleConfirmModal(false);
+    setPendingRoleChange(null);
   };
 
   const memberOptions = useMemo(() => {
@@ -260,7 +284,16 @@ const MembersSettings = () => {
                     </span>
                     <select
                       value={currentRole?.id ?? ''}
-                      onChange={(e) => handleRoleChange(member.user_id, e.target.value)}
+                      onChange={(e) => {
+                        const selectedRole = roles.find((r) => r.id === e.target.value);
+                        if (!selectedRole) return;
+                        handleRoleSelect(
+                          member.user_id,
+                          memberName,
+                          selectedRole.id,
+                          selectedRole.name
+                        );
+                      }}
                       disabled={
                         !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
                       }
@@ -348,7 +381,43 @@ const MembersSettings = () => {
           </div>
         )}
       </div>
+      {showRoleConfirmModal && pendingRoleChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
+            <div className="border-b border-slate-200 dark:border-slate-700 p-5">
+              <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100">
+                Change Role
+              </h2>
 
+              <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+                Are you sure you want to change{' '}
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {pendingRoleChange.userName}
+                </span>
+                &apos;s role to{' '}
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {pendingRoleChange.roleName}
+                </span>
+                ?
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 p-5">
+              <WpButton variant="secondary" onClick={handleCancelRoleChange}>
+                Cancel
+              </WpButton>
+
+              <WpButton
+                variant="primary"
+                onClick={handleConfirmRoleChange}
+                isLoading={updatingMemberId === pendingRoleChange.userId}
+              >
+                OK
+              </WpButton>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Delete confirm modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">

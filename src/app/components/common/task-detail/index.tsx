@@ -43,6 +43,8 @@ import { useAssignTaskToMe, useCloneTask, useDeleteTask } from '@/src/modules/ta
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAppSelector } from '@/src/store';
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
@@ -143,7 +145,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [isAssignedToMe, setIsAssignedToMe] = useState(false);
 
   const { mutate: assignTaskToMe, isPending: isAssigning } = useAssignTaskToMe();
-  
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
     task.projectId ?? '',
     {
@@ -205,17 +206,43 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
+  const queryClient = useQueryClient();
+  const currentUser = useAppSelector((state) => state.user);
+
   const handleAssignToMe = () => {
-    if (!task.projectId || !task.taskId) return;
+    if (!task.projectId || !task.taskId || !currentUser) return;
+    const previousAssignee = {
+      assigneeId: taskData.assigneeId,
+      assigneeName: taskData.assigneeName,
+      assignee: taskData.assignee,
+      assigneeColor: taskData.assigneeColor,
+    };
+    const displayName = currentUser.name || currentUser.username || currentUser.email || '';
+    const initials = getInitials(displayName || 'U');
+    const color = currentUser.color || colors.avatarBlue;
     setIsAssignedToMe(true);
+    setTaskData((prev) => ({
+      ...prev,
+      assigneeId: prev.assigneeId,
+      assigneeName: displayName,
+      assignee: initials,
+      assigneeColor: color,
+    }));
     assignTaskToMe(
+      { projectId: task.projectId, taskId: task.taskId },
       {
-        projectId: task.projectId,
-        taskId: task.taskId,
-      },
-      {
+        onSuccess: () => {
+          onUpdate?.({
+            assigneeInitials: initials,
+            assigneeColor: color,
+          });
+        },
         onError: () => {
           setIsAssignedToMe(false);
+          setTaskData((prev) => ({
+            ...prev,
+            ...previousAssignee,
+          }));
           toast.error('Failed to assign task');
         },
       }
@@ -392,22 +419,22 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           const reporterName = d.reporter_name ?? '';
           const reporterInitials = reporterName
             ? reporterName
-              .split(' ')
-              .filter(Boolean)
-              .map((n: string) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
+                .split(' ')
+                .filter(Boolean)
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
             : '';
           const reporterColor = d.reporter?.color ?? '';
           const initials = assigneeName
             ? assigneeName
-              .split(' ')
-              .filter(Boolean)
-              .map((n: string) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
+                .split(' ')
+                .filter(Boolean)
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
             : task.assigneeInitials;
 
           setTaskData((prev) => ({
@@ -417,7 +444,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
             priority: d.priority
               ? ((d.priority.charAt(0).toUpperCase() +
-                d.priority.slice(1).toLowerCase()) as Priority)
+                  d.priority.slice(1).toLowerCase()) as Priority)
               : prev.priority,
 
             status: d.status ?? prev.status,
@@ -516,8 +543,6 @@ useEffect(() => {
   };
 }, []);
 
-
-
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -538,7 +563,7 @@ useEffect(() => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) { }
+    } catch (error) {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -582,9 +607,7 @@ useEffect(() => {
       toast.error('Failed to delete task');
     }
   };
-  const hasHours =
-    Number(taskData.estimatedHours) > 0 &&
-    Number(taskData.actualHours) > 0;
+  const hasHours = Number(taskData.estimatedHours) > 0 && Number(taskData.actualHours) > 0;
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -698,19 +721,21 @@ useEffect(() => {
         <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
           <button
             onClick={() => setMobileTab('content')}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 dark:text-slate-400'
-              }`}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              mobileTab === 'content'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 dark:text-slate-400'
+            }`}
           >
             Content
           </button>
           <button
             onClick={() => setMobileTab('details')}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 dark:text-slate-400'
-              }`}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+              mobileTab === 'details'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 dark:text-slate-400'
+            }`}
           >
             Details
           </button>
@@ -726,8 +751,9 @@ useEffect(() => {
             </div>
           )}
           <div
-            className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
-              }`}
+            className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+              mobileTab === 'details' ? 'hidden sm:block' : 'block'
+            }`}
           >
             {isEditingTask ? (
               <div className="mb-5">
@@ -742,7 +768,7 @@ useEffect(() => {
               </div>
             ) : (
               <h1
-                className="mb-5 max-w-[300px] truncate text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
+                className="mb-5 break-words text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
                 title={taskData.title || task.title}
               >
                 {taskData.title || task.title}
@@ -951,11 +977,7 @@ useEffect(() => {
                   <label className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
                     <Plus size={14} />
                     Add
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={handleAttachmentUpload}
-                    />
+                    <input type="file" className="hidden" onChange={handleAttachmentUpload} />
                   </label>
                 )}
               </div>
@@ -1049,8 +1071,9 @@ useEffect(() => {
           </div>
 
           <div
-            className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-              }`}
+            className={`overflow-y-auto bg-gray-50/60 ${
+              mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
+            }`}
             style={{ width: isMobile ? undefined : rightWidth }}
           >
             <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
@@ -1058,7 +1081,6 @@ useEffect(() => {
                 Status
               </p>
               <div className="relative" ref={statusMenuRef}>
-
                 <button
                   type="button"
                   disabled={!canEditTask}
@@ -1073,16 +1095,13 @@ useEffect(() => {
                       showStatusMenu: !prev.showStatusMenu,
                     }));
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
+                    !canEditTask ? 'cursor-default' : ''
+                  }`}
                   style={{
                     color: selectedStatus?.color ?? '#6B7280',
-                    backgroundColor: selectedStatus
-                      ? `${selectedStatus.color}15`
-                      : '#F3F4F6',
-                    borderColor: selectedStatus
-                      ? `${selectedStatus.color}55`
-                      : '#D1D5DB',
+                    backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
+                    borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
                   }}
                 >
                   <span className="flex items-center gap-2">
@@ -1158,8 +1177,9 @@ useEffect(() => {
                   <button
                     disabled={!canEditTask}
                     onClick={() => setShowAssigneeMenu((v) => !v)}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                      }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                    }`}
                   >
                     {taskData.assigneeId ? (
                       <AssigneeAvatar
@@ -1311,14 +1331,17 @@ useEffect(() => {
                     </div>
                   )}
                 </div>
-                <WpButton
-                  variant="ghost"
-                  onClick={handleAssignToMe}
-                  disabled={isAssigning || isAssignedToMe}
-                  className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
-                >
-                  {isAssignedToMe ? 'Assigned to me' : 'Assign to me'}
-                </WpButton>
+                {taskData.assigneeName !==
+                  (currentUser?.name || currentUser?.username || currentUser?.email) && (
+                  <WpButton
+                    variant="ghost"
+                    onClick={handleAssignToMe}
+                    disabled={isAssigning}
+                    className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                  >
+                    {isAssigning ? 'Assigning...' : 'Assign to me'}
+                  </WpButton>
+                )}
               </DetailRow>
 
               <DetailRow label="Reporter">
@@ -1326,8 +1349,9 @@ useEffect(() => {
                   <button
                     disabled={!canEditTask}
                     onClick={() => setShowReporterMenu((v) => !v)}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                      }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                    }`}
                   >
                     {taskData.reporterId ? (
                       <AssigneeAvatar
@@ -1464,8 +1488,7 @@ useEffect(() => {
                               }
                             }}
                             className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
-                          >
-                          </WpButton>
+                          ></WpButton>
                         )}
                     </div>
                   )}
@@ -1499,8 +1522,11 @@ useEffect(() => {
 
                       setShowUserStoryMenu((v) => !v);
                     }}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${isUpdatingUserStory || !canEditTask ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-100'
-                      }`}
+                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                      isUpdatingUserStory || !canEditTask
+                        ? 'opacity-60 cursor-not-allowed'
+                        : 'hover:bg-gray-100'
+                    }`}
                   >
                     <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                       {taskData.user_story_title || 'No user story'}
@@ -1576,10 +1602,11 @@ useEffect(() => {
                                   setIsUpdatingUserStory(false);
                                 }
                               }}
-                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${isUpdatingUserStory
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-gray-50'
-                                }`}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                                isUpdatingUserStory
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-gray-50'
+                              }`}
                             >
                               <span className="truncate">{story.title}</span>
 
@@ -1668,10 +1695,7 @@ useEffect(() => {
                     max={59}
                     value={estimatedMinutesInput}
                     onChange={(e) => {
-                      const minutes = Math.min(
-                        59,
-                        Math.max(0, Number(e.target.value) || 0)
-                      );
+                      const minutes = Math.min(59, Math.max(0, Number(e.target.value) || 0));
 
                       setEstimatedMinutesInput(e.target.value);
 
@@ -1721,10 +1745,7 @@ useEffect(() => {
                     max={59}
                     value={actualMinutesInput}
                     onChange={(e) => {
-                      const minutes = Math.min(
-                        59,
-                        Math.max(0, Number(e.target.value) || 0)
-                      );
+                      const minutes = Math.min(59, Math.max(0, Number(e.target.value) || 0));
 
                       setActualMinutesInput(e.target.value);
 

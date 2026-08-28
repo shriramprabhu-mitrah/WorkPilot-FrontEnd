@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 
 interface WpDatePickerProps {
   label?: string;
-  value?: string; // "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss"
+  value?: string;
   required?: boolean;
   placeholder?: string;
   error?: string;
@@ -17,10 +16,11 @@ interface WpDatePickerProps {
   min?: string;
   max?: string;
   onChange: (value: string) => void;
-  onCommit?: (value: string) => void; // Called only when Done is clicked or date selected (no time)
+  onCommit?: (value: string) => void;
 }
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
 const MONTHS = [
   'January',
   'February',
@@ -38,9 +38,12 @@ const MONTHS = [
 
 function formatDisplay(iso: string, showTime?: boolean) {
   if (!iso) return '';
+
   const [datePart, timePart] = iso.split('T');
   const [y, m, d] = datePart.split('-');
+
   const base = `${MONTHS[parseInt(m) - 1]} ${parseInt(d)}, ${y}`;
+
   return showTime && timePart ? `${base} ${timePart}` : base;
 }
 
@@ -59,73 +62,157 @@ export const WpDatePicker = ({
   onCommit,
 }: WpDatePickerProps) => {
   const today = new Date();
+
+  const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(today.getDate()).padStart(2, '0')}`;
   const datePart = value ? value.split('T')[0] : '';
   const timePart = value?.includes('T') ? value.split('T')[1] : '00:00:00';
   const initDate = datePart ? new Date(datePart + 'T00:00:00') : today;
-
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(initDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initDate.getMonth());
   const [time, setTime] = useState(timePart);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
-  const ref = useRef<HTMLDivElement>(null);
+
+  const [dropdownPos, setDropdownPos] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const datePickerRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  useOutsideClick(ref, () => setOpen(false));
+  // useEffect(() => {
+  //   if (!value) return;
+  //   const currentDate = value.split('T')[0];
+  //   if (currentDate) {
+  //     const selectedDate = new Date(currentDate + 'T00:00:00');
+  //     setViewYear(selectedDate.getFullYear());
+  //     setViewMonth(selectedDate.getMonth());
+  //   }
+  //   if (value.includes('T')) {
+  //     setTime(value.split('T')[1]);
+  //   }
+  // }, [value]);
+  useEffect(() => {
+    if (!open) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (datePickerRef.current?.contains(target) || calendarRef.current?.contains(target)) {
+        return;
+      }
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [open]);
 
   const handleOpen = () => {
+    if (disabled) return;
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const calendarWidth = 256;
+      const calendarHeight = showTime ? 340 : 290;
+      let left = rect.left + (rect.width - calendarWidth) / 2 - 20;
+      let top = rect.top - calendarHeight + 178;
+      if (left < 8) {
+        left = 8;
+      }
+      if (left + calendarWidth > window.innerWidth - 8) {
+        left = window.innerWidth - calendarWidth - 8;
+      }
+      if (top < 8) {
+        top = 8;
+      }
       setDropdownPos({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top,
+        left,
       });
     }
-    setOpen(true);
+    setOpen((prev) => !prev);
   };
 
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-
   const prevMonth = () => {
+    if (viewYear === today.getFullYear() && viewMonth === today.getMonth()) {
+      return;
+    }
     if (viewMonth === 0) {
       setViewMonth(11);
-      setViewYear((y) => y - 1);
-    } else setViewMonth((m) => m - 1);
+      setViewYear((year) => year - 1);
+    } else {
+      setViewMonth((month) => month - 1);
+    }
   };
 
   const nextMonth = () => {
     if (viewMonth === 11) {
       setViewMonth(0);
-      setViewYear((y) => y + 1);
-    } else setViewMonth((m) => m + 1);
+      setViewYear((year) => year + 1);
+    } else {
+      setViewMonth((month) => month + 1);
+    }
   };
 
-  const toISO = (y: number, m: number, d: number) =>
-    `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-
-  const isDisabled = (d: number) => {
-    const iso = toISO(viewYear, viewMonth, d);
-    return (min && iso < min) || (max && iso > max) ? true : false;
+  const toISO = (year: number, month: number, day: number) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   };
 
-  const handleSelect = (d: number) => {
-    const iso = toISO(viewYear, viewMonth, d);
+  const isDisabled = (day: number) => {
+    const iso = toISO(viewYear, viewMonth, day);
+
+    if (iso < todayISO) {
+      return true;
+    }
+
+    if (min && iso < min) {
+      return true;
+    }
+
+    if (max && iso > max) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleSelect = (day: number) => {
+    const iso = toISO(viewYear, viewMonth, day);
     const newValue = showTime ? `${iso}T${time}` : iso;
     onChange(newValue);
-    if (!showTime) {
-      setOpen(false);
-      onCommit?.(newValue);
+    if (showTime) {
+      return;
     }
+    onCommit?.(newValue);
+    setOpen(false);
   };
 
   const handleTimeChange = (newTime: string) => {
     setTime(newTime);
-    if (datePart) onChange(`${datePart}T${newTime}`);
+    if (datePart) {
+      const newValue = `${datePart}T${newTime}`;
+      onChange(newValue);
+    }
   };
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDone = () => {
+    if (!datePart) {
+      setOpen(false);
+      return;
+    }
+    const fullValue = `${datePart}T${time}`;
+    onChange(fullValue);
+    onCommit?.(fullValue);
+    setOpen(false);
+  };
+
+  const handleClear = (event: React.MouseEvent) => {
+    event.stopPropagation();
     onChange('');
     onCommit?.('');
     setTime('00:00:00');
@@ -140,7 +227,7 @@ export const WpDatePicker = ({
         </label>
       )}
 
-      <div className="relative">
+      <div className="relative" ref={datePickerRef}>
         <button
           ref={buttonRef}
           type="button"
@@ -185,25 +272,30 @@ export const WpDatePicker = ({
           typeof document !== 'undefined' &&
           createPortal(
             <div
-              ref={ref}
+              ref={calendarRef}
               className="fixed z-[9999] w-64 rounded-lg border border-[var(--color-gray-200)] dark:border-slate-700 bg-white dark:bg-slate-800 p-2 shadow-lg"
-              style={{ top: dropdownPos.top, left: dropdownPos.left }}
+              style={{
+                top: dropdownPos.top,
+                left: dropdownPos.left,
+              }}
             >
-              {/* Month/Year header */}
               <div className="flex items-center justify-between mb-1.5">
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700"
+                  disabled={viewYear === today.getFullYear() && viewMonth === today.getMonth()}
+                  className="p-1 rounded hover:bg-[var(--color-gray-100)] dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft
                     size={16}
                     className="text-[var(--color-gray-600)] dark:text-slate-300"
                   />
                 </button>
+
                 <span className="text-xs font-semibold text-[var(--color-gray-900)] dark:text-slate-100">
                   {MONTHS[viewMonth]} {viewYear}
                 </span>
+
                 <button
                   type="button"
                   onClick={nextMonth}
@@ -216,29 +308,38 @@ export const WpDatePicker = ({
                 </button>
               </div>
 
-              {/* Day headers */}
               <div className="grid grid-cols-7 mb-1">
-                {DAYS.map((d) => (
+                {DAYS.map((day) => (
                   <span
-                    key={d}
+                    key={day}
                     className="text-center text-[11px] font-medium text-[var(--color-gray-400)] dark:text-slate-500 py-0.5"
                   >
-                    {d}
+                    {day}
                   </span>
                 ))}
               </div>
 
               {/* Date cells */}
-              <div className="grid grid-cols-7 gap-y-1" onClick={(e) => e.stopPropagation()}>
-                {Array.from({ length: firstDay }).map((_, i) => (
-                  <span key={`e-${i}`} />
+
+              <div className="grid grid-cols-7 gap-y-1">
+                {Array.from({
+                  length: firstDay,
+                }).map((_, index) => (
+                  <span key={`empty-${index}`} />
                 ))}
-                {Array.from({ length: daysInMonth }).map((_, i) => {
-                  const day = i + 1;
+
+                {Array.from({
+                  length: daysInMonth,
+                }).map((_, index) => {
+                  const day = index + 1;
+
                   const iso = toISO(viewYear, viewMonth, day);
+
                   const isSelected = iso === datePart;
+
                   const isToday =
                     iso === toISO(today.getFullYear(), today.getMonth(), today.getDate());
+
                   const dayDisabled = isDisabled(day);
 
                   return (
@@ -249,11 +350,13 @@ export const WpDatePicker = ({
                       onClick={() => handleSelect(day)}
                       className={[
                         'w-6 h-6 mx-auto flex items-center justify-center rounded-full text-xs transition-colors',
+
                         isSelected
                           ? 'bg-[var(--color-primary-focus)] text-white font-semibold'
                           : isToday
                             ? 'border border-[var(--color-primary-focus)] text-[var(--color-primary-focus)] font-semibold dark:text-blue-400 dark:border-blue-400'
                             : 'hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200',
+
                         dayDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer',
                       ]
                         .filter(Boolean)
@@ -265,27 +368,27 @@ export const WpDatePicker = ({
                 })}
               </div>
 
-              {/* Time picker row */}
+              {/* Time picker */}
+
               {showTime && (
                 <div className="mt-3 pt-3 border-t border-[var(--color-gray-200)] dark:border-slate-700 flex items-center justify-between gap-2">
                   <span className="text-xs text-[var(--color-gray-500)] dark:text-slate-400 font-medium">
                     Time
                   </span>
+
                   <input
                     type="time"
                     step={1}
                     value={time}
-                    onChange={(e) => handleTimeChange(e.target.value)}
+                    onChange={(event) => handleTimeChange(event.target.value)}
                     className="text-sm border border-[var(--color-gray-300)] dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 text-[var(--color-gray-900)] dark:text-slate-100 focus:outline-none focus:border-[var(--color-primary-focus)]"
                   />
+
                   <button
                     type="button"
-                    onClick={() => {
-                      const fullValue = datePart ? `${datePart}T${time}` : '';
-                      onCommit?.(fullValue);
-                      setOpen(false);
-                    }}
-                    className="text-xs px-3 py-1 bg-[var(--color-primary-focus)] text-white rounded-md hover:opacity-90"
+                    onClick={handleDone}
+                    disabled={!datePart}
+                    className="text-xs px-3 py-1 bg-[var(--color-primary-focus)] text-white rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Done
                   </button>
@@ -297,6 +400,7 @@ export const WpDatePicker = ({
       </div>
 
       {error && <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>}
+
       {hint && !error && (
         <p className="mt-1 text-xs text-[var(--color-gray-400)] dark:text-slate-500">{hint}</p>
       )}
