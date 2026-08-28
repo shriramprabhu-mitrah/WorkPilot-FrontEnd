@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import LineChart from '@/src/app/components/common/charts/lineChart';
 import { colors } from '@/src/styles/colors';
 import { useTheme } from 'next-themes';
 import * as echarts from 'echarts';
 import type { EChartsOption } from 'echarts-for-react';
-import { SprintBurndown } from '@/src/types/dashboard';
+import type { SprintBurndownBlock } from '@/src/types/dashboard';
 
 interface BurndownCardProps {
   chartHeight: number;
-  burndownSprints?: SprintBurndown[];
+  burndownSprints?: SprintBurndownBlock[];
 }
 
 export default function BurndownCard({
@@ -30,43 +30,16 @@ export default function BurndownCard({
   const tooltipText = isDark ? '#f1f5f9' : colors.gray900;
   const emptyLineColor = isDark ? '#334155' : colors.gray200;
 
-  useEffect(() => {
-    if (page >= burndownSprints.length && burndownSprints.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPage(0);
-    }
-  }, [burndownSprints.length, page]);
-
   const totalPages = burndownSprints.length || 1;
-
   const safePage = Math.min(page, totalPages - 1);
-
   const selectedBurndown = burndownSprints[safePage];
-
   const pageSlice = selectedBurndown?.data ?? [];
-
   const canPrev = safePage > 0;
   const canNext = safePage < totalPages - 1;
-
-  /*
-   * Chart data
-   */
   const burndownDates = pageSlice.map((item) => item.date);
-
-  const burndownIdeal = pageSlice.map(
-    (item) => item.ideal_hours
-  );
-
-  const burndownActual = pageSlice.map(
-    (item) => item.actual_hours
-  );
-
-  const isEmpty =
-    !selectedBurndown || pageSlice.length === 0;
-
-  /*
-   * Header
-   */
+  const burndownIdeal = pageSlice.map((item) => item.ideal_hours);
+  const burndownActual = pageSlice.map((item) => item.actual_hours);
+  const isEmpty = !selectedBurndown || pageSlice.length === 0;
   const header = (
     <div className="flex items-center justify-between mb-1">
       <div className="min-w-0">
@@ -113,9 +86,6 @@ export default function BurndownCard({
     </div>
   );
 
-  /*
-   * Empty state
-   */
   if (isEmpty) {
     const placeholderDates = [
       '',
@@ -257,9 +227,6 @@ export default function BurndownCard({
     );
   }
 
-  /*
-   * Normal chart
-   */
   const option: EChartsOption = {
     animation: true,
     animationDuration: 1400,
