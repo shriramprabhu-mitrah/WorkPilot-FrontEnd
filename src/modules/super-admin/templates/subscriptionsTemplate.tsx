@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, X } from 'lucide-react';
+import SubscriptionsSkeleton from '../components/subscriptionSkeleton';
 
 type FilterType = 'Active' | 'Trial' | 'Expired / Failed' | 'Pending';
 
@@ -203,6 +204,15 @@ const statusCounts = {
 };
 
 export const SubscriptionsTemplate = () => {
+  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoadingSubscriptions(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType | 'All'>('All');
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
@@ -248,7 +258,9 @@ export const SubscriptionsTemplate = () => {
   };
 
   const totalSubscriptions = mockSubscriptions.length;
-
+  if (isLoadingSubscriptions) {
+    return <SubscriptionsSkeleton />;
+  }
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Subscription Detail Modal */}

@@ -670,6 +670,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             setShowStartSprintModal(false);
             setSelectedSprint(null);
           }}
+          isStarting={isStartingSprint}
           onStart={handleStartSprint}
         />
       )}

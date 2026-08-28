@@ -5,7 +5,7 @@ import { Search, Trash2, Loader2 } from 'lucide-react';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import { AdminProjectsParams } from '@/src/types/superadmin';
-
+import ProjectSkeleton from '../components/projectSkeleton';
 export const ProjectsTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -56,7 +56,9 @@ export const ProjectsTemplate = () => {
     setPageSize(newPageSize);
     setPage(1);
   };
-
+  if (isLoadingProjects) {
+    return <ProjectSkeleton />;
+  }
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Page Header */}
@@ -69,7 +71,7 @@ export const ProjectsTemplate = () => {
 
       {/* Search Bar */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <div className="relative">
+        <div className="relative max-w-xs">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
             size={20}
@@ -79,7 +81,7 @@ export const ProjectsTemplate = () => {
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
           />
         </div>
       </div>
@@ -128,7 +130,7 @@ export const ProjectsTemplate = () => {
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
-                            {project.project_key}
+                            {(project.project_key ?? '').slice(0, 3).toUpperCase()}
                           </div>
                           <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {project.name}

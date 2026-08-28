@@ -15,6 +15,7 @@ import { MetricCard } from '../components/metricsCard';
 import { OrganizationCard } from '../components/organizationsCard';
 import { ProjectCard } from '../components/projecttCard';
 import { MemberCard } from '../components/membersCard';
+import SuperAdminDasSkeleton from '@/src/modules/super-admin/components/dashboardSkeletons';
 
 // Mock metrics for dashboard
 const dashboardMetrics = {
@@ -23,9 +24,20 @@ const dashboardMetrics = {
 };
 
 export const DashboardTemplate = () => {
-  const { organizations = [] } = useGetOrganizations();
-  const { projects = [] } = useGetAllProjects();
-  const { members = [] } = useGetMembers();
+const {
+  organizations = [],
+  isLoadingOrganizations,
+} = useGetOrganizations();
+
+const {
+  projects = [],
+  isLoadingProjects,
+} = useGetAllProjects();
+
+const {
+  members = [],
+  isLoadingMembers,
+} = useGetMembers();
 
   const activeOrganizations = organizations.filter((o) => o.is_active).length;
   const inactiveOrganizations = organizations.length - activeOrganizations;
@@ -34,6 +46,15 @@ export const DashboardTemplate = () => {
   const recentOrganizations = organizations.slice(0, 5);
   const recentProjects = projects.slice(0, 5);
   const recentMembers = members.slice(0, 5);
+
+const isDashboardLoading =
+  isLoadingOrganizations ||
+  isLoadingProjects ||
+  isLoadingMembers;
+
+if (isDashboardLoading) {
+return <SuperAdminDasSkeleton />;
+}
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Page Header */}
