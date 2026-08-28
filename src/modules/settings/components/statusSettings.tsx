@@ -1,7 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Check, ChevronRight, GripVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import {
@@ -17,10 +35,12 @@ import {
   useUpdateStatus,
   useDeleteStatus,
 } from '../../project/hooks/useLabels';
+
 interface Status {
   id: string;
   color: string;
   name: string;
+  display_order?: number;
   // slug: string;
   isClosed?: boolean;
   isArchived?: boolean;
@@ -48,21 +68,6 @@ const SECTIONS: SectionConfig[] = [
     showArchived: false,
     initialStatuses: [],
   },
-  // },
-  // {
-  //   key: 'issue',
-  //   label: 'BUG STATUSES',
-  //   showArchived: false,
-  //   initialStatuses: [
-  //     { id: 1, color: '#6b7280', name: 'New', slug: 'new' },
-  //     { id: 2, color: '#38bdf8', name: 'In progress', slug: 'in-progress' },
-  //     { id: 3, color: '#eab308', name: 'Ready for test', slug: 'ready-for-test' },
-  //     { id: 4, color: '#84cc16', name: 'Closed', slug: 'closed', isClosed: true },
-  //     { id: 5, color: '#ef4444', name: 'Needs Info', slug: 'needs-info' },
-  //     { id: 6, color: '#94a3b8', name: 'Rejected', slug: 'rejected', isClosed: true },
-  //     { id: 7, color: '#3b82f6', name: 'Postponed', slug: 'postponed' },
-  //   ],
-  // },
 ];
 
 function toSlug(name: string) {
@@ -86,6 +91,7 @@ interface StatusRowProps {
   status: Status;
   showArchived: boolean;
   isEditing: boolean;
+  isOverlay?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onSaveEdit: (name: string, color: string, isClosed: boolean) => void;
@@ -96,6 +102,7 @@ function StatusRow({
   status,
   showArchived,
   isEditing,
+  isOverlay,
   onEdit,
   onDelete,
   onSaveEdit,
@@ -105,14 +112,27 @@ function StatusRow({
   const [editColor, setEditColor] = useState(status.color);
   const [editClosed, setEditClosed] = useState(status.isClosed ?? false);
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: status.id,
+    disabled: isEditing,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   if (isEditing) {
     return (
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 px-4 py-3"
+      >
         <GripVertical
           size={16}
-          className="hidden sm:block shrink-0 text-slate-300 dark:text-slate-600"
+          className="hidden sm:block shrink-0 text-slate-300 dark:text-slate-600 cursor-not-allowed"
         />
-        {/* <span className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5" style={{ backgroundColor: status.color }} /> */}
         <div className="relative h-8 w-8 shrink-0">
           <span
             className="absolute inset-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"
@@ -190,11 +210,27 @@ function StatusRow({
   }
 
   return (
-    <div className="group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]">
-      <GripVertical
-        size={16}
-        className="hidden sm:block shrink-0 text-transparent transition-colors group-hover:text-slate-300 dark:group-hover:text-slate-600"
-      />
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 ${
+        isDragging
+          ? 'opacity-40 bg-slate-50 dark:bg-slate-800/40 border-dashed border-blue-300'
+          : 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]'
+      } ${
+        isOverlay
+          ? 'shadow-xl ring-2 ring-blue-500/30 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800'
+          : ''
+      }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 touch-none py-1 transition-colors"
+        title="Drag to reorder"
+      >
+        <GripVertical size={16} />
+      </div>
       <span
         className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"
         style={{ backgroundColor: status.color }}
@@ -210,7 +246,9 @@ function StatusRow({
           <ClosedCheck checked={status.isArchived} />
         </span>
       )}
-      <div className="ml-auto flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div
+        className={`ml-auto flex shrink-0 items-center gap-1 ${isOverlay ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+      >
         <WpButton
           type="button"
           variant="ghost"
@@ -341,36 +379,120 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
   const isTask = config.key === 'task';
 
   const { userStoryStatuses } = useGetUserStoryStatuses(projectId, isUserStory);
-
   const { data: taskStatuses = [] } = useGetStatus(projectId, isTask);
   const { createUserStoryStatusAsync } = useCreateUserStoryStatus();
-
   const { updateUserStoryStatusAsync } = useUpdateUserStoryStatus();
-
   const { deleteUserStoryStatusAsync } = useDeleteUserStoryStatus();
+
   const createStatus = useCreateStatus();
   const updateStatus = useUpdateStatus();
   const deleteStatus = useDeleteStatus();
-  const displayStatuses: Status[] = isUserStory
-    ? userStoryStatuses.map((status) => ({
-        id: status.id,
-        name: status.name,
-        color: status.color,
-        slug: toSlug(status.name),
-        isClosed: status.is_final,
-      }))
-    : isTask
-      ? taskStatuses.map((status) => ({
-          id: status.id,
+
+  const serverStatuses: Status[] = useMemo(() => {
+    const list = isUserStory
+      ? userStoryStatuses.map((status) => ({
+          id: String(status.id),
           name: status.name,
           color: status.color,
+          display_order: status.display_order,
           slug: toSlug(status.name),
           isClosed: status.is_final,
         }))
-      : statuses;
+      : isTask
+        ? taskStatuses.map((status) => ({
+            id: String(status.id),
+            name: status.name,
+            color: status.color,
+            display_order: status.display_order,
+            slug: toSlug(status.name),
+            isClosed: status.is_final,
+          }))
+        : statuses;
+
+    return [...list].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  }, [isUserStory, isTask, userStoryStatuses, taskStatuses, statuses]);
+
+  const [items, setItems] = useState<Status[]>(serverStatuses);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setItems(serverStatuses);
+  }, [serverStatuses]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    })
+  );
+
+  const activeStatus = useMemo(
+    () => (activeId ? items.find((s) => s.id === activeId) : null),
+    [items, activeId]
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = items.findIndex((item) => item.id === active.id);
+    const newIndex = items.findIndex((item) => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newItems = arrayMove(items, oldIndex, newIndex);
+    const updatedItems = newItems.map((item, idx) => ({
+      ...item,
+      display_order: idx,
+    }));
+
+    setItems(updatedItems);
+
+    const targetStatusId = String(active.id);
+    const newDisplayOrder = newIndex;
+
+    try {
+      if (isUserStory) {
+        await updateUserStoryStatusAsync({
+          projectId,
+          statusId: targetStatusId,
+          payload: {
+            display_order: newDisplayOrder,
+          },
+        });
+      } else if (isTask) {
+        await updateStatus.mutateAsync({
+          projectId,
+          statusId: targetStatusId,
+          payload: {
+            display_order: newDisplayOrder,
+          },
+        });
+      } else {
+        setStatuses(updatedItems);
+      }
+    } catch {
+      setItems(serverStatuses);
+    }
+  };
 
   const nextId =
     Math.max(0, ...statuses.map((s) => Number(s.id)).filter((id) => !Number.isNaN(id))) + 1;
@@ -482,14 +604,17 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
 
     if (!trimmed) return;
 
+    const newOrder = items.length;
+
     if (isUserStory) {
       try {
         await createUserStoryStatusAsync({
           projectId,
           payload: {
-            name,
+            name: trimmed,
             color,
             is_final: isClosed,
+            display_order: newOrder,
           },
         });
 
@@ -508,6 +633,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
             name: trimmed,
             color,
             is_final: isClosed,
+            display_order: newOrder,
           },
         });
 
@@ -526,6 +652,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
         name: trimmed,
         slug: toSlug(trimmed),
         isClosed,
+        display_order: newOrder,
       },
     ]);
 
@@ -587,7 +714,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
                 : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
             }`}
           >
-            {displayStatuses.length}
+            {items.length}
           </span>
         </button>
         <WpButton
@@ -646,27 +773,54 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           </div>
 
           <div>
-            {displayStatuses.map((status) => (
-              <StatusRow
-                key={status.id}
-                status={status}
-                showArchived={config.showArchived}
-                isEditing={editingId === status.id}
-                onEdit={() => {
-                  setIsAdding(false);
-                  setEditingId(status.id);
-                }}
-                onDelete={() => handleDelete(status.id)}
-                onSaveEdit={(name, color, isClosed) =>
-                  handleSaveEdit(status.id, name, color, isClosed)
-                }
-                onCancelEdit={() => setEditingId(null)}
-              />
-            ))}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={items.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {items.map((status) => (
+                  <StatusRow
+                    key={status.id}
+                    status={status}
+                    showArchived={config.showArchived}
+                    isEditing={editingId === status.id}
+                    onEdit={() => {
+                      setIsAdding(false);
+                      setEditingId(status.id);
+                    }}
+                    onDelete={() => handleDelete(status.id)}
+                    onSaveEdit={(name, color, isClosed) =>
+                      handleSaveEdit(status.id, name, color, isClosed)
+                    }
+                    onCancelEdit={() => setEditingId(null)}
+                  />
+                ))}
+              </SortableContext>
+
+              <DragOverlay>
+                {activeStatus ? (
+                  <StatusRow
+                    status={activeStatus}
+                    showArchived={config.showArchived}
+                    isEditing={false}
+                    isOverlay
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    onSaveEdit={() => {}}
+                    onCancelEdit={() => {}}
+                  />
+                ) : null}
+              </DragOverlay>
+            </DndContext>
 
             {isAdding && <AddStatusRow onAdd={handleAdd} onCancel={() => setIsAdding(false)} />}
 
-            {displayStatuses.length === 0 && !isAdding && (
+            {items.length === 0 && !isAdding && (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                   <Plus size={18} />
