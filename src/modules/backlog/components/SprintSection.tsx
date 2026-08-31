@@ -42,12 +42,19 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-3">
       <div
-        className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none"
-        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 transition-colors select-none ${sprint.status === 'active' ? 'cursor-pointer hover:bg-gray-50' : ''
+          }`}
+        onClick={() => {
+          if (sprint.status === 'active') {
+            setOpen((v) => !v);
+          }
+        }}
       >
-        <span className="text-gray-400 shrink-0">
-          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-        </span>
+        {sprint.status === 'active' && (
+          <span className="text-gray-400 shrink-0">
+            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </span>
+        )}
 
         <span className="font-semibold text-sm text-gray-900 truncate">{sprint.name}</span>
 
@@ -85,7 +92,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
         </div>
       </div>
 
-      {open && totalTasks > 0 && (
+      {sprint.status === 'active' && open && totalTasks > 0 && (
         <div className="h-0.5 bg-gray-100 mx-3 sm:mx-4">
           <div
             className="h-full rounded-full transition-all"
@@ -97,7 +104,7 @@ export const SprintSection = ({ sprint }: { sprint: Sprint }) => {
         </div>
       )}
 
-      {open && (
+      {sprint.status === 'active' && open && (
         <div>
           {sprint.tasks.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-6">No tasks in this sprint.</p>
