@@ -179,21 +179,23 @@ export const UserStoryDetailDrawer = ({
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [showCommentEditor, setShowCommentEditor] = useState(true);
 
+  const storeProjectId = useAppSelector((state) => state.project.selectedProject?.id) || '';
+  const effectiveProjectId = initialUserStory.project_id || storeProjectId;
+  const effectiveStoryId = initialUserStory.key || initialUserStory.id;
+
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
   const { userStory: fetchedUserStory, isLoadingUserStory } = useGetUserStoryById(
-    initialUserStory.project_id ?? '',
-    initialUserStory.id
+    effectiveProjectId,
+    effectiveStoryId
   );
 
   // Use fetched data if available, otherwise fall back to initial prop
   const currentUserStory = fetchedUserStory || initialUserStory;
-  const projectId = currentUserStory.project_id ?? '';
-  const userStoryId = currentUserStory.id;
+  const projectId = currentUserStory.project_id || effectiveProjectId;
+  const userStoryId = currentUserStory.id || effectiveStoryId;
 
   const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
   const currentUser = useAppSelector((state) => state.user);
-
-  
 
   const { uploadUserStoryAttachmentAsync, isUploadingUserStoryAttachment } =
     useUploadUserStoryAttachment(projectId);
@@ -587,19 +589,19 @@ export const UserStoryDetailDrawer = ({
     },
     [currentUserStory.project_id, currentUserStory.id, editableFields, queryClient]
   );
-const handleAssignToMe = () => {
-  if (!currentUser?.userid) {
-    toast.error('Unable to determine current user');
-    return;
-  }
-  const displayName = currentUser.name || currentUser.username || currentUser.email || '';
-  const color = currentUser.color || colors.avatarBlue;
-  handleUpdate({
-    assigneeId: currentUser.userid,
-    assigneeName: displayName,
-    assigneeColor: color,
-  });
-};
+  const handleAssignToMe = () => {
+    if (!currentUser?.userid) {
+      toast.error('Unable to determine current user');
+      return;
+    }
+    const displayName = currentUser.name || currentUser.username || currentUser.email || '';
+    const color = currentUser.color || colors.avatarBlue;
+    handleUpdate({
+      assigneeId: currentUser.userid,
+      assigneeName: displayName,
+      assigneeColor: color,
+    });
+  };
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {

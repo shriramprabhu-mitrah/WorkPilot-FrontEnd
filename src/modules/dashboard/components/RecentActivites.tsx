@@ -1,5 +1,4 @@
 'use client';
-import { colors } from '@/src/styles/colors';
 import Panel from '@/src/app/components/common/panel/panel';
 import { AssigneeAvatar } from '@/src/app/components/common/task';
 import { DashboardActivity, DashboardActivityUser } from '@/src/types/dashboard';
@@ -10,6 +9,27 @@ interface RecentActivityCardProps {
 }
 
 export default function RecentActivityCard({ activities, user }: RecentActivityCardProps) {
+  const renderActivityDetails = (details: string) => {
+    if (!details) return null;
+
+    const commentMatch = details.match(/ as ([\s\S]*)$/);
+    const content = commentMatch ? commentMatch[1] : details;
+    const isHtml = /<[a-z][\s\S]*>/i.test(content);
+
+    if (isHtml) {
+      return (
+        <div
+          className="mt-1 text-xs text-gray-500 dark:text-slate-400 prose prose-xs dark:prose-invert max-w-none break-words [&_p]:my-0.5 [&_img]:my-1 [&_img]:max-h-32 [&_img]:rounded-md [&_img]:object-contain"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+
+    return (
+      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 break-words">{details}</p>
+    );
+  };
+
   return (
     <Panel title="Recent Activity">
       <div className="space-y-4 mt-2">
@@ -50,9 +70,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
                 </span>
               </div>
 
-              {activity.details && (
-                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{activity.details}</p>
-              )}
+              {activity.details && renderActivityDetails(activity.details)}
             </div>
           </div>
         ))}
@@ -60,3 +78,4 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
     </Panel>
   );
 }
+

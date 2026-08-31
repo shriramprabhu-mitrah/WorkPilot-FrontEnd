@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
@@ -8,13 +9,59 @@ import InviteTeamModal from '../components/invitePopup';
 import { useGetProject, useGetTeamMembers, useGetUserById, useRemoveUser } from '../hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
+import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import TeamMemberCardSkeleton from '../components/TeamSkeleton';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { Pagination } from '@/src/app/components/common/pagination/pagination';
 
 export const TeamTemplate = () => {
- const [page, setPage] = useState(1);
- const [pageSize, setPageSize] = useState(10);
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+
+  const storeProject = useAppSelector((state) => state.project.selectedProject);
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== storeProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, storeProject?.id, dispatch]);
+
+  // If on legacy /teams without projectSlug in URL, redirect to /[orgSlug]/[slug]/teams
+  useEffect(() => {
+    if (!projectSlug && storeProject?.slug && orgSlug) {
+      router.replace(`/${orgSlug}/${storeProject.slug}/teams`);
+    }
+  }, [projectSlug, storeProject?.slug, orgSlug, router]);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -41,6 +88,10 @@ export const TeamTemplate = () => {
     setPageSize(newPageSize);
     setPage(1);
   };
+
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
 
   if (isTeamMembersLoading) {
     return <TeamMemberCardSkeleton />;

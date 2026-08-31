@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Plus, Search, ChevronDown, ChevronRight, Inbox } from 'lucide-react';
 import {
   DndContext,
@@ -33,9 +33,12 @@ import {
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import AddSprintModal from '@/src/modules/project/components/addSprint';
 import StartSprintModal from '../components/startSprintModal';
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
+import { useParams, useRouter } from 'next/navigation';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { KanbanTask } from '@/src/types/board';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
@@ -48,7 +51,10 @@ import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { PaginatedApiResponse } from '@/src/services/axios';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
+import {
+  useGetProjectMembers,
+  useGetProjectsWithSprints,
+} from '@/src/modules/project/hooks/useProject';
 import { SprintDetail } from '@/src/types/project';
 import CompleteSprintModal from '../components/CompleteSprint';
 const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
@@ -61,7 +67,7 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   description: task.description || '',
   priority: task.priority
     ? ((task.priority.charAt(0).toUpperCase() +
-      task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
     : 'Medium',
   labels: [],
   dueDate: task.due_date ? task.due_date.split('T')[0] : '',
@@ -71,11 +77,11 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   user_story_title: task.user_story_title,
   assigneeInitials: task.assignee_name
     ? task.assignee_name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : '',
   assigneeColor: colors.avatarBlue,
 });
@@ -163,12 +169,60 @@ export const BacklogTemplate = () => {
   >(new Map());
   const [unassignedTasksOpen, setUnassignedTasksOpen] = useState(true);
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+  const rawTaskKey = params?.taskKey;
+  const taskKey = Array.isArray(rawTaskKey) ? rawTaskKey[0] : (rawTaskKey as string | undefined);
+
   const [selectedCompleteSprint, setSelectedCompleteSprint] = useState<SprintDetail | null>(null);
   const [actionSprint, setActionSprint] = useState<SprintDetail | null>(null);
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
+
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
-  const selectedProject = selectedApiProject?.id ?? '';
+
+  // If on a projectSlug route, strictly use matchedProject; otherwise use Redux selectedApiProject
+  const effectiveProject = projectSlug ? matchedProject : selectedApiProject;
+  const selectedProject = effectiveProject?.id ?? '';
   const selectedSprint = selectedSprintStore?.id ?? '';
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== selectedApiProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, selectedApiProject?.id, dispatch]);
+
+  // If on /backlog without projectSlug in URL, redirect to /[orgSlug]/[slug]/backlog
+  useEffect(() => {
+    if (!projectSlug && selectedApiProject?.slug && orgSlug) {
+      router.replace(
+        `/${orgSlug}/${selectedApiProject.slug}/backlog${taskKey ? `/${taskKey}` : ''}`
+      );
+    }
+  }, [projectSlug, selectedApiProject?.slug, orgSlug, taskKey, router]);
 
   // Debounce member search for API calls
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
@@ -234,6 +288,94 @@ export const BacklogTemplate = () => {
     undefined,
     !!selectedProject && canViewSprints
   );
+
+  // Sync taskKey from URL with selectedTask / selectedUserStory
+  useEffect(() => {
+    if (!taskKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedTask(null);
+      setSelectedUserStory(null);
+      return;
+    }
+
+    const isStory =
+      taskKey.toUpperCase().startsWith('US-') || taskKey.toUpperCase().startsWith('US');
+    if (isStory) {
+      const matchedStory = userStories?.find(
+        (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
+      );
+      if (matchedStory) {
+        setSelectedUserStory(matchedStory);
+      } else {
+        setSelectedUserStory({
+          id: taskKey,
+          key: taskKey,
+          title: 'Loading...',
+          project_id: selectedProject,
+        } as UserStoryResponse);
+      }
+      setSelectedTask(null);
+    } else {
+      const foundTask = tasksList?.find(
+        (t) => t.key?.toUpperCase() === taskKey.toUpperCase() || t.id === taskKey
+      );
+      if (foundTask) {
+        setSelectedTask(mapTaskResponseToKanbanTask(foundTask));
+      } else {
+        setSelectedTask({
+          id: taskKey,
+          key: taskKey,
+          taskId: taskKey,
+          title: 'Loading...',
+          priority: 'Medium',
+          status: 'todo',
+          columnId: 'todo',
+          project: selectedProject,
+          projectId: selectedProject,
+          assigneeInitials: '',
+          assigneeColor: '',
+          points: 0,
+          labels: [],
+        } as unknown as KanbanTask);
+      }
+      setSelectedUserStory(null);
+    }
+  }, [taskKey, userStories, tasksList, selectedProject]);
+
+  const handleTaskClick = useCallback(
+    (task: KanbanTask) => {
+      setSelectedTask(task);
+      setSelectedUserStory(null);
+      const currentSlug = projectSlug || selectedApiProject?.slug || selectedApiProject?.id;
+      if (orgSlug && currentSlug) {
+        const key = task.id || task.taskId || task.key;
+        window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/backlog/${key}`);
+      }
+    },
+    [projectSlug, selectedApiProject?.slug, selectedApiProject?.id, orgSlug]
+  );
+
+  const handleUserStoryClick = useCallback(
+    (story: UserStoryResponse) => {
+      setSelectedUserStory(story);
+      setSelectedTask(null);
+      const currentSlug = projectSlug || selectedApiProject?.slug || selectedApiProject?.id;
+      if (orgSlug && currentSlug) {
+        const key = story.key || story.id;
+        window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/backlog/${key}`);
+      }
+    },
+    [projectSlug, selectedApiProject?.slug, selectedApiProject?.id, orgSlug]
+  );
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedTask(null);
+    setSelectedUserStory(null);
+    const currentSlug = projectSlug || selectedApiProject?.slug || selectedApiProject?.id;
+    if (orgSlug && currentSlug) {
+      window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/backlog`);
+    }
+  }, [projectSlug, selectedApiProject?.slug, selectedApiProject?.id, orgSlug]);
 
   const updateUserStoryMutation = useUpdateUserStory();
   const deleteUserStoryMutation = useDeleteUserStory();
@@ -560,16 +702,16 @@ export const BacklogTemplate = () => {
             ? { ...rawTask, id: actualTaskId, user_story_id: storyId }
             : currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                user_story_id: storyId,
-                project_id: currentActiveTask.projectId || selectedProject,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  user_story_id: storyId,
+                  project_id: currentActiveTask.projectId || selectedProject,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : undefined;
 
           if (taskToAppend) {
@@ -698,23 +840,23 @@ export const BacklogTemplate = () => {
             ? { ...matchedTask, id: actualTaskId, sprint_id: sprintId, user_story_id: undefined }
             : currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                sprint_id: sprintId,
-                project_id: currentActiveTask.projectId || effectiveProjectId,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  sprint_id: sprintId,
+                  project_id: currentActiveTask.projectId || effectiveProjectId,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : {
-                id: actualTaskId,
-                title: 'Task',
-                status: 'todo',
-                estimated_hours: 0,
-                sprint_id: sprintId,
-              };
+                  id: actualTaskId,
+                  title: 'Task',
+                  status: 'todo',
+                  estimated_hours: 0,
+                  sprint_id: sprintId,
+                };
 
           // Optimistic UI update: immediately move to target sprint
           setOptimisticTaskUpdates((prev) => {
@@ -798,15 +940,15 @@ export const BacklogTemplate = () => {
             (active.data.current?.task as TaskResponse | undefined) ||
             (currentActiveTask
               ? {
-                id: actualTaskId,
-                key: currentActiveTask.id,
-                title: currentActiveTask.title,
-                status: currentActiveTask.status || 'todo',
-                estimated_hours: 0,
-                project_id: currentActiveTask.projectId || effectiveProjectId,
-                story_points: currentActiveTask.storyPoints,
-                due_date: currentActiveTask.dueDate,
-              }
+                  id: actualTaskId,
+                  key: currentActiveTask.id,
+                  title: currentActiveTask.title,
+                  status: currentActiveTask.status || 'todo',
+                  estimated_hours: 0,
+                  project_id: currentActiveTask.projectId || effectiveProjectId,
+                  story_points: currentActiveTask.storyPoints,
+                  due_date: currentActiveTask.dueDate,
+                }
               : undefined);
 
           // Optimistic UI update: explicitly set sprintId: null and userStoryId: null
@@ -817,11 +959,11 @@ export const BacklogTemplate = () => {
               userStoryId: null,
               task: taskObj
                 ? {
-                  ...taskObj,
-                  id: actualTaskId,
-                  sprint_id: undefined,
-                  user_story_id: undefined,
-                }
+                    ...taskObj,
+                    id: actualTaskId,
+                    sprint_id: undefined,
+                    user_story_id: undefined,
+                  }
                 : undefined,
               timestamp: Date.now(),
             });
@@ -1217,6 +1359,10 @@ export const BacklogTemplate = () => {
     return status === 'in progress' || status === 'in_progress' || status === 'in-progress';
   }).length;
 
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -1282,31 +1428,35 @@ export const BacklogTemplate = () => {
                 <div
                   ref={canViewUserStories ? backlogRefCallback : undefined}
                   data-backlog-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${canViewUserStories && isOverBacklog
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
+                    canViewUserStories && isOverBacklog
                       ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
                       : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                    }`}
+                  }`}
                 >
                   <div
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${canViewUserStories && isOverBacklog
+                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
+                      canViewUserStories && isOverBacklog
                         ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
                         : 'border-gray-100 dark:border-slate-700'
-                      }`}
+                    }`}
                   >
                     <span
-                      className={`font-semibold text-sm transition-colors ${canViewUserStories && isOverBacklog
+                      className={`font-semibold text-sm transition-colors ${
+                        canViewUserStories && isOverBacklog
                           ? 'text-green-700 dark:text-green-400'
                           : 'text-gray-900 dark:text-slate-100'
-                        }`}
+                      }`}
                     >
                       Unassigned UserStories
                     </span>
                     {canViewUserStories && (
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${isOverBacklog
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
+                          isOverBacklog
                             ? 'bg-green-200 text-green-800 scale-110'
                             : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
-                          }`}
+                        }`}
                       >
                         {unassignedStories.length}{' '}
                         {unassignedStories.length === 1 ? 'story' : 'stories'}
@@ -1392,7 +1542,7 @@ export const BacklogTemplate = () => {
                             story={story}
                             projectId={selectedProject}
                             tasks={optimisticTasks}
-                            onStoryClick={(story) => setSelectedUserStory(story)}
+                            onStoryClick={handleUserStoryClick}
                           />
                         ))
                       )}
@@ -1404,12 +1554,13 @@ export const BacklogTemplate = () => {
                 <div
                   ref={canViewTasks ? setUnassignedTasksNodeRef : undefined}
                   data-tasks-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${canViewTasks &&
-                      isOverUnassignedTasks &&
-                      (activeTask || activeDragType === 'task')
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
+                    canViewTasks &&
+                    isOverUnassignedTasks &&
+                    (activeTask || activeDragType === 'task')
                       ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.01]'
                       : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-                    }`}
+                  }`}
                 >
                   <div
                     className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors select-none border-b border-gray-100 dark:border-slate-700"
@@ -1534,7 +1685,7 @@ export const BacklogTemplate = () => {
                               <BacklogRow
                                 key={task.id || task.key}
                                 task={task}
-                                onClick={() => setSelectedTask(mapTaskResponseToKanbanTask(task))}
+                                onClick={() => handleTaskClick(mapTaskResponseToKanbanTask(task))}
                               />
                             ))
                           )}
@@ -1591,8 +1742,8 @@ export const BacklogTemplate = () => {
                     sprint={sprint}
                     projectId={selectedProject}
                     activeDragType={activeDragType}
-                    onStoryClick={(story) => setSelectedUserStory(story)}
-                    onTaskClick={(task) => setSelectedTask(mapTaskResponseToKanbanTask(task))}
+                    onStoryClick={handleUserStoryClick}
+                    onTaskClick={(task) => handleTaskClick(mapTaskResponseToKanbanTask(task))}
                     onStartSprint={(sprint) => {
                       setActionSprint(sprint);
                       setShowStartSprintModal(true);
@@ -1728,13 +1879,11 @@ export const BacklogTemplate = () => {
         />
       )}
 
-      {selectedTask && (
-        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
-      )}
+      {selectedTask && <TaskDetailDrawer task={selectedTask} onClose={handleCloseDrawer} />}
       {selectedUserStory && (
         <UserStoryDetailDrawer
           userStory={selectedUserStory}
-          onClose={() => setSelectedUserStory(null)}
+          onClose={handleCloseDrawer}
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
           }}
@@ -1750,7 +1899,7 @@ export const BacklogTemplate = () => {
                 userStoryId: selectedUserStory.id,
               });
               queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
-              setSelectedUserStory(null);
+              handleCloseDrawer();
             } catch (error) {
               // Error is already handled by the mutation
             }

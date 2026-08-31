@@ -1,13 +1,18 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { Filter, Layers } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
-import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
+import {
+  useGetProjectMembers,
+  useGetProjectsWithSprints,
+} from '@/src/modules/project/hooks/useProject';
 import { taskService } from '@/src/services/tasks';
 import { useQueryClient } from '@tanstack/react-query';
 import { GetTasksQueryParams, Task, TaskResponse } from '@/src/types/task';
@@ -42,6 +47,7 @@ import { UserStoryResponse } from '@/src/types/userstories';
 import { KanbanCardContent } from '../components/kanbannCardContent';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { CustomStatus } from '@/src/types/colors';
 import { ScrollIndicator } from '../components/scrollIndicator';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
@@ -51,8 +57,14 @@ import { useDebounce } from '@/src/hooks/useDebounce';
 import { usePermissions } from '@/src/hooks/usePermissions';
 
 // Task card component for the swimlane
-const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void }) => {
-  const [showModal, setShowModal] = useState(false);
+const TaskCard = ({
+  task,
+  onTaskClick,
+}: {
+  task: KanbanTask;
+  onTaskClick?: (task: KanbanTask) => void;
+  onRefetch?: () => void;
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'card', task },
@@ -78,26 +90,17 @@ const TaskCard = ({ task, onRefetch }: { task: KanbanTask; onRefetch: () => void
     );
   }
 
-  const handleClose = () => {
-    setShowModal(false);
-    onRefetch();
-  };
-
   return (
-    <>
-      <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
-        onClick={() => setShowModal(true)}
-        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none w-full"
-      >
-        <KanbanCardContent task={task} />
-      </div>
-
-      {showModal && <TaskDetailDrawer task={task} onClose={handleClose} />}
-    </>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => onTaskClick?.(task)}
+      className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none w-full"
+    >
+      <KanbanCardContent task={task} />
+    </div>
   );
 };
 
@@ -107,12 +110,14 @@ const StatusCell = ({
   statusId,
   tasks,
   isOver,
+  onTaskClick,
   onRefetch,
 }: {
   storyId: string;
   statusId: string;
   tasks: KanbanTask[];
   isOver: boolean;
+  onTaskClick?: (task: KanbanTask) => void;
   onRefetch: () => void;
 }) => {
   const { setNodeRef } = useDroppable({
@@ -157,7 +162,7 @@ const StatusCell = ({
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onRefetch={onRefetch} />
+            <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} onRefetch={onRefetch} />
           ))}
         </div>
       </SortableContext>
@@ -171,6 +176,7 @@ const UserStoryRow = ({
   statuses,
   overCell,
   onUserStoryClick,
+  onTaskClick,
   onRefetch,
   collapsedStatuses,
 }: {
@@ -178,6 +184,7 @@ const UserStoryRow = ({
   statuses: CustomStatus[];
   overCell: { storyId: string; statusId: string } | null;
   onUserStoryClick: (story: UserStoryResponse) => void;
+  onTaskClick?: (task: KanbanTask) => void;
   onRefetch: () => void;
   collapsedStatuses: Set<string>;
 }) => {
@@ -290,24 +297,24 @@ const UserStoryRow = ({
               {showStoryPopup &&
                 typeof document !== 'undefined' &&
                 createPortal(
-<div
-  className="fixed z-[99999] min-w-72 w-fit max-w-[500px] rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+                  <div
+                    className="fixed z-[99999] min-w-72 w-fit max-w-[500px] rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
                     style={{
                       left: popupPosition.x + 12,
                       top: popupPosition.y + 12,
                     }}
                   >
                     {/* Name */}
-{/* Name */}
-<div className="flex items-start justify-between gap-4">
-  <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
-    Name
-  </span>
+                    {/* Name */}
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                        Name
+                      </span>
 
-  <span className="text-sm font-medium text-gray-800 dark:text-gray-100 text-right break-words">
-    {story.title}
-  </span>
-</div>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 text-right break-words">
+                        {story.title}
+                      </span>
+                    </div>
                     <div className="space-y-3">
                       {/* Status */}
                       <div className="flex items-center justify-between gap-4">
@@ -395,6 +402,7 @@ const UserStoryRow = ({
                     statusId={status.id}
                     tasks={tasks}
                     isOver={isOver}
+                    onTaskClick={onTaskClick}
                     onRefetch={onRefetch}
                   />
                 </div>
@@ -441,6 +449,7 @@ export const KanbanBoardTemplate = () => {
     Map<string, { statusId: string; storyId?: string }>
   >(new Map());
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
+  const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [collapsedStatuses, setCollapsedStatuses] = useState<Set<string>>(new Set());
   const [showFilter, setShowFilter] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
@@ -454,6 +463,7 @@ export const KanbanBoardTemplate = () => {
   });
   const [assigneeIdFilter, setAssigneeIdFilter] = useState<string[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
   const [memberSearch, setMemberSearch] = useState('');
   const [filterMemberSearch, setFilterMemberSearch] = useState('');
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
@@ -472,13 +482,57 @@ export const KanbanBoardTemplate = () => {
     canViewSprints,
   } = usePermissions();
 
-  const filterRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+  const rawTaskKey = params?.taskKey;
+  const taskKey = Array.isArray(rawTaskKey) ? rawTaskKey[0] : (rawTaskKey as string | undefined);
+
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
 
   const { selectedProject: storeProject, selectedSprint: storeSprint } = useAppSelector(
     (state) => state.project
   );
-  const selectedProject = storeProject?.id ?? '';
+
+  // If on a projectSlug route, strictly use matchedProject; otherwise use Redux storeProject
+  const effectiveProject = projectSlug ? matchedProject : storeProject;
+  const selectedProject = effectiveProject?.id ?? '';
   const selectedSprint = storeSprint?.id ?? '';
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== storeProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, storeProject?.id, dispatch]);
+
+  // If on /boards without projectSlug in URL, redirect to /[orgSlug]/[slug]/boards
+  useEffect(() => {
+    if (!projectSlug && storeProject?.slug && orgSlug) {
+      router.replace(`/${orgSlug}/${storeProject.slug}/boards${taskKey ? `/${taskKey}` : ''}`);
+    }
+  }, [projectSlug, storeProject?.slug, orgSlug, taskKey, router]);
 
   // Fetch project members for outer avatar display (always fetch all members, no search)
   const { members: displayMembers, isLoadingMembers: isLoadingDisplayMembers } =
@@ -851,6 +905,106 @@ export const KanbanBoardTemplate = () => {
     mapToKanbanTask,
   ]);
 
+  // Sync taskKey from URL with selectedTask / selectedUserStory
+  useEffect(() => {
+    if (!taskKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedTask(null);
+      setSelectedUserStory(null);
+      return;
+    }
+
+    const isStory =
+      taskKey.toUpperCase().startsWith('US-') || taskKey.toUpperCase().startsWith('US');
+    if (isStory) {
+      const matchedStory = userStories?.find(
+        (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
+      );
+      if (matchedStory) {
+        setSelectedUserStory(matchedStory);
+      } else {
+        setSelectedUserStory({
+          id: taskKey,
+          key: taskKey,
+          title: 'Loading...',
+          project_id: selectedProject,
+        } as UserStoryResponse);
+      }
+      setSelectedTask(null);
+    } else {
+      let matchedTask: KanbanTask | undefined = undefined;
+      for (const story of processedStories) {
+        for (const [, taskList] of story.tasksByStatus) {
+          const found = taskList.find(
+            (t: KanbanTask) => t.id?.toUpperCase() === taskKey.toUpperCase() || t.taskId === taskKey
+          );
+          if (found) {
+            matchedTask = found;
+            break;
+          }
+        }
+        if (matchedTask) break;
+      }
+
+      if (matchedTask) {
+        setSelectedTask(matchedTask);
+      } else {
+        setSelectedTask({
+          id: taskKey,
+          taskId: taskKey,
+          key: taskKey,
+          title: 'Loading...',
+          priority: 'Medium',
+          status: 'todo',
+          columnId: 'todo',
+          projectId: selectedProject,
+          assigneeInitials: '',
+          assigneeColor: '',
+          storyPoints: 0,
+          dueDate: '',
+          labels: [],
+        });
+      }
+      setSelectedUserStory(null);
+    }
+  }, [taskKey, userStories, processedStories, selectedProject]);
+
+  const handleTaskClick = useCallback(
+    (task: KanbanTask) => {
+      setSelectedTask(task);
+      setSelectedUserStory(null);
+      const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
+      if (orgSlug && currentSlug) {
+        const key = task.id || task.taskId;
+        window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards/${key}`);
+      }
+    },
+    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug]
+  );
+
+  const handleUserStoryClick = useCallback(
+    (story: UserStoryResponse) => {
+      setSelectedUserStory(story);
+      setSelectedTask(null);
+      const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
+      if (orgSlug && currentSlug) {
+        const key = story.key || story.id;
+        window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards/${key}`);
+      }
+    },
+    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug]
+  );
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedTask(null);
+    setSelectedUserStory(null);
+    const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
+    if (orgSlug && currentSlug) {
+      window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards`);
+    }
+    handleRefetch();
+  }, [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, handleRefetch]);
+
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
   // Derive unique assignees from filter members search results
@@ -1138,6 +1292,10 @@ export const KanbanBoardTemplate = () => {
     [processedStories, queryClient, selectedSprint, canEditTask]
   );
 
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
+
   return (
     <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
       {/* Header */}
@@ -1379,7 +1537,8 @@ export const KanbanBoardTemplate = () => {
                   story={story}
                   statuses={statuses}
                   overCell={overCell}
-                  onUserStoryClick={setSelectedUserStory}
+                  onUserStoryClick={handleUserStoryClick}
+                  onTaskClick={handleTaskClick}
                   onRefetch={handleRefetch}
                   collapsedStatuses={collapsedStatuses}
                 />
@@ -1400,11 +1559,28 @@ export const KanbanBoardTemplate = () => {
         </DndContext>
       )}
 
+      {/* Task Detail Drawer */}
+      {selectedTask && (
+        <TaskDetailDrawer
+          task={selectedTask}
+          onClose={handleCloseDrawer}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+            handleRefetch();
+          }}
+          onDelete={() => {
+            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+            handleRefetch();
+            handleCloseDrawer();
+          }}
+        />
+      )}
+
       {/* User Story Detail Drawer */}
       {selectedUserStory && (
         <UserStoryDetailDrawer
           userStory={selectedUserStory}
-          onClose={() => setSelectedUserStory(null)}
+          onClose={handleCloseDrawer}
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
@@ -1430,7 +1606,7 @@ export const KanbanBoardTemplate = () => {
                     queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
                     queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
                     handleRefetch();
-                    setSelectedUserStory(null);
+                    handleCloseDrawer();
                   } catch (error) {
                     // Error is already handled by the mutation
                   }

@@ -1,30 +1,76 @@
 'use client';
-import { X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { X, Trash2, UserPlus } from 'lucide-react';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
-import { useAddProjectMembers, useUpdateProjectRole } from '@/src/modules/project/hooks/useProject';
+import { useAddProjectMembers, useUpdateProjectRole, useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { AddProjectMembersPayload } from '@/src/types/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { showToast } from '@/src/utils/toast';
-import { useMemo } from 'react';
-import { Trash2, UserPlus } from 'lucide-react';
-import { useState } from 'react';
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetProjectMembers, useRemoveProjectMember } from '../hooks/useTeams';
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { useGetRoles } from '../../settings/hooks/useSettings';
 
 const MembersSettings = () => {
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [memberRoles, setMemberRoles] = useState<Record<string, ROLE_TYPE>>({});
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
+  
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-  const projectId = selectedApiProject?.id ?? '';
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
+
+  // If on a projectSlug route, strictly use matchedProject; otherwise use Redux
+  const effectiveProject = projectSlug ? matchedProject : selectedApiProject;
+  const projectId = effectiveProject?.id ?? '';
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== selectedApiProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, selectedApiProject?.id, dispatch]);
+
+  // If on legacy /teams without projectSlug in URL, redirect to /[orgSlug]/[slug]/teams
+  useEffect(() => {
+    if (!projectSlug && selectedApiProject?.slug && orgSlug) {
+      router.replace(`/${orgSlug}/${selectedApiProject.slug}/teams`);
+    }
+  }, [projectSlug, selectedApiProject?.slug, orgSlug, router]);
+
   const [page] = useState(1);
   const pageSize = 10;
   const [showAll, setShowAll] = useState(false);
@@ -166,6 +212,10 @@ const MembersSettings = () => {
       }
     );
   };
+
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
 
   if (isProjectMembersLoading) {
     return (

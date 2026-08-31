@@ -68,28 +68,80 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { handleLogOutAsync, logOut } = useSignin();
 
-  // Build navigation items with organization slug
+  const urlProjectSlug = params?.projectSlug as string | undefined;
+
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProjectFromUrl = useMemo(() => {
+    if (!urlProjectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === urlProjectSlug ||
+          p.id === urlProjectSlug ||
+          p.key?.toLowerCase() === urlProjectSlug.toLowerCase()
+      ) || null
+    );
+  }, [urlProjectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isInvalidUrlProject = useMemo(() => {
+    return !!urlProjectSlug && !isLoadingProjectsWithSprints && !matchedProjectFromUrl;
+  }, [urlProjectSlug, isLoadingProjectsWithSprints, matchedProjectFromUrl]);
+
+  // If on a project URL, strictly use the matched URL project; otherwise use Redux
+  const effectiveProject = isInvalidUrlProject
+    ? null
+    : matchedProjectFromUrl || selectedProject;
+
+  // Sync matched project from URL to Redux
+  useEffect(() => {
+    if (matchedProjectFromUrl && matchedProjectFromUrl.id !== selectedProject?.id) {
+      dispatch(setSelectedProject(matchedProjectFromUrl as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProjectFromUrl.sprints || []));
+    } else if (isInvalidUrlProject && selectedProject) {
+      dispatch(setSelectedProject(null as unknown as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints([]));
+      dispatch(setSelectedSprint(null));
+    }
+  }, [matchedProjectFromUrl, isInvalidUrlProject, selectedProject, dispatch]);
+
+  // Build navigation items with organization slug and project slug for project-scoped routes
   const navItems = useMemo(() => {
     if (!orgSlug) return [];
+    // Maintain whatever projectSlug is currently in the URL (even if invalid), or fall back to effectiveProject
+    const projSlug = urlProjectSlug || effectiveProject?.slug || effectiveProject?.id;
     return navItemsBase
       .filter((item) => item.path !== 'settings' || isOrgAdmin)
-      .map((item) => ({
-        ...item,
-        href: `/${orgSlug}/${item.path}`,
-      }));
-  }, [orgSlug, isOrgAdmin]);
+      .map((item) => {
+        let href = `/${orgSlug}/${item.path}`;
+        if (item.path === 'boards') {
+          href = projSlug ? `/${orgSlug}/${projSlug}/boards` : `/${orgSlug}/boards`;
+        } else if (item.path === 'backlog') {
+          href = projSlug ? `/${orgSlug}/${projSlug}/backlog` : `/${orgSlug}/backlog`;
+        } else if (item.path === 'dashboard') {
+          href = projSlug ? `/${orgSlug}/${projSlug}/dashboard` : `/${orgSlug}/dashboard`;
+        } else if (item.path === 'calendar') {
+          href = projSlug ? `/${orgSlug}/${projSlug}/calendar` : `/${orgSlug}/calendar`;
+        } else if (item.path === 'teams') {
+          href = projSlug ? `/${orgSlug}/${projSlug}/teams` : `/${orgSlug}/teams`;
+        }
+        return {
+          ...item,
+          href,
+        };
+      });
+  }, [orgSlug, isOrgAdmin, urlProjectSlug, effectiveProject?.slug, effectiveProject?.id]);
 
   // Manage Project modal state
   const [showManageProject, setShowManageProject] = useState(false);
-  const [tempProject, setTempProject] = useState<Project | null>(selectedProject);
+  const [tempProject, setTempProject] = useState<Project | null>(effectiveProject);
   const [tempSprint, setTempSprint] = useState<SprintDetail | null>(selectedSprint);
   const modalRef = useRef<HTMLDivElement>(null);
   const prevTempProjectId = useRef<string | undefined>(undefined);
 
-  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
-
-  // Fetch user's role for the selected project (auto-dispatches to Redux)
-  useGetUserProjectRole(selectedProject?.id);
+  // Fetch user's role for the effective project (auto-dispatches to Redux)
+  useGetUserProjectRole(effectiveProject?.id);
 
   // Derive sprints from projectsWithSprints based on tempProject
   const tempSprints = useMemo(() => {
@@ -118,7 +170,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   };
 
   const openManageProject = () => {
-    setTempProject(selectedProject);
+    setTempProject(effectiveProject);
     setTempSprint(selectedSprint);
     setShowManageProject(true);
   };
@@ -128,6 +180,21 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       dispatch(setSelectedProject(tempProject as Parameters<typeof setSelectedProject>[0]));
       dispatch(setSprints(tempSprints));
       dispatch(setSelectedSprint(tempSprint));
+
+      const projSlug = tempProject.slug || tempProject.id;
+      if (projSlug && pathname) {
+        if (pathname.includes('/boards')) {
+          router.push(`/${orgSlug}/${projSlug}/boards`);
+        } else if (pathname.includes('/backlog')) {
+          router.push(`/${orgSlug}/${projSlug}/backlog`);
+        } else if (pathname.includes('/dashboard')) {
+          router.push(`/${orgSlug}/${projSlug}/dashboard`);
+        } else if (pathname.includes('/calendar')) {
+          router.push(`/${orgSlug}/${projSlug}/calendar`);
+        } else if (pathname.includes('/teams')) {
+          router.push(`/${orgSlug}/${projSlug}/teams`);
+        }
+      }
     }
     setShowManageProject(false);
   };
@@ -135,7 +202,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const showLabels = isExpanded || !!onClose;
 
   const sprintLabel = selectedSprint ? selectedSprint.name : 'All sprints';
-  const projectLabel = selectedProject?.name || 'Select Project';
+  const projectLabel = isInvalidUrlProject
+    ? 'Project not found'
+    : effectiveProject?.name || 'Select Project';
 
   return (
     <>
@@ -205,7 +274,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
             <div
               className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors bg-[#f4f5f7] dark:bg-slate-800
                 ${
-                  !selectedProject
+                  !effectiveProject
                     ? 'border border-red-500'
                     : 'border border-transparent hover:bg-gray-100 dark:hover:bg-slate-700'
                 }`}
@@ -216,7 +285,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
                   style={{ backgroundColor: colors.accent }}
                 >
-                  {getProjectInitials(selectedProject?.name)}
+                  {getProjectInitials(effectiveProject?.name)}
                 </div>
                 {showLabels && (
                   <div className="min-w-0">
@@ -245,7 +314,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           {/* Navigation */}
           <nav className="flex-1 px-3 space-y-0.5">
             {navItems.map(({ label, href, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(`${href}/`);
+              const active =
+                pathname === href ||
+                pathname.startsWith(`${href}/`) ||
+                (label === 'Dashboard' && pathname.includes('/dashboard')) ||
+                (label === 'Boards' && pathname.includes('/boards')) ||
+                (label === 'Backlog' && pathname.includes('/backlog')) ||
+                (label === 'Calendar' && pathname.includes('/calendar')) ||
+                (label === 'Teams' && pathname.includes('/teams'));
               return (
                 <Link
                   key={href}
