@@ -86,7 +86,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 p-5">
               <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">
-                Create {fields.length} Sprints
+                Configure {fields.length} Sprints
               </h2>
               <WpButton
                 type="button"
