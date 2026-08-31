@@ -1,31 +1,83 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import CalendarView from './calendarsViews';
 import UpcomingEvents from './upcominggEventss';
 import TodayCard from './todaysCards';
 import EventLegends from './eventsLegendss';
 import { Views, View } from 'react-big-calendar';
 import { expandMultiDayEvents } from '../../../utils/calendar';
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
+import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import CalendarSkeleton from './calendarSkeleton';
 import type { SprintDetail } from '@/src/types/project';
 import type { CalendarEvent } from '../types';
 
 const CalendarPage = () => {
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>(Views.MONTH);
 
   const { canViewSprints } = usePermissions();
-  const selectedProject = useAppSelector((state) => state.project.selectedProject);
-  const projectId = selectedProject?.id ?? '';
+  const storeProject = useAppSelector((state) => state.project.selectedProject);
+  const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
+
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
+
+  // If on a projectSlug route, strictly use matchedProject; otherwise use storeProject
+  const effectiveProject = projectSlug ? matchedProject : storeProject;
+  const projectId = effectiveProject?.id ?? '';
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== storeProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, storeProject?.id, dispatch]);
+
+  // If on legacy /calendar without projectSlug in URL, redirect to /[orgSlug]/[slug]/calendar
+  useEffect(() => {
+    if (!projectSlug && storeProject?.slug && orgSlug) {
+      router.replace(`/${orgSlug}/${storeProject.slug}/calendar`);
+    }
+  }, [projectSlug, storeProject?.slug, orgSlug, router]);
+
   const { sprints, isLoadingSprints } = useGetSprints(
     projectId,
     undefined,
     !!projectId && canViewSprints
   );
+
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
 
   const sprintEvents: CalendarEvent[] = (sprints ?? []).map((sprint: SprintDetail) => ({
     id: sprint.id,

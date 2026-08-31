@@ -5,6 +5,7 @@ export interface Project {
   id?: string;
   name: string;
   key?: string;
+  slug?: string;
   description?: string;
   start_date?: string;
   end_date?: string;
@@ -133,7 +134,8 @@ export interface ProjectDetail {
   members: ProjectDetailMember[];
   sprints: SprintDetail[];
   key?: string; // Optional key to be added after fetching
-  owner?: string; // Optional owner to be added after fetching
+  owner?: string;
+  slug?: string// Optional owner to be added after fetching
 }
 
 export interface ProjectMember {
@@ -196,7 +198,7 @@ export interface ActivityFilters {
   user_story_id?: string;
   sprint_id?: string;
   user_id?: string;
-  activity_type?:string;
-  start_date?:string;
-  end_date?:string;
+  activity_type?: string;
+  start_date?: string;
+  end_date?: string;
 }

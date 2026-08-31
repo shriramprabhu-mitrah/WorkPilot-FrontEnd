@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import StatCardsSection from '../../reports/components/StatCardsSection';
 import BurndownCard from '../../reports/components/BurndownCard';
 import SprintProgressCard from '../../reports/components/SprintProgressCard';
@@ -11,8 +12,10 @@ import UpcomingDeadlines from '../components/UpcomingDeadlines';
 import { STATS, weekLabels, weeklyPlanned, weeklyCompleted } from '../../reports/data';
 import { useGetOrganization } from '../../organization/hooks/useOrganization';
 import { useGetDashboard, useGetRecentActivities } from '../hooks/useDashboard';
-import { useAppSelector } from '@/src/store';
+import { useAppSelector, useAppDispatch } from '@/src/store';
+import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { ProjectSelectionPopover } from '@/src/app/components/common/project-selection-popover';
+import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { useGetProjectsWithSprints } from '../../project/hooks/useProject';
 import DashboardSkeleton from '../components/dashboardSkeletons';
 import { colors } from '@/src/styles/colors';
@@ -22,7 +25,13 @@ const POPOVER_DISMISSED_KEY = 'project-selection-popover-dismissed';
 const CREATE_PROJECT_POPOVER_DISMISSED_KEY = 'create-project-popover-dismissed';
 
 export const DashBoardTemplate = () => {
-  const { selectedProject, selectedSprint } = useAppSelector((state) => state.project);
+  const router = useRouter();
+  const params = useParams();
+  const dispatch = useAppDispatch();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
+
+  const { selectedProject: storeProject, selectedSprint } = useAppSelector((state) => state.project);
   const user = useAppSelector((state) => state.user);
   const isOrgAdmin = user.role === 'org_admin';
 
@@ -30,10 +39,46 @@ export const DashBoardTemplate = () => {
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
   const hasProjects = projectsWithSprints && projectsWithSprints.length > 0;
 
+  // Find project matching current URL project slug if present
+  const matchedProject = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    return (
+      projectsWithSprints.find(
+        (p) =>
+          p.slug === projectSlug ||
+          p.id === projectSlug ||
+          p.key?.toLowerCase() === projectSlug.toLowerCase()
+      ) || null
+    );
+  }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
+
+  const isProjectNotFound = useMemo(() => {
+    if (!projectSlug || isLoadingProjectsWithSprints) return false;
+    return !matchedProject;
+  }, [projectSlug, matchedProject, isLoadingProjectsWithSprints]);
+
+  // If on a projectSlug route, strictly use matchedProject; otherwise use storeProject
+  const effectiveProject = projectSlug ? matchedProject : storeProject;
+
+  // Sync project to Redux when matched from URL projectSlug
+  useEffect(() => {
+    if (matchedProject && matchedProject.id !== storeProject?.id) {
+      dispatch(setSelectedProject(matchedProject as Parameters<typeof setSelectedProject>[0]));
+      dispatch(setSprints(matchedProject.sprints || []));
+    }
+  }, [matchedProject, storeProject?.id, dispatch]);
+
+  // If on legacy /dashboard without projectSlug in URL, redirect to /[orgSlug]/[slug]/dashboard
+  useEffect(() => {
+    if (!projectSlug && storeProject?.slug && orgSlug) {
+      router.replace(`/${orgSlug}/${storeProject.slug}/dashboard`);
+    }
+  }, [projectSlug, storeProject?.slug, orgSlug, router]);
+
   const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(1, 7);
 
   const { dashboard, isLoadingDashboard } = useGetDashboard(
-    selectedProject?.id ?? '',
+    effectiveProject?.id ?? '',
     selectedSprint?.id
   );
 
@@ -95,7 +140,7 @@ export const DashBoardTemplate = () => {
     !loading &&
     !isLoadingProjectsWithSprints &&
     hasProjects &&
-    !selectedProject &&
+    !effectiveProject &&
     !hasBeenDismissed;
 
   const handleDismissSelectPopover = () => {
@@ -107,6 +152,11 @@ export const DashBoardTemplate = () => {
     setCreateProjectPopoverDismissed(true);
     localStorage.setItem(CREATE_PROJECT_POPOVER_DISMISSED_KEY, 'true');
   };
+
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
+
   if (
     isOrganizationLoading ||
     isLoadingProjectsWithSprints ||

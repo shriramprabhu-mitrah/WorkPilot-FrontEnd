@@ -39,7 +39,12 @@ import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from './components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 // adjust path to wherever StatusModal.tsx actually lives relative to this file
-import { useAssignTaskToMe, useCloneTask, useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
+import {
+  useAssignTaskToMe,
+  useCloneTask,
+  useDeleteTask,
+  useGetTaskById,
+} from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -87,11 +92,24 @@ const useResizable = (initial: number, min: number, max: number) => {
 
 export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDetailDrawerProps) => {
   const { canEditTask, canDeleteTask, canCreateTask, canViewUserStories } = usePermissions();
+  const storeProjectId = useAppSelector((state) => state.project.selectedProject?.id) || '';
+  const effectiveProjectId = task.projectId || storeProjectId;
+  const effectiveTaskId = task.key || task.id;
+
+  const { task: fetchedTask, isLoadingTask: isLoading } = useGetTaskById(
+    effectiveProjectId,
+    effectiveTaskId
+  );
+  const [estimatedHoursInput, setEstimatedHoursInput] = useState('');
+  const [estimatedMinutesInput, setEstimatedMinutesInput] = useState('');
+  const [savedDescription, setSavedDescription] = useState('');
+  const [actualHoursInput, setActualHoursInput] = useState('');
+  const [actualMinutesInput, setActualMinutesInput] = useState('');
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
     status: task.status ?? task.columnId ?? '',
-    project_id: task.projectId ?? '',
+    project_id: effectiveProjectId,
     description: task.description ?? '',
     priority: task.priority,
     labels: task.labels,
@@ -114,11 +132,76 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     reporterInitials: task.reporterInitials ?? '',
     reporterColor: task.reporterColor ?? '',
   });
+
+  useEffect(() => {
+    if (fetchedTask) {
+      const estimated = Number(fetchedTask.estimated_hours ?? 0);
+      const actual = Number(fetchedTask.actual_hours ?? 0);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEstimatedHoursInput(String(Math.floor(estimated)));
+      setEstimatedMinutesInput(String(Math.round((estimated % 1) * 60)));
+
+      setActualHoursInput(String(Math.floor(actual)));
+      setActualMinutesInput(String(Math.round((actual % 1) * 60)));
+
+      const apiDescription = fetchedTask.description ?? '';
+      const assigneeName = fetchedTask.assignee_name ?? '';
+      const reporterId = fetchedTask.reporter_id ?? '';
+      const reporterName = fetchedTask.reporter_name ?? '';
+      const reporterInitials = reporterName
+        ? reporterName
+            .split(' ')
+            .filter(Boolean)
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+        : '';
+      const reporterColor = fetchedTask.reporter?.color ?? '';
+      const initials = assigneeName
+        ? assigneeName
+            .split(' ')
+            .filter(Boolean)
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+        : '';
+
+      setTaskData({
+        title: fetchedTask.title || '',
+        subtasks: task.subtasks ?? [],
+        status: fetchedTask.status || fetchedTask.status_id || '',
+        project_id: fetchedTask.project_id || effectiveProjectId,
+        description: apiDescription,
+        priority: fetchedTask.priority
+          ? ((fetchedTask.priority.charAt(0).toUpperCase() +
+              fetchedTask.priority.slice(1).toLowerCase()) as Priority)
+          : 'Medium',
+        labels: task.labels || [],
+        dueDate: fetchedTask.due_date ? fetchedTask.due_date.replace(/Z$/, '') : '',
+        startDate: fetchedTask.start_date ? fetchedTask.start_date.replace(/Z$/, '') : '',
+        user_story_title: fetchedTask.user_story_title ?? '',
+        user_story_id: fetchedTask.user_story_id ?? '',
+        storyPoints: fetchedTask.story_points ?? 0,
+        estimatedHours: estimated,
+        actualHours: actual,
+        sprint: fetchedTask.sprint_name ?? '',
+        parent: task.parent ?? '',
+        assignee: initials,
+        assigneeColor: fetchedTask.assignee?.color ?? '',
+        assigneeId: fetchedTask.assignee_id ?? '',
+        assigneeName: assigneeName,
+        reporterId,
+        reporterName,
+        reporterInitials,
+        reporterColor,
+      });
+
+      setSavedDescription(apiDescription);
+    }
+  }, [fetchedTask, effectiveProjectId, task.subtasks, task.labels, task.parent]);
   // const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [estimatedHoursInput, setEstimatedHoursInput] = useState('');
-  const [estimatedMinutesInput, setEstimatedMinutesInput] = useState('');
-  const [actualHoursInput, setActualHoursInput] = useState('');
-  const [actualMinutesInput, setActualMinutesInput] = useState('');
 
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [showReporterMenu, setShowReporterMenu] = useState(false);
@@ -183,10 +266,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const actionMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const descriptionEditorRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  //   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [savedDescription, setSavedDescription] = useState('');
-  const hasFetched = useRef<string | null>(null);
+
   const {
     attachments,
     isLoadingAttachments,
@@ -391,98 +473,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
-  useEffect(() => {
-    if (hasFetched.current === task.taskId) return;
-
-    hasFetched.current = task.taskId ?? null;
-
-    const fetchDetail = async () => {
-      if (!task.projectId || !task.taskId) return;
-
-      try {
-        setIsLoading(true);
-        const taskRes = await taskService.getTaskById(task.projectId, task.taskId);
-        if (taskRes.data) {
-          const d = taskRes.data;
-
-          const estimated = Number(d.estimated_hours ?? 0);
-          const actual = Number(d.actual_hours ?? 0);
-
-          setEstimatedHoursInput(String(Math.floor(estimated)));
-          setEstimatedMinutesInput(String(Math.round((estimated % 1) * 60)));
-
-          setActualHoursInput(String(Math.floor(actual)));
-          setActualMinutesInput(String(Math.round((actual % 1) * 60)));
-          const apiDescription = d.description ?? '';
-          const assigneeName = d.assignee_name ?? '';
-          const reporterId = d.reporter_id ?? '';
-          const reporterName = d.reporter_name ?? '';
-          const reporterInitials = reporterName
-            ? reporterName
-                .split(' ')
-                .filter(Boolean)
-                .map((n: string) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
-            : '';
-          const reporterColor = d.reporter?.color ?? '';
-          const initials = assigneeName
-            ? assigneeName
-                .split(' ')
-                .filter(Boolean)
-                .map((n: string) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
-            : task.assigneeInitials;
-
-          setTaskData((prev) => ({
-            ...prev,
-
-            description: d.description ?? prev.description,
-
-            priority: d.priority
-              ? ((d.priority.charAt(0).toUpperCase() +
-                  d.priority.slice(1).toLowerCase()) as Priority)
-              : prev.priority,
-
-            status: d.status ?? prev.status,
-
-            // Reporter
-            reporterId,
-            reporterName,
-            reporterInitials,
-            reporterColor,
-
-            user_story_title: d.user_story_title ?? prev.user_story_title,
-
-            dueDate: d.due_date ? d.due_date.replace(/Z$/, '') : '',
-
-            storyPoints: d.story_points ?? prev.storyPoints,
-            estimatedHours: d.estimated_hours ?? prev.estimatedHours,
-            actualHours: d.actual_hours ?? prev.actualHours,
-            sprint: d.sprint_name ?? prev.sprint,
-
-            // Assignee
-            assignee: initials,
-            assigneeColor: d.assignee?.color ?? task.assigneeColor ?? '',
-            assigneeId: d.assignee_id ?? '',
-            assigneeName: assigneeName,
-          }));
-
-          setSavedDescription(apiDescription);
-        }
-      } catch (error) {
-        logger.log('Failed to fetch task detail', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDetail();
-  }, [task.taskId, task.projectId]);
-
   const [uiState, setUiState] = useState({
     showStatusMenu: false,
     editingDesc: false,
@@ -494,54 +484,42 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const { width: rightWidth, onMouseDown: onDividerMouseDown } = useResizable(320, 240, 480);
 
-useEffect(() => {
-  const handler = (event: MouseEvent) => {
-    // Close description editor when clicking outside
-    if (
-      descriptionEditorRef.current &&
-      !descriptionEditorRef.current.contains(event.target as Node)
-    ) {
-      setUiState((prev) => ({
-        ...prev,
-        editingDesc: false,
-      }));
-    }
+  useEffect(() => {
+    const handler = (event: MouseEvent) => {
+      // Close description editor when clicking outside
+      if (
+        descriptionEditorRef.current &&
+        !descriptionEditorRef.current.contains(event.target as Node)
+      ) {
+        setUiState((prev) => ({
+          ...prev,
+          editingDesc: false,
+        }));
+      }
 
-    if (
-      statusMenuRef.current &&
-      !statusMenuRef.current.contains(event.target as Node)
-    ) {
-      setUiState((prev) => ({ ...prev, showStatusMenu: false }));
-    }
+      if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
+        setUiState((prev) => ({ ...prev, showStatusMenu: false }));
+      }
 
-    if (
-      assigneeMenuRef.current &&
-      !assigneeMenuRef.current.contains(event.target as Node)
-    ) {
-      setShowAssigneeMenu(false);
-    }
+      if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
+        setShowAssigneeMenu(false);
+      }
 
-    if (
-      reporterMenuRef.current &&
-      !reporterMenuRef.current.contains(event.target as Node)
-    ) {
-      setShowReporterMenu(false);
-    }
+      if (reporterMenuRef.current && !reporterMenuRef.current.contains(event.target as Node)) {
+        setShowReporterMenu(false);
+      }
 
-    if (
-      actionMenuRef.current &&
-      !actionMenuRef.current.contains(event.target as Node)
-    ) {
-      setShowActionMenu(false);
-    }
-  };
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
+        setShowActionMenu(false);
+      }
+    };
 
-  document.addEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler);
 
-  return () => {
-    document.removeEventListener('mousedown', handler);
-  };
-}, []);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+    };
+  }, []);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -791,8 +769,8 @@ useEffect(() => {
               </p>
 
               {uiState.editingDesc ? (
-  <div ref={descriptionEditorRef}>
-    <WpRichTextEditor
+                <div ref={descriptionEditorRef}>
+                  <WpRichTextEditor
                     value={editTaskDescription}
                     onChange={(value) => {
                       setEditTaskDescription(value);
