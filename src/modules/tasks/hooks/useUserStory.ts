@@ -121,13 +121,16 @@ export const useUpdateUserStory = () => {
       payload: UpdateUserStoryPayload;
     }) => userStoryService.updateUserStory(projectId, userStoryId, payload),
     onSuccess: (_, variables) => {
-      // Invalidate the specific user story to refetch with updated tasks
       queryClient.invalidateQueries({
         queryKey: ['user-story', variables.projectId, variables.userStoryId],
       });
-      // Invalidate the user stories list
+
       queryClient.invalidateQueries({
         queryKey: ['user-stories', variables.projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['sprint-user-stories', variables.projectId],
       });
     },
   });
@@ -281,6 +284,10 @@ export const useChangeUserStoryStatus = () => {
 
       queryClient.invalidateQueries({
         queryKey: ['user-stories', variables.projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['sprint-user-stories', variables.projectId],
       });
     },
   });

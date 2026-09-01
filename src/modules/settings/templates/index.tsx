@@ -12,7 +12,7 @@ import Permissions from '../components/permissions';
 import StatusSettings from '../components/statusSettings';
 import { BillingSettings } from '../components/billingSettings';
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { TeamTemplate } from '../../teams/templates';
+import { MemberSettings } from '../components/MemberSettings';
 
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
@@ -51,7 +51,7 @@ export const SettingPageTemplate = () => {
       {/* {activeTab === 'Permissions Matrix' && <PermissionsMatrix />} */}
       {/* {activeTab === 'Roles & Permissions' && <RolePermission />} */}
       {/* {activeTab === 'Notifications' && <NotificationSettings />} */}
-      {activeTab === 'Members' && <TeamTemplate />}
+      {activeTab === 'Members' && <MemberSettings />}
       {activeTab === 'Permissions' && <Permissions />}
       {activeTab === 'Status' && <StatusSettings />}
       {activeTab === 'Security' && <SecuritySetting />}

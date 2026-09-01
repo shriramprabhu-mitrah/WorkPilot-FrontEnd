@@ -155,9 +155,8 @@ const StatusCell = ({
         ...(isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}),
         ...(needsScroll ? { maxHeight: '400px', overflowY: 'scroll' } : {}),
       }}
-      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${
-        isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
-      }`}
+      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
+        }`}
     >
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2">
@@ -201,11 +200,10 @@ const UserStoryRow = ({
       <div className="flex items-stretch">
         {/* Sticky User Story Column on the left */}
         <div
-          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${
-            isSpecialStory
+          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${isSpecialStory
               ? 'bg-indigo-50 border-indigo-200/80 dark:bg-slate-900/90 dark:border-indigo-900/50'
               : 'bg-gray-50 border-gray-200 dark:bg-gray-800/90 dark:border-gray-700'
-          }`}
+            }`}
         >
           <div className="flex items-start gap-2">
             <button
@@ -214,9 +212,8 @@ const UserStoryRow = ({
               aria-label={isExpanded ? 'Collapse story tasks' : 'Expand story tasks'}
             >
               <svg
-                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${
-                  isExpanded ? 'rotate-90' : ''
-                }`}
+                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-90' : ''
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -251,9 +248,8 @@ const UserStoryRow = ({
                 });
               }}
               onMouseLeave={() => setShowStoryPopup(false)}
-              className={`relative flex items-start gap-2 flex-1 min-w-0 ${
-                !isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
-              }`}
+              className={`relative flex items-start gap-2 flex-1 min-w-0 ${!isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
+                }`}
             >
               {isSpecialStory ? (
                 <div className="flex-1 min-w-0">
@@ -282,9 +278,8 @@ const UserStoryRow = ({
                   />
                   <div className="flex-1 min-w-0">
                     <h3
-                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${
-                        !isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
-                      } ${story.is_closed ? 'line-through' : ''}`}
+                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${!isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
+                        } ${story.is_closed ? 'line-through' : ''}`}
                     >
                       {story.title}
                     </h3>
@@ -368,9 +363,8 @@ const UserStoryRow = ({
             return (
               <div
                 key={status.id}
-                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-                  isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                }`}
+                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                  }`}
               />
             );
           })}
@@ -384,17 +378,15 @@ const UserStoryRow = ({
           return (
             <div
               key={status.id}
-              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
-                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-              }`}
+              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                }`}
             >
               {/* Expanded Tasks with smooth CSS Grid animation */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  isExpanded && !isCollapsed
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${isExpanded && !isCollapsed
                     ? 'grid-rows-[1fr] opacity-100'
                     : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
+                  }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <StatusCell
@@ -410,11 +402,10 @@ const UserStoryRow = ({
 
               {/* Collapsed summary with smooth transition */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  !isExpanded || isCollapsed
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${!isExpanded || isCollapsed
                     ? 'grid-rows-[1fr] opacity-100'
                     : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
+                  }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <div className="h-[52px] p-2 flex items-center justify-center">
@@ -749,16 +740,16 @@ export const KanbanBoardTemplate = () => {
         title: task.title ?? '',
         priority: task.priority
           ? ((task.priority.charAt(0).toUpperCase() +
-              task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+            task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
           : 'Medium',
         labels: [],
         assigneeInitials: task.assignee_name
           ? task.assignee_name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
           : '',
         assigneeColor: task?.assignee?.color ?? '',
         storyPoints: task.story_points ?? 0,
@@ -1366,9 +1357,8 @@ export const KanbanBoardTemplate = () => {
                   <button
                     key={member.id}
                     onClick={() => toggleAssigneeFilter(userId, memberName)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
-                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
-                    }`}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+                      }`}
                     style={{ backgroundColor: member.color }}
                     title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
                   >
@@ -1447,9 +1437,8 @@ export const KanbanBoardTemplate = () => {
                   return (
                     <div
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
-                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                      }`}
+                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                        }`}
                     >
                       {!isCollapsed ? (
                         <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">
@@ -1589,28 +1578,28 @@ export const KanbanBoardTemplate = () => {
           onCreateTask={
             canCreateTask
               ? () => {
-                  // Keep user story drawer open, task modal will appear on top
-                  setTaskUserStoryId(selectedUserStory.id);
-                  setShowAddTaskModal(true);
-                }
+                // Keep user story drawer open, task modal will appear on top
+                setTaskUserStoryId(selectedUserStory.id);
+                setShowAddTaskModal(true);
+              }
               : undefined
           }
           onDelete={
             canDeleteUserStory
               ? async () => {
-                  try {
-                    await deleteUserStoryMutation.mutateAsync({
-                      projectId: selectedProject,
-                      userStoryId: selectedUserStory.id,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
-                    queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-                    handleRefetch();
-                    handleCloseDrawer();
-                  } catch (error) {
-                    // Error is already handled by the mutation
-                  }
+                try {
+                  await deleteUserStoryMutation.mutateAsync({
+                    projectId: selectedProject,
+                    userStoryId: selectedUserStory.id,
+                  });
+                  queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+                  queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
+                  handleRefetch();
+                  handleCloseDrawer();
+                } catch (error) {
+                  // Error is already handled by the mutation
                 }
+              }
               : undefined
           }
         />
