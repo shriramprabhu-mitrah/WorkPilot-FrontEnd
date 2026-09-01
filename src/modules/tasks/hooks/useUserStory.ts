@@ -31,11 +31,7 @@ export const useGetUserStories = (
 
 const SPRINT_PAGE_SIZE = 5;
 
-export const useGetSprintUserStories = (
-  projectId: string,
-  sprintId: string,
-  enabled = true
-) => {
+export const useGetSprintUserStories = (projectId: string, sprintId: string, enabled = true) => {
   const query = useInfiniteQuery({
     queryKey: ['sprint-user-stories', projectId, sprintId],
     queryFn: ({ pageParam = 1 }) =>
@@ -66,7 +62,8 @@ export const useGetSprintUserStories = (
   });
 
   const allUserStories = query.data?.pages.flatMap((page) => page.data ?? []) ?? [];
-  const totalItems = query.data?.pages[0]?.meta?.total_items ?? query.data?.pages[0]?.meta?.totalItems;
+  const totalItems =
+    query.data?.pages[0]?.meta?.total_items ?? query.data?.pages[0]?.meta?.totalItems;
 
   return {
     userStories: allUserStories,

@@ -92,22 +92,16 @@ export const ProjectsTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
-                {[
-                  'Project',
-                  'Organization',
-                  'Key',
-                  'Status',
-                  'Sprints',
-                  'Members',
-                  'Created',
-                ].map((col) => (
-                  <th
-                    key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
-                  >
-                    {col}
-                  </th>
-                ))}
+                {['Project', 'Organization', 'Key', 'Status', 'Sprints', 'Members', 'Created'].map(
+                  (col) => (
+                    <th
+                      key={col}
+                      className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    >
+                      {col}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">

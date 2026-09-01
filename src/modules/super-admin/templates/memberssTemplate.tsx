@@ -57,11 +57,11 @@ export const MembersTemplate = () => {
   const getInitials = (name: string) =>
     name
       ? name
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
   const getAvatarColor = (id: string) => {
@@ -134,10 +134,11 @@ export const MembersTemplate = () => {
                       setSelectedOrg('All Organizations');
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedOrg === 'All Organizations'
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                      selectedOrg === 'All Organizations'
                         ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
                         : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                      }`}
+                    }`}
                   >
                     All Organizations
                   </button>
@@ -148,10 +149,11 @@ export const MembersTemplate = () => {
                         setSelectedOrg(org.name);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedOrg === org.name
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        selectedOrg === org.name
                           ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
                           : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                        }`}
+                      }`}
                     >
                       {org.name}
                     </button>
@@ -169,16 +171,14 @@ export const MembersTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
-                {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined'].map(
-                  (col) => (
-                    <th
-                      key={col}
-                      className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
-                    >
-                      {col}
-                    </th>
-                  )
-                )}
+                {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined'].map((col) => (
+                  <th
+                    key={col}
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                  >
+                    {col}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -243,7 +243,6 @@ export const MembersTemplate = () => {
                     </td>
                   </tr>
                 );
-
               })}
             </tbody>
           </table>

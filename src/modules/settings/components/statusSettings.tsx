@@ -213,13 +213,15 @@ function StatusRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 ${isDragging
+      className={`group grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 transition-all last:border-b-0 ${
+        isDragging
           ? 'opacity-40 bg-slate-50 dark:bg-slate-800/40 border-dashed border-blue-300'
           : 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10 hover:shadow-[inset_3px_0_0_#2563eb]'
-        } ${isOverlay
+      } ${
+        isOverlay
           ? 'shadow-xl ring-2 ring-blue-500/30 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800'
           : ''
-        }`}
+      }`}
     >
       <div
         {...attributes}
@@ -389,15 +391,6 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
   const serverStatuses: Status[] = useMemo(() => {
     const list = isUserStory
       ? userStoryStatuses.map((status) => ({
-        id: String(status.id),
-        name: status.name,
-        color: status.color,
-        display_order: status.display_order,
-        slug: toSlug(status.name),
-        isClosed: status.is_final,
-      }))
-      : isTask
-        ? taskStatuses.map((status) => ({
           id: String(status.id),
           name: status.name,
           color: status.color,
@@ -405,6 +398,15 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           slug: toSlug(status.name),
           isClosed: status.is_final,
         }))
+      : isTask
+        ? taskStatuses.map((status) => ({
+            id: String(status.id),
+            name: status.name,
+            color: status.color,
+            display_order: status.display_order,
+            slug: toSlug(status.name),
+            isClosed: status.is_final,
+          }))
         : statuses;
 
     return [...list].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
@@ -585,11 +587,11 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
       prev.map((s) =>
         s.id === id
           ? {
-            ...s,
-            name: trimmed,
-            slug: toSlug(trimmed),
-            isClosed,
-          }
+              ...s,
+              name: trimmed,
+              slug: toSlug(trimmed),
+              isClosed,
+            }
           : s
       )
     );
@@ -658,17 +660,19 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
   };
   return (
     <div
-      className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${isOpen
+      className={`mb-4 w-full lg:w-[55%] overflow-hidden rounded-xl border transition-all ${
+        isOpen
           ? 'border-blue-200 dark:border-blue-800 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
           : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
-        } bg-white dark:bg-slate-800`}
+      } bg-white dark:bg-slate-800`}
     >
       {/* Section header */}
       <div
-        className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${isOpen
+        className={`flex min-h-[60px] items-center px-4 sm:px-5 transition-all ${
+          isOpen
             ? 'border-b border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20'
             : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-          }`}
+        }`}
       >
         <button
           type="button"
@@ -685,10 +689,11 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
         >
           <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${isOpen
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
+              isOpen
                 ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm'
                 : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-              }`}
+            }`}
           >
             <ChevronRight
               size={18}
@@ -703,10 +708,11 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           </span>
 
           <span
-            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isOpen
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              isOpen
                 ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
                 : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-              }`}
+            }`}
           >
             {items.length}
           </span>
@@ -803,10 +809,10 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
                     showArchived={config.showArchived}
                     isEditing={false}
                     isOverlay
-                    onEdit={() => { }}
-                    onDelete={() => { }}
-                    onSaveEdit={() => { }}
-                    onCancelEdit={() => { }}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    onSaveEdit={() => {}}
+                    onCancelEdit={() => {}}
                   />
                 ) : null}
               </DragOverlay>

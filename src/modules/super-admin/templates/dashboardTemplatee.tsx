@@ -24,20 +24,11 @@ const dashboardMetrics = {
 };
 
 export const DashboardTemplate = () => {
-const {
-  organizations = [],
-  isLoadingOrganizations,
-} = useGetOrganizations();
+  const { organizations = [], isLoadingOrganizations } = useGetOrganizations();
 
-const {
-  projects = [],
-  isLoadingProjects,
-} = useGetAllProjects();
+  const { projects = [], isLoadingProjects } = useGetAllProjects();
 
-const {
-  members = [],
-  isLoadingMembers,
-} = useGetMembers();
+  const { members = [], isLoadingMembers } = useGetMembers();
 
   const activeOrganizations = organizations.filter((o) => o.is_active).length;
   const inactiveOrganizations = organizations.length - activeOrganizations;
@@ -47,14 +38,11 @@ const {
   const recentProjects = projects.slice(0, 5);
   const recentMembers = members.slice(0, 5);
 
-const isDashboardLoading =
-  isLoadingOrganizations ||
-  isLoadingProjects ||
-  isLoadingMembers;
+  const isDashboardLoading = isLoadingOrganizations || isLoadingProjects || isLoadingMembers;
 
-if (isDashboardLoading) {
-return <SuperAdminDasSkeleton />;
-}
+  if (isDashboardLoading) {
+    return <SuperAdminDasSkeleton />;
+  }
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Page Header */}

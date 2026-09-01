@@ -60,7 +60,6 @@ export const useUser = () => {
   };
 };
 
-
 export const useUserInsights = () => {
   const { data, isLoading, isFetching, error, refetch } = useQuery<UserInsights>({
     queryKey: ['userInsights'],

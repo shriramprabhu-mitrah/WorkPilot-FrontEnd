@@ -90,7 +90,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       });
 
       onClose();
-    } catch (error) { }
+    } catch (error) {}
   };
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);

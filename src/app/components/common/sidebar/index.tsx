@@ -90,14 +90,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   }, [urlProjectSlug, isLoadingProjectsWithSprints, matchedProjectFromUrl]);
 
   // If on a project URL, strictly use the matched URL project; otherwise use Redux
-  const effectiveProject = isInvalidUrlProject
-    ? null
-    : matchedProjectFromUrl || selectedProject;
+  const effectiveProject = isInvalidUrlProject ? null : matchedProjectFromUrl || selectedProject;
 
   // Sync matched project from URL to Redux
   useEffect(() => {
     if (matchedProjectFromUrl && matchedProjectFromUrl.id !== selectedProject?.id) {
-      dispatch(setSelectedProject(matchedProjectFromUrl as Parameters<typeof setSelectedProject>[0]));
+      dispatch(
+        setSelectedProject(matchedProjectFromUrl as Parameters<typeof setSelectedProject>[0])
+      );
       dispatch(setSprints(matchedProjectFromUrl.sprints || []));
     } else if (isInvalidUrlProject && selectedProject) {
       dispatch(setSelectedProject(null as unknown as Parameters<typeof setSelectedProject>[0]));

@@ -4,7 +4,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { X, Trash2, UserPlus } from 'lucide-react';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
-import { useAddProjectMembers, useUpdateProjectRole, useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
+import {
+  useAddProjectMembers,
+  useUpdateProjectRole,
+  useGetProjectsWithSprints,
+} from '@/src/modules/project/hooks/useProject';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { AddProjectMembersPayload } from '@/src/types/project';
 import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
@@ -30,9 +34,9 @@ const MembersSettings = () => {
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
-  
+
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-  
+
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
 
   // Find project matching current URL project slug if present
@@ -346,7 +350,10 @@ const MembersSettings = () => {
                         );
                       }}
                       disabled={
-                        !isOrgAdmin ||isMemberAdmin || isRolesLoading || updatingMemberId === member.user_id
+                        !isOrgAdmin ||
+                        isMemberAdmin ||
+                        isRolesLoading ||
+                        updatingMemberId === member.user_id
                       }
                       className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     >

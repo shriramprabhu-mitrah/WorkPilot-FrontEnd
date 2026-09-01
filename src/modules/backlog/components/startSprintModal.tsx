@@ -14,12 +14,7 @@ interface StartSprintModalProps {
   onStart: (payload: StartSprintPayload) => Promise<void>;
   isStarting: boolean;
 }
-const StartSprintModal = ({
-  sprint,
-  onClose,
-  onStart,
-  isStarting,
-}: StartSprintModalProps) => {
+const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintModalProps) => {
   const getToday = () => {
     const date = new Date();
     return date.toISOString().split('T')[0];
@@ -145,7 +140,6 @@ const StartSprintModal = ({
           </p>
 
           <div className="space-y-4">
-
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-slate-200">
                 Duration <span className="text-red-500"></span>
@@ -170,10 +164,7 @@ const StartSprintModal = ({
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800">
-                <Calendar
-                  size={16}
-                  className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400"
-                />
+                <Calendar size={16} className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400" />
 
                 <input
                   type="date"
@@ -212,10 +203,7 @@ const StartSprintModal = ({
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900">
-                <Calendar
-                  size={16}
-                  className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500"
-                />
+                <Calendar size={16} className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500" />
 
                 {duration === 'custom' ? (
                   <>
@@ -255,7 +243,6 @@ const StartSprintModal = ({
                 Date format: MM/DD/YYYY. Time format: e.g. 1:00 PM.
               </p>
             </div>
-
 
             {/* <div className="flex items-center gap-2">
               <button

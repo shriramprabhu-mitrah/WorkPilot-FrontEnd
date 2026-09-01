@@ -39,13 +39,8 @@ const SprintDetail = () => {
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
   const [selectedUserStoryIds, setSelectedUserStoryIds] = useState<string[]>([]);
   const [taskUserStoryId, setTaskUserStoryId] = useState<string>('');
-  const {
-    canEditSprint,
-    canDeleteSprint,
-    canViewUserStories,
-    canDeleteUserStory,
-    canCreateTask,
-  } = usePermissions();
+  const { canEditSprint, canDeleteSprint, canViewUserStories, canDeleteUserStory, canCreateTask } =
+    usePermissions();
   const { sprint, isLoadingSprint, isError, refetch } = useGetSprintById(projectId, sprintId);
   const { deleteSprintAsync, isDeletingSprint } = useDeleteSprint(projectId);
   const {

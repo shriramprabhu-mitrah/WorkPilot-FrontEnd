@@ -222,16 +222,13 @@ class TaskService {
     return apiService.delete<Comment>(url, payload);
   }
 
- async assignTaskToMe(
-  projectId: string,
-  taskId: string
-): Promise<ApiResponse<TaskResponse>> {
-  const endpoint = ApiEndpoints.Task.assignToMe.url
-    .replace('{projectId}', projectId)
-    .replace('{taskId}', taskId);
+  async assignTaskToMe(projectId: string, taskId: string): Promise<ApiResponse<TaskResponse>> {
+    const endpoint = ApiEndpoints.Task.assignToMe.url
+      .replace('{projectId}', projectId)
+      .replace('{taskId}', taskId);
 
-  return apiService.patch<TaskResponse>(endpoint, {});
-}
+    return apiService.patch<TaskResponse>(endpoint, {});
+  }
 }
 
 export const taskService = new TaskService();

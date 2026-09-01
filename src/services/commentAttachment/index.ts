@@ -4,10 +4,7 @@ import { ApiResponse } from '@/src/types/core';
 import { useMutation } from '@tanstack/react-query';
 
 class CommentAttachmentService {
-async uploadCommentAttachment(
-    taskUuid: string,
-    payload: FormData
-  ): Promise<ApiResponse<void>> {
+  async uploadCommentAttachment(taskUuid: string, payload: FormData): Promise<ApiResponse<void>> {
     const url = ApiEndpoints.CommentAttachment.uploadCommentAttachment.withParams({
       task_uuid: taskUuid,
     });
@@ -29,22 +26,21 @@ async uploadCommentAttachment(
     });
   }
 
- async downloadCommentAttachment(
-  taskId: string,
-  commentId: string,
-  attachmentId: string
-): Promise<ApiResponse<Blob>> {
-  const url =
-    ApiEndpoints.CommentAttachment.downloadCommentAttachment.withParams({
+  async downloadCommentAttachment(
+    taskId: string,
+    commentId: string,
+    attachmentId: string
+  ): Promise<ApiResponse<Blob>> {
+    const url = ApiEndpoints.CommentAttachment.downloadCommentAttachment.withParams({
       taskId,
       commentId,
       attachmentId,
     });
 
-  return apiService.get<Blob>(url, {
-    showErrorToast: true,
-  });
-}
+    return apiService.get<Blob>(url, {
+      showErrorToast: true,
+    });
+  }
 
   async deleteCommentAttachment(
     taskId: string,
@@ -63,20 +59,14 @@ async uploadCommentAttachment(
     });
   }
 
-async downloadAttachment(
-  projectId: string,
-  taskId: string,
-  attachmentId: string
-): Promise<Blob> {
-  const url = ApiEndpoints.CommentAttachment.downloadAttachment.withParams({
-    projectId,
-    taskId,
-    attachmentId,
-  });
-  return apiService.getBlob(url);
-}
-
-
+  async downloadAttachment(projectId: string, taskId: string, attachmentId: string): Promise<Blob> {
+    const url = ApiEndpoints.CommentAttachment.downloadAttachment.withParams({
+      projectId,
+      taskId,
+      attachmentId,
+    });
+    return apiService.getBlob(url);
+  }
 }
 
 export const commentAttachmentService = new CommentAttachmentService();

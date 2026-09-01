@@ -27,10 +27,7 @@ export const ForceChangePasswordModal = () => {
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
-      if (
-        newPwdAreaRef.current &&
-        !newPwdAreaRef.current.contains(e.target as Node)
-      ) {
+      if (newPwdAreaRef.current && !newPwdAreaRef.current.contains(e.target as Node)) {
         setShowStrength(false);
       }
     };
@@ -70,7 +67,6 @@ export const ForceChangePasswordModal = () => {
         clipped by the card boundary.
       */}
       <div className="w-full max-w-md mx-4 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-700 overflow-visible">
-
         {/* Header */}
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 rounded-t-2xl px-6 py-5 flex items-start gap-4">
           <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
@@ -89,7 +85,6 @@ export const ForceChangePasswordModal = () => {
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
-
           {/* Error */}
           {error && (
             <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
@@ -115,7 +110,10 @@ export const ForceChangePasswordModal = () => {
                 <WpInput
                   type="password"
                   value={oldPassword}
-                  onChange={(e) => { setOldPassword(e.target.value); setError(null); }}
+                  onChange={(e) => {
+                    setOldPassword(e.target.value);
+                    setError(null);
+                  }}
                   placeholder="Enter your temporary password"
                   required
                   autoFocus
@@ -133,7 +131,10 @@ export const ForceChangePasswordModal = () => {
                 <WpInput
                   type="password"
                   value={newPassword}
-                  onChange={(e) => { setNewPassword(e.target.value); setError(null); }}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setError(null);
+                  }}
                   onFocus={() => setShowStrength(true)}
                   placeholder="Choose a strong password"
                   required

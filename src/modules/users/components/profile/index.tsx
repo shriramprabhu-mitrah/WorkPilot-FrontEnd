@@ -90,7 +90,7 @@ export default function Profile() {
       const timer = setTimeout(() => {
         setIsChangingPwd(true);
       }, 0);
-      
+
       return () => clearTimeout(timer);
     }
   }, [requirePasswordChange, shouldChangePassword]);

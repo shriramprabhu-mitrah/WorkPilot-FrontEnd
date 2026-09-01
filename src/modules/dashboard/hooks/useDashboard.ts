@@ -2,11 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 import { dashboardService } from '@/src/services/dashboard';
 
-export const useGetDashboard = (
-  projectId: string,
-  sprintId?: string,
-  enabled = true
-) => {
+export const useGetDashboard = (projectId: string, sprintId?: string, enabled = true) => {
   const query = useQuery({
     queryKey: ['dashboard', projectId, sprintId ?? 'all'],
     queryFn: () => dashboardService.getDashboard(projectId, sprintId),

@@ -86,7 +86,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const currentUser = useAppSelector((state) => state.user);
-  
+
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
@@ -207,7 +207,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const getInitials = (name: string) => {

@@ -18,7 +18,10 @@ import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment'
 import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { useDownloadAttachment, useUploadCommentAttachment } from '@/src/modules/tasks/hooks/useCommentAttachment';
+import {
+  useDownloadAttachment,
+  useUploadCommentAttachment,
+} from '@/src/modules/tasks/hooks/useCommentAttachment';
 import { RichContentViewer } from '../../rich-content-viewer';
 
 type ActivityTab = 'all' | 'comments' | 'history';
@@ -64,39 +67,43 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [comment, setComment] = useState('');
   const [showCommentEditor, setShowCommentEditor] = useState(false);
-const { mutateAsync: downloadAttachment } = useDownloadAttachment();
+  const { mutateAsync: downloadAttachment } = useDownloadAttachment();
 
-const handleDownloadImage = async (attachmentId: string) => {
-  if (!projectId || !taskId || !attachmentId) {
-    logger.log('Download attempted with missing parameters:', { projectId, taskId, attachmentId });
-    toast.error('Missing required information to download attachment');
-    return;
-  }
-  
-  logger.log('Attempting to download attachment:', { projectId, taskId, attachmentId });
-  
-  try {
-   const blob = await downloadAttachment({ projectId, taskId, attachmentId }); 
-   
-   logger.log('Download response received:', blob);
-   
-   if (!(blob instanceof Blob)) {
-     throw new Error('Download response is not a Blob');
-   }
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `attachment-${attachmentId}`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    toast.success('Attachment downloaded successfully');
-  } catch (error) {
-    logger.log('Failed to download attachment', error);
-    toast.error('Failed to download attachment');
-  }
-};
+  const handleDownloadImage = async (attachmentId: string) => {
+    if (!projectId || !taskId || !attachmentId) {
+      logger.log('Download attempted with missing parameters:', {
+        projectId,
+        taskId,
+        attachmentId,
+      });
+      toast.error('Missing required information to download attachment');
+      return;
+    }
+
+    logger.log('Attempting to download attachment:', { projectId, taskId, attachmentId });
+
+    try {
+      const blob = await downloadAttachment({ projectId, taskId, attachmentId });
+
+      logger.log('Download response received:', blob);
+
+      if (!(blob instanceof Blob)) {
+        throw new Error('Download response is not a Blob');
+      }
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `attachment-${attachmentId}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Attachment downloaded successfully');
+    } catch (error) {
+      logger.log('Failed to download attachment', error);
+      toast.error('Failed to download attachment');
+    }
+  };
   // Hooks for activities
   const { activities, isLoadingActivities } = useGetProjectActivities(
     projectId ?? '',
@@ -127,41 +134,41 @@ const handleDownloadImage = async (attachmentId: string) => {
     taskId ?? '',
     editingId ?? ''
   );
-const { mutateAsync: uploadCommentAttachment } = useUploadCommentAttachment(taskId ?? '');
+  const { mutateAsync: uploadCommentAttachment } = useUploadCommentAttachment(taskId ?? '');
 
- const handleEditorImageUpload = async (file: File): Promise<string> => {
-   const formData = new FormData();
-   formData.append('file', file);
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
 
-   const result = await uploadCommentAttachment(formData);
+    const result = await uploadCommentAttachment(formData);
 
-   const raw = result as unknown as Record<string, unknown>;
-   const dataField = raw?.data as Record<string, unknown> | undefined;
+    const raw = result as unknown as Record<string, unknown>;
+    const dataField = raw?.data as Record<string, unknown> | undefined;
 
-   const attachments = (dataField?.data ?? dataField) as
-     Array<Record<string, string | undefined>> | undefined;
+    const attachments = (dataField?.data ?? dataField) as
+      Array<Record<string, string | undefined>> | undefined;
 
-   const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
+    const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
 
-   if (!attachment) {
-     throw new Error('No attachment returned from upload API');
-   }
+    if (!attachment) {
+      throw new Error('No attachment returned from upload API');
+    }
 
-   const imageUrl =
-     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+    const imageUrl =
+      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
 
-   const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
+    const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
 
-   if (!imageUrl) {
-     throw new Error('Uploaded attachment does not contain an image URL');
-   }
-   if (attachmentId) {
-     return imageUrl.includes('?')
-       ? `${imageUrl}&attachment_id=${attachmentId}`
-       : `${imageUrl}?attachment_id=${attachmentId}`;
-   }
-   return imageUrl;
- };
+    if (!imageUrl) {
+      throw new Error('Uploaded attachment does not contain an image URL');
+    }
+    if (attachmentId) {
+      return imageUrl.includes('?')
+        ? `${imageUrl}&attachment_id=${attachmentId}`
+        : `${imageUrl}?attachment_id=${attachmentId}`;
+    }
+    return imageUrl;
+  };
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -174,39 +181,39 @@ const { mutateAsync: uploadCommentAttachment } = useUploadCommentAttachment(task
   const [repliesMap, setRepliesMap] = useState<Map<string, Comment[]>>(new Map());
 
   // Comment handlers
- const submitComment = async (content: string, parentId?: string) => {
-   const tempDiv = document.createElement('div');
-   tempDiv.innerHTML = content;
-   const textContent = tempDiv.textContent || tempDiv.innerText || '';
-   const hasContent = textContent.trim().length > 0 || tempDiv.querySelector('img') !== null;
-   if (!taskId || !hasContent) {
-     return;
-   }
-   try {
-     await createCommentAsync({
-       content,
-       parent_comment_id: parentId,
-     });
-     if (parentId) {
-       setReplyContent('');
-       setReplyingTo(null);
-       const { taskService } = await import('@/src/services/tasks');
-       const res = await taskService.getReplies(taskId, parentId);
-       if (res.data) {
-         setRepliesMap(new Map(repliesMap.set(parentId, res.data)));
-       }
+  const submitComment = async (content: string, parentId?: string) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    const hasContent = textContent.trim().length > 0 || tempDiv.querySelector('img') !== null;
+    if (!taskId || !hasContent) {
+      return;
+    }
+    try {
+      await createCommentAsync({
+        content,
+        parent_comment_id: parentId,
+      });
+      if (parentId) {
+        setReplyContent('');
+        setReplyingTo(null);
+        const { taskService } = await import('@/src/services/tasks');
+        const res = await taskService.getReplies(taskId, parentId);
+        if (res.data) {
+          setRepliesMap(new Map(repliesMap.set(parentId, res.data)));
+        }
 
-       toast.success('Reply added successfully');
-     } else {
-       setComment('');
-       setShowCommentEditor(false);
-       toast.success('Comment added successfully');
-     }
-   } catch (error) {
-     toast.error('Failed to add comment');
-     logger.log('Failed to post comment', error);
-   }
- };
+        toast.success('Reply added successfully');
+      } else {
+        setComment('');
+        setShowCommentEditor(false);
+        toast.success('Comment added successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to add comment');
+      logger.log('Failed to post comment', error);
+    }
+  };
 
   const toggleReplies = async (commentId: string, userName: string) => {
     const newShowReplies = new Set(showRepliesForComment);
@@ -308,7 +315,6 @@ const { mutateAsync: uploadCommentAttachment } = useUploadCommentAttachment(task
       label: 'History',
     },
   ];
-
 
   const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
     const name = c.user_name || c.full_name || c.user?.name || 'Unknown';

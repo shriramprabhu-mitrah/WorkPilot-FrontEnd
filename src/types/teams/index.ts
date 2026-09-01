@@ -6,11 +6,11 @@ export interface Member {
   role: string;
   initials: string;
   avatarColor: string;
-   tasks?: number;
+  tasks?: number;
   done?: number;
   inProgress?: number;
   completionPercentage?: number;
-  status?:string
+  status?: string;
 }
 export interface RoleCard {
   name: string;
@@ -30,8 +30,8 @@ export interface TeamMember {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  color?:string
-  status?:string
+  color?: string;
+  status?: string;
   total_assigned?: number;
   completed?: number;
   in_progress?: number;

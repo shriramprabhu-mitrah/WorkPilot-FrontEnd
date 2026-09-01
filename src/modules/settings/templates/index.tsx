@@ -29,9 +29,7 @@ export const SettingPageTemplate = () => {
             alt="Access Restricted"
             className="h-80 w-80 opacity-60 mb-2"
           />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Access Restricted
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Restricted</h2>
           <p className="mt-2 max-w-md text-center text-gray-500 dark:text-gray-400 text-sm">
             Only organization administrators have access to settings.
           </p>

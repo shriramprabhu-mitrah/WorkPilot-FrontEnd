@@ -146,9 +146,9 @@ class ProjectService {
     projectId: string,
     params: ActivityFilters
   ): Promise<PaginatedApiResponse<Activity[]>> {
-    const url = ApiEndpoints.Project.getProjectActivity.withNamedParams({ 
-      projectId, 
-      type: String(params.type) 
+    const url = ApiEndpoints.Project.getProjectActivity.withNamedParams({
+      projectId,
+      type: String(params.type),
     }).url;
 
     const searchParams = new URLSearchParams();

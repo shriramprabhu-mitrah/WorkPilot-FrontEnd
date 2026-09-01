@@ -38,10 +38,7 @@ const SubscriptionsSkeleton = () => {
                   'Next Billing',
                   'Actions',
                 ].map((column) => (
-                  <th
-                    key={column}
-                    className="px-5 py-3 text-left"
-                  >
+                  <th key={column} className="px-5 py-3 text-left">
                     <Skeleton className="h-3 w-20" />
                   </th>
                 ))}
@@ -51,7 +48,6 @@ const SubscriptionsSkeleton = () => {
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {Array.from({ length: 8 }).map((_, index) => (
                 <tr key={index}>
-
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <Skeleton className="w-8 h-8 rounded-lg shrink-0" />

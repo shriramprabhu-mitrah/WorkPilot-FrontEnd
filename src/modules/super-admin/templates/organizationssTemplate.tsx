@@ -117,11 +117,11 @@ export const OrganizationsTemplate = () => {
   const getInitials = (name: string) =>
     name
       ? name
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
   // const handleViewOrg = (orgSlug: string) => {
@@ -202,10 +202,11 @@ export const OrganizationsTemplate = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeFilter === filter
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                  }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeFilter === filter
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                }`}
               >
                 {filter}
               </button>
@@ -252,7 +253,6 @@ export const OrganizationsTemplate = () => {
                     key={org.id}
                     className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
                   >
-
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0">
@@ -263,9 +263,7 @@ export const OrganizationsTemplate = () => {
                           <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {org.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">
-                            /{org.slug}
-                          </p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">/{org.slug}</p>
                         </div>
                       </div>
                     </td>
@@ -312,18 +310,14 @@ export const OrganizationsTemplate = () => {
                       <div className="flex items-center gap-2">
                         {isActive ? (
                           <button
-                            onClick={() =>
-                              handleOpenConfirmation(org, 'deactivate')
-                            }
+                            onClick={() => handleOpenConfirmation(org, 'deactivate')}
                             className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium hover:underline"
                           >
                             Deactivate
                           </button>
                         ) : (
                           <button
-                            onClick={() =>
-                              handleOpenConfirmation(org, 'activate')
-                            }
+                            onClick={() => handleOpenConfirmation(org, 'activate')}
                             className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium hover:underline"
                           >
                             Activate

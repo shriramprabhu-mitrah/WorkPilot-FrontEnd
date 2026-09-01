@@ -14,10 +14,7 @@ interface BurndownCardProps {
   burndownSprints?: SprintBurndownBlock[];
 }
 
-export default function BurndownCard({
-  chartHeight,
-  burndownSprints = [],
-}: BurndownCardProps) {
+export default function BurndownCard({ chartHeight, burndownSprints = [] }: BurndownCardProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
@@ -43,9 +40,7 @@ export default function BurndownCard({
   const header = (
     <div className="flex items-center justify-between mb-1">
       <div className="min-w-0">
-        <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">
-          Sprint Burndown
-        </p>
+        <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Sprint Burndown</p>
 
         <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
           {selectedBurndown?.sprint_name || 'No sprint selected'} · Ideal vs actual hours
@@ -56,9 +51,7 @@ export default function BurndownCard({
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            onClick={() =>
-              setPage((p) => Math.max(0, p - 1))
-            }
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={!canPrev}
             className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
@@ -71,11 +64,7 @@ export default function BurndownCard({
 
           <button
             type="button"
-            onClick={() =>
-              setPage((p) =>
-                Math.min(totalPages - 1, p + 1)
-              )
-            }
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={!canNext}
             className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
@@ -87,15 +76,7 @@ export default function BurndownCard({
   );
 
   if (isEmpty) {
-    const placeholderDates = [
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-    ];
+    const placeholderDates = ['', '', '', '', '', '', ''];
 
     const zeroData = placeholderDates.map(() => 0);
 
@@ -129,10 +110,7 @@ export default function BurndownCard({
           fontSize: 11,
           color: labelColor,
         },
-        data: [
-          { name: 'Ideal Burndown' },
-          { name: 'Actual' },
-        ],
+        data: [{ name: 'Ideal Burndown' }, { name: 'Actual' }],
       },
 
       xAxis: {
@@ -176,9 +154,7 @@ export default function BurndownCard({
             text: 'No sprint data available',
             fontSize: 13,
             fontWeight: 500,
-            fill: isDark
-              ? '#475569'
-              : colors.gray400,
+            fill: isDark ? '#475569' : colors.gray400,
           },
         },
       ],
@@ -219,10 +195,7 @@ export default function BurndownCard({
       <div className="w-full min-w-0 overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col gap-1 shrink-0">
         {header}
 
-        <LineChart
-          option={emptyOption}
-          height={chartHeight}
-        />
+        <LineChart option={emptyOption} height={chartHeight} />
       </div>
     );
   }
@@ -261,10 +234,7 @@ export default function BurndownCard({
         fontSize: 11,
         color: labelColor,
       },
-      data: [
-        { name: 'Ideal Burndown' },
-        { name: 'Actual' },
-      ],
+      data: [{ name: 'Ideal Burndown' }, { name: 'Actual' }],
     },
 
     xAxis: {
@@ -286,13 +256,10 @@ export default function BurndownCard({
         formatter: (value: string) => {
           const date = new Date(value);
 
-          return date.toLocaleDateString(
-            'en-GB',
-            {
-              day: '2-digit',
-              month: 'short',
-            }
-          );
+          return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+          });
         },
       },
 
@@ -324,38 +291,25 @@ export default function BurndownCard({
         symbolSize: 5,
 
         lineStyle: {
-          color: isDark
-            ? '#94a3b8'
-            : colors.gray400,
+          color: isDark ? '#94a3b8' : colors.gray400,
           width: 2,
         },
 
         itemStyle: {
-          color: isDark
-            ? '#94a3b8'
-            : colors.gray400,
+          color: isDark ? '#94a3b8' : colors.gray400,
         },
 
         areaStyle: {
-          color:
-            new echarts.graphic.LinearGradient(
-              0,
-              0,
-              0,
-              1,
-              [
-                {
-                  offset: 0,
-                  color:
-                    'rgba(37,99,235,0.12)',
-                },
-                {
-                  offset: 1,
-                  color:
-                    'rgba(37,99,235,0.01)',
-                },
-              ]
-            ),
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgba(37,99,235,0.12)',
+            },
+            {
+              offset: 1,
+              color: 'rgba(37,99,235,0.01)',
+            },
+          ]),
         },
 
         data: burndownIdeal,
@@ -378,25 +332,16 @@ export default function BurndownCard({
         },
 
         areaStyle: {
-          color:
-            new echarts.graphic.LinearGradient(
-              0,
-              0,
-              0,
-              1,
-              [
-                {
-                  offset: 0,
-                  color:
-                    'rgba(37,99,235,0.18)',
-                },
-                {
-                  offset: 1,
-                  color:
-                    'rgba(37,99,235,0.02)',
-                },
-              ]
-            ),
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: 'rgba(37,99,235,0.18)',
+            },
+            {
+              offset: 1,
+              color: 'rgba(37,99,235,0.02)',
+            },
+          ]),
         },
 
         data: burndownActual,
@@ -408,10 +353,7 @@ export default function BurndownCard({
     <div className="w-full min-w-0 overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col gap-1 shrink-0">
       {header}
 
-      <LineChart
-        option={option}
-        height={chartHeight}
-      />
+      <LineChart option={option} height={chartHeight} />
     </div>
   );
 }

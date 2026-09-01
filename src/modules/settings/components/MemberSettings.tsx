@@ -5,7 +5,12 @@ import { UserPlus } from 'lucide-react';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '@/src/modules/teams/components/invitePopup';
-import { useGetTeamMembers, useGetUserById, useRemoveUser, useGetProject } from '@/src/modules/teams/hooks/useTeams';
+import {
+  useGetTeamMembers,
+  useGetUserById,
+  useRemoveUser,
+  useGetProject,
+} from '@/src/modules/teams/hooks/useTeams';
 import { Member } from '@/src/types/teams';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '@/src/modules/teams/components/TeamSkeleton';

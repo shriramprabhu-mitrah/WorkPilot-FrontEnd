@@ -1,4 +1,4 @@
-import Skeleton from "@/src/app/components/common/skeleton";
+import Skeleton from '@/src/app/components/common/skeleton';
 
 const SuperAdminDasSkeleton = () => {
   return (
@@ -27,16 +27,12 @@ const SuperAdminDasSkeleton = () => {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
           <Skeleton className="h-5 w-40 mb-4" />
 
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 py-2"
-              >
+              <div key={index} className="flex items-center gap-3 py-2">
                 <Skeleton className="w-9 h-9 rounded-lg shrink-0" />
 
                 <div className="flex-1 min-w-0">
@@ -55,10 +51,7 @@ const SuperAdminDasSkeleton = () => {
 
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 py-2"
-              >
+              <div key={index} className="flex items-center gap-3 py-2">
                 <Skeleton className="w-9 h-9 rounded-lg shrink-0" />
 
                 <div className="flex-1 min-w-0">
@@ -77,10 +70,7 @@ const SuperAdminDasSkeleton = () => {
 
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 py-2"
-              >
+              <div key={index} className="flex items-center gap-3 py-2">
                 <Skeleton className="w-9 h-9 rounded-full shrink-0" />
 
                 <div className="flex-1 min-w-0">
@@ -96,14 +86,12 @@ const SuperAdminDasSkeleton = () => {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
-
         <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
           <Skeleton className="h-5 w-56" />
         </div>
 
         <div className="overflow-x-auto">
           <div className="min-w-[900px]">
-
             <div className="grid grid-cols-6 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-5 py-3 gap-4">
               <Skeleton className="h-3 w-24" />
               <Skeleton className="h-3 w-16" />

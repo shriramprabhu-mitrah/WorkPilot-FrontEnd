@@ -135,7 +135,7 @@ export interface ProjectDetail {
   sprints: SprintDetail[];
   key?: string; // Optional key to be added after fetching
   owner?: string;
-  slug?: string// Optional owner to be added after fetching
+  slug?: string; // Optional owner to be added after fetching
 }
 
 export interface ProjectMember {
@@ -180,12 +180,7 @@ export interface Activity {
 
 export type ActivityType = 'view' | 'activity';
 
-export type ActivityResourceType =
-  | 'project'
-  | 'task'
-  | 'userstory'
-  | 'sprint'
-  | 'comment';
+export type ActivityResourceType = 'project' | 'task' | 'userstory' | 'sprint' | 'comment';
 
 export interface ActivityFilters {
   type: ActivityType;

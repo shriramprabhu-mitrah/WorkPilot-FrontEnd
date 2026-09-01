@@ -300,4 +300,3 @@ export const useGetUserProjectRole = (projectId: string | undefined) => {
     refetchUserProjectRole: query.refetch,
   };
 };
-

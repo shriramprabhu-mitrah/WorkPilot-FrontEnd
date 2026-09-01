@@ -62,36 +62,37 @@ export const WpDropdown = ({
 
   const selected = options.find((o) => o.value === value);
 
-  const dropdownMenu = open && mounted ? (
-    <ul
-      style={{
-        position: 'absolute',
-        top: `${position.top + 4}px`,
-        left: `${position.left}px`,
-        width: `${position.width}px`,
-      }}
-      className="z-[9999] bg-white dark:bg-slate-800 border border-[var(--color-gray-200)] dark:border-slate-600 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1"
-    >
-      {options.map((option) => (
-        <li
-          key={option.value}
-          onClick={() => {
-            onChange(option.value);
-            setOpen(false);
-          }}
-          className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200"
-        >
-          <span className="flex items-center gap-2">
-            {option.icon && <span className="flex items-center">{option.icon}</span>}
-            {option.label}
-          </span>
-          {value === option.value && (
-            <Check size={14} className="text-[var(--color-primary-focus)]" />
-          )}
-        </li>
-      ))}
-    </ul>
-  ) : null;
+  const dropdownMenu =
+    open && mounted ? (
+      <ul
+        style={{
+          position: 'absolute',
+          top: `${position.top + 4}px`,
+          left: `${position.left}px`,
+          width: `${position.width}px`,
+        }}
+        className="z-[9999] bg-white dark:bg-slate-800 border border-[var(--color-gray-200)] dark:border-slate-600 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1"
+      >
+        {options.map((option) => (
+          <li
+            key={option.value}
+            onClick={() => {
+              onChange(option.value);
+              setOpen(false);
+            }}
+            className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200"
+          >
+            <span className="flex items-center gap-2">
+              {option.icon && <span className="flex items-center">{option.icon}</span>}
+              {option.label}
+            </span>
+            {value === option.value && (
+              <Check size={14} className="text-[var(--color-primary-focus)]" />
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : null;
 
   return (
     <div className="w-full mb-5" ref={ref}>

@@ -400,17 +400,10 @@ export const UserStoryDetailDrawer = ({
 
   // Comment attachment hooks
   const { deleteCommentAttachmentAsync, isDeletingCommentAttachment } =
-    useDeleteUserStoryCommentAttachment(
-      currentUserStory.project_id ?? '',
-      currentUserStory.id
-    );
+    useDeleteUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
 
   const { downloadCommentAttachmentAsync, isDownloadingCommentAttachment } =
-    useDownloadUserStoryCommentAttachment(
-      currentUserStory.project_id ?? '',
-      currentUserStory.id
-    );
-    
+    useDownloadUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
 
   useEffect(() => {
     const latestTasks = currentUserStory.tasks ?? [];
@@ -854,14 +847,13 @@ export const UserStoryDetailDrawer = ({
       logger.log('Failed to delete comment attachment', error);
     }
   };
-  
 
   const handleDownloadCommentAttachment = async (attachmentId: string) => {
     if (!attachmentId) return;
 
     try {
       const blob = await downloadCommentAttachmentAsync(attachmentId);
-      
+
       // Create a download link and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -871,7 +863,7 @@ export const UserStoryDetailDrawer = ({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success('Image downloaded successfully');
     } catch (error) {
       toast.error('Failed to download image');
@@ -947,43 +939,43 @@ export const UserStoryDetailDrawer = ({
     path?: string;
   }
 
- const handleEditorImageUpload = async (file: File): Promise<string> => {
-   const formData = new FormData();
-   formData.append('file', file);
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
 
-   const result = await uploadCommentAttachmentAsync(formData);
+    const result = await uploadCommentAttachmentAsync(formData);
 
-   const raw = result as unknown as Record<string, unknown>;
-   const dataField = raw?.data as Record<string, unknown> | undefined;
+    const raw = result as unknown as Record<string, unknown>;
+    const dataField = raw?.data as Record<string, unknown> | undefined;
 
-   const attachments = (dataField?.data ?? dataField) as
-     Array<Record<string, string | undefined>> | undefined;
+    const attachments = (dataField?.data ?? dataField) as
+      Array<Record<string, string | undefined>> | undefined;
 
-   const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
+    const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
 
-   if (!attachment) {
-     throw new Error('No attachment returned from upload API');
-   }
+    if (!attachment) {
+      throw new Error('No attachment returned from upload API');
+    }
 
-   const imageUrl =
-     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
-   
-   const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
+    const imageUrl =
+      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
 
-   if (!imageUrl) {
-     throw new Error('Uploaded attachment does not contain an image URL');
-   }
+    const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
 
-   // Encode attachment ID in the URL as a query parameter so it can be extracted later
-   if (attachmentId) {
-     const urlWithId = imageUrl.includes('?') 
-       ? `${imageUrl}&attachment_id=${attachmentId}` 
-       : `${imageUrl}?attachment_id=${attachmentId}`;
-     return urlWithId;
-   }
+    if (!imageUrl) {
+      throw new Error('Uploaded attachment does not contain an image URL');
+    }
 
-   return imageUrl;
- };
+    // Encode attachment ID in the URL as a query parameter so it can be extracted later
+    if (attachmentId) {
+      const urlWithId = imageUrl.includes('?')
+        ? `${imageUrl}&attachment_id=${attachmentId}`
+        : `${imageUrl}?attachment_id=${attachmentId}`;
+      return urlWithId;
+    }
+
+    return imageUrl;
+  };
 
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1662,8 +1654,12 @@ export const UserStoryDetailDrawer = ({
                                                         className="text-xs text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
                                                         canDownload={true}
                                                         canDelete={canDeleteComments}
-                                                        onDownloadImage={handleDownloadCommentAttachment}
-                                                        onDeleteImage={handleDeleteCommentAttachment}
+                                                        onDownloadImage={
+                                                          handleDownloadCommentAttachment
+                                                        }
+                                                        onDeleteImage={
+                                                          handleDeleteCommentAttachment
+                                                        }
                                                       />
                                                       {(canEditComments || canDeleteComments) && (
                                                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -2376,7 +2372,6 @@ export const UserStoryDetailDrawer = ({
           </div>
         </div>
       </div>
-     
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

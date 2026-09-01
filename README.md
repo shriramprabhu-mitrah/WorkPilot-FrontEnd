@@ -15,7 +15,6 @@ WorkPilot helps organizations efficiently manage projects, sprints, tasks, teams
 - Remember Me
 - Forgot Password
 
-
 ### Organization Management
 
 - Create Organization

@@ -31,7 +31,9 @@ export const DashBoardTemplate = () => {
   const orgSlug = (params?.orgSlug as string) || '';
   const projectSlug = (params?.projectSlug as string) || '';
 
-  const { selectedProject: storeProject, selectedSprint } = useAppSelector((state) => state.project);
+  const { selectedProject: storeProject, selectedSprint } = useAppSelector(
+    (state) => state.project
+  );
   const user = useAppSelector((state) => state.user);
   const isOrgAdmin = user.role === 'org_admin';
 
@@ -89,9 +91,7 @@ export const DashBoardTemplate = () => {
 
   const sprintBurndown = dashboard?.sprint_burndown;
 
-  const teamWorkload = Array.isArray(dashboard?.team_workload)
-    ? dashboard.team_workload
-    : [];
+  const teamWorkload = Array.isArray(dashboard?.team_workload) ? dashboard.team_workload : [];
   // Normalize: with sprint_id → single object; without → array
   const burndownSprints: SprintBurndownBlock[] = Array.isArray(sprintBurndown)
     ? sprintBurndown
@@ -100,9 +100,7 @@ export const DashBoardTemplate = () => {
       : [];
   const teamLabels = teamWorkload.map((m) => m.full_name);
 
-  const teamColors = teamWorkload.map(
-    (m) => m.color || colors.gray400
-  );
+  const teamColors = teamWorkload.map((m) => m.color || colors.gray400);
 
   const assignedTasks = teamWorkload.map((m) => m.task_count);
   const points = teamWorkload.map((m) => m.points);
@@ -195,10 +193,7 @@ export const DashBoardTemplate = () => {
           </div>
 
           <div className="lg:col-span-3 w-full">
-            <BurndownCard
-              chartHeight={300}
-              burndownSprints={burndownSprints}
-            />
+            <BurndownCard chartHeight={300} burndownSprints={burndownSprints} />
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">

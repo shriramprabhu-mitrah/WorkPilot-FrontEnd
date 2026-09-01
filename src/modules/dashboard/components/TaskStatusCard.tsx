@@ -126,9 +126,7 @@ export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
               <span
                 className="h-2.5 w-2.5 rounded-full shrink-0 transition-all"
                 style={{
-                  backgroundColor: isHidden
-                    ? isDark ? '#475569' : colors.gray300
-                    : entry.color,
+                  backgroundColor: isHidden ? (isDark ? '#475569' : colors.gray300) : entry.color,
                 }}
               />
               <span className="text-xs text-gray-600 dark:text-slate-300 truncate group-hover:text-gray-900 dark:group-hover:text-slate-100 transition-colors">

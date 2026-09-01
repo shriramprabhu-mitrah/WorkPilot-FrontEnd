@@ -350,7 +350,7 @@ const theme = {
 const initialConfig = {
   namespace: 'WpRichTextEditor',
   theme,
-  onError(error: Error) { },
+  onError(error: Error) {},
   nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, ImageNode],
 };
 
@@ -385,9 +385,10 @@ function ToolbarButton({
         transition-colors
         disabled:cursor-not-allowed
         disabled:opacity-40
-        ${active
-          ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
-          : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
+        ${
+          active
+            ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
+            : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
         }
       `}
     >
@@ -540,7 +541,7 @@ function InitialValuePlugin({ value }: { value?: string }) {
 
   return null;
 }
- 
+
 function LinkClickPlugin() {
   const [editor] = useLexicalComposerContext();
 
@@ -591,43 +592,43 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
   const [showCodeToolbar, setShowCodeToolbar] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
- const toolbarRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
- useEffect(() => {
-   const anyPopupOpen = showColorPicker || showCodeToolbar || showEmojiPicker || showLinkPopup;
-   if (!anyPopupOpen) return;
-   const handleClickOutside = (event: MouseEvent) => {
-     if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
-       setShowColorPicker(false);
-       setShowCodeToolbar(false);
-       setShowEmojiPicker(false);
-       setShowLinkPopup(false);
-     }
-   };
-   document.addEventListener('mousedown', handleClickOutside);
-   return () => {
-     document.removeEventListener('mousedown', handleClickOutside);
-   };
- }, [showColorPicker, showCodeToolbar, showEmojiPicker, showLinkPopup]);
+  useEffect(() => {
+    const anyPopupOpen = showColorPicker || showCodeToolbar || showEmojiPicker || showLinkPopup;
+    if (!anyPopupOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
+        setShowCodeToolbar(false);
+        setShowEmojiPicker(false);
+        setShowLinkPopup(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showColorPicker, showCodeToolbar, showEmojiPicker, showLinkPopup]);
 
-const handleInsertLink = () => {
-  const url = linkUrl.trim();
-  if (!url) return;
-  const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  editor.update(() => {
-    const selection = $getSelection();
-    if (!$isRangeSelection(selection)) return;
-    const link = $createLinkNode(finalUrl, {
-      target: '_blank',
-      rel: 'noopener noreferrer',
+  const handleInsertLink = () => {
+    const url = linkUrl.trim();
+    if (!url) return;
+    const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+      const link = $createLinkNode(finalUrl, {
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      });
+      link.append($createTextNode(linkText.trim() || finalUrl));
+      selection.insertNodes([link]);
     });
-    link.append($createTextNode(linkText.trim() || finalUrl));
-    selection.insertNodes([link]);
-  });
-  setLinkUrl('');
-  setLinkText('');
-  setShowLinkPopup(false);
-};
+    setLinkUrl('');
+    setLinkText('');
+    setShowLinkPopup(false);
+  };
   useEffect(() => {
     const removeListener = editor.registerCommand(
       SELECTION_CHANGE_COMMAND,

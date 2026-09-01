@@ -392,7 +392,9 @@ export const ChildTasksPanel = ({
                           }
                         }}
                         className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
+                          canEditTask
+                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                            : 'cursor-default'
                         }`}
                       >
                         {task.assignee_id ? (

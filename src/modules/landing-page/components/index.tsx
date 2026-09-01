@@ -384,7 +384,10 @@ export const LandingPage = () => {
           teams, and deliver results beyond expectations.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent w-full sm:w-auto">
+          <WpButton
+            onClick={() => router.push('/signup')}
+            className="lp-btn-accent w-full sm:w-auto"
+          >
             Start Free
           </WpButton>
           <ContactSalesModal>

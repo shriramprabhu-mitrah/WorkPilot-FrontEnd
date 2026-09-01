@@ -270,7 +270,7 @@ const AddTaskModal = ({
         });
       }
       onClose();
-    } catch (error) { }
+    } catch (error) {}
   };
   const taskNameRegister = register('taskName');
   const descriptionRegister = register('description');
@@ -490,7 +490,6 @@ const AddTaskModal = ({
 
               <div className="flex items-end gap-2">
                 <div className="flex flex-col gap-1">
-
                   <input
                     type="number"
                     min="0"
@@ -500,9 +499,7 @@ const AddTaskModal = ({
                   />
                 </div>
 
-                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
-                  h
-                </span>
+                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">h</span>
 
                 <div className="flex flex-col gap-1">
                   <input
@@ -515,15 +512,11 @@ const AddTaskModal = ({
                   />
                 </div>
 
-                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
-                  m
-                </span>
+                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">m</span>
               </div>
 
               {errors.estimatedHours?.message && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.estimatedHours.message}
-                </p>
+                <p className="mt-1 text-sm text-red-500">{errors.estimatedHours.message}</p>
               )}
             </div>
           </div>
@@ -535,7 +528,6 @@ const AddTaskModal = ({
 
             <div className="flex items-end gap-2">
               <div className="flex flex-col gap-1">
-
                 <input
                   type="number"
                   min="0"
@@ -545,12 +537,9 @@ const AddTaskModal = ({
                 />
               </div>
 
-              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
-                h
-              </span>
+              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">h</span>
 
               <div className="flex flex-col gap-1">
-
                 <input
                   type="number"
                   min="0"
@@ -561,15 +550,11 @@ const AddTaskModal = ({
                 />
               </div>
 
-              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">
-                m
-              </span>
+              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">m</span>
             </div>
 
             {errors.actualHours?.message && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.actualHours.message}
-              </p>
+              <p className="mt-1 text-sm text-red-500">{errors.actualHours.message}</p>
             )}
           </div>
         </div>

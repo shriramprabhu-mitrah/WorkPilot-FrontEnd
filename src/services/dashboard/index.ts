@@ -4,10 +4,7 @@ import { ApiResponse } from '@/src/types/core';
 import { DashboardData, DashboardActivitiesResponse } from '@/src/types/dashboard';
 
 class DashboardService {
-  async getDashboard(
-    projectId: string,
-    sprintId?: string
-  ): Promise<ApiResponse<DashboardData>> {
+  async getDashboard(projectId: string, sprintId?: string): Promise<ApiResponse<DashboardData>> {
     const endpoint = ApiEndpoints.Dashboard.getDashboard.withParams(projectId);
     const url = sprintId ? endpoint.withQuery({ sprint_id: sprintId }) : endpoint.url;
     return apiService.get<DashboardData>(url);

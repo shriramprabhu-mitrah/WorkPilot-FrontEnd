@@ -12,9 +12,9 @@ export interface UserProfile {
   username?: string;
   is_active?: boolean;
   color?: string;
-  organization_id?:string;
-  organization_name?:string;
-  require_password_change?:boolean;
+  organization_id?: string;
+  organization_name?: string;
+  require_password_change?: boolean;
 }
 
 export interface UserUpdatePayload {

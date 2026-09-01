@@ -31,10 +31,11 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
         </div>
       </div>
       <span
-        className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${organization.is_active
+        className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${
+          organization.is_active
             ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
             : 'text-gray-400 dark:text-slate-400 bg-gray-50 dark:bg-slate-700'
-          }`}
+        }`}
       >
         {organization.is_active ? 'Active' : 'Inactive'}
       </span>

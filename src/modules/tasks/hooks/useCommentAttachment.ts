@@ -17,16 +17,16 @@ export const useCommentAttachments = (taskId: string, commentId: string, enabled
     enabled: enabled && !!taskId && !!commentId,
   });
 
-const uploadAttachment = useMutation({
-  mutationFn: (payload: FormData) =>
-    commentAttachmentService.uploadCommentAttachment(taskId, payload),
+  const uploadAttachment = useMutation({
+    mutationFn: (payload: FormData) =>
+      commentAttachmentService.uploadCommentAttachment(taskId, payload),
 
-  onSuccess: () => {
-    queryClient.invalidateQueries({
-      queryKey: ['comment-attachments', taskId, commentId],
-    });
-  },
-});
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['comment-attachments', taskId, commentId],
+      });
+    },
+  });
 
   const downloadAttachment = useMutation({
     mutationFn: (attachmentId: string) =>
@@ -60,13 +60,9 @@ const uploadAttachment = useMutation({
 export const useUploadCommentAttachment = (taskUuid: string) => {
   return useMutation({
     mutationFn: (payload: FormData) =>
-      commentAttachmentService.uploadCommentAttachment(
-        taskUuid,
-        payload
-      ),
+      commentAttachmentService.uploadCommentAttachment(taskUuid, payload),
   });
 };
-
 
 export const useDownloadAttachment = () => {
   return useMutation({
@@ -78,11 +74,6 @@ export const useDownloadAttachment = () => {
       projectId: string;
       taskId: string;
       attachmentId: string;
-    }) =>
-      commentAttachmentService.downloadAttachment(
-        projectId,
-        taskId,
-        attachmentId
-      ),
+    }) => commentAttachmentService.downloadAttachment(projectId, taskId, attachmentId),
   });
 };

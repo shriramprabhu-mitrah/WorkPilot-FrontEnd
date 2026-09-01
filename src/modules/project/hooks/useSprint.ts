@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sprintService } from '@/src/services/sprint';
-import { SprintPayload, UpdateSprintPayload, } from '@/src/types/project';
+import { SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 import { StartSprintPayload } from '../../sprint/types/sprint';
 export const useGetSprints = (
   projectId: string,
@@ -115,13 +115,8 @@ export const useStartSprint = (projectId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({
-      sprintId,
-      payload,
-    }: {
-      sprintId: string;
-      payload: StartSprintPayload;
-    }) => sprintService.startSprint(projectId, sprintId, payload),
+    mutationFn: ({ sprintId, payload }: { sprintId: string; payload: StartSprintPayload }) =>
+      sprintService.startSprint(projectId, sprintId, payload),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -144,13 +139,11 @@ export const useStartSprint = (projectId: string) => {
   };
 };
 
-
 export const useCompleteSprint = (projectId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (sprintId: string) =>
-      sprintService.completeSprint(projectId, sprintId),
+    mutationFn: (sprintId: string) => sprintService.completeSprint(projectId, sprintId),
 
     onSuccess: () => {
       queryClient.invalidateQueries({

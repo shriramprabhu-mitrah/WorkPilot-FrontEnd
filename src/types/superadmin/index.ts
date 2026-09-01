@@ -39,9 +39,9 @@ export interface Project {
   sprint_count: number;
   total_tasks: number;
   total_members: number;
-  key?:string;
-  project_key?:string;
-  slug?:string;
+  key?: string;
+  project_key?: string;
+  slug?: string;
 }
 
 export interface AdminMembersParams {

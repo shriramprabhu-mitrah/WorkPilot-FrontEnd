@@ -31,20 +31,20 @@ export interface UserStoryResponse {
   due_date?: string;
   start_date?: string;
   is_closed?: boolean;
-  color?:string
+  color?: string;
   assignee?: {
     id: string;
     name: string;
     email: string;
     role: string;
-    color?:string
+    color?: string;
   };
   reporter?: {
     id: string;
     name: string;
     email: string;
     role: string;
-    color?:string
+    color?: string;
   };
   sprint_id?: string;
   story_points?: number;
@@ -132,7 +132,7 @@ export interface UserStoryCommentResponse {
   updated_at: string;
   is_deleted: boolean;
   replies_count: number;
-  attachments?: CommentAttachment[];   
+  attachments?: CommentAttachment[];
 }
 
 export interface UserStoryReplyResponse {
@@ -148,7 +148,7 @@ export interface UserStoryReplyResponse {
   updated_at: string;
   is_deleted: boolean;
   parent_comment: UserStoryParentComment;
-  attachments?: CommentAttachment[];  
+  attachments?: CommentAttachment[];
 }
 
 export interface GetUserStoryCommentsQueryParams {

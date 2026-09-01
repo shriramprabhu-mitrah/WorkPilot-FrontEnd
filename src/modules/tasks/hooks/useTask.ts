@@ -556,17 +556,11 @@ export const useDeleteTaskComment = (taskId: string, commentId: string) => {
   };
 };
 
-
 export const useAssignTaskToMe = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      projectId,
-      taskId,
-    }: {
-      projectId: string;
-      taskId: string;
-    }) => taskService.assignTaskToMe(projectId, taskId),
+    mutationFn: ({ projectId, taskId }: { projectId: string; taskId: string }) =>
+      taskService.assignTaskToMe(projectId, taskId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],

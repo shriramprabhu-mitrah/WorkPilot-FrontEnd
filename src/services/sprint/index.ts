@@ -32,30 +32,26 @@ class SprintService {
     });
   }
 
-async startSprint(
-  projectId: string,
-  sprintId: string,
-  payload: StartSprintPayload
-): Promise<ApiResponse<SprintDetail>> {
-  const endpoint = ApiEndpoints.Sprint.startSprint.withNamedParams({
-    projectId,
-  });
-
-  const url = endpoint.withQuery({
-    sprint_id: sprintId,
-  });
-
-  return apiService.post<SprintDetail>(url, payload, {
-    showSuccessToast: true,
-    successMessage: 'Sprint started successfully',
-  });
-}
-
-
-  async completeSprint(
+  async startSprint(
     projectId: string,
-    sprintId: string
-  ): Promise<ApiResponse<unknown>> {
+    sprintId: string,
+    payload: StartSprintPayload
+  ): Promise<ApiResponse<SprintDetail>> {
+    const endpoint = ApiEndpoints.Sprint.startSprint.withNamedParams({
+      projectId,
+    });
+
+    const url = endpoint.withQuery({
+      sprint_id: sprintId,
+    });
+
+    return apiService.post<SprintDetail>(url, payload, {
+      showSuccessToast: true,
+      successMessage: 'Sprint started successfully',
+    });
+  }
+
+  async completeSprint(projectId: string, sprintId: string): Promise<ApiResponse<unknown>> {
     const endpoint = ApiEndpoints.Sprint.completeSprint.withNamedParams({
       projectId,
     });
@@ -69,7 +65,7 @@ async startSprint(
       successMessage: 'Sprint completed successfully',
     });
   }
-  
+
   async getSprintById(projectId: string, sprintId: string): Promise<ApiResponse<SprintDetail>> {
     const url = ApiEndpoints.Sprint.getSprintById.withParams({ projectId, sprintId });
     return apiService.get<SprintDetail>(url);

@@ -33,7 +33,9 @@ export const EditableText = ({
 
   if (disabled) {
     return (
-      <span className={`text-sm font-medium ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'}`}>
+      <span
+        className={`text-sm font-medium ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'}`}
+      >
         {value || placeholder}
       </span>
     );

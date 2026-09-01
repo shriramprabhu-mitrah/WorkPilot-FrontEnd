@@ -36,13 +36,10 @@ class UserService {
     return response.data;
   }
 
-    async getUserInsights(): Promise<UserInsights> {
-    const response = await apiService.get<UserInsights>(
-      ApiEndpoints.User.getUserInsights.url,
-      {
-        showErrorToast: true,
-      }
-    );
+  async getUserInsights(): Promise<UserInsights> {
+    const response = await apiService.get<UserInsights>(ApiEndpoints.User.getUserInsights.url, {
+      showErrorToast: true,
+    });
     if (!response.data) {
       throw new Error('Failed to fetch user insights');
     }

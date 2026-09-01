@@ -15,7 +15,7 @@ export interface UserState {
 const initialState: UserState = {
   name: null,
   username: null,
-  userid:null,
+  userid: null,
   email: null,
   role: null,
   avatar_url: null,

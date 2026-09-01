@@ -96,7 +96,7 @@ const processResponse = <T>(
     data = data.result;
   }
 
-   const meta = response?.data?.meta ?? data?.meta;
+  const meta = response?.data?.meta ?? data?.meta;
 
   // Show success toast if requested
   if (options?.showSuccessToast) {

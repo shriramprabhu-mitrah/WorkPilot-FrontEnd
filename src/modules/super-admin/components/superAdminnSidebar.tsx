@@ -119,7 +119,9 @@ export const SuperAdminSidebar = ({ isOpen = true, onClose }: SuperAdminSidebarP
               <p className="text-white text-sm font-semibold truncate">
                 {user.name || 'Super Admin'}
               </p>
-              <p className="text-purple-300 text-xs truncate">{user.email || 'admin@workpilot.com'}</p>
+              <p className="text-purple-300 text-xs truncate">
+                {user.email || 'admin@workpilot.com'}
+              </p>
             </div>
           </div>
           <button

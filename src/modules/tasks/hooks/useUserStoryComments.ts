@@ -163,24 +163,14 @@ export const useDeleteUserStoryComment = (
   };
 };
 
-export const useUploadUserStoryCommentAttachment = (
-  projectUuid: string,
-  storyId: string
-) => {
+export const useUploadUserStoryCommentAttachment = (projectUuid: string, storyId: string) => {
   return useMutation({
     mutationFn: (payload: FormData) =>
-      userStoryCommentService.uploadCommentAttachment(
-        projectUuid,
-        storyId,
-        payload
-      ),
+      userStoryCommentService.uploadCommentAttachment(projectUuid, storyId, payload),
   });
 };
 
-export const useDeleteUserStoryCommentAttachment = (
-  projectId: string,
-  userStoryId: string
-) => {
+export const useDeleteUserStoryCommentAttachment = (projectId: string, userStoryId: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (attachmentId: string) =>
@@ -207,10 +197,7 @@ export const useDeleteUserStoryCommentAttachment = (
   };
 };
 
-export const useDownloadUserStoryCommentAttachment = (
-  projectId: string,
-  userStoryId: string
-) => {
+export const useDownloadUserStoryCommentAttachment = (projectId: string, userStoryId: string) => {
   const mutation = useMutation({
     mutationFn: (attachmentId: string) =>
       userStoryCommentService.downloadCommentAttachment(projectId, userStoryId, attachmentId),
