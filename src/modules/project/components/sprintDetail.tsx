@@ -77,7 +77,7 @@ const SprintDetail = () => {
     description: task.description ?? '',
     priority: task.priority
       ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
       : 'Medium',
     labels: [],
     dueDate: 'due_date' in task ? (task.due_date ?? '') : '',
@@ -97,10 +97,10 @@ const SprintDetail = () => {
   const formatDate = (dateStr: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '-';
 
   const handleCreateTask = async (_newTask: Task) => {
@@ -132,7 +132,7 @@ const SprintDetail = () => {
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       setSelectedUserStoryIds([]);
       setShowDeleteUserStoryConfirm(false);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleSprintSuccess = async () => {
@@ -382,9 +382,10 @@ const SprintDetail = () => {
                     {story.title}
                   </span>
                   {story.description && (
-                    <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 truncate">
-                      {story.description}
-                    </p>
+                    <div
+                      className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 line-clamp-2 [&_p]:mb-1 [&_ol]:mb-1 [&_ul]:mb-1 [&_li]:mb-0.5"
+                      dangerouslySetInnerHTML={{ __html: story.description }}
+                    />
                   )}
                 </div>
 
@@ -460,23 +461,23 @@ const SprintDetail = () => {
           onCreateTask={
             canCreateTask
               ? () => {
-                  setTaskUserStoryId(selectedUserStory.id);
-                  setShowAddTaskModal(true);
-                }
+                setTaskUserStoryId(selectedUserStory.id);
+                setShowAddTaskModal(true);
+              }
               : undefined
           }
           onDelete={
             canDeleteUserStory
               ? async () => {
-                  try {
-                    await deleteUserStoryMutation.mutateAsync({
-                      projectId,
-                      userStoryId: selectedUserStory.id,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-                    setSelectedUserStory(null);
-                  } catch (error) {}
-                }
+                try {
+                  await deleteUserStoryMutation.mutateAsync({
+                    projectId,
+                    userStoryId: selectedUserStory.id,
+                  });
+                  queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+                  setSelectedUserStory(null);
+                } catch (error) { }
+              }
               : undefined
           }
         />

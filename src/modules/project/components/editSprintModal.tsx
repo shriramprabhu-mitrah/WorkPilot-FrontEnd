@@ -8,6 +8,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { useUpdateSprint } from '../hooks/useSprint';
 import { SprintDetail } from '@/src/types/project';
+import { useEffect } from 'react';
 
 const today = new Date().toISOString().split('T')[0];
 
@@ -28,6 +29,7 @@ const editSprintSchema = z
     path: ['end_date'],
   });
 
+
 type EditSprintForm = z.infer<typeof editSprintSchema>;
 
 interface EditSprintModalProps {
@@ -43,6 +45,8 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<EditSprintForm>({
     resolver: zodResolver(editSprintSchema),
@@ -54,6 +58,15 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
     },
   });
 
+  const startDate = watch('start_date');
+
+  const endDate = watch('end_date');
+
+  useEffect(() => {
+    if (startDate && endDate && endDate < startDate) {
+      setValue('end_date', '');
+    }
+  }, [startDate, endDate, setValue]);
   const onSubmit = async (data: EditSprintForm) => {
     try {
       await updateSprintAsync({
@@ -102,7 +115,7 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
                 id="edit-start-date"
                 type="date"
                 label="Start date"
-                showRequired
+                min={today}
                 error={errors.start_date?.message}
                 {...register('start_date')}
               />
@@ -111,7 +124,7 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
                 id="edit-end-date"
                 type="date"
                 label="Due date"
-                showRequired
+                min={startDate || today}
                 error={errors.end_date?.message}
                 {...register('end_date')}
               />
