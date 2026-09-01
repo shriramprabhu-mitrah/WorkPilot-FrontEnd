@@ -110,6 +110,16 @@ export interface CreateUserStoryCommentPayload {
   parent_comment_id?: string;
 }
 
+export interface CommentAttachment {
+  id: string;
+  original_filename: string;
+  mime_type?: string;
+  file_size?: number;
+  uploaded_by?: string;
+  uploaded_at?: string;
+  url?: string;
+}
+
 export interface UserStoryCommentResponse {
   id: string;
   user_story_id: string;
@@ -122,6 +132,23 @@ export interface UserStoryCommentResponse {
   updated_at: string;
   is_deleted: boolean;
   replies_count: number;
+  attachments?: CommentAttachment[];   
+}
+
+export interface UserStoryReplyResponse {
+  id: string;
+  user_story_id: string;
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  email: string;
+  content: string;
+  parent_comment_id: string;
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+  parent_comment: UserStoryParentComment;
+  attachments?: CommentAttachment[];  
 }
 
 export interface GetUserStoryCommentsQueryParams {

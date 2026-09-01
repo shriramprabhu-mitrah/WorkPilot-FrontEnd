@@ -53,6 +53,9 @@ import {
   useUpdateUserStoryComment,
   useDeleteUserStoryComment,
   useGetUserStoryReplies,
+  useUploadUserStoryCommentAttachment,
+  useDeleteUserStoryCommentAttachment,
+  useDownloadUserStoryCommentAttachment,
 } from '@/src/modules/tasks/hooks/useUserStoryComments';
 import { userStoryCommentService } from '@/src/services/userstoryComments';
 import toast from 'react-hot-toast';
@@ -68,6 +71,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChildTasksPanel } from './ChildTasksPanel';
 import usePermissions from '@/src/hooks/usePermissions';
 import { useAppSelector } from '@/src/store';
+import { RichContentViewer } from '../rich-content-viewer';
 // import WorkflowModal from '../task-detail/components/WorkflowModal';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
@@ -364,6 +368,9 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
+  const { mutateAsync: uploadCommentAttachmentAsync, isPending: isUploadingCommentAttachment } =
+    useUploadUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
+
   const {
     members: reporterMembers,
     isLoadingMembers: isLoadingReporterMembers,
@@ -390,6 +397,20 @@ export const UserStoryDetailDrawer = ({
     { page: 1, page_size: 50 },
     !!currentUserStory.project_id && !!currentUserStory.id && canViewComments
   );
+
+  // Comment attachment hooks
+  const { deleteCommentAttachmentAsync, isDeletingCommentAttachment } =
+    useDeleteUserStoryCommentAttachment(
+      currentUserStory.project_id ?? '',
+      currentUserStory.id
+    );
+
+  const { downloadCommentAttachmentAsync, isDownloadingCommentAttachment } =
+    useDownloadUserStoryCommentAttachment(
+      currentUserStory.project_id ?? '',
+      currentUserStory.id
+    );
+    
 
   useEffect(() => {
     const latestTasks = currentUserStory.tasks ?? [];
@@ -821,6 +842,43 @@ export const UserStoryDetailDrawer = ({
     }
   };
 
+  // Comment attachment handlers
+  const handleDeleteCommentAttachment = async (attachmentId: string) => {
+    if (!attachmentId) return;
+
+    try {
+      await deleteCommentAttachmentAsync(attachmentId);
+      toast.success('Image deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete image');
+      logger.log('Failed to delete comment attachment', error);
+    }
+  };
+  
+
+  const handleDownloadCommentAttachment = async (attachmentId: string) => {
+    if (!attachmentId) return;
+
+    try {
+      const blob = await downloadCommentAttachmentAsync(attachmentId);
+      
+      // Create a download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `attachment-${attachmentId}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Image downloaded successfully');
+    } catch (error) {
+      toast.error('Failed to download image');
+      logger.log('Failed to download comment attachment', error);
+    }
+  };
+
   const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
     id: task.key ?? '',
     taskId: task.id ?? '',
@@ -889,20 +947,43 @@ export const UserStoryDetailDrawer = ({
     path?: string;
   }
 
-  const handleEditorImageUpload = async (file: File): Promise<string> => {
-    const result = await uploadUserStoryAttachmentAsync({ userStoryId, file });
-    const attachment = result?.data?.data?.[0] as unknown as UploadedAttachment;
+ const handleEditorImageUpload = async (file: File): Promise<string> => {
+   const formData = new FormData();
+   formData.append('file', file);
 
-    if (!attachment) {
-      throw new Error('No attachment returned from upload API');
-    }
-    const imageUrl =
-      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
-    if (!imageUrl) {
-      throw new Error('Uploaded attachment does not contain an image URL');
-    }
-    return imageUrl;
-  };
+   const result = await uploadCommentAttachmentAsync(formData);
+
+   const raw = result as unknown as Record<string, unknown>;
+   const dataField = raw?.data as Record<string, unknown> | undefined;
+
+   const attachments = (dataField?.data ?? dataField) as
+     Array<Record<string, string | undefined>> | undefined;
+
+   const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
+
+   if (!attachment) {
+     throw new Error('No attachment returned from upload API');
+   }
+
+   const imageUrl =
+     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+   
+   const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
+
+   if (!imageUrl) {
+     throw new Error('Uploaded attachment does not contain an image URL');
+   }
+
+   // Encode attachment ID in the URL as a query parameter so it can be extracted later
+   if (attachmentId) {
+     const urlWithId = imageUrl.includes('?') 
+       ? `${imageUrl}&attachment_id=${attachmentId}` 
+       : `${imageUrl}?attachment_id=${attachmentId}`;
+     return urlWithId;
+   }
+
+   return imageUrl;
+ };
 
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1401,6 +1482,7 @@ export const UserStoryDetailDrawer = ({
                                       onChange={setEditingCommentContent}
                                       placeholder="Edit comment..."
                                       minHeight="100px"
+                                      onImageUpload={handleEditorImageUpload}
                                     />
                                     <div className="flex items-center gap-2">
                                       <WpButton
@@ -1430,9 +1512,13 @@ export const UserStoryDetailDrawer = ({
                                 ) : (
                                   <>
                                     <div className="bg-gray-50 dark:bg-slate-800 rounded-lg px-3 py-2 relative group">
-                                      <div
+                                      <RichContentViewer
+                                        content={commentItem.content}
                                         className="text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
-                                        dangerouslySetInnerHTML={{ __html: commentItem.content }}
+                                        canDownload={true}
+                                        canDelete={canDeleteComments}
+                                        onDownloadImage={handleDownloadCommentAttachment}
+                                        onDeleteImage={handleDeleteCommentAttachment}
                                       />
 
                                       {(canEditComments || canDeleteComments) && (
@@ -1536,6 +1622,7 @@ export const UserStoryDetailDrawer = ({
                                                         onChange={setEditingReplyContent}
                                                         placeholder="Edit reply..."
                                                         minHeight="80px"
+                                                        onImageUpload={handleEditorImageUpload}
                                                       />
                                                       <div className="flex items-center gap-2">
                                                         <WpButton
@@ -1570,11 +1657,13 @@ export const UserStoryDetailDrawer = ({
                                                     </div>
                                                   ) : (
                                                     <div className="bg-white dark:bg-slate-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-slate-700 relative group">
-                                                      <div
+                                                      <RichContentViewer
+                                                        content={reply.content}
                                                         className="text-xs text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
-                                                        dangerouslySetInnerHTML={{
-                                                          __html: reply.content,
-                                                        }}
+                                                        canDownload={true}
+                                                        canDelete={canDeleteComments}
+                                                        onDownloadImage={handleDownloadCommentAttachment}
+                                                        onDeleteImage={handleDeleteCommentAttachment}
                                                       />
                                                       {(canEditComments || canDeleteComments) && (
                                                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -1642,6 +1731,7 @@ export const UserStoryDetailDrawer = ({
                                           onChange={setReplyContent}
                                           placeholder="Write a reply..."
                                           minHeight="80px"
+                                          onImageUpload={handleEditorImageUpload}
                                         />
                                         <div className="flex items-center gap-2">
                                           <WpButton
@@ -2286,6 +2376,7 @@ export const UserStoryDetailDrawer = ({
           </div>
         </div>
       </div>
+     
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

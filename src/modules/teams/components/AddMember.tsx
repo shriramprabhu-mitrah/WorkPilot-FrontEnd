@@ -32,6 +32,7 @@ const MembersSettings = () => {
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
   
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
 
   // Find project matching current URL project slug if present
@@ -244,7 +245,7 @@ const MembersSettings = () => {
               Manage Project members and their roles
             </p>
           </div>
-          {isOrgAdmin && (
+          {isOrgAdmin && selectedApiProject && (
             <WpButton
               size="sm"
               leftIcon={<UserPlus size={15} />}

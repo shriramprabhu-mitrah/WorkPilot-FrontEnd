@@ -18,6 +18,8 @@ import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment'
 import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { useDownloadAttachment, useUploadCommentAttachment } from '@/src/modules/tasks/hooks/useCommentAttachment';
+import { RichContentViewer } from '../../rich-content-viewer';
 
 type ActivityTab = 'all' | 'comments' | 'history';
 interface UploadedAttachment {
@@ -62,7 +64,39 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [comment, setComment] = useState('');
   const [showCommentEditor, setShowCommentEditor] = useState(false);
+const { mutateAsync: downloadAttachment } = useDownloadAttachment();
 
+const handleDownloadImage = async (attachmentId: string) => {
+  if (!projectId || !taskId || !attachmentId) {
+    logger.log('Download attempted with missing parameters:', { projectId, taskId, attachmentId });
+    toast.error('Missing required information to download attachment');
+    return;
+  }
+  
+  logger.log('Attempting to download attachment:', { projectId, taskId, attachmentId });
+  
+  try {
+   const blob = await downloadAttachment({ projectId, taskId, attachmentId }); 
+   
+   logger.log('Download response received:', blob);
+   
+   if (!(blob instanceof Blob)) {
+     throw new Error('Download response is not a Blob');
+   }
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `attachment-${attachmentId}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    toast.success('Attachment downloaded successfully');
+  } catch (error) {
+    logger.log('Failed to download attachment', error);
+    toast.error('Failed to download attachment');
+  }
+};
   // Hooks for activities
   const { activities, isLoadingActivities } = useGetProjectActivities(
     projectId ?? '',
@@ -93,23 +127,41 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
     taskId ?? '',
     editingId ?? ''
   );
-  const { uploadAttachment } = useTaskAttachments(projectId ?? '', taskId ?? '');
+const { mutateAsync: uploadCommentAttachment } = useUploadCommentAttachment(taskId ?? '');
 
-  const handleEditorImageUpload = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const result = await uploadAttachment.mutateAsync(formData);
-    const attachment = result?.data?.[0] as UploadedAttachment | undefined;
-    if (!attachment) {
-      throw new Error('No attachment returned from upload API');
-    }
-    const imageUrl =
-      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
-    if (!imageUrl) {
-      throw new Error('Uploaded attachment does not contain an image URL');
-    }
-    return imageUrl;
-  };
+ const handleEditorImageUpload = async (file: File): Promise<string> => {
+   const formData = new FormData();
+   formData.append('file', file);
+
+   const result = await uploadCommentAttachment(formData);
+
+   const raw = result as unknown as Record<string, unknown>;
+   const dataField = raw?.data as Record<string, unknown> | undefined;
+
+   const attachments = (dataField?.data ?? dataField) as
+     Array<Record<string, string | undefined>> | undefined;
+
+   const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
+
+   if (!attachment) {
+     throw new Error('No attachment returned from upload API');
+   }
+
+   const imageUrl =
+     attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+
+   const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
+
+   if (!imageUrl) {
+     throw new Error('Uploaded attachment does not contain an image URL');
+   }
+   if (attachmentId) {
+     return imageUrl.includes('?')
+       ? `${imageUrl}&attachment_id=${attachmentId}`
+       : `${imageUrl}?attachment_id=${attachmentId}`;
+   }
+   return imageUrl;
+ };
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -122,42 +174,39 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   const [repliesMap, setRepliesMap] = useState<Map<string, Comment[]>>(new Map());
 
   // Comment handlers
-  const submitComment = async (content: string, parentId?: string) => {
-    // Strip HTML tags for validation
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+ const submitComment = async (content: string, parentId?: string) => {
+   const tempDiv = document.createElement('div');
+   tempDiv.innerHTML = content;
+   const textContent = tempDiv.textContent || tempDiv.innerText || '';
+   const hasContent = textContent.trim().length > 0 || tempDiv.querySelector('img') !== null;
+   if (!taskId || !hasContent) {
+     return;
+   }
+   try {
+     await createCommentAsync({
+       content,
+       parent_comment_id: parentId,
+     });
+     if (parentId) {
+       setReplyContent('');
+       setReplyingTo(null);
+       const { taskService } = await import('@/src/services/tasks');
+       const res = await taskService.getReplies(taskId, parentId);
+       if (res.data) {
+         setRepliesMap(new Map(repliesMap.set(parentId, res.data)));
+       }
 
-    if (!taskId || !textContent.trim()) {
-      return;
-    }
-
-    try {
-      await createCommentAsync({
-        content: content,
-        parent_comment_id: parentId,
-      });
-
-      if (parentId) {
-        setReplyContent('');
-        setReplyingTo(null);
-        // Refetch replies
-        const { taskService } = await import('@/src/services/tasks');
-        const res = await taskService.getReplies(taskId, parentId);
-        if (res.data) {
-          setRepliesMap(new Map(repliesMap.set(parentId, res.data)));
-        }
-        toast.success('Reply added successfully');
-      } else {
-        setComment('');
-        setShowCommentEditor(false);
-        toast.success('Comment added successfully');
-      }
-    } catch (error) {
-      toast.error('Failed to add comment');
-      logger.log('Failed to post comment', error);
-    }
-  };
+       toast.success('Reply added successfully');
+     } else {
+       setComment('');
+       setShowCommentEditor(false);
+       toast.success('Comment added successfully');
+     }
+   } catch (error) {
+     toast.error('Failed to add comment');
+     logger.log('Failed to post comment', error);
+   }
+ };
 
   const toggleReplies = async (commentId: string, userName: string) => {
     const newShowReplies = new Set(showRepliesForComment);
@@ -242,10 +291,24 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
 
   const historyItems = items.filter((i) => i.type === 'history');
 
-  const tabs: Array<{ key: ActivityTab; label: string }> = [
-    ...(canViewComments ? [{ key: 'comments' as ActivityTab, label: 'Comments' }] : []),
-    { key: 'history' as ActivityTab, label: 'History' },
+  const tabs: Array<{
+    key: ActivityTab;
+    label: string;
+  }> = [
+    ...(canViewComments
+      ? [
+          {
+            key: 'comments' as ActivityTab,
+            label: 'Comments',
+          },
+        ]
+      : []),
+    {
+      key: 'history' as ActivityTab,
+      label: 'History',
+    },
   ];
+
 
   const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
     const name = c.user_name || c.full_name || c.user?.name || 'Unknown';
@@ -303,9 +366,11 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                 <div
                   className={`${isReply ? 'bg-white border border-gray-200' : 'bg-gray-50'} rounded-lg px-3 py-2 relative group`}
                 >
-                  <div
-                    className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700 prose prose-sm max-w-none`}
-                    dangerouslySetInnerHTML={{ __html: c.content }}
+                  <RichContentViewer
+                    content={c.content}
+                    className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700`}
+                    canDownload={true}
+                    onDownloadImage={handleDownloadImage}
                   />
 
                   {(canEditComments || canDeleteComments) && (
@@ -434,6 +499,58 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
         ))}
       </div>
 
+      {/* Comment Input - Moved to Top */}
+      {(tab === 'all' || tab === 'comments') && canCreateComment && (
+        <div className="flex gap-2 items-start mb-5">
+          <AssigneeAvatar initials="Y" color={colors.avatarIndigo} size="md" />
+
+          <div className="flex-1 min-w-0">
+            {showCommentEditor ? (
+              <div className="space-y-2">
+                <WpRichTextEditor
+                  value={comment}
+                  onChange={setComment}
+                  placeholder="Add a comment..."
+                  minHeight="120px"
+                  onImageUpload={handleEditorImageUpload}
+                />
+
+                <div className="flex justify-end gap-2">
+                  <WpButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setComment('');
+                      setShowCommentEditor(false);
+                    }}
+                  >
+                    Cancel
+                  </WpButton>
+
+                  <WpButton
+                    type="button"
+                    variant="primary"
+                    disabled={isCreatingComment}
+                    onClick={() => submitComment(comment)}
+                  >
+                    {isCreatingComment ? 'Posting...' : 'Add Comment'}
+                  </WpButton>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCommentEditor(true)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-left text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500"
+              >
+                Write a comment...
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Comments / History */}
       <div className="space-y-4 mb-5">
         {(tab === 'all' || tab === 'comments') && (
           <>
@@ -511,7 +628,9 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                         changeText = (
                           <div
                             className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
-                            dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
+                            dangerouslySetInnerHTML={{
+                              __html: commentMatch[1],
+                            }}
                           />
                         );
                       } else {
@@ -545,7 +664,9 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
                       {/* Avatar */}
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-                        style={{ backgroundColor: userColor }}
+                        style={{
+                          backgroundColor: userColor,
+                        }}
                       >
                         {userInitials}
                       </div>
@@ -579,56 +700,6 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
           </div>
         )}
       </div>
-
-      {(tab === 'all' || tab === 'comments') && canCreateComment && (
-        <div className="flex gap-2 items-start">
-          <AssigneeAvatar initials="Y" color={colors.avatarIndigo} size="md" />
-
-          <div className="flex-1 min-w-0">
-            {showCommentEditor ? (
-              <div className="space-y-2">
-                <WpRichTextEditor
-                  value={comment}
-                  onChange={setComment}
-                  placeholder="Add a comment..."
-                  minHeight="120px"
-                  onImageUpload={handleEditorImageUpload}
-                />
-
-                <div className="flex justify-end gap-2">
-                  <WpButton
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      setComment('');
-                      setShowCommentEditor(false);
-                    }}
-                  >
-                    Cancel
-                  </WpButton>
-
-                  <WpButton
-                    type="button"
-                    variant="primary"
-                    disabled={isCreatingComment}
-                    onClick={() => submitComment(comment)}
-                  >
-                    {isCreatingComment ? 'Posting...' : 'Add Comment'}
-                  </WpButton>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowCommentEditor(true)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-left text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500"
-              >
-                Write a comment...
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </section>
   );
 };
