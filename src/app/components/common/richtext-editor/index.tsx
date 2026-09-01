@@ -40,13 +40,13 @@ export const MessageEditor = () => {
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <Toolbar />
 
-        <div className="relative">
+        <div className="relative dark:bg-gray-100">
           <RichTextPlugin
             contentEditable={
               <ContentEditable className="min-h-[150px] w-full p-4 text-left text-black outline-none" />
             }
             placeholder={
-              <div className="pointer-events-none absolute left-4 top-4 text-sm text-gray-400">
+              <div className="pointer-events-none absolute left-4 top-4 text-sm text-gray-400 dark:text-slate-100">
                 Write your message here...
               </div>
             }
@@ -67,35 +67,35 @@ const Toolbar = () => {
       <button
         type="button"
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
-        className="rounded px-3 py-1 font-bold text-black hover:bg-gray-200"
+        className="rounded px-3 py-1 font-bold text-black hover:bg-gray-200 dark:text-slate-100"
       >
         B
       </button>
       <button
         type="button"
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
-        className="rounded px-3 py-1 italic text-black hover:bg-gray-200"
+        className="rounded px-3 py-1 italic text-black hover:bg-gray-200 dark:text-slate-100"
       >
         I
       </button>
       <button
         type="button"
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
-        className="rounded px-3 py-1 text-black underline hover:bg-gray-200"
+        className="rounded px-3 py-1 text-black underline hover:bg-gray-200 dark:text-slate-100"
       >
         U
       </button>
       <button
         type="button"
         onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
-        className="rounded px-3 py-1 text-black hover:bg-gray-200"
+        className="rounded px-3 py-1 text-black hover:bg-gray-200 dark:text-slate-100"
       >
         <List size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}
-        className="rounded px-3 py-1 text-black hover:bg-gray-200"
+        className="rounded px-3 py-1 text-black hover:bg-gray-200 dark:text-slate-100"
       >
         <ListOrdered size={18} />
       </button>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 
@@ -34,11 +35,63 @@ export const WpDropdown = ({
   onChange,
 }: WpDropdownProps) => {
   const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [mounted, setMounted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useOutsideClick(ref, () => setOpen(false));
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [open]);
+
   const selected = options.find((o) => o.value === value);
+
+  const dropdownMenu = open && mounted ? (
+    <ul
+      style={{
+        position: 'absolute',
+        top: `${position.top + 4}px`,
+        left: `${position.left}px`,
+        width: `${position.width}px`,
+      }}
+      className="z-[9999] bg-white dark:bg-slate-800 border border-[var(--color-gray-200)] dark:border-slate-600 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1"
+    >
+      {options.map((option) => (
+        <li
+          key={option.value}
+          onClick={() => {
+            onChange(option.value);
+            setOpen(false);
+          }}
+          className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200"
+        >
+          <span className="flex items-center gap-2">
+            {option.icon && <span className="flex items-center">{option.icon}</span>}
+            {option.label}
+          </span>
+          {value === option.value && (
+            <Check size={14} className="text-[var(--color-primary-focus)]" />
+          )}
+        </li>
+      ))}
+    </ul>
+  ) : null;
 
   return (
     <div className="w-full mb-5" ref={ref}>
@@ -50,6 +103,7 @@ export const WpDropdown = ({
       )}
       <div className="relative">
         <button
+          ref={buttonRef}
           type="button"
           disabled={disabled}
           onClick={() => setOpen((p) => !p)}
@@ -79,28 +133,7 @@ export const WpDropdown = ({
           />
         </button>
 
-        {open && (
-          <ul className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-[var(--color-gray-200)] dark:border-slate-600 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1">
-            {options.map((option) => (
-              <li
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpen(false);
-                }}
-                className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-blue-900/30 text-[var(--color-gray-700)] dark:text-slate-200"
-              >
-                <span className="flex items-center gap-2">
-                  {option.icon && <span className="flex items-center">{option.icon}</span>}
-                  {option.label}
-                </span>
-                {value === option.value && (
-                  <Check size={14} className="text-[var(--color-primary-focus)]" />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        {mounted && dropdownMenu && createPortal(dropdownMenu, document.body)}
       </div>
       {error && <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>}
       {hint && !error && <p className="mt-1 text-xs text-[var(--color-gray-400)]">{hint}</p>}

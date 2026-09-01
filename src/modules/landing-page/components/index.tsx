@@ -383,12 +383,12 @@ export const LandingPage = () => {
           Join thousands of professionals who trust WorkPilot to manage projects, collaborate with
           teams, and deliver results beyond expectations.
         </p>
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <WpButton onClick={() => router.push('/signup')} className="lp-btn-accent w-full sm:w-auto">
             Start Free
           </WpButton>
           <ContactSalesModal>
-            <WpButton variant="secondary" className="lp-btn-outline h-12">
+            <WpButton variant="secondary" className="lp-btn-outline h-12 w-full sm:w-auto">
               Contact Sales
             </WpButton>
           </ContactSalesModal>

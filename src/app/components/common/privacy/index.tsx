@@ -73,10 +73,11 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
             marginTop: '15px',
             marginBottom: '5px',
           }}
+          className="dark:text-slate-100"
         >
           Personal Information
         </h3>
-        <p className="ms-7">We may collect:</p>
+        <p className="ms-7 dark:text-slate-100">We may collect:</p>
         <ul className="mb-5 list-disc space-y-2 ms-8 pl-6 text-gray-600">
           <li>Full Name</li>
           <li>Email Address</li>
@@ -93,6 +94,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
             marginTop: '24px',
             marginBottom: '5px',
           }}
+          className="dark:text-slate-100"
         >
           Workspace Information
         </h3>
@@ -119,6 +121,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
             marginTop: '24px',
             marginBottom: '5px',
           }}
+          className="dark:text-slate-100"
         >
           Technical Information
         </h3>
@@ -136,7 +139,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
 
       <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
         <h1 className="text-2xl mb-1 font-bold text-gray-900">2. How We Use Your Information</h1>
-        <p className="ms-7">We use your information to:</p>
+        <p className="ms-7 dark:text-slate-100">We use your information to:</p>
         <ul className="mb-5 ms-8 list-disc mt-1 space-y-2 pl-6 text-gray-600">
           <li>Create and manage your account.</li>
           <li>Authenticate users securely.</li>
@@ -269,13 +272,17 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
       </div>
       <hr style={hr} />
 
-      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6">
-        <h1 className="text-2xl mb-1 font-bold text-gray-900">11. Contact Us</h1>
-        <p className="leading-7 ms-9 text-gray-600">
+      <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-6 dark:border-slate-700 dark:bg-slate-800">
+        <h1 className="mb-1 text-2xl font-bold text-gray-900 dark:text-slate-100">
+          11. Contact Us
+        </h1>
+
+        <p className="ms-9 leading-7 text-gray-600 dark:text-slate-100">
           If you have questions or concerns about this Privacy Policy, please contact:
         </p>
+
         <div className="ms-9">
-          <p>
+          <p className="text-gray-900 dark:text-slate-100">
             <strong>WorkPilot Support</strong>
             <br />
             <strong>Email:</strong>{' '}
@@ -297,6 +304,7 @@ export const PrivacyPolicy = ({ onContinue, showActions = true }: PrivacyPolicyP
           </p>
         </div>
       </div>
+
       <hr style={hr} />
 
       {showActions && (

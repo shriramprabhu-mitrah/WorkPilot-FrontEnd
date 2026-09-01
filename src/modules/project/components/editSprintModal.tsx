@@ -18,7 +18,9 @@ const editSprintSchema = z
     start_date: z
       .string()
       .min(1, 'Start date is required')
-      .refine((d) => d >= today, { message: 'Start date cannot be in the past' }),
+      .refine((d) => d >= today, {
+        message: 'Start date cannot be in the past',
+      }),
     end_date: z.string().min(1, 'Due date is required'),
   })
   .refine((d) => d.end_date >= d.start_date, {
@@ -67,18 +69,22 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b p-5">
-          <h2 className="text-xl font-bold">Edit Sprint</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Edit Sprint</h2>
+
           <WpButton
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="p-2"
+            className="!p-2 text-gray-400 dark:text-slate-500"
             leftIcon={<X size={18} />}
           />
         </div>
+
+        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4 p-5">
             <WpInput
@@ -88,7 +94,9 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
               error={errors.name?.message}
               {...register('name')}
             />
+
             <WpInput id="edit-sprint-goal" label="Goal" {...register('goal')} />
+
             <div className="grid grid-cols-2 gap-3">
               <WpInput
                 id="edit-start-date"
@@ -98,6 +106,7 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
                 error={errors.start_date?.message}
                 {...register('start_date')}
               />
+
               <WpInput
                 id="edit-end-date"
                 type="date"
@@ -108,10 +117,20 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3 border-t p-5">
-            <WpButton type="button" variant="ghost" size="sm" onClick={onClose}>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
+            <WpButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              disabled={isUpdatingSprint}
+              className="text-gray-600 dark:text-slate-300"
+            >
               Cancel
             </WpButton>
+
             <WpButton type="submit" variant="primary" size="md" disabled={isUpdatingSprint}>
               {isUpdatingSprint ? 'Saving...' : 'Save Changes'}
             </WpButton>

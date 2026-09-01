@@ -35,17 +35,20 @@ const EditProjectModal = ({
   onSuccess,
   onLoadingChange,
 }: EditProjectModalProps) => {
-  // Normalize status to lowercase for API compatibility
   const normalizeStatus = (status: string | undefined): ProjectStatus => {
     if (!status) return 'active';
+
     const normalized = status.toLowerCase().replace(/\s+/g, '_') as ProjectStatus;
+
     return ['active', 'on_hold', 'completed', 'archived', 'cancelled', 'planning'].includes(
       normalized
     )
       ? normalized
       : 'active';
   };
+
   const dispatch = useAppDispatch();
+
   const [formData, setFormData] = useState<UpdateProjectPayload>({
     name: project.name || '',
     description: project.description || '',
@@ -55,7 +58,10 @@ const EditProjectModal = ({
   const { updateProjectAsync, isUpdatingProject } = useUpdateProject();
 
   const handleChange = (field: keyof UpdateProjectPayload, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,14 +73,19 @@ const EditProjectModal = ({
 
     try {
       onLoadingChange?.(true);
+
       await updateProjectAsync({
         projectId: project.id,
         payload: formData,
       });
+
       onClose();
+
       const res = await projectService.getProjectDetail(project.id);
+
       if (res?.data) {
         const { creator, ...rest } = res.data;
+
         dispatch(
           setSelectedProject({
             ...rest,
@@ -82,6 +93,7 @@ const EditProjectModal = ({
           })
         );
       }
+
       onSuccess?.();
     } catch (error) {
       // Error is already handled by the mutation
@@ -91,12 +103,27 @@ const EditProjectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-gray-100 p-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+      <div
+        className="
+          w-full max-w-2xl
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          bg-white dark:bg-slate-900
+          shadow-xl
+        "
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Edit Project</h2>
-            <p className="mt-1 text-sm text-gray-500">Update project details and settings</p>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+              Edit Project
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+              Update project details and settings
+            </p>
           </div>
 
           <WpButton
@@ -104,13 +131,14 @@ const EditProjectModal = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="!p-2 text-gray-400"
+            className="!p-2 text-gray-400 dark:text-slate-500"
             disabled={isUpdatingProject}
           >
             <X size={17} />
           </WpButton>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-5 p-5">
             <WpInput
@@ -141,7 +169,8 @@ const EditProjectModal = ({
             />
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 p-5">
+          {/* Footer */}
+          <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
             <WpButton
               type="button"
               variant="secondary"
