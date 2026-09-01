@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useUserInsights } from '../../hooks/useUser';
 import StatCard from '@/src/app/components/common/statcard/statcard';
 import { Briefcase, CheckCircle2, Ban, Pencil, X, Check } from 'lucide-react';
-import { colors } from '@/src/styles/colors';
 import { formatMonthYear } from '@/src/app/components/common/format';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';

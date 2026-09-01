@@ -14,7 +14,7 @@ interface StartSprintModalProps {
   onStart: (payload: StartSprintPayload) => Promise<void>;
   isStarting: boolean;
 }
-const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintModalProps) => {
+const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProps) => {
   const getToday = () => {
     const date = new Date();
     return date.toISOString().split('T')[0];

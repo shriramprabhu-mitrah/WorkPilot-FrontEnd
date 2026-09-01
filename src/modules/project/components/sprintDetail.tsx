@@ -2,31 +2,26 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Pencil, Trash2, Hash } from 'lucide-react';
+import { Pencil, Trash2, Hash } from 'lucide-react';
 
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetSprintById, useDeleteSprint } from '@/src/modules/project/hooks/useSprint';
 import SprintDetailSkeleton from './sprintDetailSkeleton';
-import AddTaskModal, { Task } from './addTaskModel';
+import AddTaskModal from './addTaskModel';
 import EditSprintModal from './editSprintModal';
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { useDeleteTask } from '@/src/modules/tasks/hooks/useTask';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
-import { ColumnId, KanbanTask } from '@/src/types/board';
-import { TaskResponse } from '@/src/types/task';
+import { KanbanTask } from '@/src/types/board';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { statusOptions } from '../data/project';
 import { useGetProjectMembers } from '../hooks/useProject';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetUserStories, useDeleteUserStory } from '../../tasks/hooks/useUserStory';
 import { colors } from '@/src/styles/colors';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { useQueryClient } from '@tanstack/react-query';
-import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 const SprintDetail = () => {
   const router = useRouter();
-  const { push } = useOrgNavigation();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const sprintId = searchParams.get('sprintId') ?? '';
@@ -49,7 +44,6 @@ const SprintDetail = () => {
     isFetchingUserStories: isFetchingTasks,
   } = useGetUserStories(projectId, { sprint_id: sprintId }, !!projectId && canViewUserStories);
 
-  const { deleteTaskAsync, isDeletingTask } = useDeleteTask(projectId);
   const deleteUserStoryMutation = useDeleteUserStory();
   const [memberSearch, setMemberSearch] = useState('');
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
@@ -64,48 +58,14 @@ const SprintDetail = () => {
       value: member.user_id,
     })) ?? [];
 
-  const STATUS_LABELS = Object.fromEntries(
-    statusOptions.map((option) => [option.value, option.label])
-  );
-
-  const mapTaskToDrawerTask = (task: UserStoryResponse | TaskResponse): KanbanTask => ({
-    id: 'key' in task && task.key ? task.key : '',
-    taskId: task.id ?? '',
-    projectId: task.project_id ?? '',
-    title: task.title ?? '',
-    columnId: (task.status ?? 'todo') as ColumnId,
-    description: task.description ?? '',
-    priority: task.priority
-      ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
-      : 'Medium',
-    labels: [],
-    dueDate: 'due_date' in task ? (task.due_date ?? '') : '',
-    startDate: 'start_date' in task ? (task.start_date ?? '') : '',
-    storyPoints: task.story_points ?? 0,
-    sprint: '',
-    parent: '',
-    subtasks: [],
-    assigneeInitials: '',
-    assigneeColor: '',
-    reporter: '',
-    reporterInitials: '',
-    reporterColor: undefined,
-    activity: [],
-  });
-
   const formatDate = (dateStr: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : '-';
-
-  const handleCreateTask = async (_newTask: Task) => {
-    setShowAddTaskModal(false);
-  };
 
   const handleUserStorySelection = (userStoryId: string) => {
     setSelectedUserStoryIds((prev) =>
@@ -132,7 +92,7 @@ const SprintDetail = () => {
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       setSelectedUserStoryIds([]);
       setShowDeleteUserStoryConfirm(false);
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleSprintSuccess = async () => {
@@ -461,23 +421,23 @@ const SprintDetail = () => {
           onCreateTask={
             canCreateTask
               ? () => {
-                setTaskUserStoryId(selectedUserStory.id);
-                setShowAddTaskModal(true);
-              }
+                  setTaskUserStoryId(selectedUserStory.id);
+                  setShowAddTaskModal(true);
+                }
               : undefined
           }
           onDelete={
             canDeleteUserStory
               ? async () => {
-                try {
-                  await deleteUserStoryMutation.mutateAsync({
-                    projectId,
-                    userStoryId: selectedUserStory.id,
-                  });
-                  queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-                  setSelectedUserStory(null);
-                } catch (error) { }
-              }
+                  try {
+                    await deleteUserStoryMutation.mutateAsync({
+                      projectId,
+                      userStoryId: selectedUserStory.id,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+                    setSelectedUserStory(null);
+                  } catch (error) {}
+                }
               : undefined
           }
         />

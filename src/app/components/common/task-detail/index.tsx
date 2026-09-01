@@ -264,7 +264,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const actionMenuRef = useRef<HTMLDivElement>(null);
   const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const descriptionEditorRef = useRef<HTMLDivElement>(null);
-  //   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const {
@@ -275,7 +274,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     downloadAttachment,
     deleteAttachment,
   } = useTaskAttachments(task.projectId ?? '', task.taskId ?? '');
-  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(task.projectId ?? '');
   const statusOptions = statuses.map((status) => ({
     value: status.id,

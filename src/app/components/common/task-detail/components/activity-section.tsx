@@ -54,7 +54,7 @@ const formatTime = (iso: string) => {
   return isNaN(d.getTime()) ? iso : d.toLocaleString();
 };
 
-export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionProps) => {
+export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => {
   const { canViewComments, canAddComments, canEditComments, canDeleteComments } = usePermissions();
   const canCreateComment = canAddComments;
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');

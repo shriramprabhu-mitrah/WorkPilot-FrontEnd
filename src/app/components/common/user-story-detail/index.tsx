@@ -640,21 +640,7 @@ export const UserStoryDetailDrawer = ({
     colors.avatarAmber,
     colors.avatarIndigo,
   ];
-  const handleDeleteStatus = async (status: CustomStatus) => {
-    if (!status.id) return;
 
-    try {
-      await deleteStatus({
-        projectId: currentUserStory.project_id ?? '',
-        statusId: status.id,
-      });
-
-      setShowStatusMenu(false);
-      onUpdate?.();
-    } catch (error) {
-      logger.log('Failed to delete custom status', error);
-    }
-  };
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 

@@ -1054,19 +1054,6 @@ export const KanbanBoardTemplate = () => {
     [filterMembers]
   );
 
-  // Helper to get avatar color based on name
-  const getAvatarColor = (name: string) => {
-    const avatarColors = [
-      colors.avatarIndigo,
-      colors.avatarBlue,
-      colors.avatarPink,
-      colors.avatarGreen,
-      colors.avatarAmber,
-    ];
-    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return avatarColors[index % avatarColors.length];
-  };
-
   // Helper to get initials from full name
   const getInitials = (name: string) => {
     return name

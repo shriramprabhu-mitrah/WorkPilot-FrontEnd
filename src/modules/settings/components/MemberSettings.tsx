@@ -28,7 +28,7 @@ export const MemberSettings = () => {
   const [status, setStatus] = useState('');
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
-  const { teamMembers, isTeamMembersLoading, isTeamMembersFetching } = useGetTeamMembers(
+  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
     page,
     pageSize,
     status || undefined

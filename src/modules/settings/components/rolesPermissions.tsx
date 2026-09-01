@@ -12,7 +12,7 @@ import {
   Info,
   Lock,
 } from 'lucide-react';
-import { auditLogs, rolesData } from '../data/rolesJson';
+import { rolesData } from '../data/rolesJson';
 
 const roleIcons = {
   'Super Admin': Crown,

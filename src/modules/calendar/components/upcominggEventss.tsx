@@ -18,11 +18,7 @@ const eventStyles = {
   },
   Task: { color: colors.primary, bg: colors.primaryLight, date: colors.primary },
 };
-const handleEventClick = (event: CalendarEvent) => {
-  if (event.type !== 'Sprint') return;
 
-  // navigate to sprint
-};
 const UpcomingEvents = ({ events, currentDate, onSprintClick }: UpcomingEventsProps) => {
   const upcomingEvents = events
     .filter((e) => moment(e.start).isSame(currentDate, 'month'))
