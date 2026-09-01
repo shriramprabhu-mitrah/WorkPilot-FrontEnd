@@ -9,7 +9,6 @@ import {
   User,
 } from '@/src/types/teams';
 import { apiService } from '../axios';
-import { Project } from '@/src/types/project';
 import { AddProjectMembersPayload } from '@/src/types/project';
 class TeamService {
   async getTeamMembers(

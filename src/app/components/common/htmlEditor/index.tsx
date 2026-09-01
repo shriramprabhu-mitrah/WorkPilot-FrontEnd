@@ -46,7 +46,7 @@ import {
   ListItemNode,
   ListNode,
 } from '@lexical/list';
-import { TOGGLE_LINK_COMMAND, LinkNode, AutoLinkNode, $createLinkNode } from '@lexical/link';
+import {  LinkNode, AutoLinkNode, $createLinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { $patchStyleText } from '@lexical/selection';
 import {
@@ -59,13 +59,9 @@ import {
   Undo2,
   Redo2,
   Smile,
-  MoreHorizontal,
   Image as ImageIcon,
-  Code2,
-  Mic,
   ChevronDown,
   Check,
-  Minus,
   X,
 } from 'lucide-react';
 

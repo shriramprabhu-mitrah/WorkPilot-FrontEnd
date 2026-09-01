@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams,  useSearchParams } from 'next/navigation';
 import UserStoryDetail from '@/src/modules/backlog/components/userStoryDetail';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 

@@ -1,5 +1,5 @@
 'use client';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { FilterDropdown } from './FilterDropdown';
 import { filters } from '../data/fliter';
 import { WpButton } from '@/src/app/components/common/button';

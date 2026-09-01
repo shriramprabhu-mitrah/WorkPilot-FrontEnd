@@ -3,7 +3,6 @@ import { apiService, PaginatedApiResponse } from '../axios';
 import { ApiResponse } from '@/src/types/core';
 import {
   InviteUsersPayload,
-  OrganizationPaylaod,
   OrganizationResponse,
   OrganizationUpdatePaylaod,
 } from '@/src/types/organization';

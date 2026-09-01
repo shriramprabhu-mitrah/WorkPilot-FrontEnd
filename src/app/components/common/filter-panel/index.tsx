@@ -111,19 +111,6 @@ export const FilterPanel = ({
       .slice(0, 2);
   };
 
-  const getAvatarColor = (name: string) => {
-    const avatarColors = [
-      '#6366f1',
-      '#3b82f6',
-      '#ec4899',
-      '#10b981',
-      '#f59e0b',
-      '#8b5cf6',
-      '#06b6d4',
-    ];
-    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return avatarColors[index % avatarColors.length];
-  };
 
   // Shared search input used in every category
   const SearchInput = ({ placeholder }: { placeholder: string }) => (

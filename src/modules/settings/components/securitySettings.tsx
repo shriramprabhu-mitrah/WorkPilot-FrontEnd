@@ -1,29 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock3, CircleAlert, CircleUserRound, Shield } from 'lucide-react';
+import { Clock3, CircleAlert } from 'lucide-react';
 import { activeSessions, inactivityOptions, loginActivity } from '../data/notificationData';
-import { WpInput } from '@/src/app/components/common/input';
-import { WpButton } from '@/src/app/components/common/button';
 
 export const SecuritySetting = () => {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [timeout, setTimeoutValue] = useState('30 minutes');
-  const [sessions, setSessions] = useState(activeSessions);
-  const [showRevokeModal, setShowRevokeModal] = useState(false);
-  const handleTwoFactorToggle = () => {
-    setTwoFactorEnabled((previous) => !previous);
-  };
-
-  const handleRevoke = (sessionId: number) => {
-    setSessions((previousSessions) =>
-      previousSessions.filter((session) => session.id !== sessionId)
-    );
-  };
-  const handleRevokeAll = () => {
-    setSessions((previousSessions) => previousSessions.filter((session) => session.isCurrent));
-    setShowRevokeModal(false);
-  };
+  
   return (
     <div className="space-y-5">
       {/* future purpose

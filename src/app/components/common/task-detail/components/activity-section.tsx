@@ -14,7 +14,6 @@ import {
   useDeleteTaskComment,
 } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
-import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 
 import { usePermissions } from '@/src/hooks/usePermissions';
@@ -25,12 +24,7 @@ import {
 import { RichContentViewer } from '../../rich-content-viewer';
 
 type ActivityTab = 'all' | 'comments' | 'history';
-interface UploadedAttachment {
-  url?: string;
-  file_url?: string;
-  file_path?: string;
-  path?: string;
-}
+
 interface ActivitySectionProps {
   items: ActivityItem[];
   taskId?: string;

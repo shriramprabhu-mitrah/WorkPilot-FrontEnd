@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 
 type FilterDropdownProps = {
   value: string;

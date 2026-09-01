@@ -11,10 +11,9 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  Download,
   CornerDownRight,
 } from 'lucide-react';
-import type { Priority, SubTask } from '@/src/types/board';
+import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
 import { DetailRow } from '../task-detail/components/detail-row';
@@ -45,14 +44,12 @@ import { KanbanTask, ColumnId } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
-// import StatusModal from '../task-detail/components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 import {
   useCreateUserStoryComment,
   useGetUserStoryComments,
   useUpdateUserStoryComment,
   useDeleteUserStoryComment,
-  useGetUserStoryReplies,
   useUploadUserStoryCommentAttachment,
   useDeleteUserStoryCommentAttachment,
   useDownloadUserStoryCommentAttachment,
@@ -348,15 +345,10 @@ export const UserStoryDetailDrawer = ({
   const [showSprintMenu, setShowSprintMenu] = useState(false);
   const [selectedSprintName, setSelectedSprintName] = useState('');
   const debouncedSprintSearch = useDebounce(sprintSearch, 500);
-  const [showAddStatus, setShowAddStatus] = useState(false);
   const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
   const debouncedReporterSearch = useDebounce(reporterSearch, 500);
-  const [showStatusModal, setShowStatusModal] = useState(false);
   const debouncedChildAssigneeSearch = useDebounce(childAssigneeSearch, 500);
-  const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
-  const [selectedStatus, setSelectedStatus] = useState<CustomStatus | null>(null);
   const [childStatusTaskId, setChildStatusTaskId] = useState<string | null>(null);
-  const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const [childTasks, setChildTasks] = useState<TaskResponse[]>(() => currentUserStory.tasks ?? []);
   const queryClient = useQueryClient();
   const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);

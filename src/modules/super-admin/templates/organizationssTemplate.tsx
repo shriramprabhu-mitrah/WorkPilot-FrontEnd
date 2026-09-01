@@ -75,7 +75,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 };
 
 export const OrganizationsTemplate = () => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');

@@ -3,14 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSignin } from '../../hooks/useSignin';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TrackrLogoSvg, EmailIconSvg, CloseIconSvg } from '@/src/assets/svgs';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpCheckbox } from '@/src/app/components/common/checkbox';
 import { LockIcon } from 'lucide-react';
 import { ErrorMessage, inputErrorClass } from '@/src/app/components/common/errormessage';
 
@@ -61,7 +59,6 @@ export const SignIn = () => {
     isMobile,
   } = useSignin();
   const [rememberMe, setRememberMe] = useState(false);
-  const router = useRouter();
 
   const [showForgotSidebar, setShowForgotSidebar] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);

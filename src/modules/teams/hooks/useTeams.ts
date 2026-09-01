@@ -6,8 +6,8 @@ import {
   UpdateRolePayload,
   User,
 } from '@/src/types/teams';
-import { AddProjectMembersPayload, ProjectMember } from '@/src/types/project';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AddProjectMembersPayload,  } from '@/src/types/project';
+import {  useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 export const QUERY_KEYS = {
   TEAM_MEMBERS: 'team-members',
   PROJECT_MEMBERS: 'project-members',

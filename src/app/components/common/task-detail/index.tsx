@@ -13,11 +13,10 @@ import {
   Pencil,
   Copy,
 } from 'lucide-react';
-import type { ColumnId, KanbanTask, Priority, SubTask } from '@/src/types/board';
+import type {  KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
 import { ActivitySection } from './components/activity-section';
-import { COLUMN_CONFIG, COLUMN_ORDER } from './components/badges';
 import { DetailRow } from './components/detail-row';
 import {
   EditableDate,
@@ -288,7 +287,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
-  const queryClient = useQueryClient();
   const currentUser = useAppSelector((state) => state.user);
 
   const handleAssignToMe = () => {
@@ -354,13 +352,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     return imageUrl;
   };
 
-  const resolveStatusToEdit = (currentStatusId: string): CustomStatus | null => {
-    const statusToEdit =
-      statuses.find((status) => status.id === currentStatusId) ??
-      statuses.find((status) => status.is_default) ??
-      (statuses.length > 0 ? statuses[0] : undefined);
-    return statusToEdit ?? null;
-  };
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {

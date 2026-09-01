@@ -2,31 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useParams } from 'next/navigation';
-import { removeTokens } from '@/src/lib/utils/cookies';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSelectedSprint, setSprints } from '@/src/store/slices/project';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import {
   LayoutDashboard,
-  FolderKanban,
-  ClipboardList,
   Settings,
   Calendar,
   BarChart2,
   ChevronDown,
-  LogOut,
-  Flag,
   KanbanSquareDashedIcon,
   User,
   X,
-  Check,
   Zap,
   Plus,
   Eye,
 } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
-import { WpButton } from '@/src/app/components/common/button';
 import { getInitials } from '../format';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Project, SprintDetail } from '@/src/types/project';
@@ -66,7 +59,6 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const { isOrgAdmin, canCreateSprint, canCreateProject } = usePermissions();
   const { selectedProject, selectedSprint, sprints } = useAppSelector((state) => state.project);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { handleLogOutAsync, logOut } = useSignin();
 
   const urlProjectSlug = params?.projectSlug as string | undefined;
 
