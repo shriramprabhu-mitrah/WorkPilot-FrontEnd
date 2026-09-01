@@ -111,7 +111,6 @@ export const FilterPanel = ({
       .slice(0, 2);
   };
 
-
   // Shared search input used in every category
   const SearchInput = ({ placeholder }: { placeholder: string }) => (
     <div className="border-b border-gray-200 p-2.5 dark:border-slate-700">

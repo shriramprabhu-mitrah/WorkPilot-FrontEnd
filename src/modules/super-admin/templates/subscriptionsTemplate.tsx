@@ -234,7 +234,6 @@ export const SubscriptionsTemplate = () => {
     return matchesSearch && matchesFilter;
   });
 
-
   const getStatusClass = (status: FilterType) => {
     switch (status) {
       case 'Active':
@@ -250,7 +249,6 @@ export const SubscriptionsTemplate = () => {
     }
   };
 
-  const totalSubscriptions = mockSubscriptions.length;
   if (isLoadingSubscriptions) {
     return <SubscriptionsSkeleton />;
   }

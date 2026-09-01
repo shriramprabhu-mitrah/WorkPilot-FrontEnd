@@ -67,9 +67,7 @@ export const useSignin = () => {
               });
             }
           }
-        } catch (error) {
-          // console.error('Failed to fetch organization:', error);
-        }
+        } catch (error) {}
       }
 
       return { ...response, organization: organizationData, userProfile };

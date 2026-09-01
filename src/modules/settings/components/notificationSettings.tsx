@@ -49,14 +49,7 @@ export const NotificationSettings = () => {
       [eventId]: !previous[eventId],
     }));
   };
-  const handleSave = () => {
-    const preferences = {
-      deliveryChannels: deliveryState,
-      notifications: eventState,
-      emailFrequency,
-      doNotDisturb,
-    };
-  };
+  const handleSave = () => {};
   return (
     <div className="w-2xl max-w-[850px] space-y-5 pb-10">
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">

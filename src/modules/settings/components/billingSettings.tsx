@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, X, CreditCard } from 'lucide-react';
+import { CheckCircle2, CreditCard } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
 interface RazorpayResponse {

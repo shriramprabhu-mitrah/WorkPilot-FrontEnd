@@ -8,12 +8,10 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { WpDatePicker } from '@/src/app/components/common/datepicker';
-import { statusOptions } from '../data/project';
 import { TaskPayload } from '@/src/types/task';
 import { formatISODateTime } from '@/src/app/components/common/format';
 import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
-import { WpTextarea } from '@/src/app/components/common/textarea';
 import { useGetStatus } from '../hooks/useLabels';
 import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
 
@@ -66,7 +64,6 @@ interface FormValues {
 
 const AddTaskModal = ({
   projectId,
-  sprintId,
   userStoryId,
   assigneeOptions,
   memberSearch,
@@ -273,10 +270,7 @@ const AddTaskModal = ({
     } catch (error) {}
   };
   const taskNameRegister = register('taskName');
-  const descriptionRegister = register('description');
   const storyPointsRegister = register('storyPoints');
-  const estimatedHoursRegister = register('estimatedHours');
-  const actualHoursRegister = register('actualHours');
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">

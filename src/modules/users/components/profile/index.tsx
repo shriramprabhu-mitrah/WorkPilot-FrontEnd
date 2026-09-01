@@ -110,11 +110,7 @@ export default function Profile() {
   }
 
   const displayName = user?.name || 'User';
-  const STATS = [
-    { label: 'Total Assigned', value: 0, color: colors.primary },
-    { label: 'In Progress', value: 0, color: colors.orange500 },
-    { label: 'Completed', value: 0, color: colors.green500 },
-  ];
+
   const createdAt = formatMonthYear(user?.created_at || '-');
   const roleDetails = rolesData.find((role) => role.role === user?.role);
 

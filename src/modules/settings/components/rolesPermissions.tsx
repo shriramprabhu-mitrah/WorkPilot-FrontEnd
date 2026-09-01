@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Ban,
   Info,
-  History,
   Lock,
 } from 'lucide-react';
 import { auditLogs, rolesData } from '../data/rolesJson';

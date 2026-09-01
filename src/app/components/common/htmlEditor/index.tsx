@@ -46,7 +46,7 @@ import {
   ListItemNode,
   ListNode,
 } from '@lexical/list';
-import {  LinkNode, AutoLinkNode, $createLinkNode } from '@lexical/link';
+import { LinkNode, AutoLinkNode, $createLinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { $patchStyleText } from '@lexical/selection';
 import {

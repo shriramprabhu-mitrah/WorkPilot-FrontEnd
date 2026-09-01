@@ -29,7 +29,6 @@ const editSprintSchema = z
     path: ['end_date'],
   });
 
-
 type EditSprintForm = z.infer<typeof editSprintSchema>;
 
 interface EditSprintModalProps {

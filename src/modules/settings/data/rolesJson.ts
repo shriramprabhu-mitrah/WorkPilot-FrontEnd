@@ -1,5 +1,4 @@
 import {
-  Crown,
   Building2,
   BriefcaseBusiness,
   Code2,

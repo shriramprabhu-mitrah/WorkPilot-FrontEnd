@@ -2,7 +2,7 @@
 
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import ProjectDetail from '../components/projectDetail';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Project } from '../types/project';
 import ProjectSkeleton from '../components/projectDetailSkeleton';
@@ -12,7 +12,6 @@ import { setSelectedProject, setProjectLoading } from '@/src/store/slices/projec
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 const ProjectSprintTemplate = () => {
-  const router = useRouter();
   const { push } = useOrgNavigation();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();

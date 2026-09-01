@@ -475,9 +475,7 @@ export const KanbanBoardTemplate = () => {
     canViewTasks,
     canCreateTask,
     canEditTask,
-    canDeleteTask,
     canViewUserStories,
-    canEditUserStory,
     canDeleteUserStory,
     canViewSprints,
   } = usePermissions();
@@ -1359,7 +1357,6 @@ export const KanbanBoardTemplate = () => {
                 const memberName = member.full_name || member.user?.full_name || 'Unknown';
                 const userId = member.user_id || member.user?.id || member.id;
                 const initials = getInitials(memberName);
-                const avatarColor = getAvatarColor(memberName);
                 const isSelected = assigneeIdFilter.includes(userId);
 
                 return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
@@ -70,7 +70,7 @@ export const TeamTemplate = () => {
   const [status, setStatus] = useState('');
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
-  const { teamMembers, isTeamMembersLoading, isTeamMembersFetching } = useGetTeamMembers(
+  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
     page,
     pageSize,
     status || undefined

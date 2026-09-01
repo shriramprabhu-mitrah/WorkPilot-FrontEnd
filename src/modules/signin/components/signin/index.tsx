@@ -109,7 +109,6 @@ export const SignIn = () => {
     handleSubmit: handleForgotFormSubmit,
     reset: resetForgotForm,
     formState: { errors: forgotErrors },
-    setValue,
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: 'onSubmit',

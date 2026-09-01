@@ -93,7 +93,7 @@ const MembersSettings = () => {
     pageSize
   );
   const { isOrgAdmin } = usePermissions();
-  const { updateProjectRoleAsync, isUpdatingProjectRole } = useUpdateProjectRole();
+  const { updateProjectRoleAsync } = useUpdateProjectRole();
 
   const members = projectMembers?.data ?? [];
   const visibleMembers = showAll ? members : members.slice(0, 10);

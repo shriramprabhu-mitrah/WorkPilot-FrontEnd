@@ -14,7 +14,7 @@ import { formatMonthYear } from '@/src/app/components/common/format';
 import { usePermissions } from '@/src/hooks/usePermissions';
 
 export const TaskTemplate = () => {
-  const { canViewTasks, canDeleteTask } = usePermissions();
+  const { canViewTasks } = usePermissions();
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
   const selectedSprintStore = useAppSelector((state) => state.project.selectedSprint);
   const projectId = selectedApiProject?.id ?? '';

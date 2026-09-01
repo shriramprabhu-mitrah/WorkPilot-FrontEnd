@@ -13,7 +13,7 @@ import {
   Pencil,
   Copy,
 } from 'lucide-react';
-import type {  KanbanTask, Priority } from '@/src/types/board';
+import type { KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
 import { ActivitySection } from './components/activity-section';
@@ -47,7 +47,6 @@ import {
 import toast from 'react-hot-toast';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector } from '@/src/store';
 
 export interface TaskDetailDrawerProps {
@@ -351,7 +350,6 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     }
     return imageUrl;
   };
-
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {

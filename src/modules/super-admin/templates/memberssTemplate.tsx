@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Trash2, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import { useGetMembers, useGetOrganizations } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import { AdminMembersParams } from '@/src/types/superadmin';

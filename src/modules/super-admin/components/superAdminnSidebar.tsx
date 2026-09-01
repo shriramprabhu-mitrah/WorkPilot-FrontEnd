@@ -9,7 +9,6 @@ import {
   Building2,
   FolderKanban,
   Users,
-  Settings,
   LogOut,
   X,
   CreditCard,

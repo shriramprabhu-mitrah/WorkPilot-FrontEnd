@@ -373,8 +373,6 @@ export const UserStoryDetailDrawer = ({
     showReporterMenu
   );
 
-  const { data: customStatuses = [] } = useGetStatus(currentUserStory.project_id ?? '');
-
   const { userStoryStatuses = [] } = useGetUserStoryStatuses(currentUserStory.project_id ?? '');
   const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
@@ -391,11 +389,15 @@ export const UserStoryDetailDrawer = ({
   );
 
   // Comment attachment hooks
-  const { deleteCommentAttachmentAsync, isDeletingCommentAttachment } =
-    useDeleteUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
+  const { deleteCommentAttachmentAsync } = useDeleteUserStoryCommentAttachment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id
+  );
 
-  const { downloadCommentAttachmentAsync, isDownloadingCommentAttachment } =
-    useDownloadUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
+  const { downloadCommentAttachmentAsync } = useDownloadUserStoryCommentAttachment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id
+  );
 
   useEffect(() => {
     const latestTasks = currentUserStory.tasks ?? [];
@@ -460,11 +462,7 @@ export const UserStoryDetailDrawer = ({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
   const childAssigneeMenuRef = useRef<HTMLDivElement>(null);
-  const {
-    members: childAssigneeMembers,
-    isLoadingMembers: isLoadingChildAssignees,
-    isFetchingMembers: isFetchingChildAssignees,
-  } = useGetProjectMembers(
+  const {} = useGetProjectMembers(
     currentUserStory.project_id ?? '',
     {
       page: 1,
@@ -474,10 +472,8 @@ export const UserStoryDetailDrawer = ({
     !!childAssigneeTaskId
   );
 
-  const { updateTaskAsync, isUpdatingTask } = useUpdateTask();
-
   // Fetch activities for history tab
-  const { activities, isLoadingActivities, isFetchingActivities } = useGetProjectActivities(
+  const { activities, isLoadingActivities } = useGetProjectActivities(
     currentUserStory.project_id ?? '',
     {
       type: 'activity',
@@ -863,50 +859,12 @@ export const UserStoryDetailDrawer = ({
     }
   };
 
-  const mapTaskToDrawerTask = (task: TaskResponse): KanbanTask => ({
-    id: task.key ?? '',
-    taskId: task.id ?? '',
-    projectId: task.project_id ?? '',
-    title: task.title ?? '',
-    status: task.status ?? '',
-    columnId: (task.status ?? 'todo') as ColumnId,
-    description: task.description ?? '',
-    priority: task.priority
-      ? ((task.priority.charAt(0).toUpperCase() +
-          task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
-      : 'Medium',
-    labels: [],
-    dueDate: task.due_date ?? '',
-    startDate: task.start_date ?? '',
-    storyPoints: task.story_points ?? 0,
-    sprint: task.sprint_name ?? '',
-    parent: '',
-    subtasks: [],
-    assigneeInitials: task.assignee_name ? task.assignee_name.substring(0, 2).toUpperCase() : 'UN',
-    assigneeColor: '#3B82F6',
-    reporter: '',
-    reporterInitials: '',
-    reporterColor: undefined,
-    activity: [],
-  });
-
-  const tasks = childTasks;
   const totalTasks = currentUserStory.total_tasks ?? 0;
-  const completedTasks = currentUserStory.completed_tasks ?? 0;
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
     ...(canViewComments ? [{ key: 'comments' as ActivityTab, label: 'Comments' }] : []),
     { key: 'history' as ActivityTab, label: 'History' },
   ];
-
-  const taskStatusOptions = customStatuses.map((status) => ({
-    value: status.id,
-    label: status.name,
-    color: status.color,
-    bg: `${status.color}18`,
-    dot: status.color,
-    is_final: status.is_final,
-  }));
 
   const userStoryStatusOptions = userStoryStatuses.map((status) => ({
     value: status.id,
@@ -917,19 +875,9 @@ export const UserStoryDetailDrawer = ({
     is_final: status.is_final,
   }));
 
-  const taskStatusConfig = Object.fromEntries(
-    taskStatusOptions.map((option) => [option.value, option])
-  );
-
   const userStoryStatusConfig = Object.fromEntries(
     userStoryStatusOptions.map((option) => [option.value, option])
   );
-  interface UploadedAttachment {
-    url?: string;
-    file_url?: string;
-    file_path?: string;
-    path?: string;
-  }
 
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     const formData = new FormData();

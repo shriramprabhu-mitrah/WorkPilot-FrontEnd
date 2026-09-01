@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,7 +64,7 @@ const AddSprintModal = ({ projectId, onClose, onSuccess }: AddSprintModalProps) 
     },
   });
 
-  const { fields, append } = useFieldArray({ control, name: 'sprints' });
+  const { fields } = useFieldArray({ control, name: 'sprints' });
   const onSubmit = async (data: AddSprintFormValues) => {
     try {
       const payload: SprintPayload = {

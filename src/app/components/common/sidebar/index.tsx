@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSelectedSprint, setSprints } from '@/src/store/slices/project';
-import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 import {
   LayoutDashboard,
   Settings,
@@ -57,7 +56,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   const user = useAppSelector((state) => state.user);
   const { isOrgAdmin, canCreateSprint, canCreateProject } = usePermissions();
-  const { selectedProject, selectedSprint, sprints } = useAppSelector((state) => state.project);
+  const { selectedProject, selectedSprint } = useAppSelector((state) => state.project);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const urlProjectSlug = params?.projectSlug as string | undefined;

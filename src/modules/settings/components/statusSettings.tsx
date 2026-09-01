@@ -21,7 +21,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpInput } from '@/src/app/components/common/input';
 import {
   useGetUserStoryStatuses,
   useCreateUserStoryStatus,
@@ -35,6 +34,7 @@ import {
   useUpdateStatus,
   useDeleteStatus,
 } from '../../project/hooks/useLabels';
+import { logger } from '@/src/lib/utils/logger';
 
 interface Status {
   id: string;
@@ -510,6 +510,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
         }
       } catch (error) {
         // Toast/error handled by API service
+        logger.log(error);
       }
 
       return;
@@ -621,6 +622,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
         setIsAdding(false);
       } catch (error) {
         // Toast/error handled by API service
+        logger.log(error);
       }
 
       return;

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, AlertCircle, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Search, AlertCircle } from 'lucide-react';
 import { useGetOrganizations, useUpdateOrganization } from '../hooks/useSuperAdmin';
 import { AdminOrganization } from '@/src/types/superadmin';
 import { AdminOrganizationsParams } from '@/src/services/superadmin';

@@ -43,7 +43,6 @@ export const TaskTable = ({
   selectedRows,
   setSelectedRows,
   projectId,
-  sprintId,
 }: TaskTableProps) => {
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);

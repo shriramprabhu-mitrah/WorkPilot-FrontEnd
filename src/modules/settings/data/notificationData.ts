@@ -1,7 +1,4 @@
 import {
-  Mail,
-  Bell,
-  Monitor,
   CheckSquare,
   AtSign,
   Clock3,

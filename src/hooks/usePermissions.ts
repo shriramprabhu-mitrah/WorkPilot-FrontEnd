@@ -1,12 +1,7 @@
 import { useMemo } from 'react';
 import { useAppSelector } from '@/src/store';
 import { useGetRoles } from '@/src/modules/settings/hooks/useSettings';
-import {
-  Role,
-  RolePermissions,
-  RolePermissionActions,
-  RoleCommentPermissions,
-} from '@/src/types/settings';
+import { Role, RolePermissions } from '@/src/types/settings';
 
 export type PermissionResource = keyof RolePermissions;
 export type PermissionAction = 'view' | 'add' | 'modify' | 'delete' | 'comment';

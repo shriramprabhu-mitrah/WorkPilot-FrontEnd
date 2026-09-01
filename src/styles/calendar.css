@@ -14,7 +14,7 @@
   border-bottom: 1px solid #f3f5f8 !important;
 }
 
-.rbc-header+.rbc-header {
+.rbc-header + .rbc-header {
   border-left: 1px solid #f3f5f8 !important;
 }
 
@@ -23,7 +23,7 @@
   border-top: 1px solid #f3f5f8 !important;
 }
 
-.rbc-day-bg+.rbc-day-bg {
+.rbc-day-bg + .rbc-day-bg {
   border-left: 1px solid #f3f5f8 !important;
 }
 

@@ -19,7 +19,6 @@ import {
 } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
-import { X } from 'lucide-react';
 import ContactSalesModal from '@/src/app/components/common/contactSales';
 import { ThemeToggle } from '@/src/app/components/common/theme-toggle';
 import { useTheme } from 'next-themes';

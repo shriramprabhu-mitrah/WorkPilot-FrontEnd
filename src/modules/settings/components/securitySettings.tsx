@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Clock3, CircleAlert } from 'lucide-react';
-import { activeSessions, inactivityOptions, loginActivity } from '../data/notificationData';
+import { CircleAlert } from 'lucide-react';
+import { loginActivity } from '../data/notificationData';
 
 export const SecuritySetting = () => {
-  
   return (
     <div className="space-y-5">
       {/* future purpose

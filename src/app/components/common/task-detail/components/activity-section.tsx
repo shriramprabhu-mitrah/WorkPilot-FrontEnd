@@ -55,8 +55,7 @@ const formatTime = (iso: string) => {
 };
 
 export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionProps) => {
-  const { canViewComments, canAddComments, canComment, canEditComments, canDeleteComments } =
-    usePermissions();
+  const { canViewComments, canAddComments, canEditComments, canDeleteComments } = usePermissions();
   const canCreateComment = canAddComments;
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [comment, setComment] = useState('');
@@ -113,7 +112,7 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
   );
 
   // Hooks for comments
-  const { comments, isLoadingComments, isErrorComments, commentsError } = useGetTaskComments(
+  const { comments, isLoadingComments } = useGetTaskComments(
     taskId ?? '',
     1,
     50,
@@ -289,8 +288,6 @@ export const ActivitySection = ({ items, taskId, projectId }: ActivitySectionPro
       setDeletingId(null);
     }
   };
-
-  const historyItems = items.filter((i) => i.type === 'history');
 
   const tabs: Array<{
     key: ActivityTab;

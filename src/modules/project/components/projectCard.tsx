@@ -1,7 +1,6 @@
 import { Project } from '../types/project';
 import { Calendar } from 'lucide-react';
 import { AssigneeAvatar } from '@/src/app/components/common/task';
-import { WpButton } from '@/src/app/components/common/button';
 
 interface ProjectCardProps {
   project: Project;

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { organizationService } from '@/src/services/organization';
 import { useAppDispatch } from '@/src/store';
-import { updateOrganization, setOrganization } from '@/src/store/slices/organization';
+import { setOrganization } from '@/src/store/slices/organization';
 import { useEffect } from 'react';
 import { CountryService } from '@/src/services/common/countryservice';
 import Cookies from 'js-cookie';

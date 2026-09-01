@@ -1,6 +1,5 @@
 'use client';
 
-
 type FilterDropdownProps = {
   value: string;
   options: string[];

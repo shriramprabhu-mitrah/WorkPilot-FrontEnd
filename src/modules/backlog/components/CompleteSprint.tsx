@@ -3,7 +3,6 @@
 import { X } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
-import { colors } from '@/src/styles/colors';
 interface CompleteSprintModalProps {
   sprint: {
     id: string;

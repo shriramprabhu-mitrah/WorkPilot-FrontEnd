@@ -1,15 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  Building2,
-  FolderKanban,
-  Users,
-  AlertTriangle,
-  TrendingUp,
-  UserCheck,
-  Loader2,
-} from 'lucide-react';
+import { Building2, FolderKanban, Users, AlertTriangle, TrendingUp, UserCheck } from 'lucide-react';
 import { useGetOrganizations, useGetAllProjects, useGetMembers } from '../hooks/useSuperAdmin';
 import { MetricCard } from '../components/metricsCard';
 import { OrganizationCard } from '../components/organizationsCard';

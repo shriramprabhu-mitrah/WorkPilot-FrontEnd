@@ -10,7 +10,7 @@ import {
   useUpdateOrganization,
   useGetCountries,
 } from '../../hooks/useOrganization';
-import { INDUSTRY_TYPE, COMPANY_SIZE, ROLE_TYPE } from '@/src/app/components/common/enum';
+import { INDUSTRY_TYPE, COMPANY_SIZE } from '@/src/app/components/common/enum';
 import { colors } from '@/src/styles/colors';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
@@ -43,7 +43,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
 
   const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
 
-  const { countries, isCountriesLoading } = useGetCountries();
+  const { countries } = useGetCountries();
 
   // Branding state
   const [logoFile, setLogoFile] = useState<File | null>(null);

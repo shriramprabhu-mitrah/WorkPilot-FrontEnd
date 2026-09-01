@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check, Loader2 } from 'lucide-react';
-import { Member, Project, Sprint } from '../types/project';
+import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
+import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import EditProjectModal from './editProjectModal';
-import { useRouter } from 'next/navigation';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
@@ -14,7 +13,6 @@ import { useGetSprintUserStories } from '../../tasks/hooks/useUserStory';
 import {
   useAddProjectMembers,
   useDeleteProject,
-  useGetProjectDetail,
   useRemoveProjectMember,
   useUpdateProjectRole,
 } from '@/src/modules/project/hooks/useProject';
@@ -23,12 +21,7 @@ import { showToast } from '@/src/utils/toast';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useGetRoles } from '@/src/modules/settings/hooks/useSettings';
 import { useAppSelector, useAppDispatch } from '@/src/store';
-import {
-  AddProjectMembersPayload,
-  ProjectDetailMember,
-  ProjectMember,
-  SprintDetail,
-} from '@/src/types/project';
+import { AddProjectMembersPayload, ProjectDetailMember, SprintDetail } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
@@ -36,12 +29,12 @@ import { projectService } from '@/src/services/project';
 import StartSprintModal from '../../backlog/components/startSprintModal';
 import CompleteSprintModal from '../../backlog/components/CompleteSprint';
 import { sprintService } from '@/src/services/sprint';
+import { logger } from '@/src/lib/utils/logger';
 interface ProjectDetailProps {
   project: Project & { id?: string };
 }
 
 const ProjectDetail = ({ project }: ProjectDetailProps) => {
-  const router = useRouter();
   const { push } = useOrgNavigation();
   const dispatch = useAppDispatch();
   const [showAddSprintModal, setShowAddSprintModal] = useState(false);
@@ -58,14 +51,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(
     null
   );
-  const {
-    canEditProject,
-    canDeleteProject,
-    canCreateSprint,
-    canEditSprint,
-    isOrgAdmin,
-    canManageProjects,
-  } = usePermissions();
+  const { canEditProject, canDeleteProject, canCreateSprint, canEditSprint, canManageProjects } =
+    usePermissions();
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
   const [showCompleteSprintModal, setShowCompleteSprintModal] = useState(false);
 
@@ -80,12 +67,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState('');
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
-  const { updateProjectRole, isUpdatingProjectRole, updateProjectRoleAsync } =
-    useUpdateProjectRole();
+  const { isUpdatingProjectRole, updateProjectRoleAsync } = useUpdateProjectRole();
   const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
-  const currentUser = useAppSelector((state) => state.user);
 
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
@@ -102,15 +87,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       if (normalized === 'active' || normalized === 'in_progress') return 'Active';
       if (normalized === 'completed' || normalized === 'done') return 'Completed';
       return 'Planned';
-    };
-
-    const refreshSprints = async () => {
-      try {
-        setIsRefreshingSprints(true);
-        await refetchSprints();
-      } finally {
-        setIsRefreshingSprints(false);
-      }
     };
 
     return {
@@ -323,6 +299,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
       await refetchSprints();
     } catch (error) {
+      logger.log(error);
       // Error is already handled by apiService
     } finally {
       setIsCompletingSprint(false);

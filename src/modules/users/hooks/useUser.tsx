@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserInsights, UserProfile, UserUpdatePayload } from '@/src/types/user';
 import { userService } from '@/src/services/user';

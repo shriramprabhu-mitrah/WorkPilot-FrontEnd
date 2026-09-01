@@ -80,9 +80,7 @@ const CalendarPage = () => {
   const handleSprintClick = (event: CalendarEvent) => {
     if (event.type !== 'Sprint') return;
 
-    push(
-      `/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`
-    );
+    push(`/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`);
   };
 
   if (isProjectNotFound) {
@@ -147,8 +145,16 @@ const CalendarPage = () => {
           </div>
 
           <div className="flex flex-col gap-6">
-            <UpcomingEvents events={allEvents} currentDate={currentDate} onSprintClick={handleSprintClick} />
-            <TodayCard events={allEvents} currentDate={currentDate} onSprintClick={handleSprintClick} />
+            <UpcomingEvents
+              events={allEvents}
+              currentDate={currentDate}
+              onSprintClick={handleSprintClick}
+            />
+            <TodayCard
+              events={allEvents}
+              currentDate={currentDate}
+              onSprintClick={handleSprintClick}
+            />
           </div>
         </div>
       )}

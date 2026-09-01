@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, ChevronDown, ChevronRight, GitBranch, Plus } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
 import { KanbanTask } from '@/src/types/board';
 import { PriorityBadge, AssigneeAvatar, SubStatusBadge } from '@/src/app/components/common/task';
 

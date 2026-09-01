@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Trash2, Loader2 } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Loader2 } from 'lucide-react';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import { AdminProjectsParams } from '@/src/types/superadmin';

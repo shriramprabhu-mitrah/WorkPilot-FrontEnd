@@ -1,12 +1,12 @@
 'use client';
 import ProjectCard from '../projectCard';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { Project } from '../../types/project';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCreateProject, useGetProjects } from '../../hooks/useProject';
 import { useQueryClient } from '@tanstack/react-query';
 import { projectService } from '@/src/services/project';
@@ -19,6 +19,7 @@ import ProjectSkeleton from '../projectSkeleton';
 import { ViewToggle, ViewType } from '../viewToggle';
 import Image from 'next/image';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+import { logger } from '@/src/lib/utils/logger';
 
 // Helper function to map API project to UI project format
 const mapApiProjectToUiProject = (apiProject: ApiProject): Project => {
@@ -73,8 +74,7 @@ export const PROJECT_STATUS_API_MAP = {
 } as const;
 
 const ProjectPage = () => {
-  const router = useRouter();
-  const { push, replace } = useOrgNavigation();
+  const { replace } = useOrgNavigation();
   const searchParams = useSearchParams();
   const { canCreateProject } = usePermissions();
 
@@ -156,7 +156,9 @@ const ProjectPage = () => {
       if (createdProject?.project_id) {
         replace(`/projects/sprints?projectId=${createdProject.project_id}`);
       }
-    } catch (error) {}
+    } catch (error) {
+      logger.log(error);
+    }
   };
 
   const handleProjectClick = async (project: Project, apiProject: ApiProject) => {

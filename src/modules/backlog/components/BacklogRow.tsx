@@ -1,18 +1,11 @@
 'use client';
 
-import { Hash, Calendar, GripVertical } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  PriorityBadge,
-  StatusBadge,
-  AssigneeAvatar,
-  TaskLabel,
-} from '@/src/app/components/common/task';
+import { PriorityBadge, StatusBadge, AssigneeAvatar } from '@/src/app/components/common/task';
 import { colors } from '@/src/styles/colors';
-import { formatMonthYear } from '@/src/app/components/common/format';
 import { TaskResponse } from '@/src/types/task';
-import { usePermissions } from '@/src/hooks/usePermissions';
 
 export const BacklogRow = ({
   task,

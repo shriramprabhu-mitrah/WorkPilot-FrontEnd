@@ -1,7 +1,6 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
-import { useMutation } from '@tanstack/react-query';
 
 class CommentAttachmentService {
   async uploadCommentAttachment(taskUuid: string, payload: FormData): Promise<ApiResponse<void>> {

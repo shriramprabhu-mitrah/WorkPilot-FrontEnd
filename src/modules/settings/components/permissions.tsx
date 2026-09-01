@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronDown, CornerDownLeft, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { WpInput } from '@/src/app/components/common/input';
 import { useGetRoles, useCreateRole, useUpdateRole, useDeleteRole } from '../hooks/useSettings';
 import { Role, RolePermissions } from '@/src/types/settings';

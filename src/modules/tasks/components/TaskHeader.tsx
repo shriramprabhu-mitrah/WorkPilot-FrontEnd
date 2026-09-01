@@ -35,7 +35,6 @@ export const TaskHeader = ({
   setSelectedFilters,
   searchTerm,
   setSearchTerm,
-  currentPage,
   setCurrentPage,
   selectedRows,
   setShowBulkDeleteModal,

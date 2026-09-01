@@ -23,7 +23,7 @@ const handleEventClick = (event: CalendarEvent) => {
 
   // navigate to sprint
 };
-const UpcomingEvents = ({ events, currentDate, onSprintClick, }: UpcomingEventsProps) => {
+const UpcomingEvents = ({ events, currentDate, onSprintClick }: UpcomingEventsProps) => {
   const upcomingEvents = events
     .filter((e) => moment(e.start).isSame(currentDate, 'month'))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -45,10 +45,11 @@ const UpcomingEvents = ({ events, currentDate, onSprintClick, }: UpcomingEventsP
                   onSprintClick?.(event);
                 }
               }}
-              className={`flex gap-2 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 transition-colors ${event.type === 'Sprint'
+              className={`flex gap-2 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 transition-colors ${
+                event.type === 'Sprint'
                   ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50'
                   : ''
-                }`}
+              }`}
             >
               <div className="flex w-9 flex-col items-start">
                 <span className="text-[11px] font-medium text-gray-500 dark:text-slate-400">

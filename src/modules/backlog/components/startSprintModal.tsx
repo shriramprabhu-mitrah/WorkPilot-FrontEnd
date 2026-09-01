@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { X, Calendar, Loader2 } from 'lucide-react';
+import { X, Calendar } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { StartSprintPayload } from '../../sprint/types/sprint';
 
@@ -214,10 +214,11 @@ const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintM
               </label>
 
               <div
-                className={`flex h-9 items-center rounded-md border ${duration === 'custom'
+                className={`flex h-9 items-center rounded-md border ${
+                  duration === 'custom'
                     ? 'border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800'
                     : 'border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900'
-                  }`}
+                }`}
               >
                 <button
                   type="button"
