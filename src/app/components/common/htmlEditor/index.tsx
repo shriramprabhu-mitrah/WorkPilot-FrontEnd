@@ -27,6 +27,8 @@ import {
   type NodeKey,
   type SerializedLexicalNode,
   type Spread,
+  PASTE_COMMAND,
+  $createTextNode,
 } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -44,7 +46,7 @@ import {
   ListItemNode,
   ListNode,
 } from '@lexical/list';
-import { TOGGLE_LINK_COMMAND, LinkNode, AutoLinkNode } from '@lexical/link';
+import { TOGGLE_LINK_COMMAND, LinkNode, AutoLinkNode, $createLinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { $patchStyleText } from '@lexical/selection';
 import {
@@ -81,20 +83,22 @@ interface WpRichTextEditorProps {
 export interface InsertImagePayload {
   src: string;
   altText: string;
+  attachmentId?: string;
 }
 
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
   createCommand('INSERT_IMAGE_COMMAND');
 
 type SerializedImageNode = Spread<
-  { src: string; altText: string; type: 'image'; version: 1 },
+  { src: string; altText: string; attachmentId?: string; type: 'image'; version: 1 },
   SerializedLexicalNode
 >;
 
 function convertImageElement(domNode: HTMLElement): DOMConversionOutput | null {
   if (domNode instanceof HTMLImageElement) {
     const { src, alt } = domNode;
-    const node = $createImageNode({ src, altText: alt || '' });
+    const attachmentId = domNode.getAttribute('data-attachment-id') || undefined;
+    const node = $createImageNode({ src, altText: alt || '', attachmentId });
     return { node };
   }
   return null;
@@ -190,27 +194,60 @@ function ImageComponent({
   );
 }
 
+function HtmlPastePlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      PASTE_COMMAND,
+      (event: ClipboardEvent) => {
+        const html = event.clipboardData?.getData('text/html');
+        if (!html) {
+          return false;
+        }
+        event.preventDefault();
+        editor.update(() => {
+          const parser = new DOMParser();
+          const dom = parser.parseFromString(html, 'text/html');
+          const nodes = $generateNodesFromDOM(editor, dom);
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            selection.insertNodes(nodes);
+          }
+        });
+
+        return true;
+      },
+      COMMAND_PRIORITY_LOW
+    );
+  }, [editor]);
+
+  return null;
+}
+
 export class ImageNode extends DecoratorNode<React.ReactNode> {
   __src: string;
   __altText: string;
+  __attachmentId?: string;
 
   static getType(): string {
     return 'image';
   }
 
   static clone(node: ImageNode): ImageNode {
-    return new ImageNode(node.__src, node.__altText, node.__key);
+    return new ImageNode(node.__src, node.__altText, node.__attachmentId, node.__key);
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { src, altText } = serializedNode;
-    return $createImageNode({ src, altText });
+    const { src, altText, attachmentId } = serializedNode;
+    return $createImageNode({ src, altText, attachmentId });
   }
 
   exportJSON(): SerializedImageNode {
     return {
       src: this.__src,
       altText: this.__altText,
+      attachmentId: this.__attachmentId,
       type: 'image',
       version: 1,
     };
@@ -229,13 +266,17 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
     const element = document.createElement('img');
     element.setAttribute('src', this.__src);
     element.setAttribute('alt', this.__altText);
+    if (this.__attachmentId) {
+      element.setAttribute('data-attachment-id', this.__attachmentId);
+    }
     return { element };
   }
 
-  constructor(src: string, altText: string, key?: NodeKey) {
+  constructor(src: string, altText: string, attachmentId?: string, key?: NodeKey) {
     super(key);
     this.__src = src;
     this.__altText = altText;
+    this.__attachmentId = attachmentId;
   }
 
   createDOM(): HTMLElement {
@@ -251,8 +292,8 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   }
 }
 
-export function $createImageNode({ src, altText }: InsertImagePayload): ImageNode {
-  return new ImageNode(src, altText);
+export function $createImageNode({ src, altText, attachmentId }: InsertImagePayload): ImageNode {
+  return new ImageNode(src, altText, attachmentId);
 }
 
 export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {
@@ -469,69 +510,6 @@ function TextColorPicker({
   );
 }
 
-function CodeSnippetToolbar({
-  open,
-}: {
-  editor: LexicalEditor;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [language, setLanguage] = useState('Plain Text');
-
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div
-      className="
-        absolute left-1/2 top-full z-[100]
-        mt-2 flex
-        -translate-x-1/2
-        items-center gap-1
-        rounded-lg border border-gray-200 dark:border-slate-700
-        bg-white dark:bg-slate-800 px-2 py-2
-        shadow-xl
-      "
-    >
-      <select
-        value={language}
-        onChange={(event) => setLanguage(event.target.value)}
-        className="
-          h-8 min-w-[125px]
-          rounded-md border-0
-          bg-transparent dark:bg-slate-800
-          px-2 text-sm
-          text-gray-700 dark:text-slate-200
-          outline-none
-          focus:ring-0
-        "
-      >
-        <option>Plain Text</option>
-        <option>JavaScript</option>
-        <option>TypeScript</option>
-        <option>HTML</option>
-        <option>CSS</option>
-        <option>JSON</option>
-        <option>Python</option>
-        <option>Java</option>
-        <option>SQL</option>
-      </select>
-
-      <div className="h-6 w-px bg-gray-200 dark:bg-slate-600" />
-      <ToolbarButton title="Decrease indent" onClick={() => { }}>
-        <Minus size={15} />
-      </ToolbarButton>
-      <ToolbarButton title="Numbered lines" onClick={() => { }}>
-        <span className="text-xs font-semibold">1≡</span>
-      </ToolbarButton>
-      <ToolbarButton title="More" onClick={() => { }}>
-        <MoreHorizontal size={16} />
-      </ToolbarButton>
-    </div>
-  );
-}
-
 function InitialValuePlugin({ value }: { value?: string }) {
   const [editor] = useLexicalComposerContext();
   const initialized = useRef(false);
@@ -559,6 +537,40 @@ function InitialValuePlugin({ value }: { value?: string }) {
 
     initialized.current = true;
   }, [editor, value]);
+
+  return null;
+}
+ 
+function LinkClickPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    const rootElement = editor.getRootElement();
+
+    if (!rootElement) return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const link = target.closest('a');
+
+      if (!link) return;
+
+      const href = link.href;
+
+      if (!href) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      window.open(href, '_blank', 'noopener,noreferrer');
+    };
+
+    rootElement.addEventListener('click', handleClick, true);
+
+    return () => {
+      rootElement.removeEventListener('click', handleClick, true);
+    };
+  }, [editor]);
 
   return null;
 }
@@ -598,18 +610,24 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
    };
  }, [showColorPicker, showCodeToolbar, showEmojiPicker, showLinkPopup]);
 
-  const handleInsertLink = () => {
-    const url = linkUrl.trim();
-    if (!url) {
-      return;
-    }
-    const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-    editor.dispatchCommand(TOGGLE_LINK_COMMAND, finalUrl);
-    setLinkUrl('');
-    setLinkText('');
-    setShowLinkPopup(false);
-  };
-
+const handleInsertLink = () => {
+  const url = linkUrl.trim();
+  if (!url) return;
+  const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  editor.update(() => {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) return;
+    const link = $createLinkNode(finalUrl, {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+    link.append($createTextNode(linkText.trim() || finalUrl));
+    selection.insertNodes([link]);
+  });
+  setLinkUrl('');
+  setLinkText('');
+  setShowLinkPopup(false);
+};
   useEffect(() => {
     const removeListener = editor.registerCommand(
       SELECTION_CHANGE_COMMAND,
@@ -805,24 +823,6 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
 
       <div className="relative">
         <ToolbarButton
-          title="Code snippet"
-          active={showCodeToolbar}
-          onClick={() => {
-            setShowCodeToolbar((previous) => !previous);
-            setShowColorPicker(false);
-          }}
-        >
-          <Code2 size={16} />
-        </ToolbarButton>
-        <CodeSnippetToolbar
-          editor={editor}
-          open={showCodeToolbar}
-          onClose={() => setShowCodeToolbar(false)}
-        />
-      </div>
-
-      <div className="relative">
-        <ToolbarButton
           title="Emoji"
           active={showEmojiPicker}
           onClick={() => setShowEmojiPicker((prev) => !prev)}
@@ -1001,15 +1001,6 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
       <ToolbarButton title="Redo" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>
         <Redo2 size={16} />
       </ToolbarButton>
-
-      <ToolbarButton title="More" onClick={() => {}}>
-        <MoreHorizontal size={17} />
-      </ToolbarButton>
-
-      <ToolbarButton title="Voice input" onClick={() => {}}>
-        <Mic size={16} />
-      </ToolbarButton>
-
       <div className="flex-1" />
     </div>
   );
@@ -1041,7 +1032,14 @@ export default function WpRichTextEditor({
   const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
     editorState.read(() => {
       const html = $generateHtmlFromNodes(editor);
-      onChange?.(html);
+      const decodedHtml = html
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
+
+      onChange?.(decodedHtml);
     });
   };
 
@@ -1052,9 +1050,10 @@ export default function WpRichTextEditor({
         rounded-lg border border-gray-300 dark:border-slate-600
         bg-white dark:bg-slate-800
         transition-colors
-        ${disabled
-          ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
-          : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
+        ${
+          disabled
+            ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
+            : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
         }
         ${className}
       `}
@@ -1093,9 +1092,12 @@ export default function WpRichTextEditor({
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
+          <HtmlPastePlugin />
           <ListPlugin />
           <LinkPlugin />
           <ImagesPlugin />
+          <LinkClickPlugin />
+
           <InitialValuePlugin value={value} />
           <OnChangePlugin onChange={handleChange} />
         </div>

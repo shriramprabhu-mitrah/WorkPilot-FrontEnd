@@ -1,19 +1,18 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService } from '../axios';
 import { ApiResponse } from '@/src/types/core';
+import { useMutation } from '@tanstack/react-query';
 
 class CommentAttachmentService {
-  async uploadCommentAttachment(
-    taskId: string,
-    commentId: string,
+async uploadCommentAttachment(
+    taskUuid: string,
     payload: FormData
   ): Promise<ApiResponse<void>> {
     const url = ApiEndpoints.CommentAttachment.uploadCommentAttachment.withParams({
-      taskId,
-      commentId,
+      task_uuid: taskUuid,
     });
 
-    return apiService.post<void>(url, payload, {
+    return apiService.postFormData<void>(url, payload, {
       showSuccessToast: true,
       showErrorToast: true,
     });
@@ -30,21 +29,22 @@ class CommentAttachmentService {
     });
   }
 
-  async downloadCommentAttachment(
-    taskId: string,
-    commentId: string,
-    attachmentId: string
-  ): Promise<ApiResponse<void>> {
-    const url = ApiEndpoints.CommentAttachment.downloadCommentAttachment.withParams({
+ async downloadCommentAttachment(
+  taskId: string,
+  commentId: string,
+  attachmentId: string
+): Promise<ApiResponse<Blob>> {
+  const url =
+    ApiEndpoints.CommentAttachment.downloadCommentAttachment.withParams({
       taskId,
       commentId,
       attachmentId,
     });
 
-    return apiService.get<void>(url, {
-      showErrorToast: true,
-    });
-  }
+  return apiService.get<Blob>(url, {
+    showErrorToast: true,
+  });
+}
 
   async deleteCommentAttachment(
     taskId: string,
@@ -62,6 +62,21 @@ class CommentAttachmentService {
       showErrorToast: true,
     });
   }
+
+async downloadAttachment(
+  projectId: string,
+  taskId: string,
+  attachmentId: string
+): Promise<Blob> {
+  const url = ApiEndpoints.CommentAttachment.downloadAttachment.withParams({
+    projectId,
+    taskId,
+    attachmentId,
+  });
+  return apiService.getBlob(url);
+}
+
+
 }
 
 export const commentAttachmentService = new CommentAttachmentService();

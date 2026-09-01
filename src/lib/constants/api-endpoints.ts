@@ -231,10 +231,11 @@ export const ApiEndpoints = {
   },
 
   CommentAttachment: {
-    uploadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
+    uploadCommentAttachment: createEndpoint('/task/{task_uuid}/comments/attachments'),
     listCommentAttachments: createEndpoint('/task/{taskId}/comments/{commentId}/attachments'),
     downloadCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments/{attachmentId}/download'),
     deleteCommentAttachment: createEndpoint('/task/{taskId}/comments/{commentId}/attachments/{attachmentId}'),
+    downloadAttachment: createEndpoint('/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/download'),
   },
 
   TaskStoryRelationship: {
@@ -290,6 +291,9 @@ export const ApiEndpoints = {
     getReplies: createQueryEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/replies/{commentId}'),
     updateComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
     deleteComment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/{commentId}'),
+    uploadCommentAttachment: createEndpoint('/projects/{project_uuid}/user-stories/{story_id}/comments/attachments'),
+    deleteCommentAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/attachments/{attachmentId}'),
+    downloadCommentAttachment: createEndpoint('/projects/{projectId}/user-stories/{userStoryId}/comments/attachments/{attachmentId}/download'),
   },
 
   Role: {

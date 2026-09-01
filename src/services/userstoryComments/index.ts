@@ -107,6 +107,51 @@ class UserStoryCommentService {
     });
     return apiService.delete<DeleteUserStoryCommentResponse>(url);
   }
+
+    async uploadCommentAttachment(
+    projectUuid: string,
+    storyId: string,
+    payload: FormData
+  ): Promise<ApiResponse<void>> {
+    const url =
+      ApiEndpoints.UserStoryComment.uploadCommentAttachment.withParams({
+        project_uuid: projectUuid,
+        story_id: storyId,
+      });
+    return apiService.postFormData<void>(url, payload, {
+      showSuccessToast: true,
+      showErrorToast: true,
+    });
+  }
+
+  async deleteCommentAttachment(
+  projectId: string,
+  userStoryId: string,
+  attachmentId: string
+): Promise<ApiResponse<void>> {
+  const url = ApiEndpoints.UserStoryComment.deleteCommentAttachment.withParams({
+    projectId,
+    userStoryId,
+    attachmentId,
+  });
+  return apiService.delete<void>(url, {
+    showSuccessToast: true,
+    showErrorToast: true,
+  });
+}
+
+async downloadCommentAttachment(
+  projectId: string,
+  userStoryId: string,
+  attachmentId: string
+): Promise<Blob> {
+  const url = ApiEndpoints.UserStoryComment.downloadCommentAttachment.withParams({
+    projectId,
+    userStoryId,
+    attachmentId,
+  });
+  return apiService.getBlob(url);
+}
 }
 
 export const userStoryCommentService = new UserStoryCommentService();

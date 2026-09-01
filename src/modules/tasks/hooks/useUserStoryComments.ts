@@ -162,3 +162,64 @@ export const useDeleteUserStoryComment = (
     resetDeleteComment: mutation.reset,
   };
 };
+
+export const useUploadUserStoryCommentAttachment = (
+  projectUuid: string,
+  storyId: string
+) => {
+  return useMutation({
+    mutationFn: (payload: FormData) =>
+      userStoryCommentService.uploadCommentAttachment(
+        projectUuid,
+        storyId,
+        payload
+      ),
+  });
+};
+
+export const useDeleteUserStoryCommentAttachment = (
+  projectId: string,
+  userStoryId: string
+) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (attachmentId: string) =>
+      userStoryCommentService.deleteCommentAttachment(projectId, userStoryId, attachmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-comments', projectId, userStoryId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-comment', projectId, userStoryId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['user-story-comment-replies', projectId, userStoryId],
+      });
+    },
+  });
+  return {
+    deleteCommentAttachment: mutation.mutate,
+    deleteCommentAttachmentAsync: mutation.mutateAsync,
+    isDeletingCommentAttachment: mutation.isPending,
+    deleteCommentAttachmentData: mutation.data,
+    deleteCommentAttachmentError: mutation.error,
+    resetDeleteCommentAttachment: mutation.reset,
+  };
+};
+
+export const useDownloadUserStoryCommentAttachment = (
+  projectId: string,
+  userStoryId: string
+) => {
+  const mutation = useMutation({
+    mutationFn: (attachmentId: string) =>
+      userStoryCommentService.downloadCommentAttachment(projectId, userStoryId, attachmentId),
+  });
+
+  return {
+    downloadCommentAttachment: mutation.mutate,
+    downloadCommentAttachmentAsync: mutation.mutateAsync,
+    isDownloadingCommentAttachment: mutation.isPending,
+    downloadCommentAttachmentError: mutation.error,
+  };
+};
