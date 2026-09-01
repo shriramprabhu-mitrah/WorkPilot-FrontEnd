@@ -6,6 +6,7 @@ import { colors } from '@/src/styles/colors';
 interface UpcomingEventsProps {
   events: CalendarEvent[];
   currentDate: Date;
+  onSprintClick?: (event: CalendarEvent) => void;
 }
 
 const eventStyles = {
@@ -17,8 +18,12 @@ const eventStyles = {
   },
   Task: { color: colors.primary, bg: colors.primaryLight, date: colors.primary },
 };
+const handleEventClick = (event: CalendarEvent) => {
+  if (event.type !== 'Sprint') return;
 
-const UpcomingEvents = ({ events, currentDate }: UpcomingEventsProps) => {
+  // navigate to sprint
+};
+const UpcomingEvents = ({ events, currentDate, onSprintClick, }: UpcomingEventsProps) => {
   const upcomingEvents = events
     .filter((e) => moment(e.start).isSame(currentDate, 'month'))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -35,7 +40,15 @@ const UpcomingEvents = ({ events, currentDate }: UpcomingEventsProps) => {
           return (
             <div
               key={event.id}
-              className="flex gap-2 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/50"
+              onClick={() => {
+                if (event.type === 'Sprint') {
+                  onSprintClick?.(event);
+                }
+              }}
+              className={`flex gap-2 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 transition-colors ${event.type === 'Sprint'
+                  ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50'
+                  : ''
+                }`}
             >
               <div className="flex w-9 flex-col items-start">
                 <span className="text-[11px] font-medium text-gray-500 dark:text-slate-400">

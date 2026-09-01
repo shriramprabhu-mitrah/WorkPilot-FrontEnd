@@ -17,8 +17,10 @@ import { usePermissions } from '@/src/hooks/usePermissions';
 import CalendarSkeleton from './calendarSkeleton';
 import type { SprintDetail } from '@/src/types/project';
 import type { CalendarEvent } from '../types';
+import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 
 const CalendarPage = () => {
+  const { push } = useOrgNavigation();
   const router = useRouter();
   const params = useParams();
   const dispatch = useAppDispatch();
@@ -74,6 +76,14 @@ const CalendarPage = () => {
     undefined,
     !!projectId && canViewSprints
   );
+
+  const handleSprintClick = (event: CalendarEvent) => {
+    if (event.type !== 'Sprint') return;
+
+    push(
+      `/projects/sprints/tasks?sprintId=${event.id}&projectId=${projectId}`
+    );
+  };
 
   if (isProjectNotFound) {
     return <ProjectNotFound slug={projectSlug} />;
@@ -137,8 +147,8 @@ const CalendarPage = () => {
           </div>
 
           <div className="flex flex-col gap-6">
-            <UpcomingEvents events={allEvents} currentDate={currentDate} />
-            <TodayCard events={allEvents} currentDate={currentDate} />
+            <UpcomingEvents events={allEvents} currentDate={currentDate} onSprintClick={handleSprintClick} />
+            <TodayCard events={allEvents} currentDate={currentDate} onSprintClick={handleSprintClick} />
           </div>
         </div>
       )}

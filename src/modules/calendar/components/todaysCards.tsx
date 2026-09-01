@@ -4,9 +4,10 @@ import { CalendarEvent } from '../types';
 interface TodayCardProps {
   events: CalendarEvent[];
   currentDate: Date;
+  onSprintClick?: (event: CalendarEvent) => void;
 }
 
-const TodayCard = ({ events, currentDate }: TodayCardProps) => {
+const TodayCard = ({ events, currentDate,  onSprintClick, }: TodayCardProps) => {
   const todayEvents = events.filter((e) => moment(e.start).isSame(currentDate, 'day'));
 
   return (
@@ -18,11 +19,25 @@ const TodayCard = ({ events, currentDate }: TodayCardProps) => {
 
       {todayEvents.length > 0 ? (
         <div className="space-y-3">
-          {todayEvents.map((event) => (
-            <div key={event.id} className="rounded-xl bg-blue-50 dark:bg-blue-900/30 px-3 py-3">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">{event.title}</p>
-            </div>
-          ))}
+        {todayEvents.map((event) => (
+  <div
+    key={event.id}
+    onClick={() => {
+      if (event.type === 'Sprint') {
+        onSprintClick?.(event);
+      }
+    }}
+    className={`rounded-xl bg-blue-50 dark:bg-blue-900/30 px-3 py-3 ${
+      event.type === 'Sprint'
+        ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50'
+        : ''
+    }`}
+  >
+    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+      {event.title}
+    </p>
+  </div>
+))}
         </div>
       ) : (
         <p className="text-sm text-gray-400 dark:text-slate-500">No events today</p>

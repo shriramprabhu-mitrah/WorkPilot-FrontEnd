@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { X, Calendar, Loader2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { StartSprintPayload } from '../../sprint/types/sprint';
@@ -29,7 +29,8 @@ const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintM
       hour12: true,
     });
   };
-
+  const startDateInputRef = useRef<HTMLInputElement>(null);
+  const endDateInputRef = useRef<HTMLInputElement>(null);
   const [startDate, setStartDate] = useState(getToday());
   const [startTime, setStartTime] = useState(getCurrentTime());
   const [duration, setDuration] = useState('2');
@@ -164,13 +165,22 @@ const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintM
               </label>
 
               <div className="flex h-9 items-center rounded-md border border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800">
-                <Calendar size={16} className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400" />
+                <button
+                  type="button"
+                  onClick={() => startDateInputRef.current?.showPicker()}
+                  className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400"
+                  aria-label="Select start date"
+                >
+                  <Calendar size={16} />
+                </button>
 
                 <input
+                  ref={startDateInputRef}
                   type="date"
                   value={startDate}
+                  min={getToday()}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100"
+                  className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:hidden"
                 />
 
                 <input
@@ -185,6 +195,7 @@ const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintM
                   onClick={() => {
                     setStartDate('');
                     setStartTime('');
+                    setCustomEndDate('');
                   }}
                   className="mr-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
                 >
@@ -202,17 +213,30 @@ const StartSprintModal = ({ sprint, onClose, onStart, isStarting }: StartSprintM
                 End date <span className="text-red-500"></span>
               </label>
 
-              <div className="flex h-9 items-center rounded-md border border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900">
-                <Calendar size={16} className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500" />
+              <div
+                className={`flex h-9 items-center rounded-md border ${duration === 'custom'
+                    ? 'border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800'
+                    : 'border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900'
+                  }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => endDateInputRef.current?.showPicker()}
+                  className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500"
+                  aria-label="Select end date"
+                >
+                  <Calendar size={16} />
+                </button>
 
                 {duration === 'custom' ? (
                   <>
                     <input
+                      ref={endDateInputRef}
                       type="date"
                       value={customEndDate}
                       min={startDate}
                       onChange={(e) => setCustomEndDate(e.target.value)}
-                      className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100"
+                      className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:hidden"
                     />
 
                     <input
