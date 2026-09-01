@@ -87,10 +87,10 @@ export const ProjectsTemplate = () => {
       </div>
 
       {/* Projects Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-320px)]">
+        <div className="overflow-auto flex-1">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
                 {[
                   'Project',
@@ -183,31 +183,33 @@ export const ProjectsTemplate = () => {
               )}
             </tbody>
           </table>
+          {projects.length === 0 && !isLoadingProjects && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-slate-400 text-sm">
+                No projects found matching your search.
+              </p>
+            </div>
+          )}
         </div>
-        {projects.length === 0 && !isLoadingProjects && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-slate-400 text-sm">
-              No projects found matching your search.
-            </p>
-          </div>
-        )}
 
         {/* Pagination Controls */}
         {meta && Number(meta.total_items) > 0 && (
-          <Pagination
-            meta={{
-              page: meta.page,
-              page_size: meta.page_size ?? meta.pageSize ?? pageSize,
-              total_items: meta.total_items ?? meta.totalItems,
-              total_pages: meta.total_pages ?? meta.totalPages ?? 0,
-              has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
-              has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
-            }}
-            currentPage={page}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
+          <div className="border-t border-gray-200 dark:border-slate-700">
+            <Pagination
+              meta={{
+                page: meta.page,
+                page_size: meta.page_size ?? meta.pageSize ?? pageSize,
+                total_items: meta.total_items ?? meta.totalItems,
+                total_pages: meta.total_pages ?? meta.totalPages ?? 0,
+                has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
+                has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
+              }}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          </div>
         )}
       </div>
     </div>

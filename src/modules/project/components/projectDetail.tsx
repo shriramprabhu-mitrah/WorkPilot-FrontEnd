@@ -85,6 +85,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const currentUser = useAppSelector((state) => state.user);
+  
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
       if (!dateStr) return '';
@@ -603,8 +605,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
-                          }`}
+                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
                       />
                     </button>
                   </div>
@@ -874,11 +877,21 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 <X size={17} />
               </WpButton>
             </div>
-            <div className="max-h-[60vh] overflow-y-auto p-5">
+            <div className="max-h-[60vh] overflow-y-auto overflow-x-visible p-5">
               <div className="space-y-2">
                 {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
                   selectedApiProject.members.map((member) => {
-                    const canDelete = canManageProjects();
+                    // Check if this member is an org admin
+                    const memberIsOrgAdmin =
+                      member.role?.toLowerCase() === 'org_admin' ||
+                      member.role?.toLowerCase() === 'org admin' ||
+                      member.role?.toLowerCase() === 'organization admin' ||
+                      member.role?.toLowerCase().replace(/[\s_-]+/g, '') === 'orgadmin';
+
+                    // Org admins should not have edit/delete buttons for themselves
+                    const canEdit = !memberIsOrgAdmin && canManageProjects();
+                    const canDelete = !memberIsOrgAdmin && canManageProjects();
+
                     return (
                       <div
                         key={member.user_id}
@@ -895,7 +908,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                               {member.full_name || member.username}
                             </p>
                             {editingMemberId === member.user_id ? (
-                              <div className="mt-1 w-50">
+                              <div className="mt-1 w-50 relative">
                                 <WpDropdown
                                   options={roleOptions}
                                   value={selectedRole}
@@ -965,7 +978,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                             </>
                           ) : (
                             <>
-                              {canManageProjects() && (
+                              {canEdit && (
                                 <WpButton
                                   variant="ghost"
                                   size="sm"

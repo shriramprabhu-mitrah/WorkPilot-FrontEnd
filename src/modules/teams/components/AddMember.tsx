@@ -346,7 +346,7 @@ const MembersSettings = () => {
                         );
                       }}
                       disabled={
-                        !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
+                        !isOrgAdmin ||isMemberAdmin || isRolesLoading || updatingMemberId === member.user_id
                       }
                       className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     >
