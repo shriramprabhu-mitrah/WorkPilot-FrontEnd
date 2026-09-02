@@ -38,8 +38,14 @@ const processQueue = (error: unknown | null) => {
 
 const redirectToSignIn = () => {
   if (typeof window !== 'undefined' && !isLoggingOut) {
+    isLoggingOut = true;
     showToast.error('Session expired. Please sign in again.');
-
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // ignore
+    }
     setTimeout(() => {
       window.location.href = '/signin';
     }, 2000);

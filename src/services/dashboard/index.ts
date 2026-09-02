@@ -22,15 +22,13 @@ class DashboardService {
   }
 
   async getGlobalSearch(
-    query: string,
-    organizationId: string
-  ): Promise<ApiResponse<{ tasks: string[]; projects: string[] }>> {
-    const url = ApiEndpoints.Dashboard.globalSearch.withQuery({
+    query: string
+  ): Promise<ApiResponse<import('@/src/types/search').GlobalSearchData>> {
+    const url = ApiEndpoints.Search.globalSearch.withQuery({
       q: query,
-      organization_id: organizationId,
     });
 
-    return apiService.get<{ tasks: string[]; projects: string[] }>(url);
+    return apiService.get<import('@/src/types/search').GlobalSearchData>(url, { showErrorToast: false });
   }
 }
 

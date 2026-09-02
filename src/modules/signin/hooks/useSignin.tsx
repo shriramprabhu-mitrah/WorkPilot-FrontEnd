@@ -1,15 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { signupService } from '../../../services/signup';
-import { useAppDispatch } from '../../../store';
+import { persistor, useAppDispatch } from '../../../store';
 import { clearUser, setUser } from '../../../store/slices/users';
 import { userService } from '../../../services/user';
 import { SignInPayload } from '../../../types/signin';
-import { setTokens } from '../../../lib/utils/cookies';
+import { removeTokens, setTokens } from '../../../lib/utils/cookies';
 import { getAuthSource } from '@/src/lib/utils/auth';
 import { clearSelectedProject } from '@/src/store/slices/project';
 import { organizationService } from '@/src/services/organization';
-import { setOrganization } from '@/src/store/slices/organization';
+import { clearOrganization, setOrganization } from '@/src/store/slices/organization';
+import { setIsLoggingOut } from '@/src/lib/config/axios-client';
 import Cookies from 'js-cookie';
 
 export const useSignin = () => {
@@ -21,8 +22,40 @@ export const useSignin = () => {
 
   const isMobile = authSource === 'mobile';
 
+  const performLogoutCleanup = async () => {
+    setIsLoggingOut(true);
+    dispatch(clearUser());
+    dispatch(clearSelectedProject());
+    dispatch(clearOrganization());
+    removeTokens();
+    Cookies.remove('org_slug', { path: '/' });
+
+    try {
+      await persistor.purge();
+    } catch {
+      // ignore
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
+    }
+
+    queryClient.cancelQueries();
+    queryClient.clear();
+
+    window.location.href = '/signin';
+  };
+
   const signInMutation = useMutation({
     mutationFn: async (payload: SignInPayload) => {
+      // Clear any leftover project state before signing in
+      dispatch(clearSelectedProject());
+
       const response = await signupService.signIn(payload);
 
       if (response.data?.access_token) {
@@ -105,35 +138,11 @@ export const useSignin = () => {
 
   const logOutMutation = useMutation({
     mutationFn: () => signupService.logOut(),
-    onSuccess: () => {
-      dispatch(clearUser());
-      dispatch(clearSelectedProject());
-      // Clear org slug cookie
-      Cookies.remove('org_slug', { path: '/' });
-
-      // Clear all localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-      }
-
-      // Cancel all queries
-      queryClient.cancelQueries();
-
-      // Use window.location for full page reload to prevent layout queries
-      window.location.href = '/signin';
+    onSuccess: async () => {
+      await performLogoutCleanup();
     },
-    onError: () => {
-      dispatch(clearUser());
-      dispatch(clearSelectedProject());
-      Cookies.remove('org_slug', { path: '/' });
-
-      // Clear all localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-      }
-
-      queryClient.cancelQueries();
-      window.location.href = '/signin';
+    onError: async () => {
+      await performLogoutCleanup();
     },
   });
 
