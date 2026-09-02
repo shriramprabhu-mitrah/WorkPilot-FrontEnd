@@ -16,6 +16,7 @@ import {
   Zap,
   Plus,
   Eye,
+  Search,
 } from 'lucide-react';
 import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
@@ -26,6 +27,9 @@ import {
   useGetProjectsWithSprints,
   useGetUserProjectRole,
 } from '@/src/modules/project/hooks/useProject';
+import { projectService } from '@/src/services/project';
+import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { usePermissions } from '@/src/hooks/usePermissions';
 
 const navItemsBase = [
@@ -66,12 +70,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   // Find project matching current URL project slug if present
   const matchedProjectFromUrl = useMemo(() => {
     if (!urlProjectSlug || isLoadingProjectsWithSprints) return null;
+    const lowerSlug = urlProjectSlug.toLowerCase();
     return (
       projectsWithSprints.find(
         (p) =>
-          p.slug === urlProjectSlug ||
+          p.slug?.toLowerCase() === lowerSlug ||
           p.id === urlProjectSlug ||
-          p.key?.toLowerCase() === urlProjectSlug.toLowerCase()
+          p.key?.toLowerCase() === lowerSlug ||
+          p.name?.toLowerCase() === lowerSlug
       ) || null
     );
   }, [urlProjectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);
@@ -128,18 +134,39 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const [showManageProject, setShowManageProject] = useState(false);
   const [tempProject, setTempProject] = useState<Project | null>(effectiveProject);
   const [tempSprint, setTempSprint] = useState<SprintDetail | null>(selectedSprint);
+  const [projectSearchTerm, setProjectSearchTerm] = useState('');
+  const debouncedProjectSearch = useDebounce(projectSearchTerm, 300);
   const modalRef = useRef<HTMLDivElement>(null);
   const prevTempProjectId = useRef<string | undefined>(undefined);
 
   // Fetch user's role for the effective project (auto-dispatches to Redux)
   useGetUserProjectRole(effectiveProject?.id);
 
-  // Derive sprints from projectsWithSprints based on tempProject
+  // Search within manage project modal
+  const { data: modalSearchData, isLoading: isLoadingModalSearch } = useQuery({
+    queryKey: ['sidebar-modal-project-search', debouncedProjectSearch],
+    queryFn: () =>
+      projectService.getProject({ include_sprints: true, name: debouncedProjectSearch }),
+    enabled: showManageProject && debouncedProjectSearch.trim().length > 0,
+    staleTime: 60 * 1000,
+  });
+
+  const displayedProjects = useMemo(() => {
+    if (debouncedProjectSearch.trim().length > 0) {
+      return modalSearchData?.data ?? [];
+    }
+    return projectsWithSprints;
+  }, [debouncedProjectSearch, modalSearchData?.data, projectsWithSprints]);
+
+  // Derive sprints from projectsWithSprints or displayedProjects based on tempProject
   const tempSprints = useMemo(() => {
-    if (!tempProject?.id || isLoadingProjectsWithSprints) return [];
-    const found = projectsWithSprints.find((p) => p.id === tempProject.id);
+    if (!tempProject?.id) return [];
+    if (tempProject.sprints && tempProject.sprints.length > 0) return tempProject.sprints;
+    const found =
+      projectsWithSprints.find((p) => p.id === tempProject.id) ||
+      displayedProjects.find((p) => p.id === tempProject.id);
     return found?.sprints ?? [];
-  }, [tempProject, projectsWithSprints, isLoadingProjectsWithSprints]);
+  }, [tempProject, projectsWithSprints, displayedProjects]);
 
   // Reset sprint when project changes
   useEffect(() => {
@@ -161,6 +188,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   };
 
   const openManageProject = () => {
+    setProjectSearchTerm('');
     setTempProject(effectiveProject);
     setTempSprint(selectedSprint);
     setShowManageProject(true);
@@ -423,13 +451,41 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   </button>
                 )}
               </div>
-              {isLoadingProjectsWithSprints ? (
+              {/* Project Search Input */}
+              <div className="relative mb-2.5">
+                <Search
+                  size={13}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={projectSearchTerm}
+                  onChange={(e) => setProjectSearchTerm(e.target.value)}
+                  className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                />
+                {projectSearchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setProjectSearchTerm('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-white rounded"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {isLoadingProjectsWithSprints || (debouncedProjectSearch && isLoadingModalSearch) ? (
                 <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
                   Loading projects...
                 </div>
+              ) : displayedProjects.length === 0 ? (
+                <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                  No projects found
+                </div>
               ) : (
                 <div className="space-y-1 mb-4">
-                  {projectsWithSprints.map((p) => (
+                  {displayedProjects.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => {

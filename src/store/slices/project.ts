@@ -36,6 +36,7 @@ const projectSlice = createSlice({
       state.sprints = [];
       state.projectRole = null;
       state.projectRoleId = null;
+      state.isLoading = false;
     },
     setProjectLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;

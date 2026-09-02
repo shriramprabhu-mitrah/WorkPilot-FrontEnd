@@ -25,6 +25,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { usePermissions } from '@/src/hooks/usePermissions';
 
+import { GlobalSearchModal } from '@/src/app/components/common/global-search';
+
 interface NavbarProps {
   onMenuClick?: () => void;
 }
@@ -37,7 +39,20 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   const title = segments[1] ? segments[1].charAt(0).toUpperCase() + segments[1].slice(1) : 'Home';
   const user = useAppSelector((state) => state.user);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Global keyboard shortcut for search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,51 +83,62 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
   };
 
   return (
-    <header className="flex items-center justify-between h-[56px] px-3 md:px-5 border-b shrink-0 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
-      {/* Left side - Hamburger + Breadcrumb */}
-      <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-        {/* Hamburger menu for mobile */}
-        {onMenuClick && (
+    <>
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <header className="flex items-center justify-between h-[56px] px-3 md:px-5 border-b shrink-0 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
+        {/* Left side - Hamburger + Breadcrumb */}
+        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+          {/* Hamburger menu for mobile */}
+          {onMenuClick && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              className="lg:hidden !p-1.5 text-gray-500 dark:text-gray-400"
+              onClick={onMenuClick}
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </WpButton>
+          )}
+
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 text-[13px] shrink-0">
+            <span className="text-gray-500 dark:text-slate-400 font-medium hidden sm:inline">
+              Organization
+            </span>
+            <ChevronRight size={13} className="text-gray-400 dark:text-slate-500 hidden sm:inline" />
+            <span className="text-gray-800 dark:text-white font-semibold">{title}</span>
+          </div>
+        </div>
+
+        {/* Right side */}
+        <div className="flex items-center gap-1 md:gap-2">
+          {/* Search Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden sm:flex items-center justify-between sm:w-48 md:w-64 lg:w-80 h-8 px-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-100 hover:bg-gray-200/70 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-gray-500 dark:text-slate-400 text-xs transition-colors cursor-pointer text-left"
+            aria-label="Search tasks, projects, stories..."
+          >
+            <div className="flex items-center gap-2 truncate">
+              <Search size={13} className="text-gray-400 dark:text-slate-400 shrink-0" />
+              <span className="truncate">Search tasks, projects...</span>
+            </div>
+            <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-gray-400 dark:text-slate-400 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded shadow-xs">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Mobile search button */}
           <WpButton
             variant="ghost"
             size="sm"
-            className="lg:hidden !p-1.5 text-gray-500 dark:text-gray-400"
-            onClick={onMenuClick}
-            aria-label="Open menu"
+            className="sm:hidden !p-1.5 text-gray-500 dark:text-slate-300"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search"
           >
-            <Menu size={20} />
+            <Search size={17} />
           </WpButton>
-        )}
-
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-[13px] shrink-0">
-          <span className="text-gray-500 dark:text-slate-400 font-medium hidden sm:inline">
-            Organization
-          </span>
-          <ChevronRight size={13} className="text-gray-400 dark:text-slate-500 hidden sm:inline" />
-          <span className="text-gray-800 dark:text-white font-semibold">{title}</span>
-        </div>
-      </div>
-
-      {/* Right side */}
-      <div className="flex items-center gap-1 md:gap-2">
-        <WpInput
-          type="text"
-          placeholder="Search tasks, projects..."
-          icon={<Search size={13} />}
-          wrapperClassName="hidden sm:block sm:w-48 md:w-64 lg:w-80"
-          className="bg-gray-100 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-400 text-[12px] !h-8 border-gray-200 dark:border-slate-700"
-        />
-
-        {/* Mobile search button */}
-        <WpButton
-          variant="ghost"
-          size="sm"
-          className="sm:hidden !p-1.5 text-gray-500 dark:text-slate-300"
-          aria-label="Search"
-        >
-          <Search size={17} />
-        </WpButton>
 
         {/* Notifications */}
         <WpButton
@@ -218,5 +244,6 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
         </div>
       </div>
     </header>
+    </>
   );
 };

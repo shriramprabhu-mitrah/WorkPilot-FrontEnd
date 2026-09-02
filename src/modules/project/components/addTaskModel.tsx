@@ -478,35 +478,37 @@ const AddTaskModal = ({
             />
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
                 Estimated Hours
               </label>
 
-              <div className="flex items-end gap-2">
-                <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3">
+                <div className="relative">
                   <input
                     type="number"
                     min="0"
                     placeholder="0"
                     {...register('estimatedHours')}
-                    className="w-16 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    h
+                  </span>
                 </div>
 
-                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">h</span>
-
-                <div className="flex flex-col gap-1">
+                <div className="relative">
                   <input
                     type="number"
                     min="0"
                     max="59"
                     placeholder="0"
                     {...register('estimatedMinutes')}
-                    className="w-16 mt-1 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    m
+                  </span>
                 </div>
-
-                <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">m</span>
               </div>
 
               {errors.estimatedHours?.message && (
@@ -516,32 +518,36 @@ const AddTaskModal = ({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-slate-300">
+            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">
               Actual Hours
             </label>
 
-            <div className="flex items-end gap-2">
-              <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+              <div className="relative">
                 <input
                   type="number"
                   min="0"
                   placeholder="0"
                   {...register('actualHours')}
-                  className="w-16 mt-1 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
+                <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                  h
+                </span>
               </div>
 
-              <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">h</span>
-
-              <div className="flex flex-col gap-1">
+              <div className="relative">
                 <input
                   type="number"
                   min="0"
                   max="59"
                   placeholder="0"
                   {...register('actualMinutes')}
-                  className="w-16 h-9 rounded-lg border border-gray-300 px-2 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 />
+                <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                  m
+                </span>
               </div>
 
               <span className="mb-2 text-sm text-gray-500 dark:text-slate-400">m</span>

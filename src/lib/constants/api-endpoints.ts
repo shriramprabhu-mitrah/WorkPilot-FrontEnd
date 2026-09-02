@@ -197,6 +197,10 @@ export const ApiEndpoints = {
     globalSearch: createQueryEndpoint('/search'),
   },
 
+  Search: {
+    globalSearch: createQueryEndpoint('/search'),
+  },
+
   Audit: {
     getActivities: createQueryEndpoint('/audit/activity'),
   },

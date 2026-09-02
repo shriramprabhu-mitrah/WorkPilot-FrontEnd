@@ -37,12 +37,14 @@ const CalendarPage = () => {
   // Find project matching current URL project slug if present
   const matchedProject = useMemo(() => {
     if (!projectSlug || isLoadingProjectsWithSprints) return null;
+    const lowerSlug = projectSlug.toLowerCase();
     return (
       projectsWithSprints.find(
         (p) =>
-          p.slug === projectSlug ||
+          p.slug?.toLowerCase() === lowerSlug ||
           p.id === projectSlug ||
-          p.key?.toLowerCase() === projectSlug.toLowerCase()
+          p.key?.toLowerCase() === lowerSlug ||
+          p.name?.toLowerCase() === lowerSlug
       ) || null
     );
   }, [projectSlug, projectsWithSprints, isLoadingProjectsWithSprints]);

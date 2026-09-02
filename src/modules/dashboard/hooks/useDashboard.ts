@@ -39,48 +39,5 @@ export const useGetRecentActivities = (page = 1, pageSize = 10, enabled = true) 
   };
 };
 
-// Debounced Global Search Hook
-export const useGlobalSearch = (organizationId: string, debounceMs = 500) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-
-  // Debounce effect
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, debounceMs);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchQuery, debounceMs]);
-
-  const query = useQuery({
-    queryKey: ['globalSearch', organizationId, debouncedQuery],
-    queryFn: () => dashboardService.getGlobalSearch(debouncedQuery, organizationId),
-    enabled: !!organizationId && debouncedQuery.trim().length >= 2,
-    staleTime: 30000, // 30 seconds
-  });
-
-  const handleSearch = useCallback((value: string) => {
-    setSearchQuery(value);
-  }, []);
-
-  const clearSearch = useCallback(() => {
-    setSearchQuery('');
-    setDebouncedQuery('');
-  }, []);
-
-  return {
-    searchQuery,
-    handleSearch,
-    clearSearch,
-    searchResults: query.data?.data,
-    isSearching: query.isFetching,
-    isLoadingSearch: query.isLoading,
-    hasResults:
-      (query.data?.data?.tasks && query.data.data.tasks.length > 0) ||
-      (query.data?.data?.projects && query.data.data.projects.length > 0),
-    error: query.error,
-  };
-};
+// Re-export useGlobalSearch for convenience
+export { useGlobalSearch } from '@/src/hooks/useGlobalSearch';

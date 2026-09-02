@@ -12,6 +12,7 @@ import {
   Pencil,
   Trash2,
   CornerDownRight,
+  AlertCircle,
 } from 'lucide-react';
 import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
@@ -185,10 +186,36 @@ export const UserStoryDetailDrawer = ({
   const effectiveStoryId = initialUserStory.key || initialUserStory.id;
 
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
-  const { userStory: fetchedUserStory, isLoadingUserStory } = useGetUserStoryById(
-    effectiveProjectId,
-    effectiveStoryId
-  );
+  const {
+    userStory: fetchedUserStory,
+    isLoadingUserStory,
+    isError: isStoryError,
+    error: storyError,
+    refetchUserStory,
+  } = useGetUserStoryById(effectiveProjectId, effectiveStoryId);
+
+  const apiErrorData = (
+    storyError as
+      | {
+          status?: number;
+          data?: {
+            error?: { code?: string; status_code?: number; message?: string };
+            message?: string;
+          };
+        }
+      | undefined
+  )?.data;
+
+  const isNotFound =
+    (storyError as { status?: number } | undefined)?.status === 404 ||
+    apiErrorData?.error?.code === 'RESOURCE_NOT_FOUND' ||
+    apiErrorData?.error?.status_code === 404;
+
+  const errorMessage =
+    apiErrorData?.error?.message ||
+    apiErrorData?.message ||
+    (storyError as Error | undefined)?.message ||
+    'User story not found';
 
   // Use fetched data if available, otherwise fall back to initial prop
   const currentUserStory = fetchedUserStory || initialUserStory;
@@ -931,15 +958,30 @@ export const UserStoryDetailDrawer = ({
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+              <span
+                className={`w-6 h-6 rounded-lg ${
+                  isStoryError ? 'bg-red-500' : 'bg-blue-600'
+                } flex items-center justify-center shrink-0`}
+              >
                 <FileText size={13} className="text-white" />
               </span>
-              <span className="text-base font-bold text-blue-600 dark:text-blue-400">
-                User Story
+              <span
+                className={`text-base font-bold ${
+                  isStoryError
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-blue-600 dark:text-blue-400'
+                }`}
+              >
+                {effectiveStoryId || 'User Story'}
               </span>
+              {isStoryError && isNotFound && (
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  Not Found
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1">
-              {(canEditUserStory || canDeleteUserStory) && (
+              {!isStoryError && (canEditUserStory || canDeleteUserStory) && (
                 <div className="relative" ref={moreMenuRef}>
                   <button
                     onClick={() => setShowMoreMenu(!showMoreMenu)}
@@ -986,29 +1028,76 @@ export const UserStoryDetailDrawer = ({
             </div>
           </div>
 
-          {/* Mobile tab switcher */}
-          <div className="flex sm:hidden border-b border-gray-200 shrink-0">
-            <button
-              onClick={() => setMobileTab('content')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'content'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500'
-              }`}
-            >
-              Content
-            </button>
-            <button
-              onClick={() => setMobileTab('details')}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                mobileTab === 'details'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500'
-              }`}
-            >
-              Details
-            </button>
-          </div>
+          {isStoryError ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50/40 dark:bg-slate-900">
+              <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 flex items-center justify-center mb-5 text-red-600 dark:text-red-400 shadow-sm">
+                <AlertCircle size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 mb-2">
+                {isNotFound ? 'User Story Not Found' : 'Failed to Load User Story'}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-slate-400 max-w-md mb-4 leading-relaxed">
+                {isNotFound ? (
+                  <>
+                    User story with key{' '}
+                    <span className="font-semibold text-gray-800 dark:text-slate-200">
+                      &quot;{effectiveStoryId}&quot;
+                    </span>{' '}
+                    was not found in this project. It may have been deleted, moved, or the URL might be invalid.
+                  </>
+                ) : (
+                  errorMessage
+                )}
+              </p>
+              {isNotFound && apiErrorData?.error?.code && (
+                <div className="mb-6 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  {apiErrorData.error.code}
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => refetchUserStory()}
+                  className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors shadow-sm"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Mobile tab switcher */}
+              <div className="flex sm:hidden border-b border-gray-200 shrink-0">
+                <button
+                  onClick={() => setMobileTab('content')}
+                  className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                    mobileTab === 'content'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500'
+                  }`}
+                >
+                  Content
+                </button>
+                <button
+                  onClick={() => setMobileTab('details')}
+                  className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                    mobileTab === 'details'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500'
+                  }`}
+                >
+                  Details
+                </button>
+              </div>
 
           <div className="flex flex-1 min-h-0 overflow-hidden">
             {isLoadingUserStory && (
@@ -2296,6 +2385,8 @@ export const UserStoryDetailDrawer = ({
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
 

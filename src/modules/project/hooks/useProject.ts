@@ -11,18 +11,62 @@ import {
 import { UpdateProjectRolePayload } from '../types/project';
 import { useAppDispatch } from '@/src/store';
 import { setProjectRole } from '@/src/store/slices/project';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
 
-export const useGetProjectsWithSprints = () => {
-  const query = useQuery({
+export const useGetProjectsWithSprints = (searchSlug?: string) => {
+  const params = useParams();
+  const slugFromParam = params?.projectSlug as string | undefined;
+  const targetSlug = searchSlug !== undefined ? searchSlug : slugFromParam;
+
+  // 1. Fetch default paginated projects with sprints
+  const baseQuery = useQuery({
     queryKey: ['projects-with-sprints'],
     queryFn: () => projectService.getProject({ include_sprints: true }),
     staleTime: 5 * 60 * 1000,
   });
 
+  const baseProjects = useMemo(() => baseQuery.data?.data ?? [], [baseQuery.data?.data]);
+
+  // Check if targetSlug is already present in the base list
+  const isAlreadyInBase = useMemo(() => {
+    if (!targetSlug) return false;
+    const lower = targetSlug.toLowerCase();
+    return baseProjects.some(
+      (p) =>
+        p.slug?.toLowerCase() === lower ||
+        p.id === targetSlug ||
+        p.key?.toLowerCase() === lower ||
+        p.name?.toLowerCase() === lower
+    );
+  }, [targetSlug, baseProjects]);
+
+  // 2. If targetSlug is provided and not in base list, search DB by slug/name with include_sprints=true
+  const slugSearchQuery = useQuery({
+    queryKey: ['projects-with-sprints', 'slug-search', targetSlug],
+    queryFn: () => projectService.getProject({ include_sprints: true, name: targetSlug }),
+    enabled: Boolean(targetSlug && !isAlreadyInBase && !baseQuery.isLoading),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Merge base list and search result without duplicates
+  const projectsWithSprints = useMemo(() => {
+    const searchResults = slugSearchQuery.data?.data ?? [];
+    if (!searchResults.length) return baseProjects;
+
+    const existingIds = new Set(baseProjects.map((p) => p.id));
+    const newProjects = searchResults.filter((p) => !existingIds.has(p.id));
+    return [...baseProjects, ...newProjects];
+  }, [baseProjects, slugSearchQuery.data?.data]);
+
+  const isLoadingProjectsWithSprints =
+    baseQuery.isLoading ||
+    (Boolean(targetSlug && !isAlreadyInBase) && slugSearchQuery.isLoading);
+
   return {
-    projectsWithSprints: query.data?.data ?? [],
-    isLoadingProjectsWithSprints: query.isLoading,
+    projectsWithSprints,
+    isLoadingProjectsWithSprints,
+    refetchProjectsWithSprints: baseQuery.refetch,
   };
 };
 
