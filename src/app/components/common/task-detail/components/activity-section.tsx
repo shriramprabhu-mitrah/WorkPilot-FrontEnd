@@ -293,19 +293,19 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
     key: ActivityTab;
     label: string;
   }> = [
-    ...(canViewComments
-      ? [
+      ...(canViewComments
+        ? [
           {
             key: 'comments' as ActivityTab,
             label: 'Comments',
           },
         ]
-      : []),
-    {
-      key: 'history' as ActivityTab,
-      label: 'History',
-    },
-  ];
+        : []),
+      {
+        key: 'history' as ActivityTab,
+        label: 'History',
+      },
+    ];
 
   const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
     const name = c.user_name || c.full_name || c.user?.name || 'Unknown';
@@ -314,7 +314,7 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
 
     return (
       <div key={c.id} className={`${isReply ? '' : 'mb-4'}`}>
-        <div className="flex gap-3">
+        <div className="flex gap-3 group">
           <AssigneeAvatar
             initials={initials}
             color={colors.avatarBlue}
@@ -324,6 +324,32 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
             <div className="flex items-center gap-2 mb-1">
               <span className="font-semibold text-xs text-gray-900">{name}</span>
               <span className="text-xs text-gray-400">{formatTime(c.created_at)}</span>
+              {(canEditComments || canDeleteComments) && !isEditing && (
+                <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {canEditComments && (
+                    <button
+                      onClick={() => {
+                        setEditingId(c.id);
+                        setEditContent(c.content);
+                      }}
+                      className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                      title="Edit comment"
+                    >
+                      <Pencil size={isReply ? 11 : 13} className="text-gray-500 dark:text-slate-400" />
+                    </button>
+                  )}
+                  {canDeleteComments && (
+                    <button
+                      onClick={() => handleDeleteComment(c.id, parentCommentId)}
+                      className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                      title="Delete comment"
+                      disabled={deletingId === c.id}
+                    >
+                      <Trash2 size={isReply ? 11 : 13} className="text-red-500 dark:text-red-400" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {isEditing ? (
@@ -361,7 +387,10 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
             ) : (
               <>
                 <div
-                  className={`${isReply ? 'bg-white border border-gray-200' : 'bg-gray-50'} rounded-lg px-3 py-2 relative group`}
+                  className={`${isReply
+                      ? 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700'
+                      : 'bg-gray-50 dark:bg-slate-800'
+                    } rounded-lg px-3 py-2`}
                 >
                   <RichContentViewer
                     content={c.content}
@@ -369,33 +398,6 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                     canDownload={true}
                     onDownloadImage={handleDownloadImage}
                   />
-
-                  {(canEditComments || canDeleteComments) && (
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                      {canEditComments && (
-                        <button
-                          onClick={() => {
-                            setEditingId(c.id);
-                            setEditContent(c.content);
-                          }}
-                          className="p-1 rounded hover:bg-gray-200 transition-colors"
-                          title="Edit comment"
-                        >
-                          <Pencil size={isReply ? 12 : 14} className="text-gray-600" />
-                        </button>
-                      )}
-                      {canDeleteComments && (
-                        <button
-                          onClick={() => handleDeleteComment(c.id, parentCommentId)}
-                          className="p-1 rounded hover:bg-red-100 transition-colors"
-                          title="Delete comment"
-                          disabled={deletingId === c.id}
-                        >
-                          <Trash2 size={isReply ? 12 : 14} className="text-red-600" />
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {!isReply && canCreateComment && (
@@ -477,16 +479,17 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
 
   return (
     <section>
-      <p className="text-base font-semibold text-gray-800 mb-3">Activity</p>
+      <p className="text-base font-semibold text-gray-800 dark:text-white mb-3">
+        Activity
+      </p>
 
       <div className="flex gap-1 border-b border-gray-200 mb-4">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-3 py-2 text-sm font-medium transition-colors relative ${
-              tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+              }`}
             style={{
               borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
             }}

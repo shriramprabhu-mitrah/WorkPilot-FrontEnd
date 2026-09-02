@@ -13,6 +13,7 @@ import {
   Pencil,
   Copy,
   AlertCircle,
+  Bug,
 } from 'lucide-react';
 import type { KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
@@ -38,6 +39,7 @@ import WpRichTextEditor from '../htmlEditor';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from './components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
+import { taskTypeOptions } from '../enum';
 // adjust path to wherever StatusModal.tsx actually lives relative to this file
 import {
   useAssignTaskToMe,
@@ -156,6 +158,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     reporterName: task.reporter_name ?? '',
     reporterInitials: task.reporterInitials ?? '',
     reporterColor: task.reporterColor ?? '',
+    taskType: '',
   });
 
   useEffect(() => {
@@ -221,6 +224,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         reporterName,
         reporterInitials,
         reporterColor,
+        taskType: fetchedTask.type ?? '',
       });
 
       setSavedDescription(apiDescription);
@@ -1538,6 +1542,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                         </div>
                       )}
                     </div>
+                  </DetailRow>
+
+                  <DetailRow label="Type">
+                    <span className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-slate-300 px-2 py-1 capitalize">
+                      {taskData.taskType?.toLowerCase() === 'bug' && (
+                        <Bug size={14} className="text-red-500 shrink-0" />
+                      )}
+                      {taskTypeOptions.find((o) => o.value === taskData.taskType)?.label
+                        || taskData.taskType
+                        || '—'}
+                    </span>
                   </DetailRow>
 
                   <DetailRow label="Priority">

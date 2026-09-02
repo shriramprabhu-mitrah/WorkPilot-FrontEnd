@@ -200,7 +200,7 @@ const MembersSettings = () => {
       setShowAddMemberModal(false);
       setSelectedMembers([]);
       setMemberRoles({});
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleDelete = () => {
@@ -265,11 +265,12 @@ const MembersSettings = () => {
         {/* Table */}
         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           {/* Desktop header */}
-          <div className="hidden md:grid grid-cols-[minmax(200px,1.5fr)_80px_minmax(160px,1fr)_100px_44px] items-center gap-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-5 py-3">
-            {['MEMBER', 'ADMIN', 'ROLE', 'STATUS', ''].map((h, i) => (
+          <div className="hidden md:grid grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] items-center gap-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-5 py-3">
+            {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
               <div
                 key={i}
-                className="text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-400"
+                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-400 ${i === 1 ? 'relative -left-24' : ''
+                  }`}
               >
                 {h}
               </div>
@@ -286,7 +287,7 @@ const MembersSettings = () => {
                 .join('')
                 .toUpperCase()
                 .slice(0, 2);
-              const isMemberAdmin = member.role?.toLowerCase().includes('admin');
+              // const isMemberAdmin = member.role?.toLowerCase().includes('admin');
               const currentRole = roles.find(
                 (role) => role.name.toLowerCase() === member.role?.toLowerCase()
               );
@@ -294,11 +295,10 @@ const MembersSettings = () => {
               return (
                 <div
                   key={member.user_id}
-                  className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 md:grid md:grid-cols-[minmax(200px,1.5fr)_80px_minmax(160px,1fr)_100px_44px] md:items-center md:gap-3 md:py-3 ${
-                    index !== visibleMembers.length - 1
-                      ? 'border-b border-slate-200 dark:border-slate-700'
-                      : ''
-                  }`}
+                  className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 md:grid md:grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] md:items-center md:gap-3 md:py-3 ${index !== visibleMembers.length - 1
+                    ? 'border-b border-slate-200 dark:border-slate-700'
+                    : ''
+                    }`}
                 >
                   {/* Member info */}
                   <div className="flex min-w-0 items-center gap-3">
@@ -319,7 +319,7 @@ const MembersSettings = () => {
                   </div>
 
                   {/* Admin badge — label on mobile */}
-                  <div className="flex items-center gap-2 md:block">
+                  {/* <div className="flex items-center gap-2 md:block">
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
                       Admin:
                     </span>
@@ -332,10 +332,10 @@ const MembersSettings = () => {
                     >
                       {isMemberAdmin ? 'Yes' : 'No'}
                     </span>
-                  </div>
+                  </div> */}
 
                   {/* Role selector */}
-                  <div className="flex items-center gap-2 md:block">
+                  <div className="relative -left-32 flex items-center gap-2 md:block">
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
                       Role:
                     </span>
@@ -353,7 +353,6 @@ const MembersSettings = () => {
                       }}
                       disabled={
                         !isOrgAdmin ||
-                        isMemberAdmin ||
                         isRolesLoading ||
                         updatingMemberId === member.user_id
                       }
@@ -368,7 +367,7 @@ const MembersSettings = () => {
                   </div>
 
                   {/* Status */}
-                  <div className="flex items-center gap-2 md:block">
+                  <div className="flex items-center gap-2 md:block md:w-[280px]">
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
                       Status:
                     </span>
@@ -624,9 +623,8 @@ const MembersSettings = () => {
               >
                 {isAddingMembers
                   ? 'Adding...'
-                  : `Add ${
-                      selectedMembers.length > 0 ? `${selectedMembers.length} ` : ''
-                    }Member${selectedMembers.length !== 1 ? 's' : ''}`}
+                  : `Add ${selectedMembers.length > 0 ? `${selectedMembers.length} ` : ''
+                  }Member${selectedMembers.length !== 1 ? 's' : ''}`}
               </WpButton>
             </div>
           </div>

@@ -76,7 +76,8 @@ export const WpDropdown = ({
         {options.map((option) => (
           <li
             key={option.value}
-            onClick={() => {
+            onMouseDown={(e) => {
+              e.preventDefault();
               onChange(option.value);
               setOpen(false);
             }}
