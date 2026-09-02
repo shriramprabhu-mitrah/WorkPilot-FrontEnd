@@ -22,7 +22,10 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
   onDownloadImage,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<{
+    src: string;
+    attachmentId: string | null;
+  } | null>(null);
 
   const extractAttachmentId = (img: HTMLImageElement): string | null => {
     const dataAttachmentId = img.getAttribute('data-attachment-id');
@@ -37,7 +40,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
       if (attachmentIdFromQuery) {
         return attachmentIdFromQuery;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const match = imgSrc.match(/\/attachments\/([^/?]+)/);
 
@@ -60,67 +63,144 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
 
     return filenameWithoutExt;
   };
-
+  const openImagePreview = (img: HTMLImageElement) => {
+    setSelectedPreviewImage({
+      src: img.src,
+      attachmentId: extractAttachmentId(img),
+    });
+  };
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const images = containerRef.current.querySelectorAll<HTMLImageElement>('img');
+    const images =
+      containerRef.current.querySelectorAll<HTMLImageElement>('img');
 
     images.forEach((img) => {
-      if (img.parentElement?.classList.contains('img-overlay-wrapper')) return;
+      if (img.parentElement?.classList.contains('img-overlay-wrapper')) {
+        return;
+      }
 
       const wrapper = document.createElement('div');
-      wrapper.className = 'img-overlay-wrapper relative inline-block group/img my-2 max-w-full';
+
+      wrapper.className =
+        'img-overlay-wrapper relative inline-block group/img my-2 max-w-full';
 
       // Wrap image
       img.parentNode?.insertBefore(wrapper, img);
       wrapper.appendChild(img);
 
-      // Create overlay container
+      const attachmentId = extractAttachmentId(img);
+      img.style.cursor = 'pointer';
+
+      img.onclick = (e) => {
+        e.stopPropagation();
+        openImagePreview(img);
+      };
+      // Create overlay only when existing image actions are available
       if (canEdit || canDelete || canDownload) {
         const overlay = document.createElement('div');
+
         overlay.className =
           'absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-opacity bg-black/60 backdrop-blur-xs p-1 rounded-md shadow-md z-10';
 
-        const attachmentId = extractAttachmentId(img);
+        // Preview button
+        const previewBtn = document.createElement('button');
 
-        // Download button
+        previewBtn.type = 'button';
+        previewBtn.title = 'Preview Image';
+
+        previewBtn.className =
+          'p-1 text-white hover:text-blue-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
+
+        previewBtn.innerHTML = `
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+`;
+
+        previewBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openImagePreview(img);
+        };
+
+        overlay.appendChild(previewBtn);
+
+        // Download button - EXISTING BEHAVIOR
         if (canDownload && attachmentId) {
           const downloadBtn = document.createElement('button');
+
           downloadBtn.type = 'button';
           downloadBtn.title = 'Download Image';
+
           downloadBtn.className =
             'p-1 text-white hover:text-green-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
+
           downloadBtn.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          `;
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        `;
+
           downloadBtn.onclick = (e) => {
             e.stopPropagation();
             onDownloadImage?.(attachmentId);
           };
+
           overlay.appendChild(downloadBtn);
         }
 
-        // Edit button
+        // Edit button - EXISTING BEHAVIOR
         if (canEdit && attachmentId) {
           const editBtn = document.createElement('button');
+
           editBtn.type = 'button';
           editBtn.title = 'Edit / Replace Image';
+
           editBtn.className =
             'p-1 text-white hover:text-blue-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
+
           editBtn.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-            </svg>
-          `;
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+          </svg>
+        `;
+
           editBtn.onclick = (e) => {
             e.stopPropagation();
             onEditImage?.(img.src, attachmentId);
           };
+
           overlay.appendChild(editBtn);
         }
 
@@ -142,11 +222,19 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
         //   };
         //   overlay.appendChild(deleteBtn);
         // }
-
         wrapper.appendChild(overlay);
       }
     });
-  }, [content, canEdit, canDelete, canDownload, onEditImage, onDeleteImage, onDownloadImage]);
+  }, [
+    content,
+    canEdit,
+    canDelete,
+    canDownload,
+    onEditImage,
+    onDeleteImage,
+    onDownloadImage,
+    selectedPreviewImage,
+  ]);
 
   return (
     <>
@@ -158,13 +246,45 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
           onClick={() => setSelectedPreviewImage(null)}
         >
-          <img
-            src={selectedPreviewImage}
-            alt="Preview"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
-          />
+          <div
+            className="relative max-h-[90vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedPreviewImage.src}
+              alt="Preview"
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            />
+
+            {canDownload && selectedPreviewImage.attachmentId && (
+              <button
+                type="button"
+                title="Download Image"
+                className="absolute top-2 right-2 p-2 text-white hover:text-green-400 hover:bg-white/10 rounded-md transition-colors cursor-pointer bg-black/60 backdrop-blur-xs"
+                onClick={() => {
+                  onDownloadImage?.(selectedPreviewImage.attachmentId!);
+                }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </>
   );
 };
+

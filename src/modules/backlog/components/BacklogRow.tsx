@@ -1,6 +1,6 @@
 'use client';
 
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Bug } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { PriorityBadge, StatusBadge, AssigneeAvatar } from '@/src/app/components/common/task';
@@ -87,12 +87,17 @@ export const BacklogRow = ({
       </span>
 
       <span
-        className="ml-2 min-w-0 flex-1 truncate text-sm font-semibold text-gray-800 dark:text-slate-200"
+        className="ml-2 min-w-0 flex-1 flex items-center gap-1.5 truncate text-sm font-semibold text-gray-800 dark:text-slate-200"
         title={task.title ?? ''}
       >
-        {(task.title ?? '').length > 50
-          ? `${(task.title ?? '').slice(0, 50)}...`
-          : (task.title ?? '')}
+        {task.type?.toLowerCase() === 'bug' && (
+          <Bug size={13} className="text-red-500 shrink-0" />
+        )}
+        <span className="truncate">
+          {(task.title ?? '').length > 50
+            ? `${(task.title ?? '').slice(0, 50)}...`
+            : (task.title ?? '')}
+        </span>
       </span>
 
       {/* Assignee */}

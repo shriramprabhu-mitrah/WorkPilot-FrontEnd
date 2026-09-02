@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -60,8 +60,9 @@ export const SignUp = () => {
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const [avatar, setAvatar] = useState<File | undefined>(undefined);
   const [onboardingStep, setOnboardingStep] = useState<'otp' | 'org' | 'done'>('otp');
-
+  const passwordSectionRef = useRef<HTMLDivElement>(null);
   const isMobile = getAuthSource() === 'mobile';
+
   const {
     register,
     handleSubmit,
@@ -73,6 +74,22 @@ export const SignUp = () => {
     resolver: zodResolver(signupSchema),
     mode: 'onSubmit',
   });
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        passwordSectionRef.current &&
+        !passwordSectionRef.current.contains(event.target as Node)
+      ) {
+        setShowPasswordStrength(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   const firstErrorField = Object.keys(errors)[0];
   const email = watch('email');
   const username = watch('username');
@@ -236,7 +253,8 @@ export const SignUp = () => {
               showRequired
             />
             {firstErrorField === 'email' && <ErrorMessage message={errors.email?.message} />}
-            <div className="relative mb-2">
+
+            <div className="relative mb-2" ref={passwordSectionRef}>
               <WpInput
                 id="password"
                 type="password"
@@ -248,9 +266,17 @@ export const SignUp = () => {
                 className={firstErrorField === 'password' ? inputErrorClass : ''}
                 showRequired
               />
-              <PasswordStrength password={password} show={showPasswordStrength} />
+
+              <PasswordStrength
+                password={password}
+                show={showPasswordStrength}
+              />
             </div>
-            {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
+
+            {firstErrorField === 'password' && (
+              <ErrorMessage message={errors.password?.message} />
+            )}
+
             <WpInput
               id="confirmPwd"
               type="password"
@@ -258,10 +284,10 @@ export const SignUp = () => {
               placeholder="Re-enter your password"
               icon={<LockIconSvg />}
               {...register('confirmPwd')}
-              onFocus={() => setShowPasswordStrength(false)}
               className={firstErrorField === 'confirmPwd' ? inputErrorClass : ''}
               showRequired
             />
+
             {firstErrorField === 'confirmPwd' && (
               <ErrorMessage message={errors.confirmPwd?.message} />
             )}
