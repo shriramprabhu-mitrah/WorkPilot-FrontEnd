@@ -287,7 +287,9 @@ const MembersSettings = () => {
                 .join('')
                 .toUpperCase()
                 .slice(0, 2);
-              // const isMemberAdmin = member.role?.toLowerCase().includes('admin');
+              
+              const isOrgAdminRole = member.role?.toLowerCase() === 'org_admin';
+              
               const currentRole = roles.find(
                 (role) => role.name.toLowerCase() === member.role?.toLowerCase()
               );
@@ -339,31 +341,39 @@ const MembersSettings = () => {
                     <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
                       Role:
                     </span>
-                    <select
-                      value={currentRole?.id ?? ''}
-                      onChange={(e) => {
-                        const selectedRole = roles.find((r) => r.id === e.target.value);
-                        if (!selectedRole) return;
-                        handleRoleSelect(
-                          member.user_id,
-                          memberName,
-                          selectedRole.id,
-                          selectedRole.name
-                        );
-                      }}
-                      disabled={
-                        !isOrgAdmin ||
-                        isRolesLoading ||
-                        updatingMemberId === member.user_id
-                      }
-                      className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {roles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
+                    {isOrgAdminRole ? (
+                      <div className="h-8 flex items-center px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                        <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                          Org Admin
+                        </span>
+                      </div>
+                    ) : (
+                      <select
+                        value={currentRole?.id ?? ''}
+                        onChange={(e) => {
+                          const selectedRole = roles.find((r) => r.id === e.target.value);
+                          if (!selectedRole) return;
+                          handleRoleSelect(
+                            member.user_id,
+                            memberName,
+                            selectedRole.id,
+                            selectedRole.name
+                          );
+                        }}
+                        disabled={
+                          !isOrgAdmin ||
+                          isRolesLoading ||
+                          updatingMemberId === member.user_id
+                        }
+                        className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   {/* Status */}
@@ -379,7 +389,7 @@ const MembersSettings = () => {
 
                   {/* Delete */}
                   <div className="flex justify-end md:justify-end">
-                    {isOrgAdmin && (
+                    {isOrgAdmin && !isOrgAdminRole && (
                       <button
                         type="button"
                         onClick={() => {

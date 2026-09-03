@@ -339,8 +339,8 @@ export const BacklogTemplate = () => {
         } as unknown as KanbanTask);
       }
       setSelectedUserStory(null);
-    }
-  }, [taskKey, userStories, tasksList, selectedProject]);
+    } 
+  }, [taskKey]);
 
   const handleTaskClick = useCallback(
     (task: KanbanTask) => {

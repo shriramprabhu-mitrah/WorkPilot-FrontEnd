@@ -238,7 +238,11 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
 
   return (
     <>
-      <div ref={containerRef} className={className} dangerouslySetInnerHTML={{ __html: content }} />
+      <div 
+        ref={containerRef} 
+        className={`rich-content-viewer [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-700 hover:[&_a]:dark:text-blue-300 ${className}`}
+        dangerouslySetInnerHTML={{ __html: content }} 
+      />
 
       {/* Optional full-screen lightbox / preview */}
       {selectedPreviewImage && (

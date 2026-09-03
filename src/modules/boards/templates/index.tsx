@@ -964,7 +964,7 @@ export const KanbanBoardTemplate = () => {
       }
       setSelectedUserStory(null);
     }
-  }, [taskKey, userStories, processedStories, selectedProject]);
+  }, [taskKey]);
 
   const handleTaskClick = useCallback(
     (task: KanbanTask) => {
@@ -1353,8 +1353,9 @@ export const KanbanBoardTemplate = () => {
                   <button
                     key={member.id}
                     onClick={() => toggleAssigneeFilter(userId, memberName)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
-                      }`}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
+                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+                    }`}
                     style={{ backgroundColor: member.color }}
                     title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
                   >
@@ -1420,7 +1421,7 @@ export const KanbanBoardTemplate = () => {
           >
             <div className="inline-block min-w-full px-3 sm:px-0">
               {/* Status Headers */}
-              <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 flex border-b-2 border-gray-300 dark:border-gray-700">
+              <div className="sticky top-0 z-20 bg-white dark:bg-gray-100 flex border-b-2 border-gray-300 dark:border-gray-700">
                 <div className="sticky left-0 z-30 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-[200px] sm:w-[250px] flex-shrink-0 p-3">
                   <span className="text-sm font-semibold text-gray-700 dark:text-slate-100">
                     User Stories
@@ -1433,8 +1434,9 @@ export const KanbanBoardTemplate = () => {
                   return (
                     <div
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                        }`}
+                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
+                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                      }`}
                     >
                       {!isCollapsed ? (
                         <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">
@@ -1568,36 +1570,24 @@ export const KanbanBoardTemplate = () => {
           onClose={handleCloseDrawer}
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
-            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-            handleRefetch();
           }}
-          onCreateTask={
-            canCreateTask
-              ? () => {
-                // Keep user story drawer open, task modal will appear on top
-                setTaskUserStoryId(selectedUserStory.id);
-                setShowAddTaskModal(true);
-              }
-              : undefined
-          }
-          onDelete={
-            canDeleteUserStory
-              ? async () => {
-                try {
-                  await deleteUserStoryMutation.mutateAsync({
-                    projectId: selectedProject,
-                    userStoryId: selectedUserStory.id,
-                  });
-                  queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
-                  queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-                  handleRefetch();
-                  handleCloseDrawer();
-                } catch (error) {
-                  // Error is already handled by the mutation
-                }
-              }
-              : undefined
-          }
+          onCreateTask={() => {
+            // Keep user story drawer open, task modal will appear on top
+            setTaskUserStoryId(selectedUserStory.id);
+            setShowAddTaskModal(true);
+          }}
+          onDelete={async () => {
+            try {
+              await deleteUserStoryMutation.mutateAsync({
+                projectId: selectedProject,
+                userStoryId: selectedUserStory.id,
+              });
+              queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+              handleCloseDrawer();
+            } catch (error) {
+              // Error is already handled by the mutation
+            }
+          }}
         />
       )}
 

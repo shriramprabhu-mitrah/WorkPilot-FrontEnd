@@ -3,18 +3,21 @@ import { CalendarEvent } from '../types';
 import { colors } from '@/src/styles/colors';
 
 export const eventStyleGetter: EventPropGetter<CalendarEvent> = (event) => {
+  // Check if dark mode is active
+  const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+
   const styleMap = {
     Sprint: {
-      backgroundColor: colors.colInReviewBg,
-      color: colors.colInReview,
+      backgroundColor: isDarkMode ? '#312e81' : colors.colInReviewBg, // Dark indigo for dark mode
+      color: isDarkMode ? '#c4b5fd' : colors.colInReview, // Light purple text for dark mode
     },
     Meeting: {
-      backgroundColor: colors.priorityHighBg,
-      color: colors.priorityHighText,
+      backgroundColor: isDarkMode ? '#7c2d12' : colors.priorityHighBg,
+      color: isDarkMode ? '#fed7aa' : colors.priorityHighText,
     },
     Task: {
-      backgroundColor: colors.colTodoBg,
-      color: colors.colTodo,
+      backgroundColor: isDarkMode ? '#1e3a8a' : colors.colTodoBg,
+      color: isDarkMode ? '#93c5fd' : colors.colTodo,
     },
   };
 

@@ -295,7 +295,7 @@ export const ChildTasksPanel = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-          Tasks ({totalTasks})
+          Tasks ({localTasks.length})
         </p>
         {onCreateTask && canCreateTask && (
           <button
@@ -660,6 +660,7 @@ export const ChildTasksPanel = ({
 
                                           const prevStatus = task.status;
                                           const prevStatusId = task.status_id;
+                                          const prevIsFinal = task.is_final;
 
                                           setLocalTasks((prev) =>
                                             prev.map((t) =>
@@ -669,6 +670,7 @@ export const ChildTasksPanel = ({
                                                     status: option.label,
                                                     status_id: option.value,
                                                     status_color: option.color,
+                                                    is_final: option.is_final,
                                                   }
                                                 : t
                                             )
@@ -693,6 +695,7 @@ export const ChildTasksPanel = ({
                                                       ...t,
                                                       status: prevStatus,
                                                       status_id: prevStatusId,
+                                                      is_final: prevIsFinal,
                                                     }
                                                   : t
                                               )
