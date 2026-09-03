@@ -110,7 +110,6 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
       {/* Main Modal */}
       <div
         className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4"
-        onClick={onClose}
       >
         <div
           className="w-full max-w-md rounded-2xl bg-white shadow-2xl"

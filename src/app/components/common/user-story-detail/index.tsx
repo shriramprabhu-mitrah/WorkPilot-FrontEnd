@@ -976,7 +976,6 @@ export const UserStoryDetailDrawer = ({
       <div
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
         style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-        onClick={onClose}
       >
         <div
           className="relative bg-white dark:bg-slate-900 w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
@@ -984,7 +983,7 @@ export const UserStoryDetailDrawer = ({
           onClick={(event) => event.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
+          <div className="relative z-20 flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-lg ${isStoryError ? 'bg-red-500' : 'bg-blue-600'
@@ -1123,7 +1122,7 @@ export const UserStoryDetailDrawer = ({
                 </button>
               </div>
 
-              <div className="flex flex-1 min-h-0 overflow-hidden">
+              <div className="relative flex flex-1 min-h-0 overflow-hidden">
                 {isLoadingUserStory && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
                     <div className="flex flex-col items-center gap-2">
