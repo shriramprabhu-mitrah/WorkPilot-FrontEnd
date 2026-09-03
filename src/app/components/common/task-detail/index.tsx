@@ -608,14 +608,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
       style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-      onClick={onClose}
     >
       <div
         className="relative bg-white dark:bg-slate-900 w-full sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]"
         style={{ maxWidth: '1100px', height: 'min(860px, 94vh)' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
+        <div className="relative z-20 flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
           <div className="flex items-center gap-2">
             <span
               className={`w-6 h-6 rounded-lg ${isError ? 'bg-red-500' : 'bg-blue-600'
@@ -795,7 +794,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </button>
             </div>
 
-            <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="relative flex flex-1 min-h-0 overflow-hidden">
               {isLoading && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
                   <div className="flex flex-col items-center gap-2">

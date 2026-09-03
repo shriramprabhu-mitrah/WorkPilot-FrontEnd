@@ -455,6 +455,7 @@ export const KanbanBoardTemplate = () => {
   const [assigneeIdFilter, setAssigneeIdFilter] = useState<string[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
+  const closedTaskKeyRef = useRef<string | null>(null);
   const [memberSearch, setMemberSearch] = useState('');
   const [filterMemberSearch, setFilterMemberSearch] = useState('');
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
@@ -899,9 +900,14 @@ export const KanbanBoardTemplate = () => {
   // Sync taskKey from URL with selectedTask / selectedUserStory
   useEffect(() => {
     if (!taskKey) {
+      closedTaskKeyRef.current = null;
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedTask(null);
       setSelectedUserStory(null);
+      return;
+    }
+
+    if (closedTaskKeyRef.current === taskKey) {
       return;
     }
 
@@ -962,6 +968,7 @@ export const KanbanBoardTemplate = () => {
 
   const handleTaskClick = useCallback(
     (task: KanbanTask) => {
+      closedTaskKeyRef.current = null;
       setSelectedTask(task);
       setSelectedUserStory(null);
       const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
@@ -975,6 +982,7 @@ export const KanbanBoardTemplate = () => {
 
   const handleUserStoryClick = useCallback(
     (story: UserStoryResponse) => {
+      closedTaskKeyRef.current = null;
       setSelectedUserStory(story);
       setSelectedTask(null);
       const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
@@ -987,14 +995,16 @@ export const KanbanBoardTemplate = () => {
   );
 
   const handleCloseDrawer = useCallback(() => {
+    closedTaskKeyRef.current = taskKey || null;
     setSelectedTask(null);
     setSelectedUserStory(null);
     const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
     if (orgSlug && currentSlug) {
       window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards`);
+      router.replace(`/${orgSlug}/${currentSlug}/boards`, { scroll: false });
     }
     handleRefetch();
-  }, [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, handleRefetch]);
+  }, [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, taskKey, router, handleRefetch]);
 
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
