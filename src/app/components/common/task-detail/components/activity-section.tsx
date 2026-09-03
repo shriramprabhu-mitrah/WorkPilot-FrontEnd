@@ -311,13 +311,14 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
     const name = c.user_name || c.full_name || c.user?.name || 'Unknown';
     const initials = getInitials(name);
     const isEditing = editingId === c.id;
+    const userColor = c.color 
 
     return (
       <div key={c.id} className={`${isReply ? '' : 'mb-4'}`}>
         <div className="flex gap-3 group">
           <AssigneeAvatar
             initials={initials}
-            color={colors.avatarBlue}
+            color={userColor || ''}
             size={isReply ? 'xs' : 'sm'}
           />
           <div className="flex-1 min-w-0">

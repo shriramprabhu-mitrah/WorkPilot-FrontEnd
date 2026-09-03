@@ -112,13 +112,13 @@ const CalendarView = ({
         <>
           <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSelectedEvent(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="w-[calc(100vw-2rem)] sm:w-[420px] rounded-2xl bg-white p-5 sm:p-6 shadow-2xl">
+            <div className="w-[calc(100vw-2rem)] sm:w-[420px] rounded-2xl bg-white dark:bg-slate-800 p-5 sm:p-6 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Event Details</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Event Details</h2>
 
                 <button
                   onClick={() => setSelectedEvent(null)}
-                  className="text-2xl text-gray-500 hover:text-black"
+                  className="text-2xl text-gray-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
                 >
                   ×
                 </button>
@@ -126,31 +126,31 @@ const CalendarView = ({
 
               <div className="space-y-5">
                 <div>
-                  <p className="text-xs uppercase text-gray-500">Title</p>
+                  <p className="text-xs uppercase text-gray-500 dark:text-slate-400">Title</p>
 
-                  <p className="mt-1 font-semibold">{selectedEvent.title}</p>
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-slate-100">{selectedEvent.title}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase text-gray-500">Type</p>
+                  <p className="text-xs uppercase text-gray-500 dark:text-slate-400">Type</p>
 
-                  <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
+                  <span className="mt-2 inline-flex rounded-full bg-blue-100 dark:bg-blue-900/40 px-3 py-1 text-sm text-blue-700 dark:text-blue-300">
                     {selectedEvent.type}
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase text-gray-500">Start</p>
+                  <p className="text-xs uppercase text-gray-500 dark:text-slate-400">Start</p>
 
-                  <div className="mt-2 rounded-lg border bg-gray-50 p-3">
+                  <div className="mt-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-3 text-gray-900 dark:text-slate-100">
                     {moment(selectedEvent.start).format('DD MMM YYYY • hh:mm A')}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase text-gray-500">End</p>
+                  <p className="text-xs uppercase text-gray-500 dark:text-slate-400">End</p>
 
-                  <div className="mt-2 rounded-lg border bg-gray-50 p-3">
+                  <div className="mt-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 p-3 text-gray-900 dark:text-slate-100">
                     {moment(selectedEvent.end).format('DD MMM YYYY • hh:mm A')}
                   </div>
                 </div>

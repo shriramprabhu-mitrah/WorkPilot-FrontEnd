@@ -47,7 +47,7 @@ export default function TeamMemberCardSkeleton() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+        <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-black">
           <Skeleton className="h-3 w-16" />
 
           <Skeleton className="h-3 w-16" />
