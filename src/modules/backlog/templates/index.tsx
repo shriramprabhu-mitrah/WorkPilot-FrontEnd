@@ -92,19 +92,47 @@ type InfiniteTaskData = InfiniteData<PaginatedApiResponse<TaskResponse[]>>;
 type InfiniteStoryData = InfiniteData<PaginatedApiResponse<UserStoryResponse[]>>;
 
 /** Add an item to the first page of an infinite query cache */
-function addToInfiniteCache<T>(
+function addToInfiniteCache<T extends { id?: string; key?: string }>(
   old: InfiniteData<PaginatedApiResponse<T[]>> | undefined,
   item: T
-): InfiniteData<PaginatedApiResponse<T[]>> | undefined {
-  if (!old?.pages?.length) return old;
-  const pages = [...old.pages];
+): InfiniteData<PaginatedApiResponse<T[]>> {
+  if (!old?.pages?.length) {
+    return {
+      pages: [
+        {
+          data: [item],
+          meta: {
+            page: 1,
+            page_size: 5,
+            total_items: 1,
+            totalItems: 1,
+            total_pages: 1,
+            totalPages: 1,
+            has_next: false,
+            has_previous: false,
+          },
+          message: 'Success',
+          status: 200,
+        },
+      ],
+      pageParams: [1],
+    };
+  }
+
+  // Remove existing item if already present to avoid duplicates
+  const cleanOld = removeFromInfiniteCache(old, item.id || item.key || '') || old;
+  const pages = [...cleanOld.pages];
   const firstPage = { ...pages[0], data: [item, ...(pages[0].data ?? [])] };
-  // Increment total_items in meta if available
   if (firstPage.meta) {
-    firstPage.meta = { ...firstPage.meta, total_items: (firstPage.meta.total_items ?? 0) + 1 };
+    const currentTotal = firstPage.meta.total_items ?? firstPage.meta.totalItems ?? 0;
+    firstPage.meta = {
+      ...firstPage.meta,
+      total_items: currentTotal + 1,
+      totalItems: currentTotal + 1,
+    };
   }
   pages[0] = firstPage;
-  return { ...old, pages };
+  return { ...cleanOld, pages };
 }
 
 /** Remove an item by id from all pages of an infinite query cache */
@@ -118,9 +146,12 @@ function removeFromInfiniteCache<T extends { id?: string; key?: string }>(
     if (filtered.length === (page.data ?? []).length) return page;
     const newPage = { ...page, data: filtered };
     if (newPage.meta) {
+      const currentTotal = newPage.meta.total_items ?? newPage.meta.totalItems ?? 1;
+      const newTotal = Math.max(0, currentTotal - 1);
       newPage.meta = {
         ...newPage.meta,
-        total_items: Math.max(0, (newPage.meta.total_items ?? 0) - 1),
+        total_items: newTotal,
+        totalItems: newTotal,
       };
     }
     return newPage;
@@ -152,7 +183,15 @@ export const BacklogTemplate = () => {
   const [activeStory, setActiveStory] = useState<UserStoryResponse | null>(null);
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [optimisticUpdates, setOptimisticUpdates] = useState<
-    Map<string, { sprintId: string | null; statusId?: string; timestamp: number }>
+    Map<
+      string,
+      {
+        sprintId: string | null;
+        statusId?: string;
+        story?: UserStoryResponse;
+        timestamp: number;
+      }
+    >
   >(new Map());
   const [optimisticTaskUpdates, setOptimisticTaskUpdates] = useState<
     Map<
@@ -245,9 +284,6 @@ export const BacklogTemplate = () => {
     showAddTaskModal // Only fetch when modal is open
   );
 
-  // Ref to store pending API calls
-  const pendingUpdatesRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-
   // Generate assignee options from fetched members
   const assigneeOptions =
     projectMembers?.map((member) => ({
@@ -261,15 +297,6 @@ export const BacklogTemplate = () => {
       },
     })
   );
-
-  // Cleanup pending updates on unmount
-  useEffect(() => {
-    const pendingUpdates = pendingUpdatesRef.current;
-    return () => {
-      pendingUpdates.forEach((timeout) => clearTimeout(timeout));
-      pendingUpdates.clear();
-    };
-  }, []);
 
   const { userStories, isLoadingUserStories } = useGetUserStories(
     selectedProject,
@@ -405,7 +432,9 @@ export const BacklogTemplate = () => {
           toast.error("You don't have permission to modify user stories");
           return;
         }
-        const foundStory = userStories.find((s) => s.id === storyId);
+        const foundStory =
+          (active.data.current?.story as UserStoryResponse | undefined) ||
+          (userStories ?? []).find((s) => s.id === storyId || s.key === storyId);
         if (foundStory) {
           setActiveStory(foundStory);
           setActiveTask(null);
@@ -413,122 +442,6 @@ export const BacklogTemplate = () => {
       }
     },
     [userStories, tasksList, canEditTask, canEditUserStory]
-  );
-
-  // Debounced API update function for user story sprint changes
-  const scheduleUpdate = useCallback(
-    (
-      storyId: string,
-      targetSprintId: string | null,
-      currentStatus: string | null | undefined,
-      isTargetSprintActive: boolean
-    ) => {
-      const normalizedStatus = String(currentStatus ?? '')
-        .toLowerCase()
-        .trim()
-        .replace(/_/g, ' ');
-
-      let targetStatusId: string | undefined;
-
-      // Todo -> Active Sprint = In Progress
-      if (targetSprintId && isTargetSprintActive && normalizedStatus === 'todo') {
-        targetStatusId = userStoryStatuses.find(
-          (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'in progress'
-        )?.id;
-      }
-
-      // In Progress -> Non-active Sprint = Todo
-      if (targetSprintId && !isTargetSprintActive && normalizedStatus === 'in progress') {
-        targetStatusId = userStoryStatuses.find(
-          (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
-        )?.id;
-      }
-
-      // Sprint -> Unassigned = Todo
-      if (!targetSprintId && normalizedStatus === 'in progress') {
-        targetStatusId = userStoryStatuses.find(
-          (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
-        )?.id;
-      }
-      const existingTimeout = pendingUpdatesRef.current.get(storyId);
-
-      if (existingTimeout) {
-        clearTimeout(existingTimeout);
-      }
-
-      const timeoutId = setTimeout(async () => {
-        try {
-          const payload = {
-            sprint_id: targetSprintId,
-            ...(targetStatusId ? { status_id: targetStatusId } : {}),
-          };
-
-          await updateUserStoryMutation.mutateAsync({
-            projectId: selectedProject,
-            userStoryId: storyId,
-            payload,
-          });
-
-          pendingUpdatesRef.current.delete(storyId);
-
-          queryClient.setQueryData<{ data: UserStoryResponse[] }>(
-            ['user-stories', selectedProject, {}],
-            (old) => {
-              if (!old) return old;
-
-              return {
-                ...old,
-                data: old.data.map((story) =>
-                  story.id === storyId
-                    ? {
-                        ...story,
-                        sprint_id: targetSprintId ?? undefined,
-                        ...(targetStatusId
-                          ? {
-                              status_id: targetStatusId,
-                              status: userStoryStatuses.find(
-                                (status) => status.id === targetStatusId
-                              )?.name,
-                            }
-                          : {}),
-                      }
-                    : story
-                ),
-              };
-            }
-          );
-
-          setOptimisticUpdates((prev) => {
-            const next = new Map(prev);
-            next.delete(storyId);
-            return next;
-          });
-        } catch {
-          setOptimisticUpdates((prev) => {
-            const next = new Map(prev);
-            next.delete(storyId);
-            return next;
-          });
-
-          toast.error('Failed to update user story');
-
-          queryClient.invalidateQueries({
-            queryKey: ['user-stories', selectedProject],
-          });
-
-          queryClient.invalidateQueries({
-            queryKey: ['sprint-user-stories', selectedProject],
-          });
-
-          queryClient.invalidateQueries({
-            queryKey: ['sprint-orphan-tasks', selectedProject],
-          });
-        }
-      }, 500);
-
-      pendingUpdatesRef.current.set(storyId, timeoutId);
-    },
-    [selectedProject, updateUserStoryMutation, queryClient, userStoryStatuses]
   );
 
   const handleDragOver = useCallback(() => {
@@ -556,11 +469,24 @@ export const BacklogTemplate = () => {
       setActiveStory(null);
       setActiveTask(null);
 
+      const isTaskDrag =
+        active?.data?.current?.type === 'task' ||
+        String(active?.id).startsWith('task-') ||
+        !!active?.data?.current?.taskId ||
+        !!currentActiveTask;
+      const isStoryDrag =
+        active?.data?.current?.type === 'story' ||
+        String(active?.id).startsWith('story-') ||
+        !!active?.data?.current?.storyId ||
+        !!currentActiveStory;
+
       const effectiveProjectId =
         selectedProject ||
         active?.data?.current?.task?.project_id ||
         active?.data?.current?.task?.projectId ||
         currentActiveTask?.projectId ||
+        active?.data?.current?.story?.project_id ||
+        currentActiveStory?.project_id ||
         '';
 
       if (!active || !effectiveProjectId) return;
@@ -572,49 +498,8 @@ export const BacklogTemplate = () => {
         const lastMouseEvent = (window as Window & { __lastMouseEvent?: MouseEvent })
           ?.__lastMouseEvent;
         if (lastMouseEvent) {
-          // Check story drop targets first
-          const storyElements = document.querySelectorAll('[data-story-drop-id]');
-          for (const el of Array.from(storyElements)) {
-            const rect = el.getBoundingClientRect();
-            if (
-              lastMouseEvent.clientX >= rect.left &&
-              lastMouseEvent.clientX <= rect.right &&
-              lastMouseEvent.clientY >= rect.top &&
-              lastMouseEvent.clientY <= rect.bottom
-            ) {
-              const storyId = el.getAttribute('data-story-drop-id');
-              if (storyId) {
-                finalOver = {
-                  id: `story-drop-${storyId}`,
-                  data: { current: { type: 'story', storyId } },
-                } as NonNullable<typeof over>;
-                break;
-              }
-            }
-          }
-          if (!finalOver) {
-            const directElements = document.querySelectorAll('[data-sprint-direct-id]');
-            for (const el of Array.from(directElements)) {
-              const rect = el.getBoundingClientRect();
-              if (
-                lastMouseEvent.clientX >= rect.left &&
-                lastMouseEvent.clientX <= rect.right &&
-                lastMouseEvent.clientY >= rect.top &&
-                lastMouseEvent.clientY <= rect.bottom
-              ) {
-                const sprintId = el.getAttribute('data-sprint-direct-id');
-                if (sprintId) {
-                  finalOver = {
-                    id: `sprint-direct-${sprintId}`,
-                    data: { current: { type: 'sprint-direct', sprintId } },
-                  } as NonNullable<typeof over>;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (!finalOver) {
+          if (isStoryDrag) {
+            // Check sprint drop targets first for user stories
             const sprintElements = document.querySelectorAll('[data-sprint-drop-id]');
             for (const el of Array.from(sprintElements)) {
               const rect = el.getBoundingClientRect();
@@ -634,40 +519,122 @@ export const BacklogTemplate = () => {
                 }
               }
             }
-          }
 
-          if (!finalOver) {
-            const tasksElement = document.querySelector('[data-tasks-drop="true"]');
-            if (tasksElement) {
-              const rect = tasksElement.getBoundingClientRect();
-              if (
-                lastMouseEvent.clientX >= rect.left &&
-                lastMouseEvent.clientX <= rect.right &&
-                lastMouseEvent.clientY >= rect.top &&
-                lastMouseEvent.clientY <= rect.bottom
-              ) {
-                finalOver = {
-                  id: 'tasks-unassigned',
-                  data: { current: { type: 'unassigned-tasks' } },
-                } as NonNullable<typeof over>;
+            if (!finalOver) {
+              const backlogElement = document.querySelector('[data-backlog-drop="true"]');
+              if (backlogElement) {
+                const rect = backlogElement.getBoundingClientRect();
+                if (
+                  lastMouseEvent.clientX >= rect.left &&
+                  lastMouseEvent.clientX <= rect.right &&
+                  lastMouseEvent.clientY >= rect.top &&
+                  lastMouseEvent.clientY <= rect.bottom
+                ) {
+                  finalOver = {
+                    id: 'backlog-unassigned',
+                    data: { current: { sprintId: null } },
+                  } as NonNullable<typeof over>;
+                }
               }
             }
-          }
-
-          if (!finalOver) {
-            const backlogElement = document.querySelector('[data-backlog-drop="true"]');
-            if (backlogElement) {
-              const rect = backlogElement.getBoundingClientRect();
+          } else {
+            // Task drag: Check story drop targets first
+            const storyElements = document.querySelectorAll('[data-story-drop-id]');
+            for (const el of Array.from(storyElements)) {
+              const rect = el.getBoundingClientRect();
               if (
                 lastMouseEvent.clientX >= rect.left &&
                 lastMouseEvent.clientX <= rect.right &&
                 lastMouseEvent.clientY >= rect.top &&
                 lastMouseEvent.clientY <= rect.bottom
               ) {
-                finalOver = {
-                  id: 'backlog-unassigned',
-                  data: { current: { sprintId: null } },
-                } as NonNullable<typeof over>;
+                const storyId = el.getAttribute('data-story-drop-id');
+                if (storyId) {
+                  finalOver = {
+                    id: `story-drop-${storyId}`,
+                    data: { current: { type: 'story', storyId } },
+                  } as NonNullable<typeof over>;
+                  break;
+                }
+              }
+            }
+            if (!finalOver) {
+              const directElements = document.querySelectorAll('[data-sprint-direct-id]');
+              for (const el of Array.from(directElements)) {
+                const rect = el.getBoundingClientRect();
+                if (
+                  lastMouseEvent.clientX >= rect.left &&
+                  lastMouseEvent.clientX <= rect.right &&
+                  lastMouseEvent.clientY >= rect.top &&
+                  lastMouseEvent.clientY <= rect.bottom
+                ) {
+                  const sprintId = el.getAttribute('data-sprint-direct-id');
+                  if (sprintId) {
+                    finalOver = {
+                      id: `sprint-direct-${sprintId}`,
+                      data: { current: { type: 'sprint-direct', sprintId } },
+                    } as NonNullable<typeof over>;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!finalOver) {
+              const sprintElements = document.querySelectorAll('[data-sprint-drop-id]');
+              for (const el of Array.from(sprintElements)) {
+                const rect = el.getBoundingClientRect();
+                if (
+                  lastMouseEvent.clientX >= rect.left &&
+                  lastMouseEvent.clientX <= rect.right &&
+                  lastMouseEvent.clientY >= rect.top &&
+                  lastMouseEvent.clientY <= rect.bottom
+                ) {
+                  const sprintId = el.getAttribute('data-sprint-drop-id');
+                  if (sprintId) {
+                    finalOver = {
+                      id: `sprint-${sprintId}`,
+                      data: { current: { type: 'sprint', sprintId } },
+                    } as NonNullable<typeof over>;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!finalOver) {
+              const tasksElement = document.querySelector('[data-tasks-drop="true"]');
+              if (tasksElement) {
+                const rect = tasksElement.getBoundingClientRect();
+                if (
+                  lastMouseEvent.clientX >= rect.left &&
+                  lastMouseEvent.clientX <= rect.right &&
+                  lastMouseEvent.clientY >= rect.top &&
+                  lastMouseEvent.clientY <= rect.bottom
+                ) {
+                  finalOver = {
+                    id: 'tasks-unassigned',
+                    data: { current: { type: 'unassigned-tasks' } },
+                  } as NonNullable<typeof over>;
+                }
+              }
+            }
+
+            if (!finalOver) {
+              const backlogElement = document.querySelector('[data-backlog-drop="true"]');
+              if (backlogElement) {
+                const rect = backlogElement.getBoundingClientRect();
+                if (
+                  lastMouseEvent.clientX >= rect.left &&
+                  lastMouseEvent.clientX <= rect.right &&
+                  lastMouseEvent.clientY >= rect.top &&
+                  lastMouseEvent.clientY <= rect.bottom
+                ) {
+                  finalOver = {
+                    id: 'backlog-unassigned',
+                    data: { current: { sprintId: null } },
+                  } as NonNullable<typeof over>;
+                }
               }
             }
           }
@@ -675,17 +642,6 @@ export const BacklogTemplate = () => {
       }
 
       if (!finalOver) return;
-
-      const isTaskDrag =
-        active.data.current?.type === 'task' ||
-        String(active.id).startsWith('task-') ||
-        !!active.data.current?.taskId ||
-        !!currentActiveTask;
-      const isStoryDrag =
-        active.data.current?.type === 'story' ||
-        String(active.id).startsWith('story-') ||
-        !!active.data.current?.storyId ||
-        !!currentActiveStory;
 
       // ----------------------
       // CASE 1: TASK DRAGGED
@@ -729,89 +685,233 @@ export const BacklogTemplate = () => {
         if (targetType === 'story' || targetStoryId || overIdStr.startsWith('story-')) {
           const storyId =
             targetStoryId || overIdStr.replace('story-drop-', '').replace('story-', '');
-          const targetStory = userStories.find((s) => s.id === storyId);
+          const targetStory =
+            (finalOver.data.current?.story as UserStoryResponse | undefined) ||
+            optimisticUpdates.get(storyId)?.story ||
+            (userStories ?? []).find((s) => s.id === storyId || s.key === storyId);
 
-          // Optimistic UI update: immediately remove from unassigned tasks
+          const effectiveStorySprintId =
+            targetSprintId ||
+            targetStory?.sprint_id ||
+            finalOver.data.current?.sprintId ||
+            optimisticUpdates.get(storyId)?.sprintId ||
+            null;
+
+          const rawTask =
+            (active?.data?.current?.task as TaskResponse | undefined) ||
+            (tasksList ?? []).find(
+              (t) => t.id === taskId || t.key === taskId || t.id === actualTaskId
+            );
+
+          const taskToAppend: TaskResponse = {
+            ...(rawTask || {}),
+            id: actualTaskId,
+            key: rawTask?.key || currentActiveTask?.id || taskId,
+            title: rawTask?.title || currentActiveTask?.title || 'Task',
+            status: rawTask?.status || currentActiveTask?.status || 'todo',
+            estimated_hours: rawTask?.estimated_hours ?? 0,
+            user_story_id: storyId,
+            sprint_id: effectiveStorySprintId ?? undefined,
+            project_id: rawTask?.project_id || currentActiveTask?.projectId || effectiveProjectId,
+            story_points: rawTask?.story_points ?? currentActiveTask?.storyPoints,
+            due_date: rawTask?.due_date ?? currentActiveTask?.dueDate,
+          };
+
+          // Optimistic UI update: immediately move task under story and sync sprint
           setOptimisticTaskUpdates((prev) => {
             const next = new Map(prev);
-            next.set(actualTaskId, {
-              sprintId: targetStory?.sprint_id ?? null,
+            const entry = {
+              sprintId: effectiveStorySprintId,
               userStoryId: storyId,
+              task: taskToAppend,
               timestamp: Date.now(),
-            });
+            };
+            next.set(actualTaskId, entry);
+            if (taskId && taskId !== actualTaskId) {
+              next.set(taskId, entry);
+            }
             return next;
           });
 
-          // Optimistically update User Stories cache to increment task count
-          const rawTask = (tasksList ?? []).find(
-            (t) => t.id === taskId || t.key === taskId || t.id === actualTaskId
+          // Optimistically remove from sprint orphan tasks cache if it was an orphan task
+          queryClient.setQueriesData<InfiniteTaskData>(
+            { queryKey: ['sprint-orphan-tasks', effectiveProjectId] },
+            (old) => removeFromInfiniteCache(old, actualTaskId)
           );
-          const taskToAppend: TaskResponse | undefined = rawTask
-            ? { ...rawTask, id: actualTaskId, user_story_id: storyId }
-            : currentActiveTask
-              ? {
-                  id: actualTaskId,
-                  key: currentActiveTask.id,
-                  title: currentActiveTask.title,
-                  status: currentActiveTask.status || 'todo',
-                  estimated_hours: 0,
-                  user_story_id: storyId,
-                  project_id: currentActiveTask.projectId || selectedProject,
-                  story_points: currentActiveTask.storyPoints,
-                  due_date: currentActiveTask.dueDate,
-                }
-              : undefined;
 
-          if (taskToAppend) {
-            queryClient.setQueriesData<{ data: UserStoryResponse[] }>(
-              { queryKey: ['user-stories', selectedProject] },
+          // Optimistically update tasks list cache
+          queryClient.setQueriesData<
+            PaginatedApiResponse<TaskResponse[]> | { data: TaskResponse[] }
+          >({ queryKey: ['tasks', effectiveProjectId] }, (old) => {
+            if (!old || !Array.isArray(old.data)) return old;
+            return {
+              ...old,
+              data: old.data.map((t) =>
+                t.id === actualTaskId || t.key === taskId || t.id === taskId
+                  ? { ...t, user_story_id: storyId, sprint_id: effectiveStorySprintId ?? undefined }
+                  : t
+              ),
+            };
+          });
+
+          // Optimistically update User Stories list cache to increment task count and append task
+          queryClient.setQueriesData<
+            PaginatedApiResponse<UserStoryResponse[]> | { data: UserStoryResponse[] }
+          >({ queryKey: ['user-stories', effectiveProjectId] }, (old) => {
+            if (!old?.data || !Array.isArray(old.data)) return old;
+            return {
+              ...old,
+              data: old.data.map((s) => {
+                if (s.id !== storyId && s.key !== storyId) return s;
+                const currentTasks = s.tasks ?? [];
+                const alreadyExists = currentTasks.some(
+                  (t) => t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+                );
+                const newTasks = alreadyExists
+                  ? currentTasks.map((t) =>
+                      t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+                        ? taskToAppend
+                        : t
+                    )
+                  : [...currentTasks, taskToAppend];
+                const prevTotal = s.total_tasks ?? currentTasks.length;
+                return {
+                  ...s,
+                  tasks: newTasks,
+                  total_tasks: alreadyExists ? prevTotal : prevTotal + 1,
+                };
+              }),
+            };
+          });
+
+          // Optimistically update sprint user stories infinite cache if story is in a sprint
+          if (effectiveStorySprintId) {
+            queryClient.setQueryData<InfiniteStoryData>(
+              ['sprint-user-stories', effectiveProjectId, effectiveStorySprintId],
               (old) => {
-                if (!old?.data) return old;
+                if (!old?.pages?.length) return old;
                 return {
                   ...old,
-                  data: old.data.map((s) => {
-                    if (s.id !== storyId) return s;
-                    const currentTasks = s.tasks ?? [];
-                    const alreadyExists = currentTasks.some(
-                      (t) => t.id === actualTaskId || t.key === taskToAppend.key
-                    );
-                    if (alreadyExists) return s;
-                    return {
-                      ...s,
-                      tasks: [...currentTasks, taskToAppend],
-                      total_tasks: (s.total_tasks ?? currentTasks.length) + 1,
-                    };
-                  }),
+                  pages: old.pages.map((page) => ({
+                    ...page,
+                    data: (page.data ?? []).map((s) => {
+                      if (s.id !== storyId && s.key !== storyId) return s;
+                      const currentTasks = s.tasks ?? [];
+                      const alreadyExists = currentTasks.some(
+                        (t) =>
+                          t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+                      );
+                      const newTasks = alreadyExists
+                        ? currentTasks.map((t) =>
+                            t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+                              ? taskToAppend
+                              : t
+                          )
+                        : [...currentTasks, taskToAppend];
+                      const prevTotal = s.total_tasks ?? currentTasks.length;
+                      return {
+                        ...s,
+                        tasks: newTasks,
+                        total_tasks: alreadyExists ? prevTotal : prevTotal + 1,
+                      };
+                    }),
+                  })),
                 };
               }
             );
-
-            // Optimistically update sprint user stories infinite cache
-            if (targetStory?.sprint_id) {
-              queryClient.setQueriesData<InfiniteStoryData>(
-                { queryKey: ['sprint-user-stories', selectedProject, targetStory.sprint_id] },
-                (old) => {
-                  if (!old?.pages?.length) return old;
-                  const pages = old.pages.map((page) => ({
+            queryClient.setQueriesData<InfiniteStoryData>(
+              { queryKey: ['sprint-user-stories', effectiveProjectId, effectiveStorySprintId] },
+              (old) => {
+                if (!old?.pages?.length) return old;
+                return {
+                  ...old,
+                  pages: old.pages.map((page) => ({
                     ...page,
                     data: (page.data ?? []).map((s) => {
-                      if (s.id !== storyId) return s;
+                      if (s.id !== storyId && s.key !== storyId) return s;
                       const currentTasks = s.tasks ?? [];
                       const alreadyExists = currentTasks.some(
-                        (t) => t.id === actualTaskId || t.key === taskToAppend.key
+                        (t) =>
+                          t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
                       );
-                      if (alreadyExists) return s;
+                      const newTasks = alreadyExists
+                        ? currentTasks.map((t) =>
+                            t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+                              ? taskToAppend
+                              : t
+                          )
+                        : [...currentTasks, taskToAppend];
+                      const prevTotal = s.total_tasks ?? currentTasks.length;
                       return {
                         ...s,
-                        tasks: [...currentTasks, taskToAppend],
-                        total_tasks: (s.total_tasks ?? currentTasks.length) + 1,
+                        tasks: newTasks,
+                        total_tasks: alreadyExists ? prevTotal : prevTotal + 1,
                       };
                     }),
-                  }));
-                  return { ...old, pages };
-                }
-              );
+                  })),
+                };
+              }
+            );
+          }
+
+          // Sync selectedTask and selectedUserStory if open in drawers
+          setSelectedTask((prev) => {
+            if (
+              prev &&
+              (prev.id === actualTaskId || prev.id === taskId || prev.taskId === actualTaskId)
+            ) {
+              return {
+                ...prev,
+                user_story_id: storyId,
+                sprint_id: effectiveStorySprintId ?? undefined,
+              };
             }
+            return prev;
+          });
+          setSelectedUserStory((prev) => {
+            if (prev && (prev.id === storyId || prev.key === storyId)) {
+              const currentTasks = prev.tasks ?? [];
+              const alreadyExists = currentTasks.some(
+                (t) => t.id === actualTaskId || t.key === taskToAppend.key || t.id === taskId
+              );
+              return {
+                ...prev,
+                tasks: alreadyExists ? currentTasks : [...currentTasks, taskToAppend],
+                total_tasks: alreadyExists
+                  ? (prev.total_tasks ?? currentTasks.length)
+                  : (prev.total_tasks ?? currentTasks.length) + 1,
+              };
+            }
+            return prev;
+          });
+
+          // Invalidate task by id immediately on drop
+          queryClient.invalidateQueries({
+            queryKey: ['task', effectiveProjectId, actualTaskId],
+          });
+          if (taskToAppend.key) {
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, taskToAppend.key],
+            });
+          }
+          if (taskId && taskId !== actualTaskId) {
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, taskId],
+            });
+          }
+          queryClient.invalidateQueries({
+            queryKey: ['task', effectiveProjectId],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['task'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['user-story', effectiveProjectId, storyId],
+          });
+          if (targetStory?.key) {
+            queryClient.invalidateQueries({
+              queryKey: ['user-story', effectiveProjectId, targetStory.key],
+            });
           }
 
           try {
@@ -820,22 +920,51 @@ export const BacklogTemplate = () => {
               taskId: actualTaskId,
               payload: {
                 user_story_id: storyId,
-                ...(targetStory?.sprint_id ? { sprint_id: targetStory.sprint_id } : {}),
+                ...(effectiveStorySprintId ? { sprint_id: effectiveStorySprintId } : {}),
               },
             });
+
+            // Invalidate task by id after drop mutation finishes
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, actualTaskId],
+            });
+            if (taskToAppend.key) {
+              queryClient.invalidateQueries({
+                queryKey: ['task', effectiveProjectId, taskToAppend.key],
+              });
+            }
+            if (taskId && taskId !== actualTaskId) {
+              queryClient.invalidateQueries({
+                queryKey: ['task', effectiveProjectId, taskId],
+              });
+            }
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['task'],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['user-story', effectiveProjectId, storyId],
+            });
+            if (targetStory?.key) {
+              queryClient.invalidateQueries({
+                queryKey: ['user-story', effectiveProjectId, targetStory.key],
+              });
+            }
+
             toast.success(`Task assigned to story "${targetStory?.title || 'User Story'}"`);
           } catch {
             // Rollback optimistic update
             setOptimisticTaskUpdates((prev) => {
               const next = new Map(prev);
               next.delete(actualTaskId);
+              if (taskId) next.delete(taskId);
               return next;
             });
-            if (targetStory?.sprint_id) {
-              queryClient.invalidateQueries({
-                queryKey: ['sprint-user-stories', effectiveProjectId, targetStory.sprint_id],
-              });
-            }
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, actualTaskId],
+            });
             toast.error('Failed to assign task to user story');
           }
           return;
@@ -961,6 +1090,14 @@ export const BacklogTemplate = () => {
                 user_story_id: null,
               },
             });
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, actualTaskId],
+            });
+            if (taskId && taskId !== actualTaskId) {
+              queryClient.invalidateQueries({
+                queryKey: ['task', effectiveProjectId, taskId],
+              });
+            }
             toast.success(`Task assigned to sprint "${targetSprint?.name || 'Sprint'}"`);
           } catch (err) {
             // Rollback optimistic update
@@ -1056,6 +1193,14 @@ export const BacklogTemplate = () => {
                 user_story_id: null,
               },
             });
+            queryClient.invalidateQueries({
+              queryKey: ['task', effectiveProjectId, actualTaskId],
+            });
+            if (taskId && taskId !== actualTaskId) {
+              queryClient.invalidateQueries({
+                queryKey: ['task', effectiveProjectId, taskId],
+              });
+            }
             toast.success('Task unassigned from sprint and story');
           } catch {
             // Rollback optimistic update
@@ -1080,7 +1225,22 @@ export const BacklogTemplate = () => {
         }
 
         const storyId = (active.data.current?.storyId || activeStory?.id) as string;
-        const targetSprintId = finalOver.data.current?.sprintId;
+        const overIdStr = String(finalOver.id);
+        let targetSprintId: string | null | undefined = finalOver.data.current?.sprintId;
+        if (targetSprintId === undefined) {
+          if (overIdStr.startsWith('sprint-direct-')) {
+            targetSprintId = overIdStr.replace('sprint-direct-', '');
+          } else if (overIdStr.startsWith('sprint-')) {
+            targetSprintId = overIdStr.replace('sprint-', '');
+          } else if (overIdStr === 'backlog-unassigned') {
+            targetSprintId = null;
+          } else if (overIdStr.startsWith('story-drop-') || overIdStr.startsWith('story-')) {
+            const targetStoryId = overIdStr.replace('story-drop-', '').replace('story-', '');
+            const targetStory = (userStories ?? []).find((s) => s.id === targetStoryId);
+            targetSprintId = targetStory?.sprint_id ?? null;
+          }
+        }
+
         const targetSprint = targetSprintId
           ? (sprints ?? []).find((s) => s.id === targetSprintId)
           : undefined;
@@ -1095,7 +1255,13 @@ export const BacklogTemplate = () => {
         }
 
         // Find the current story to check if sprint changed
-        const currentStory = userStories.find((s) => s.id === storyId);
+        const draggedStory = active?.data?.current?.story as UserStoryResponse | undefined;
+        const currentStory =
+          draggedStory ||
+          currentActiveStory ||
+          optimisticUpdates.get(storyId)?.story ||
+          (userStories ?? []).find((s) => s.id === storyId || s.key === storyId);
+
         const effectiveCurrentSprintId =
           optimisticUpdates.get(storyId)?.sprintId ?? currentStory?.sprint_id;
 
@@ -1108,57 +1274,177 @@ export const BacklogTemplate = () => {
           return;
         }
 
-        const storyObj: UserStoryResponse = currentStory ||
-          activeStory || { id: storyId, title: 'Story' };
+        const storyObj: UserStoryResponse = draggedStory ||
+          currentActiveStory ||
+          currentStory || { id: storyId, title: 'Story' };
 
-        // Optimistic UI update
+        const normalizedStatus = String(storyObj.status ?? '')
+          .toLowerCase()
+          .trim()
+          .replace(/_/g, ' ');
+
+        let targetStatusId: string | undefined;
+        let targetStatusName: string | undefined;
+
+        // Todo -> Active Sprint = In Progress
+        if (normalizedTarget && isTargetSprintActive && normalizedStatus === 'todo') {
+          const statusObj = userStoryStatuses.find(
+            (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'in progress'
+          );
+          targetStatusId = statusObj?.id;
+          targetStatusName = statusObj?.name;
+        }
+
+        // In Progress -> Non-active Sprint = Todo
+        if (normalizedTarget && !isTargetSprintActive && normalizedStatus === 'in progress') {
+          const statusObj = userStoryStatuses.find(
+            (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
+          );
+          targetStatusId = statusObj?.id;
+          targetStatusName = statusObj?.name;
+        }
+
+        // Sprint -> Unassigned = Todo
+        if (!normalizedTarget && normalizedStatus === 'in progress') {
+          const statusObj = userStoryStatuses.find(
+            (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
+          );
+          targetStatusId = statusObj?.id;
+          targetStatusName = statusObj?.name;
+        }
+
+        const updatedStory: UserStoryResponse = {
+          ...storyObj,
+          sprint_id: normalizedTarget ?? undefined,
+          ...(targetStatusId
+            ? {
+                status_id: targetStatusId,
+                status: targetStatusName,
+              }
+            : {}),
+        };
+
+        // 1. Optimistic UI update: local state
         setOptimisticUpdates((prev) => {
           const next = new Map(prev);
           next.set(storyId, {
             sprintId: normalizedTarget,
-            statusId:
-              normalizedTarget &&
-              isTargetSprintActive &&
-              storyObj.status?.toLowerCase().replace(/_/g, ' ') === 'todo'
-                ? userStoryStatuses.find(
-                    (status) =>
-                      status.name.toLowerCase().trim().replace(/_/g, ' ') === 'in progress'
-                  )?.id
-                : normalizedTarget &&
-                    !isTargetSprintActive &&
-                    storyObj.status?.toLowerCase().replace(/_/g, ' ') === 'in progress'
-                  ? userStoryStatuses.find(
-                      (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
-                    )?.id
-                  : !normalizedTarget &&
-                      storyObj.status?.toLowerCase().replace(/_/g, ' ') === 'in progress'
-                    ? userStoryStatuses.find(
-                        (status) => status.name.toLowerCase().trim().replace(/_/g, ' ') === 'todo'
-                      )?.id
-                    : storyObj.status_id,
+            statusId: targetStatusId ?? storyObj.status_id,
+            story: updatedStory,
             timestamp: Date.now(),
           });
           return next;
         });
 
-        // Optimistically add to target sprint's user stories cache
+        // 2. Optimistically add to target sprint's user stories cache
         if (normalizedTarget) {
+          queryClient.setQueryData<InfiniteStoryData>(
+            ['sprint-user-stories', effectiveProjectId, normalizedTarget],
+            (old) => addToInfiniteCache(old, updatedStory)
+          );
           queryClient.setQueriesData<InfiniteStoryData>(
-            { queryKey: ['sprint-user-stories', selectedProject, normalizedTarget] },
-            (old) => addToInfiniteCache(old, { ...storyObj, sprint_id: normalizedTarget })
+            { queryKey: ['sprint-user-stories', effectiveProjectId, normalizedTarget] },
+            (old) => addToInfiniteCache(old, updatedStory)
           );
         }
 
-        // Optimistically remove from source sprint's user stories cache
+        // 3. Optimistically remove from source sprint's user stories cache
         if (normalizedCurrent) {
+          queryClient.setQueryData<InfiniteStoryData>(
+            ['sprint-user-stories', effectiveProjectId, normalizedCurrent],
+            (old) => removeFromInfiniteCache(old, storyId)
+          );
           queryClient.setQueriesData<InfiniteStoryData>(
-            { queryKey: ['sprint-user-stories', selectedProject, normalizedCurrent] },
+            { queryKey: ['sprint-user-stories', effectiveProjectId, normalizedCurrent] },
             (old) => removeFromInfiniteCache(old, storyId)
           );
         }
 
-        // Schedule debounced API call
-        scheduleUpdate(storyId, normalizedTarget, storyObj.status, isTargetSprintActive);
+        // 4. Optimistically update all user stories cache
+        queryClient.setQueriesData<
+          PaginatedApiResponse<UserStoryResponse[]> | { data: UserStoryResponse[] }
+        >({ queryKey: ['user-stories', effectiveProjectId] }, (old) => {
+          if (!old || !Array.isArray(old.data)) return old;
+          return {
+            ...old,
+            data: old.data.map((s) => (s.id === storyId ? updatedStory : s)),
+          };
+        });
+
+        // 5. Update selectedUserStory if open in drawer
+        setSelectedUserStory((prev) => {
+          if (prev && (prev.id === storyId || prev.key === storyId)) {
+            return { ...prev, ...updatedStory };
+          }
+          return prev;
+        });
+
+        // 6. Invalidate query for user story get by id right after drop
+        queryClient.invalidateQueries({
+          queryKey: ['user-story', effectiveProjectId, storyId],
+        });
+        if (storyObj.key) {
+          queryClient.invalidateQueries({
+            queryKey: ['user-story', effectiveProjectId, storyObj.key],
+          });
+        }
+        queryClient.invalidateQueries({
+          queryKey: ['user-story'],
+        });
+
+        // 7. Execute API mutation immediately with optimistic rollback
+        try {
+          const payload = {
+            sprint_id: normalizedTarget,
+            ...(targetStatusId ? { status_id: targetStatusId } : {}),
+          };
+
+          await updateUserStoryMutation.mutateAsync({
+            projectId: effectiveProjectId,
+            userStoryId: storyId,
+            payload,
+          });
+
+          // Invalidate user story get by id after drop mutation finishes
+          queryClient.invalidateQueries({
+            queryKey: ['user-story', effectiveProjectId, storyId],
+          });
+          if (storyObj.key) {
+            queryClient.invalidateQueries({
+              queryKey: ['user-story', effectiveProjectId, storyObj.key],
+            });
+          }
+          queryClient.invalidateQueries({
+            queryKey: ['user-story'],
+          });
+
+          setOptimisticUpdates((prev) => {
+            const next = new Map(prev);
+            next.delete(storyId);
+            return next;
+          });
+
+          toast.success(
+            normalizedTarget
+              ? targetSprint
+                ? `Story assigned to ${targetSprint.name}`
+                : 'Story assigned to sprint'
+              : 'Story moved to backlog'
+          );
+        } catch {
+          // Rollback optimistic update
+          setOptimisticUpdates((prev) => {
+            const next = new Map(prev);
+            next.delete(storyId);
+            return next;
+          });
+
+          toast.error('Failed to update user story');
+
+          queryClient.invalidateQueries({
+            queryKey: ['user-story', effectiveProjectId, storyId],
+          });
+        }
       }
     },
     [
@@ -1167,7 +1453,7 @@ export const BacklogTemplate = () => {
       tasksList,
       optimisticUpdates,
       optimisticTaskUpdates,
-      scheduleUpdate,
+      updateUserStoryMutation,
       updateTaskAsync,
       activeTask,
       activeStory,
@@ -1183,7 +1469,20 @@ export const BacklogTemplate = () => {
   const q = search.toLowerCase();
 
   // Apply optimistic updates to user stories
-  const optimisticUserStories = userStories.map((story) => {
+  const baseStories = [...(userStories ?? [])];
+
+  // If any unassigned story is in optimistic updates but not in userStories yet, append it
+  optimisticUpdates.forEach((update, id) => {
+    if (
+      update.story &&
+      update.sprintId === null &&
+      !baseStories.some((s) => s.id === id || s.key === id)
+    ) {
+      baseStories.push(update.story);
+    }
+  });
+
+  const optimisticUserStories = baseStories.map((story) => {
     const update = optimisticUpdates.get(story.id);
 
     if (update) {

@@ -253,14 +253,17 @@ export const useUpdateTask = () => {
       payload: UpdateTaskPayload;
     }) => taskService.updateTask(projectId, taskId, payload),
     onSuccess: (_, variables) => {
-      // Invalidate task queries for this project
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.tasks, variables.projectId],
-      });
-
       // Invalidate the specific task
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.task, variables.projectId, variables.taskId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.task, variables.projectId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.task],
       });
 
       // Invalidate the specific sprint's orphan tasks if sprint_id is present

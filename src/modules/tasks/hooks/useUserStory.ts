@@ -123,11 +123,11 @@ export const useUpdateUserStory = () => {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['user-stories', variables.projectId],
+        queryKey: ['user-story', variables.projectId],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['sprint-user-stories', variables.projectId],
+        queryKey: ['user-story'],
       });
     },
   });
