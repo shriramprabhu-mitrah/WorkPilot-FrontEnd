@@ -72,7 +72,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
           <div className="space-y-4">
             {/* Plan */}
             <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Plan</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Plan</span>
               <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 {subscription.currentPlan}
               </span>
@@ -80,7 +80,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
 
             {/* Status */}
             <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Status</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Status</span>
               <span
                 className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(subscription.status)}`}
               >
@@ -90,7 +90,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
 
             {/* Amount */}
             <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Amount</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Amount</span>
               <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 {subscription.planPrice}
               </span>
@@ -98,7 +98,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
 
             {/* Start Date */}
             <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Start Date</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Start Date</span>
               <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 {subscription.startDate}
               </span>
@@ -106,7 +106,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
 
             {/* Next Billing */}
             <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Next Billing</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Next Billing</span>
               <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 {subscription.nextBilling}
               </span>
@@ -114,7 +114,7 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
 
             {/* Members */}
             <div className="flex justify-between items-center py-3">
-              <span className="text-sm text-gray-500 dark:text-slate-400">Members</span>
+              <span className="text-sm text-gray-500 dark:text-slate-200">Members</span>
               <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
                 {subscription.members}
               </span>
@@ -264,7 +264,7 @@ export const SubscriptionsTemplate = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Subscriptions</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
           All organization subscription plans across the platform
         </p>
       </div>
@@ -272,7 +272,7 @@ export const SubscriptionsTemplate = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Active
           </p>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400">
@@ -280,7 +280,7 @@ export const SubscriptionsTemplate = () => {
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Trial
           </p>
           <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
@@ -288,7 +288,7 @@ export const SubscriptionsTemplate = () => {
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Expired / Failed
           </p>
           <p className="text-3xl font-bold text-red-600 dark:text-red-400">
@@ -296,7 +296,7 @@ export const SubscriptionsTemplate = () => {
           </p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Pending
           </p>
           <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
@@ -309,7 +309,7 @@ export const SubscriptionsTemplate = () => {
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
         <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
             size={20}
           />
           <input
@@ -317,7 +317,7 @@ export const SubscriptionsTemplate = () => {
             placeholder="Search organizations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
           />
         </div>
       </div>
@@ -339,7 +339,7 @@ export const SubscriptionsTemplate = () => {
                 ].map((col) => (
                   <th
                     key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider"
                   >
                     {col}
                   </th>
@@ -367,7 +367,7 @@ export const SubscriptionsTemplate = () => {
                       <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                         {sub.currentPlan}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400">{sub.planPrice}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-200">{sub.planPrice}</p>
                     </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">

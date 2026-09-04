@@ -111,7 +111,7 @@ const CalendarPage = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100">
           Calendar
         </h1>
-        <p className="mt-0 text-gray-500 dark:text-slate-400">
+        <p className="mt-0 text-gray-500 dark:text-slate-200">
           Plan, track and manage your project schedule.
         </p>
       </div>

@@ -78,7 +78,7 @@ export const MemberCard = ({
             </div>
 
             {/* Role */}
-            <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-slate-400">
+            <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-slate-100">
               {ROLE_LABELS[member.role as ROLE_TYPE] ?? member.role}
             </p>
           </div>
@@ -87,7 +87,7 @@ export const MemberCard = ({
         {/* Progress */}
         <div className="min-w-0">
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-xs text-gray-500 dark:text-slate-400">Progress</span>
+            <span className="text-xs text-gray-500 dark:text-slate-100">Progress</span>
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{pct}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700">

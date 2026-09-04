@@ -25,7 +25,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
       );
     }
 
-    return <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 break-words">{details}</p>;
+    return <p className="mt-1 text-xs text-gray-400 dark:text-slate-100 break-words">{details}</p>;
   };
 
   return (

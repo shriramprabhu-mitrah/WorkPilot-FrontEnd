@@ -247,7 +247,7 @@ const MembersSettings = () => {
             <h2 className="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
               Team
             </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-100">
               Manage Project members and their roles
             </p>
           </div>
@@ -269,7 +269,7 @@ const MembersSettings = () => {
             {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-400 ${i === 1 ? 'relative -left-24' : ''
+                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100 ${i === 1 ? 'relative -left-24' : ''
                   }`}
               >
                 {h}
@@ -305,7 +305,7 @@ const MembersSettings = () => {
                   {/* Member info */}
                   <div className="flex min-w-0 items-center gap-3">
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-slate-100 dark:text-blue-300"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-slate-100 dark:text-slate-100"
                       style={{ backgroundColor: member.color || '' }}
                     >
                       {initials || 'U'}
@@ -314,7 +314,7 @@ const MembersSettings = () => {
                       <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                         {memberName}
                       </p>
-                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-300">
                         {member.username ?? 'No username'}
                       </p>
                     </div>
@@ -402,7 +402,7 @@ const MembersSettings = () => {
                         className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 dark:text-slate-500 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500"
                         title="Remove member"
                       >
-                        <Trash2 size={15} strokeWidth={1.8} />
+                        <Trash2 size={15} strokeWidth={1.8} className='dark:text-slate-100' />
                       </button>
                     )}
                   </div>
@@ -418,7 +418,7 @@ const MembersSettings = () => {
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   No members found
                 </p>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-200">
                   Add members to your Project.
                 </p>
               </div>
@@ -533,7 +533,7 @@ const MembersSettings = () => {
                   Add Members
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
                   Select members to add to this project.
                 </p>
               </div>
@@ -564,7 +564,7 @@ const MembersSettings = () => {
               <div className="mt-5">
                 {selectedMembers.length > 0 ? (
                   <>
-                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">
+                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-100">
                       Member Roles
                     </p>
 

@@ -1304,9 +1304,7 @@ export const TaskDetailDrawer = ({
                           }}
                         />
                       ) : (
-                        <span className="text-gray-400 dark:text-slate-500">
-                          Add a description…
-                        </span>
+                        <span className="text-gray-400 dark:text-slate-200">Add a description…</span>
                       )}
                     </div>
                   )}
@@ -1349,12 +1347,12 @@ export const TaskDetailDrawer = ({
                   ) : !attachments?.data?.length ? (
                     <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
                       <div className="w-9 h-9 mx-auto mb-2 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
-                        <Paperclip size={16} className="text-gray-400 dark:text-slate-500" />
+                        <Paperclip size={16} className="text-gray-400 dark:text-slate-200" />
                       </div>
 
-                      <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-200">No attachments</p>
 
-                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                      <p className="text-xs text-gray-400 dark:text-slate-200 mt-1">
                         Add files to this task
                       </p>
                     </div>
@@ -1459,8 +1457,7 @@ export const TaskDetailDrawer = ({
                         !canEditTask ? 'cursor-default' : ''
                       }`}
                       style={{
-                        color: selectedStatus?.color ?? '#6B7280',
-                        backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
+                        color: selectedStatus?.color ,
                         borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
                       }}
                     >

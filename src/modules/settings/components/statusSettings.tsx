@@ -777,18 +777,18 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           <div className="hidden sm:grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 px-4 py-2">
             <span />
 
-            <span className="text-xs font-semibold text-slate-500">Color</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-100">Color</span>
 
-            <span className="min-w-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="min-w-0 text-xs font-semibold text-slate-500 dark:text-slate-100">
               Name
             </span>
 
-            <span className="text-center -translate-x-17 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="text-center -translate-x-17 text-xs font-semibold text-slate-500 dark:text-slate-100">
               Closed?
             </span>
 
             {config.showArchived && (
-              <span className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-center text-xs font-semibold text-slate-500 dark:text-slate-100">
                 Archived
               </span>
             )}
@@ -886,7 +886,7 @@ export default function StatusSettings() {
           Statuses
         </h2>
       </div>
-      <p className="mb-6 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+      <p className="mb-6 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-100">
         Add, remove or edit the color and name of the statuses your epics, user stories, tasks and
         issues will go through.
       </p>

@@ -55,7 +55,7 @@ export default function TeamWorkloadCard({
     <div className="flex items-center justify-between mb-2">
       <div>
         <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Team Workload</p>
-        <p className="text-xs text-gray-500 dark:text-slate-400">
+        <p className="text-xs text-gray-500 dark:text-slate-100">
           Assigned tasks vs points by team member
         </p>
       </div>

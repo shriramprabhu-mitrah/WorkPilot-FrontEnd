@@ -118,17 +118,17 @@ export default function GeneralSettings() {
             Organization Slug
           </label>
           <div className="flex overflow-hidden rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700">
-            <span className="flex items-center bg-gray-100 dark:bg-slate-700 px-3 text-sm text-gray-400 dark:text-slate-400">
+            <span className="flex items-center bg-gray-100 dark:bg-slate-700 px-3 text-sm text-gray-400 dark:text-slate-100">
               workPilot/
             </span>
             <input
               type="text"
               value={organization?.slug || ''}
               readOnly
-              className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none cursor-not-allowed text-gray-500 dark:text-slate-400"
+              className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none cursor-not-allowed text-gray-500 dark:text-slate-100"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Slug cannot be changed</p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-slate-100">Slug cannot be changed</p>
         </div>
 
         <WpInput
@@ -237,14 +237,14 @@ export default function GeneralSettings() {
                 <h3 className="font-semibold text-xs text-gray-900 dark:text-slate-100">
                   Change Logo
                 </h3>
-                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-100">
                   PNG, JPG or JPEG • Max 5 MB
                 </p>
                 <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white">
                   <Upload size={18} />
                   Choose File
                 </div>
-                <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
+                <p className="mt-3 text-xs text-gray-400 dark:text-slate-100">
                   or drag & drop your image here
                 </p>
               </div>

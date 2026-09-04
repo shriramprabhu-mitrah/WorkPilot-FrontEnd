@@ -163,23 +163,23 @@ const ConfirmSubscriptionModal: React.FC<ConfirmSubscriptionModalProps> = ({
           {/* Order Details */}
           <div className="space-y-3 mb-6">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-slate-400">Organization</span>
+              <span className="text-gray-600 dark:text-slate-200">Organization</span>
               <span className="text-gray-900 dark:text-slate-100 font-medium">Acme Corp</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-slate-400">Selected Plan</span>
+              <span className="text-gray-600 dark:text-slate-200">Selected Plan</span>
               <span className="text-gray-900 dark:text-slate-100 font-medium">{plan.name}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-slate-400">Billing Cycle</span>
+              <span className="text-gray-600 dark:text-slate-200">Billing Cycle</span>
               <span className="text-gray-900 dark:text-slate-100 font-medium">Monthly</span>
             </div>
             <div className="flex justify-between text-sm pt-3 border-t border-gray-200 dark:border-slate-700">
-              <span className="text-gray-600 dark:text-slate-400">Base Amount</span>
+              <span className="text-gray-600 dark:text-slate-200">Base Amount</span>
               <span className="text-gray-900 dark:text-slate-100">₹{baseAmount}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-slate-400">GST (18%)</span>
+              <span className="text-gray-600 dark:text-slate-200">GST (18%)</span>
               <span className="text-gray-900 dark:text-slate-100">₹{gstAmount}</span>
             </div>
             <div className="flex justify-between text-base font-bold pt-3 border-t border-gray-200 dark:border-slate-700">
@@ -189,7 +189,7 @@ const ConfirmSubscriptionModal: React.FC<ConfirmSubscriptionModalProps> = ({
           </div>
 
           {/* Info Text */}
-          <p className="text-xs text-center text-gray-500 dark:text-slate-400 mb-6">
+          <p className="text-xs text-center text-gray-500 dark:text-slate-200 mb-6">
             Clicking &quot;Proceed to Payment&quot; will open Razorpay secure checkout.
           </p>
 
@@ -197,7 +197,7 @@ const ConfirmSubscriptionModal: React.FC<ConfirmSubscriptionModalProps> = ({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-100 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel
             </button>
@@ -283,7 +283,7 @@ export const BillingSettings = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+            <p className="text-xs font-semibold text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-3">
               Current Plan
             </p>
             <div className="flex items-center gap-3 mb-3">
@@ -298,7 +298,7 @@ export const BillingSettings = () => {
               <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
                 ₹{currentPlan.price}
               </span>
-              <span className="text-base font-normal text-gray-500 dark:text-slate-400">
+              <span className="text-base font-normal text-gray-500 dark:text-slate-200">
                 /month
               </span>
             </div>
@@ -310,13 +310,13 @@ export const BillingSettings = () => {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-gray-200 dark:border-slate-700">
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+            <p className="text-xs text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-2 font-semibold">
               Billing Cycle
             </p>
-            <p className="text-base font-bold text-gray-900 dark:text-slate-100">Monthly</p>
+            <p className="text-base font-bold text-gray-900 dark:text-slate-200">Monthly</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+            <p className="text-xs text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-2 font-semibold">
               Current Period
             </p>
             <p className="text-base font-bold text-gray-900 dark:text-slate-100">
@@ -324,13 +324,13 @@ export const BillingSettings = () => {
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+            <p className="text-xs text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-2 font-semibold">
               Next Billing
             </p>
             <p className="text-base font-bold text-gray-900 dark:text-slate-100">2026-09-21</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+            <p className="text-xs text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-2 font-semibold">
               Members
             </p>
             <p className="text-base font-bold text-gray-900 dark:text-slate-100">5 / 25</p>
@@ -339,14 +339,14 @@ export const BillingSettings = () => {
 
         {/* Included Features */}
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
-          <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">
+          <p className="text-xs font-semibold text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-4">
             Included Features
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {currentPlan.features.map((feature, idx) => (
               <div key={idx} className="flex items-center gap-2.5">
                 <CheckCircle2 size={18} className="text-green-500 dark:text-green-400 shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-slate-300">{feature}</span>
+                <span className="text-sm text-gray-700 dark:text-slate-100">{feature}</span>
               </div>
             ))}
           </div>
@@ -383,7 +383,7 @@ export const BillingSettings = () => {
                 <span className="text-4xl font-bold text-gray-900 dark:text-slate-100">
                   ₹{plan.price}
                 </span>
-                <span className="text-base text-gray-500 dark:text-slate-400 font-normal">
+                <span className="text-base text-gray-500 dark:text-slate-200 font-normal">
                   {' '}
                   / {plan.period}
                 </span>
@@ -395,7 +395,7 @@ export const BillingSettings = () => {
                       size={18}
                       className="text-green-500 dark:text-green-400 shrink-0 mt-0.5"
                     />
-                    <span className="text-sm text-gray-700 dark:text-slate-300">{feature}</span>
+                    <span className="text-sm text-gray-700 dark:text-slate-100">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -444,7 +444,7 @@ export const BillingSettings = () => {
                   ].map((col) => (
                     <th
                       key={col}
-                      className="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase tracking-wider"
                     >
                       {col}
                     </th>
@@ -458,12 +458,12 @@ export const BillingSettings = () => {
                     className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                      <span className="text-sm text-gray-700 dark:text-slate-100">
                         {payment.id}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                      <span className="text-sm text-gray-700 dark:text-slate-100">
                         {new Date(payment.date).toLocaleDateString()}
                       </span>
                     </td>
@@ -473,7 +473,7 @@ export const BillingSettings = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                      <span className="text-sm text-gray-700 dark:text-slate-100">
                         {payment.billingPeriod}
                       </span>
                     </td>
@@ -512,7 +512,7 @@ export const BillingSettings = () => {
                           View Invoice
                         </button>
                       ) : (
-                        <span className="text-sm text-gray-400 dark:text-slate-500">—</span>
+                        <span className="text-sm text-gray-400 dark:text-slate-200">—</span>
                       )}
                     </td>
                   </tr>

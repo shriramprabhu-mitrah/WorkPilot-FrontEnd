@@ -326,7 +326,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                     <div className="text-[13px] font-medium text-gray-700 dark:text-slate-200 truncate max-w-[120px]">
                       {projectLabel}
                     </div>
-                    <div className="text-[11px] text-gray-400 dark:text-slate-400 truncate max-w-[120px]">
+                    <div className="text-[11px] text-gray-400 dark:text-slate-200 truncate max-w-[120px]">
                       {sprintLabel}
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   <p className="text-[13px] font-semibold text-gray-800 dark:text-white truncate">
                     {user.name || 'User Name'}
                   </p>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-400 truncate">
+                  <p className="text-[11px] text-gray-400 dark:text-slate-100 truncate">
                     {user.email || 'user@email.com'}
                   </p>
                 </div>
@@ -469,14 +469,14 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               <div className="relative mb-2.5">
                 <Search
                   size={13}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200 pointer-events-none"
                 />
                 <input
                   type="text"
                   placeholder="Search projects..."
                   value={projectSearchTerm}
                   onChange={(e) => setProjectSearchTerm(e.target.value)}
-                  className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                  className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-200 outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
                 />
                 {projectSearchTerm && (
                   <button

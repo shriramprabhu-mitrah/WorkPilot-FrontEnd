@@ -219,7 +219,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
             Welcome to WorkPilot
           </h1>
 
-          <p className="mt-3 max-w-xl text-gray-500 dark:text-slate-400">
+          <p className="mt-3 max-w-xl text-gray-500 dark:text-slate-200">
             You are just a few steps away from creating your teams workspace.
           </p>
         </div>
@@ -242,7 +242,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
               {step > 1 ? <Check size={16} /> : '1'}
             </div>
             <span
-              className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+              className={`text-xs mt-2 font-medium ${step >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-200'}`}
             >
               Organization
             </span>
@@ -257,10 +257,11 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
               {step > 2 ? <Check size={16} /> : '2'}
             </div>
             <span
-              className={`text-xs mt-2 font-medium ${step >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+              className={`text-xs mt-2 font-medium ${
+                step >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-200'
+              }`}
             >
-              Team Setup{' '}
-              <span className="text-gray-400 dark:text-slate-500 font-normal">(opt)</span>
+              Team Setup <span className="text-inherit font-normal">(opt)</span>
             </span>
           </div>
           <div
@@ -273,9 +274,11 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
               3
             </div>
             <span
-              className={`text-xs mt-2 font-medium ${step >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+              className={`text-xs mt-2 font-medium ${
+                step >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-200'
+              }`}
             >
-              Branding <span className="text-gray-400 dark:text-slate-500 font-normal">(opt)</span>
+              Branding <span className="text-inherit font-normal">(opt)</span>
             </span>
           </div>
         </div>
@@ -286,7 +289,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
             <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
               Set up your organization
             </h2>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">
+            <p className="text-gray-500 dark:text-slate-200 mb-8">
               This step is required to access your workspace.
             </p>
 
@@ -301,7 +304,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                   placeholder="e.g. Acme Corp"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
@@ -310,7 +313,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                   Organization URL (slug) <span className="text-red-500">*</span>
                 </label>
                 <div className="flex">
-                  <span className="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-400 text-sm">
+                  <span className="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-300 text-sm">
                     workpilot.app/
                   </span>
                   <input
@@ -318,7 +321,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     value={orgSlug}
                     onChange={(e) => setOrgSlug(e.target.value)}
                     placeholder="acme-corp"
-                    className="flex-1 border border-gray-300 dark:border-slate-600 rounded-r-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 dark:border-slate-600 rounded-r-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -372,7 +375,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     setCountrySearch(e.target.value);
                     setShowCountryDropdown(true);
                   }}
-                  className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
                 {showCountryDropdown && (
                   <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
@@ -442,7 +445,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                 Optional
               </span>
             </div>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">
+            <p className="text-gray-500 dark:text-slate-200 mb-8">
               Add teammates now or invite them later from Settings.
             </p>
 
@@ -452,7 +455,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                   key={index}
                   className="p-4 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50/50 dark:bg-slate-800/50"
                 >
-                  <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-gray-400 dark:text-slate-200 uppercase tracking-wider mb-2">
                     Member {index + 1}
                   </label>
                   <div className="flex gap-3">
@@ -462,14 +465,14 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                         placeholder="teammate@company.com"
                         value={member.email}
                         onChange={(e) => updateTeamMember(index, e.target.value)}
-                        className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                     <button
                       onClick={() => removeTeamMember(index)}
                       className="w-10 h-10 flex items-center justify-center border border-gray-200 dark:border-slate-600 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 transition-colors bg-white dark:bg-slate-800 shrink-0"
                     >
-                      <X size={16} />
+                      <X size={16} className="dark:text-slate-200" />
                     </button>
                   </div>
                 </div>
@@ -533,7 +536,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                 Optional
               </span>
             </div>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">
+            <p className="text-gray-500 dark:text-slate-200 mb-8">
               Upload your logo. You can always update this later.
             </p>
 
@@ -563,7 +566,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                     <span className="text-sm font-medium text-gray-700 dark:text-slate-200">
                       {logoFile ? logoFile.name : 'Click to upload'}
                     </span>
-                    <span className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                    <span className="text-xs text-gray-400 dark:text-slate-200 mt-1">
                       PNG, SVG, JPG — up to 2 MB
                     </span>
                   </div>

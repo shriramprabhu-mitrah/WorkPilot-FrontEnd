@@ -16,7 +16,7 @@ export default function UpcomingDeadlines() {
               <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
                 {task.title}
               </p>
-              <p className="mt-1 text-xs text-gray-400 dark:text-slate-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-100">
                 {task.project} - {task.sprint}
               </p>
             </div>

@@ -280,7 +280,7 @@ export const SignIn = () => {
             <h1 className="mb-2 text-[28px] font-bold text-gray-900 dark:text-slate-100">
               Forgot Password?
             </h1>
-            <p className="mb-8 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mb-8 text-sm text-gray-500 dark:text-slate-200">
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
 

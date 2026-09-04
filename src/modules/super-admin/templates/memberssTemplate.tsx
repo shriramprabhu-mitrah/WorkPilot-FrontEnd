@@ -89,7 +89,7 @@ export const MembersTemplate = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">All Members</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || members.length} members across all organizations
         </p>
       </div>
@@ -100,7 +100,7 @@ export const MembersTemplate = () => {
           {/* Search Input */}
           <div className="relative w-72">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
               size={16}
             />
             <input
@@ -108,7 +108,7 @@ export const MembersTemplate = () => {
               placeholder="Search members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
             />
           </div>
 
@@ -174,7 +174,7 @@ export const MembersTemplate = () => {
                 {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined'].map((col) => (
                   <th
                     key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider"
                   >
                     {col}
                   </th>
@@ -237,7 +237,7 @@ export const MembersTemplate = () => {
                       </span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-400">
+                      <span className="text-sm text-gray-500 dark:text-slate-200">
                         {new Date(member.joined_at).toLocaleDateString()}
                       </span>
                     </td>

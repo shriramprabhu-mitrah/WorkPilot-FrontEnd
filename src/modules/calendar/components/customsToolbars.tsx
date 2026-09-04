@@ -34,7 +34,7 @@ const CustomToolbar = ({
             Roadmap & timeline of all sprints in this project
           </p>
         ) : (
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-200">
             View and manage your project schedule
           </p>
         )}

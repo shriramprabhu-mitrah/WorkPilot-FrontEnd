@@ -263,7 +263,7 @@ const UserStoryRow = ({
                       Storyless Tasks
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 pl-0.5">
+                  <p className="text-[11px] text-gray-500 dark:text-slate-100 mt-1 pl-0.5">
                     {story.total_tasks ?? 0} {story.total_tasks === 1 ? 'task' : 'tasks'} (no story)
                   </p>
                 </div>
@@ -288,7 +288,7 @@ const UserStoryRow = ({
                     >
                       {story.title}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 dark:text-slate-200 mt-0.5">
                       {story.total_tasks ?? 0} tasks · {story.story_points ?? 0} pts
                     </p>
                   </div>
@@ -298,7 +298,7 @@ const UserStoryRow = ({
                 typeof document !== 'undefined' &&
                 createPortal(
                   <div
-                    className="fixed z-[99999] w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+                    className="fixed z-[99999] w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl dark:bg-gray-100"
                     style={{
                       left: popupPosition.x + 12,
                       top: popupPosition.y + 12,
@@ -307,51 +307,51 @@ const UserStoryRow = ({
                     {/* Name */}
                     {/* Name */}
                     <div className="flex items-start justify-between gap-4 mb-3">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                      <span className="text-xs text-gray-500 dark:text-slate-100 shrink-0">
                         Name
                       </span>
 
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-100 text-right break-words min-w-0 flex-1">
+                      <span className="text-sm font-medium text-gray-800 dark:text-slate-100 text-right break-words min-w-0 flex-1">
                         {story.title}
                       </span>
                     </div>
                     <div className="space-y-3">
                       {/* Status */}
                       <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500">Status</span>
-                        <span className="text-sm font-medium text-gray-800 capitalize">
+                        <span className="text-xs text-gray-500 dark:text-slate-100">Status</span>
+                        <span className="text-sm font-medium text-gray-800 capitalize dark:text-slate-100">
                           {story.status?.replace('_', ' ') || '-'}
                         </span>
                       </div>
 
                       {/* Assignee */}
                       <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Assignee</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                        <span className="text-xs text-gray-500 dark:text-slate-100 ">Assignee</span>
+                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-slate-100">
                           {story.assignee_name || story.assignee?.name || 'Unassigned'}
                         </span>
                       </div>
 
                       {/* Due Date */}
                       <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Due Date</span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                        <span className="text-xs text-gray-500 dark:text-slate-100">Due Date</span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-slate-100">
                           {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
                         </span>
                       </div>
 
                       {/* Reporter */}
                       <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Reporter</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-gray-100">
+                        <span className="text-xs text-gray-500 dark:text-slate-100">Reporter</span>
+                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-slate-100">
                           {story.reporter_name || story.reporter?.name || '-'}
                         </span>
                       </div>
 
                       {/* Priority */}
                       <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Priority</span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
+                        <span className="text-xs text-gray-500 dark:text-slate-100">Priority</span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-slate-100 capitalize">
                           {story.priority || '-'}
                         </span>
                       </div>
@@ -1300,11 +1300,11 @@ export const KanbanBoardTemplate = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4 sm:mb-6 flex-shrink-0 px-3 sm:px-0">
         <div>
           <h1 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">Kanban Board</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-300">
+          <p className="text-sm text-gray-500 dark:text-slate-100">
             Visualize and manage your team&apos;s tasks across workflow stages.
           </p>
           {storeProject && (
-            <p className="text-xs text-gray-400 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 dark:text-slate-100 mt-0.5">
               {storeProject.name}
               {storeSprint ? ` · ${storeSprint.name}` : ' · All Sprints'}
             </p>
@@ -1408,9 +1408,9 @@ export const KanbanBoardTemplate = () => {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/kanban method-pana.svg" alt="No Tasks" className="h-90 w-90" />
 
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">No tasks found</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">No tasks found</h2>
 
-            <p className="mt-3 max-w-md text-center text-gray-500 dark:text-gray-400">
+            <p className="mt-3 max-w-md text-center text-gray-500 dark:text-slate-200">
               There are no tasks for this selection. Try a different project or sprint.
             </p>
           </div>

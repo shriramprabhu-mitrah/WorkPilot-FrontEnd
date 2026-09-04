@@ -13,7 +13,7 @@ const TodayCard = ({ events, currentDate, onSprintClick }: TodayCardProps) => {
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 shadow-sm">
       <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-slate-100">Today</h3>
-      <p className="mb-4 text-sm text-gray-500 dark:text-slate-400">
+      <p className="mb-4 text-sm text-gray-500 dark:text-slate-100">
         {moment(currentDate).format('ddd, MMMM D, YYYY')}
       </p>
 
@@ -38,7 +38,7 @@ const TodayCard = ({ events, currentDate, onSprintClick }: TodayCardProps) => {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-400 dark:text-slate-500">No events today</p>
+        <p className="text-sm text-gray-400 dark:text-slate-100">No events today</p>
       )}
     </div>
   );
