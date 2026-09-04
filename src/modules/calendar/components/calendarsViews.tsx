@@ -7,7 +7,7 @@ import moment from 'moment';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import type { Formats } from 'react-big-calendar';
 import { CalendarEvent } from '../types';
-import CustomToolbar from './customsToolbars';
+import CustomToolbar, { CalendarDisplayView } from './customsToolbars';
 import CustomEvent from './customsEvents';
 import CustomDateHeader from './customsDatesHeaders';
 import { eventStyleGetter } from './calendarsViewStyle';
@@ -20,11 +20,9 @@ const localizer = momentLocalizer(moment);
 interface CalendarViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  currentView: View;
-  onViewChange: (view: View) => void;
+  currentView: CalendarDisplayView;
+  onViewChange: (view: CalendarDisplayView) => void;
   onNavigate: (date: Date) => void;
-  // selectedType: 'All' | 'Sprint' | 'Meeting' | 'Task';
-  // onTypeChange: (type: 'All' | 'Sprint' | 'Meeting' | 'Task') => void;
   projectId: string;
 }
 
@@ -41,14 +39,15 @@ const CalendarView = ({
   onViewChange,
   onNavigate,
   projectId,
-  // selectedType,
-  // onTypeChange,
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const { width: screenWidth } = useResize();
-  const isMobile = screenWidth > 0 && screenWidth < 640;
   const { push } = useOrgNavigation();
+
+  // RBC only accepts standard Views (MONTH, WEEK, DAY)
+  const rbcView = (currentView === 'timeline' ? Views.MONTH : currentView) as View;
+
   return (
     <>
       <Calendar<CalendarEvent>
@@ -58,9 +57,9 @@ const CalendarView = ({
         onNavigate={onNavigate}
         startAccessor="start"
         endAccessor="end"
-        view={currentView}
+        view={rbcView}
         views={[Views.MONTH, Views.WEEK, Views.DAY]}
-        onView={onViewChange}
+        onView={(newView) => onViewChange(newView)}
         formats={formats}
         messages={{
           allDay: 'All Day',
@@ -68,7 +67,7 @@ const CalendarView = ({
         getNow={() => new Date()}
         scrollToTime={new Date()}
         enableAutoScroll
-        popup
+        showAllEvents
         selectable
         onSelectSlot={(slotInfo) => {
           if (selectedDate?.toDateString() === slotInfo.start.toDateString()) {
@@ -86,7 +85,7 @@ const CalendarView = ({
           setSelectedEvent(event);
         }}
         style={{
-          height: screenWidth < 640 ? '420px' : screenWidth < 1024 ? '500px' : '540px',
+          height: rbcView === Views.MONTH ? 'auto' : screenWidth < 640 ? '500px' : '620px',
         }}
         eventPropGetter={eventStyleGetter}
         components={{
@@ -97,8 +96,6 @@ const CalendarView = ({
               onDateChange={onNavigate}
               currentView={currentView}
               onViewChange={onViewChange}
-              // selectedType={selectedType}
-              // onTypeChange={onTypeChange}
             />
           ),
           event: CustomEvent,

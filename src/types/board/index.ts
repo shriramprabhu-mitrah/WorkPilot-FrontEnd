@@ -52,6 +52,8 @@ export interface KanbanTask {
   reporterInitials?: string;
   reporterColor?: string;
   sprint?: string;
+  sprintId?: string;
+  sprint_id?: string;
   startDate?: string;
   parent?: string;
   activity?: ActivityItem[];

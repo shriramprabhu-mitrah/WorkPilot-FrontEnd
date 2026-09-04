@@ -2287,11 +2287,18 @@ export const BacklogTemplate = () => {
         />
       )}
 
-      {selectedTask && <TaskDetailDrawer task={selectedTask} onClose={handleCloseDrawer} />}
+      {selectedTask && (
+        <TaskDetailDrawer
+          task={selectedTask}
+          onClose={handleCloseDrawer}
+          onOpenUserStory={handleUserStoryClick}
+        />
+      )}
       {selectedUserStory && (
         <UserStoryDetailDrawer
           userStory={selectedUserStory}
           onClose={handleCloseDrawer}
+          onOpenTask={handleTaskClick}
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
           }}

@@ -3,10 +3,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import CalendarView from './calendarsViews';
+import SprintTimelineView from './sprintTimelineView';
 import UpcomingEvents from './upcominggEventss';
 import TodayCard from './todaysCards';
 import EventLegends from './eventsLegendss';
-import { Views, View } from 'react-big-calendar';
+import { Views } from 'react-big-calendar';
+import type { CalendarDisplayView } from './customsToolbars';
 import { expandMultiDayEvents } from '../../../utils/calendar';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
@@ -28,7 +30,7 @@ const CalendarPage = () => {
   const projectSlug = (params?.projectSlug as string) || '';
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentView, setCurrentView] = useState<View>(Views.MONTH);
+  const [currentView, setCurrentView] = useState<CalendarDisplayView>(Views.MONTH);
 
   const { canViewSprints } = usePermissions();
   const storeProject = useAppSelector((state) => state.project.selectedProject);
@@ -89,12 +91,15 @@ const CalendarPage = () => {
     return <ProjectNotFound slug={projectSlug} />;
   }
 
-  const sprintEvents: CalendarEvent[] = (sprints ?? []).map((sprint: SprintDetail) => ({
+  const sprintEvents: CalendarEvent[] = (sprints ?? []).map((sprint: SprintDetail, idx: number) => ({
     id: sprint.id,
     title: sprint.name,
     start: new Date(sprint.start_date),
     end: new Date(sprint.end_date),
     type: 'Sprint',
+    status: sprint.status,
+    colorIndex: idx,
+    sprint,
   }));
 
   const allEvents = [...sprintEvents];
@@ -133,17 +138,46 @@ const CalendarPage = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-4">
           <div className="xl:col-span-3">
-            <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
-              <CalendarView
-                events={displayEvents}
-                currentDate={currentDate}
-                currentView={currentView}
-                onViewChange={setCurrentView}
-                onNavigate={setCurrentDate}
-                projectId={projectId}
-              />
-              <EventLegends />
-            </div>
+            {currentView === 'timeline' ? (
+              <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+                    Sprint Timeline
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={currentView}
+                      onChange={(e) => setCurrentView(e.target.value as CalendarDisplayView)}
+                      className="h-9 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 px-2 sm:px-3 text-sm font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 outline-none"
+                    >
+                      <option value="month">Month</option>
+                      <option value="week">Week</option>
+                      <option value="day">Day</option>
+                      <option value="timeline">Sprint Timeline</option>
+                    </select>
+                  </div>
+                </div>
+                <SprintTimelineView
+                  events={allEvents}
+                  currentDate={currentDate}
+                  onNavigate={setCurrentDate}
+                  onSprintClick={handleSprintClick}
+                />
+                <EventLegends />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
+                <CalendarView
+                  events={displayEvents}
+                  currentDate={currentDate}
+                  currentView={currentView}
+                  onViewChange={setCurrentView}
+                  onNavigate={setCurrentDate}
+                  projectId={projectId}
+                />
+                <EventLegends />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-6">
