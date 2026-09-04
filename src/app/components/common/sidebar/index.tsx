@@ -59,10 +59,11 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const orgSlug = params.orgSlug as string;
 
   const user = useAppSelector((state) => state.user);
+  const organization = useAppSelector((state) => state.organization);
   const { isOrgAdmin, canCreateSprint, canCreateProject } = usePermissions();
   const { selectedProject, selectedSprint } = useAppSelector((state) => state.project);
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const [logoLoadError, setLogoLoadError] = useState<string | null>(null);
   const urlProjectSlug = params?.projectSlug as string | undefined;
 
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
@@ -266,15 +267,30 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         >
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100 dark:border-slate-700">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <TrackrLogoSvg />
+            <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+              {organization?.logo_url && logoLoadError !== organization.logo_url ? (
+                <img
+                  src={organization.logo_url}
+                  alt={`${organization?.name || 'Organization'} logo`}
+                  className="w-full h-full object-cover"
+                  onError={() => {
+                    if (organization.logo_url) {
+                      setLogoLoadError(organization.logo_url);
+                    }
+                  }}
+                />
+              ) : (
+                <div
+                  className="w-full h-full rounded-lg flex items-center justify-center text-[11px] font-bold text-white"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  {getProjectInitials(organization?.name)}
+                </div>
+              )}
             </div>
             {showLabels && (
               <span className="overflow-hidden whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-white">
-                WorkPilot
+                {organization?.name || 'WorkPilot'}
               </span>
             )}
             {onClose && (
@@ -292,10 +308,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
           <div className="px-3 py-3">
             <div
               className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors bg-[#f4f5f7] dark:bg-slate-800
-                ${
-                  !effectiveProject
-                    ? 'border border-red-500'
-                    : 'border border-transparent hover:bg-gray-100 dark:hover:bg-slate-700'
+                ${!effectiveProject
+                  ? 'border border-red-500'
+                  : 'border border-transparent hover:bg-gray-100 dark:hover:bg-slate-700'
                 }`}
               onClick={openManageProject}
             >
@@ -346,10 +361,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   key={href}
                   href={href}
                   className={`flex items-center px-3 py-2 rounded-lg text-[13px] font-medium transition-colors min-w-0
-                    ${
-                      active
-                        ? 'bg-[#eff6ff] dark:bg-blue-900/40 text-[#155dfc] dark:text-blue-300'
-                        : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    ${active
+                      ? 'bg-[#eff6ff] dark:bg-blue-900/40 text-[#155dfc] dark:text-blue-300'
+                      : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
                     }`}
                 >
                   <div className="w-6 flex items-center justify-center shrink-0">
@@ -492,19 +506,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                         setTempProject(p);
                         setTempSprint(null);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                        tempProject?.id === p.id
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
-                      }`}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${tempProject?.id === p.id
+                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            tempProject?.id === p.id
-                              ? 'border-blue-600'
-                              : 'border-gray-300 dark:border-gray-600'
-                          }`}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempProject?.id === p.id
+                            ? 'border-blue-600'
+                            : 'border-gray-300 dark:border-gray-600'
+                            }`}
                         >
                           {tempProject?.id === p.id && (
                             <div className="w-2 h-2 rounded-full bg-blue-600" />
@@ -574,18 +586,16 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   {/* All Sprints option */}
                   <button
                     onClick={() => setTempSprint(null)}
-                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                      tempSprint === null
-                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                        : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
-                    }`}
+                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${tempSprint === null
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                      : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
+                      }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        tempSprint === null
-                          ? 'border-blue-600'
-                          : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint === null
+                        ? 'border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600'
+                        }`}
                     >
                       {tempSprint === null && <div className="w-2 h-2 rounded-full bg-blue-600" />}
                     </div>
@@ -598,19 +608,17 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                     <div
                       key={s.id}
                       onClick={() => setTempSprint(s)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
-                        tempSprint?.id === s.id
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
-                      }`}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${tempSprint?.id === s.id
+                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            tempSprint?.id === s.id
-                              ? 'border-blue-600'
-                              : 'border-gray-300 dark:border-gray-600'
-                          }`}
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${tempSprint?.id === s.id
+                            ? 'border-blue-600'
+                            : 'border-gray-300 dark:border-gray-600'
+                            }`}
                         >
                           {tempSprint?.id === s.id && (
                             <div className="w-2 h-2 rounded-full bg-blue-600" />

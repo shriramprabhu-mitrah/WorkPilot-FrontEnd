@@ -90,6 +90,7 @@ const PAGE_SIZE_CHILD = 4;
 export const useGetChildTasks = (projectId: string, userStoryId: string, enabled = true) => {
   const query = useInfiniteQuery({
     queryKey: [QUERY_KEYS.tasks, projectId, 'child', userStoryId],
+    staleTime: 0,
     queryFn: ({ pageParam = 1 }) =>
       taskService.getTasks(projectId, {
         page: pageParam as number,

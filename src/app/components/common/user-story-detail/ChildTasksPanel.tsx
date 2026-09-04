@@ -59,7 +59,7 @@ const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
   description: '',
   priority: task.priority
     ? ((task.priority.charAt(0).toUpperCase() +
-        task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+      task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
     : 'Medium',
   labels: [],
   dueDate: task.due_date ?? '',
@@ -70,11 +70,11 @@ const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
   subtasks: [],
   assigneeInitials: task.assignee_name
     ? task.assignee_name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     : '',
   assigneeColor: task.assignee?.color || '',
   reporter: '',
@@ -97,7 +97,7 @@ const DropdownPortal = ({
   onClose,
   children,
   width = 256,
-  estimatedHeight = 260,
+  estimatedHeight = 140,
 }: DropdownPortalProps) => {
   const portalRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
@@ -122,7 +122,12 @@ const DropdownPortal = ({
       if (left + width > viewportWidth - 8) {
         left = Math.max(8, viewportWidth - width - 8);
       }
-      const top = openUpward ? Math.max(8, rect.top - estimatedHeight - 4) : rect.bottom + 4;
+      const dropdownHeight =
+        portalRef.current?.getBoundingClientRect().height ?? estimatedHeight;
+
+      const top = openUpward
+        ? Math.max(8, rect.top - dropdownHeight - 4)
+        : rect.bottom + 4;
       setPosition({ top, left });
     };
     updatePosition();
@@ -346,22 +351,20 @@ export const ChildTasksPanel = ({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 min-w-0">
                         <span
-                          className={`shrink-0 font-medium hover:underline cursor-pointer ${
-                            task.is_final
-                              ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
-                              : 'text-blue-600 dark:text-blue-400'
-                          }`}
+                          className={`shrink-0 font-medium hover:underline cursor-pointer ${task.is_final
+                            ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
+                            : 'text-blue-600 dark:text-blue-400'
+                            }`}
                           onClick={() => setSelectedTask(mapToDrawerTask(task))}
                         >
                           {task.key}
                         </span>
                         <span
                           title={task.title}
-                          className={`max-w-[80px] truncate ${
-                            task.is_final
-                              ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
-                              : 'text-gray-900 dark:text-slate-100'
-                          }`}
+                          className={`max-w-[80px] truncate ${task.is_final
+                            ? 'line-through text-gray-400 dark:text-slate-500 opacity-60'
+                            : 'text-gray-900 dark:text-slate-100'
+                            }`}
                         >
                           {task.title}
                         </span>
@@ -391,11 +394,10 @@ export const ChildTasksPanel = ({
                             setChildAssigneeSearch('');
                           }
                         }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask
-                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
-                            : 'cursor-default'
-                        }`}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask
+                          ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                          : 'cursor-default'
+                          }`}
                       >
                         {task.assignee_id ? (
                           <AssigneeAvatar
@@ -472,10 +474,10 @@ export const ChildTasksPanel = ({
                                         prevTasks.map((t) =>
                                           t.id === task.id
                                             ? {
-                                                ...t,
-                                                assignee_id: m.user_id,
-                                                assignee_name: displayName,
-                                              }
+                                              ...t,
+                                              assignee_id: m.user_id,
+                                              assignee_name: displayName,
+                                            }
                                             : t
                                         )
                                       );
@@ -497,10 +499,10 @@ export const ChildTasksPanel = ({
                                           prevTasks.map((t) =>
                                             t.id === task.id
                                               ? {
-                                                  ...t,
-                                                  assignee_id: prev.id,
-                                                  assignee_name: prev.name,
-                                                }
+                                                ...t,
+                                                assignee_id: prev.id,
+                                                assignee_name: prev.name,
+                                              }
                                               : t
                                           )
                                         );
@@ -535,10 +537,10 @@ export const ChildTasksPanel = ({
                                       prevTasks.map((t) =>
                                         t.id === task.id
                                           ? {
-                                              ...t,
-                                              assignee_id: undefined,
-                                              assignee_name: undefined,
-                                            }
+                                            ...t,
+                                            assignee_id: undefined,
+                                            assignee_name: undefined,
+                                          }
                                           : t
                                       )
                                     );
@@ -611,9 +613,8 @@ export const ChildTasksPanel = ({
                                   setStatusAnchorEl(e.currentTarget);
                                 }
                               }}
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border ${
-                                !canEditTask ? 'cursor-default' : ''
-                              }`}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
+                                }`}
                               style={{
                                 color: currentStatus?.color || colors.colTodo,
                                 backgroundColor: currentStatus?.bg || colors.colTodoBg,
@@ -666,12 +667,12 @@ export const ChildTasksPanel = ({
                                             prev.map((t) =>
                                               t.id === task.id
                                                 ? {
-                                                    ...t,
-                                                    status: option.label,
-                                                    status_id: option.value,
-                                                    status_color: option.color,
+                                                  ...t,
+                                                  status: option.label,
+                                                  status_id: option.value,
+                                                  status_color: option.color,
                                                     is_final: option.is_final,
-                                                  }
+                                                }
                                                 : t
                                             )
                                           );
