@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import { ArrowLeft, Plus, Pencil, Trash2, Archive, Link2, Check } from 'lucide-react';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetUserStoryById, useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
+import { userStoryService } from '@/src/services/userstory';
 import { useTaskStoryRelationship } from '@/src/modules/tasks/hooks/useTaskStoryRelationship';
 import UserStoryDetailSkeleton from './userStoryDetailSkeleton';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
@@ -36,6 +38,27 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [memberSearch, setMemberSearch] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const params = useParams();
+  const orgSlug = params?.orgSlug as string;
+  const projectSlug = params?.projectSlug as string;
+
+  const handleTaskClick = (task: KanbanTask) => {
+    setSelectedTask(task);
+    const key = task.id || task.taskId || task.key;
+    if (typeof window !== 'undefined' && orgSlug && projectSlug && key) {
+      window.history.pushState(null, '', `/${orgSlug}/${projectSlug}/backlog/${key}`);
+    }
+  };
+
+  const handleCloseTaskDrawer = () => {
+    setSelectedTask(null);
+    const storyKey = userStory?.key || storyId;
+    if (typeof window !== 'undefined' && orgSlug && projectSlug && storyKey) {
+      window.history.pushState(null, '', `/${orgSlug}/${projectSlug}/backlog/${storyKey}`);
+    }
+  };
+
   const { canViewUserStories, canEditUserStory, canDeleteUserStory, canCreateTask } =
     usePermissions();
 
@@ -132,6 +155,76 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
     }
   };
 
+  const [isMovingToBacklog, setIsMovingToBacklog] = useState(false);
+
+  const handleMoveToBacklog = async () => {
+    if (!projectId || !storyId || !canEditUserStory || isMovingToBacklog) return;
+    try {
+      setIsMovingToBacklog(true);
+      await userStoryService.updateUserStory(projectId, storyId, {
+        sprint_id: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ['user-story', projectId, storyId] });
+      if (userStory?.key) {
+        queryClient.invalidateQueries({ queryKey: ['user-story', projectId, userStory.key] });
+      }
+      queryClient.invalidateQueries({ queryKey: ['user-story'] });
+      queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['user-stories'] });
+      queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
+      queryClient.invalidateQueries({ queryKey: ['sprints', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['sprints'] });
+      await refetchUserStory();
+      toast.success('User story moved to backlog');
+    } catch (error) {
+      toast.error('Failed to move user story to backlog');
+    } finally {
+      setIsMovingToBacklog(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const itemKey = userStory?.key || storyId;
+    if (!itemKey) return;
+
+    let url = '';
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.href;
+      if (currentUrl.includes(itemKey)) {
+        url = currentUrl;
+      } else {
+        const origin = window.location.origin;
+        const currentPath = window.location.pathname;
+        if (orgSlug && projectSlug) {
+          url = `${origin}/${orgSlug}/${projectSlug}/backlog/${itemKey}`;
+        } else {
+          url = `${origin}${currentPath}`;
+        }
+      }
+
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.opacity = '0';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+        setCopiedLink(true);
+        toast.success('Link copied to clipboard');
+        setTimeout(() => setCopiedLink(false), 2000);
+      } catch {
+        toast.error('Failed to copy link');
+      }
+    }
+  };
+
   if (isLoadingUserStory || isLoadingRelatedTasks) {
     return <UserStoryDetailSkeleton />;
   }
@@ -192,6 +285,26 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
               <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
                 {userStory.title}
               </h1>
+              {(userStory.key || storyId) && (
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-sm font-semibold text-purple-600 dark:text-purple-400">
+                    {userStory.key || storyId}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+                    title={copiedLink ? 'Copied!' : 'Copy link'}
+                    aria-label="Copy link"
+                  >
+                    {copiedLink ? (
+                      <Check size={14} className="text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Link2 size={14} />
+                    )}
+                  </button>
+                </div>
+              )}
               <span className="rounded-full bg-purple-50 dark:bg-purple-900/30 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400">
                 User Story
               </span>
@@ -205,6 +318,24 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           </div>
 
           <div className="flex items-center gap-2">
+            {canEditUserStory && (
+              <WpButton
+                variant="secondary"
+                size="sm"
+                onClick={handleMoveToBacklog}
+                disabled={isMovingToBacklog || !userStory.sprint_id}
+                leftIcon={<Archive size={14} />}
+                title={!userStory.sprint_id ? 'User story is already in the backlog' : 'Move to Backlog'}
+                className={!userStory.sprint_id ? 'opacity-60 cursor-not-allowed' : ''}
+              >
+                {isMovingToBacklog
+                  ? 'Moving...'
+                  : !userStory.sprint_id
+                    ? 'In Backlog'
+                    : 'Move to Backlog'}
+              </WpButton>
+            )}
+
             {canEditUserStory && (
               <WpButton
                 variant="secondary"
@@ -317,7 +448,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
           {tasks.map((task) => (
             <div
               key={task.id}
-              onClick={() => setSelectedTask(mapTaskToDrawerTask(task))}
+              onClick={() => handleTaskClick(mapTaskToDrawerTask(task))}
               className="group cursor-pointer rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-4 transition-all hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm"
             >
               <div className="flex items-center justify-between gap-6">
@@ -421,7 +552,11 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
 
       {/* Task Detail Drawer */}
       {selectedTask && (
-        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskDetailDrawer
+          task={selectedTask}
+          onClose={handleCloseTaskDrawer}
+          onOpenUserStory={handleCloseTaskDrawer}
+        />
       )}
 
       {/* Edit User Story Modal */}

@@ -408,13 +408,24 @@ const SprintDetail = () => {
       )}
 
       {selectedTask && (
-        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskDetailDrawer
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onOpenUserStory={(story) => {
+            setSelectedTask(null);
+            setSelectedUserStory(story);
+          }}
+        />
       )}
 
       {selectedUserStory && (
         <UserStoryDetailDrawer
           userStory={selectedUserStory}
           onClose={() => setSelectedUserStory(null)}
+          onOpenTask={(task) => {
+            setSelectedUserStory(null);
+            setSelectedTask(task);
+          }}
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
           }}

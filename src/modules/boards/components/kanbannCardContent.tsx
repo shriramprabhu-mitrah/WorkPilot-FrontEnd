@@ -58,7 +58,12 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
         </div>
         <div className="flex items-center gap-2">
           <PriorityBadge priority={task.priority} />
-          <AssigneeAvatar initials={task.assigneeInitials} color={task.assigneeColor} size="sm" />
+          <AssigneeAvatar
+            initials={task.assigneeInitials || '?'}
+            color={task.assigneeColor || 'gray'}
+            size="sm"
+            assigneeName={String(task?.assignee)}
+          />
         </div>
       </div>
 

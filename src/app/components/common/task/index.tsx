@@ -107,14 +107,16 @@ interface AvatarProps {
   initials: string;
   color: string;
   size?: 'sm' | 'md' | 'lg' | 'xs';
+  assigneeName?: string;
 }
 
-export const AssigneeAvatar = ({ initials, color, size = 'sm' }: AvatarProps) => {
+export const AssigneeAvatar = ({ initials, color, size = 'sm', assigneeName }: AvatarProps) => {
   const dim = size === 'md' ? 'w-7 h-7 text-xs' : 'w-6 h-6 text-[11px]';
   return (
     <div
       className={`${dim} rounded-full flex items-center justify-center text-white font-bold shrink-0`}
       style={{ backgroundColor: color }}
+      title={initials === '?' ? 'Unassigned' : assigneeName}
     >
       {initials}
     </div>

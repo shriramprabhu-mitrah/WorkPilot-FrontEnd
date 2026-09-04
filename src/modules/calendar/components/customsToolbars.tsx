@@ -4,11 +4,13 @@ import { CalendarEvent } from '../types';
 import { WpButton } from '@/src/app/components/common/button';
 import MonthYearPicker from './monthhYearrPickerr';
 
-interface CustomToolbarProps extends ToolbarProps<CalendarEvent> {
+export type CalendarDisplayView = View | 'timeline';
+
+interface CustomToolbarProps extends Omit<ToolbarProps<CalendarEvent>, 'onViewChange' | 'view'> {
   currentDate: Date;
   onDateChange: (date: Date) => void;
-  currentView: View;
-  onViewChange: (view: View) => void;
+  currentView: CalendarDisplayView;
+  onViewChange: (view: CalendarDisplayView) => void;
 }
 
 const CustomToolbar = ({
@@ -27,6 +29,10 @@ const CustomToolbar = ({
           <p className="mt-3 text-lg font-semibold text-gray-900 dark:text-slate-100">{label}</p>
         ) : currentView === 'week' ? (
           <p className="mt-2 text-lg font-semibold text-gray-900 dark:text-slate-100">{label}</p>
+        ) : currentView === 'timeline' ? (
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            Roadmap & timeline of all sprints in this project
+          </p>
         ) : (
           <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
             View and manage your project schedule
@@ -62,12 +68,13 @@ const CustomToolbar = ({
 
         <select
           value={currentView}
-          onChange={(e) => onViewChange(e.target.value as View)}
-          className="h-9 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 px-2 sm:px-3 text-sm shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 outline-none"
+          onChange={(e) => onViewChange(e.target.value as CalendarDisplayView)}
+          className="h-9 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 px-2 sm:px-3 text-sm font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 outline-none"
         >
           <option value="month">Month</option>
           <option value="week">Week</option>
           <option value="day">Day</option>
+          <option value="timeline">Sprint Timeline</option>
         </select>
       </div>
     </div>

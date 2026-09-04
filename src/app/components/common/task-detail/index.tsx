@@ -14,7 +14,15 @@ import {
   Copy,
   AlertCircle,
   Bug,
+  Archive,
+  Bookmark,
+  ChevronRight,
+  Link2,
+  BookOpenText,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import type { KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
@@ -48,15 +56,22 @@ import {
   useGetTaskById,
 } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
-import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
+import { useGetUserStories, useGetUserStoryById } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector } from '@/src/store';
+import { UserStoryResponse } from '@/src/types/userstories';
+
+const UserStoryDetailDrawer = dynamic(
+  () => import('../user-story-detail').then((mod) => mod.UserStoryDetailDrawer),
+  { ssr: false }
+);
 
 export interface TaskDetailDrawerProps {
   task: KanbanTask;
   onClose: () => void;
   onUpdate?: (updated: Partial<KanbanTask>) => void;
   onDelete?: () => void;
+  onOpenUserStory?: (userStory: UserStoryResponse) => void;
 }
 
 const useResizable = (initial: number, min: number, max: number) => {
@@ -91,11 +106,86 @@ const useResizable = (initial: number, min: number, max: number) => {
   return { width, onMouseDown };
 };
 
-export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDetailDrawerProps) => {
+const getInitials = (name: string) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+const AVATAR_COLORS = [
+  colors.avatarBlue,
+  colors.avatarGreen,
+  colors.avatarPink,
+  colors.avatarAmber,
+  colors.avatarIndigo,
+];
+
+const getMemberColor = (userId: string) =>
+  AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
+
+export const TaskDetailDrawer = ({
+  task,
+  onClose,
+  onUpdate,
+  onDelete,
+  onOpenUserStory,
+}: TaskDetailDrawerProps) => {
+  const queryClient = useQueryClient();
+  const params = useParams();
+  const orgSlug = (params?.orgSlug as string) || '';
+  const projectSlug = (params?.projectSlug as string) || '';
   const { canEditTask, canDeleteTask, canCreateTask, canViewUserStories } = usePermissions();
   const storeProjectId = useAppSelector((state) => state.project.selectedProject?.id) || '';
   const effectiveProjectId = task.projectId || storeProjectId;
   const effectiveTaskId = task.key || task.id;
+  const [isMovingToBacklog, setIsMovingToBacklog] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = useCallback(async () => {
+    const itemKey = effectiveTaskId || task.key || task.id;
+    if (!itemKey) return;
+
+    let url = '';
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.href;
+      if (currentUrl.includes(itemKey)) {
+        url = currentUrl;
+      } else {
+        const origin = window.location.origin;
+        const currentPath = window.location.pathname;
+        if (orgSlug && projectSlug) {
+          const section = currentPath.includes('/boards') ? 'boards' : 'backlog';
+          url = `${origin}/${orgSlug}/${projectSlug}/${section}/${itemKey}`;
+        } else {
+          url = `${origin}${currentPath}`;
+        }
+      }
+
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.opacity = '0';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+        setCopiedLink(true);
+        toast.success('Link copied to clipboard');
+        setTimeout(() => setCopiedLink(false), 2000);
+      } catch {
+        toast.error('Failed to copy link');
+      }
+    }
+  }, [effectiveTaskId, task.key, task.id, orgSlug, projectSlug]);
 
   const {
     task: fetchedTask,
@@ -107,14 +197,14 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
   const apiErrorData = (
     error as
-    | {
-      status?: number;
-      data?: {
-        error?: { code?: string; status_code?: number; message?: string };
-        message?: string;
-      };
-    }
-    | undefined
+      | {
+          status?: number;
+          data?: {
+            error?: { code?: string; status_code?: number; message?: string };
+            message?: string;
+          };
+        }
+      | undefined
   )?.data;
 
   const isNotFound =
@@ -150,6 +240,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     actualHours: 0,
 
     sprint: task.sprint ?? '',
+    sprint_id: task.sprintId ?? task.sprint_id ?? '',
     parent: task.parent ?? '',
     assignee: task.assigneeInitials,
     assigneeColor: task.assigneeColor,
@@ -174,28 +265,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       setActualMinutesInput(String(Math.round((actual % 1) * 60)));
 
       const apiDescription = fetchedTask.description ?? '';
-      const assigneeName = fetchedTask.assignee_name ?? '';
-      const reporterId = fetchedTask.reporter_id ?? '';
-      const reporterName = fetchedTask.reporter_name ?? '';
-      const reporterInitials = reporterName
-        ? reporterName
-          .split(' ')
-          .filter(Boolean)
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-        : '';
+      const assigneeName = fetchedTask.assignee?.name || fetchedTask.assignee_name || '';
+      const initials = assigneeName ? getInitials(assigneeName) : '';
+
+      const reporterName = fetchedTask.reporter?.name || fetchedTask.reporter_name || '';
+      const reporterInitials = reporterName ? getInitials(reporterName) : '';
       const reporterColor = fetchedTask.reporter?.color ?? '';
-      const initials = assigneeName
-        ? assigneeName
-          .split(' ')
-          .filter(Boolean)
-          .map((n: string) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-        : '';
+      const reporterId = fetchedTask.reporter_id ?? '';
 
       setTaskData({
         title: fetchedTask.title || '',
@@ -205,7 +281,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         description: apiDescription,
         priority: fetchedTask.priority
           ? ((fetchedTask.priority.charAt(0).toUpperCase() +
-            fetchedTask.priority.slice(1).toLowerCase()) as Priority)
+              fetchedTask.priority.slice(1).toLowerCase()) as Priority)
           : 'Medium',
         labels: task.labels || [],
         dueDate: fetchedTask.due_date ? fetchedTask.due_date.split('T')[0] : '',
@@ -216,6 +292,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         estimatedHours: estimated,
         actualHours: actual,
         sprint: fetchedTask.sprint_name ?? '',
+        sprint_id: fetchedTask.sprint_id ?? '',
         parent: task.parent ?? '',
         assignee: initials,
         assigneeColor: fetchedTask.assignee?.color ?? '',
@@ -291,6 +368,57 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     },
     !!taskData.project_id && canViewUserStories
   );
+
+  const parentStoryId =
+    taskData.user_story_id || fetchedTask?.user_story_id || task.user_story_id || '';
+
+  const { userStory: fetchedParentStory } = useGetUserStoryById(
+    effectiveProjectId,
+    parentStoryId,
+    !!effectiveProjectId && !!parentStoryId && canViewUserStories
+  );
+
+  const matchedParentStory = userStories?.find(
+    (s) => s.id === parentStoryId || s.key === parentStoryId
+  );
+  const parentStory = fetchedParentStory || matchedParentStory;
+  const parentStoryKey = parentStory?.key;
+  const parentStoryTitle =
+    parentStory?.title ||
+    taskData.user_story_title ||
+    fetchedTask?.user_story_title ||
+    task.user_story_title ||
+    '';
+
+  const [activeParentStoryDrawer, setActiveParentStoryDrawer] = useState<UserStoryResponse | null>(
+    null
+  );
+
+  const handleParentStoryClick = useCallback(() => {
+    if (!parentStoryId) return;
+    const storyToOpen: UserStoryResponse =
+      parentStory ||
+      ({
+        id: parentStoryId,
+        key: parentStoryKey || parentStoryId,
+        title: parentStoryTitle || 'User Story',
+        project_id: effectiveProjectId,
+      } as UserStoryResponse);
+
+    if (onOpenUserStory) {
+      onOpenUserStory(storyToOpen);
+    } else {
+      setActiveParentStoryDrawer(storyToOpen);
+    }
+  }, [
+    parentStoryId,
+    parentStory,
+    parentStoryKey,
+    parentStoryTitle,
+    effectiveProjectId,
+    onOpenUserStory,
+  ]);
+
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const reporterMenuRef = useRef<HTMLDivElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
@@ -427,9 +555,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         }
 
         if (patch.dueDate !== undefined) {
-          payload.due_date = patch.dueDate
-            ? `${patch.dueDate}T00:00:00Z`
-            : null;
+          payload.due_date = patch.dueDate ? `${patch.dueDate}T00:00:00Z` : null;
         }
         if (patch.startDate !== undefined) {
           payload.start_date = patch.startDate || null;
@@ -479,24 +605,101 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
     },
     [task.projectId, task.taskId, taskData, onUpdate]
   );
-  const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
 
-  const AVATAR_COLORS = [
-    colors.avatarBlue,
-    colors.avatarGreen,
-    colors.avatarPink,
-    colors.avatarAmber,
-    colors.avatarIndigo,
-  ];
+  const currentSprintId =
+    fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id || '';
+  const currentSprintName = taskData.sprint || fetchedTask?.sprint_name || task.sprint || '';
+  const currentUserStoryId =
+    taskData.user_story_id || fetchedTask?.user_story_id || task.user_story_id || '';
 
-  const getMemberColor = (userId: string) =>
-    AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
+  const isAlreadyInBacklog = !currentSprintId && !currentSprintName && !currentUserStoryId;
+
+  const handleMoveToBacklog = useCallback(async () => {
+    if (isMovingToBacklog || isAlreadyInBacklog || !canEditTask) return;
+
+    const targetProjectId = fetchedTask?.project_id || task.projectId || effectiveProjectId;
+    const targetTaskId = fetchedTask?.id || task.taskId || task.id;
+
+    if (!targetProjectId || !targetTaskId) {
+      toast.error('Project ID or Task ID is missing');
+      return;
+    }
+
+    const previousSprint = taskData.sprint;
+    const previousSprintId = taskData.sprint_id;
+    const previousStoryId = taskData.user_story_id;
+    const previousStoryTitle = taskData.user_story_title;
+
+    try {
+      setIsMovingToBacklog(true);
+
+      setTaskData((prev) => ({
+        ...prev,
+        sprint: '',
+        sprint_id: '',
+        user_story_id: '',
+        user_story_title: '',
+      }));
+
+      await taskService.updateTask(targetProjectId, targetTaskId, {
+        sprint_id: null,
+        user_story_id: null,
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['task', targetProjectId, targetTaskId],
+      });
+      if (task.key) {
+        await queryClient.invalidateQueries({
+          queryKey: ['task', targetProjectId, task.key],
+        });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['task'] });
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ['sprint-orphan-tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
+      await queryClient.invalidateQueries({ queryKey: ['user-stories'] });
+      await queryClient.invalidateQueries({ queryKey: ['sprints'] });
+
+      onUpdate?.({
+        sprint: '',
+        sprintId: '',
+        user_story_id: undefined,
+        user_story_title: undefined,
+      } as Partial<KanbanTask>);
+
+      toast.success('Task moved to backlog');
+    } catch (error) {
+      logger.log('Failed to move task to backlog', error);
+      toast.error('Failed to move task to backlog');
+      setTaskData((prev) => ({
+        ...prev,
+        sprint: previousSprint,
+        sprint_id: previousSprintId,
+        user_story_id: previousStoryId,
+        user_story_title: previousStoryTitle,
+      }));
+    } finally {
+      setIsMovingToBacklog(false);
+    }
+  }, [
+    isMovingToBacklog,
+    isAlreadyInBacklog,
+    canEditTask,
+    fetchedTask?.project_id,
+    fetchedTask?.id,
+    task.projectId,
+    task.taskId,
+    task.id,
+    task.key,
+    effectiveProjectId,
+    taskData.sprint,
+    taskData.sprint_id,
+    taskData.user_story_id,
+    taskData.user_story_title,
+    queryClient,
+    onUpdate,
+  ]);
 
   const [uiState, setUiState] = useState({
     showStatusMenu: false,
@@ -566,7 +769,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) { }
+    } catch (error) {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -622,34 +825,111 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative z-20 flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-6 h-6 rounded-lg ${isError ? 'bg-red-500' : 'bg-blue-600'
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-3 flex-wrap sm:flex-nowrap">
+            {/* Parent User Story Breadcrumb (Jira-style) */}
+            {!isError && parentStoryId && (
+              <div className="flex items-center gap-1.5 min-w-0 max-w-[240px] sm:max-w-[340px] shrink-0">
+                <button
+                  type="button"
+                  onClick={handleParentStoryClick}
+                  className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/50 transition-all cursor-pointer min-w-0 hover:shadow-xs active:scale-95"
+                  title={
+                    parentStoryTitle
+                      ? `Parent User Story: ${parentStoryKey ? parentStoryKey + ' - ' : ''}${parentStoryTitle}`
+                      : 'Open parent user story'
+                  }
+                >
+                  <BookOpenText size={12} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="truncate">
+                    {parentStoryKey}
+                    {parentStoryTitle ? `: ${parentStoryTitle}` : ''}
+                  </span>
+                </button>
+
+                <ChevronRight size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
+              </div>
+            )}
+
+            {/* Current Task Identifier */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`w-6 h-6 rounded-lg ${
+                  isError ? 'bg-red-500' : 'bg-blue-600'
                 } flex items-center justify-center shrink-0`}
-            >
-              <FileText size={13} className="text-white" />
-            </span>
-            <span
-              className={`text-base font-bold ${isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
-                }`}
-            >
-              {effectiveTaskId || task.id}
-            </span>
-            {isError && isNotFound && (
-              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                Not Found
+              >
+                <FileText size={13} className="text-white" />
               </span>
-            )}
-            {!isError && task.sprint && (
-              <>
-                <span className="text-gray-300 dark:text-slate-600">/</span>
-                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">
-                  {task.sprint}
+              <span
+                className={`text-base font-bold truncate ${
+                  isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
+                }`}
+              >
+                {effectiveTaskId || task.id}
+              </span>
+              {!isError && (
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  title={copiedLink ? 'Copied!' : 'Copy link'}
+                  aria-label="Copy link"
+                >
+                  {copiedLink ? (
+                    <Check size={14} className="text-green-600 dark:text-green-400" />
+                  ) : (
+                    <Link2 size={14} />
+                  )}
+                </button>
+              )}
+              {isError && isNotFound && (
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 shrink-0">
+                  Not Found
                 </span>
-              </>
-            )}
+              )}
+              {!isError && (taskData.sprint || task.sprint) && (
+                <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                  <span className="text-gray-300 dark:text-slate-600">/</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-slate-400 truncate max-w-[140px]">
+                    {taskData.sprint || task.sprint}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            {/* Move to Backlog Button */}
+            {!isError && canEditTask && (
+              <button
+                type="button"
+                onClick={handleMoveToBacklog}
+                disabled={isMovingToBacklog || isAlreadyInBacklog}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
+                  isAlreadyInBacklog
+                    ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 cursor-not-allowed'
+                    : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 shadow-sm cursor-pointer active:scale-95'
+                }`}
+                title={
+                  isAlreadyInBacklog ? 'Task is already in the backlog' : 'Move task to backlog'
+                }
+              >
+                <Archive
+                  size={13}
+                  className={
+                    isAlreadyInBacklog
+                      ? 'text-gray-400 dark:text-slate-500'
+                      : 'text-gray-600 dark:text-slate-300'
+                  }
+                />
+                <span>
+                  {isMovingToBacklog
+                    ? 'Moving...'
+                    : isAlreadyInBacklog
+                      ? 'In Backlog'
+                      : 'Move to Backlog'}
+                </span>
+              </button>
+            )}
+
             {/* Three-dot menu */}
             {!isError && (canEditTask || canCreateTask || canDeleteTask) && (
               <div className="relative" ref={actionMenuRef}>
@@ -661,7 +941,20 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </button>
 
                 {showActionMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
+                    {/* {canEditTask && !isAlreadyInBacklog && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowActionMenu(false);
+                          handleMoveToBacklog();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <Archive size={14} />
+                        Move to Backlog
+                      </button>
+                    )} */}
                     {canEditTask && (
                       <button
                         type="button"
@@ -747,7 +1040,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   <span className="font-semibold text-gray-800 dark:text-slate-200">
                     &quot;{effectiveTaskId || task.id}&quot;
                   </span>{' '}
-                  was not found in this project. It may have been deleted, moved, or the URL might be invalid.
+                  was not found in this project. It may have been deleted, moved, or the URL might
+                  be invalid.
                 </>
               ) : (
                 errorMessage
@@ -783,19 +1077,21 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
               <button
                 onClick={() => setMobileTab('content')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 dark:text-slate-400'
-                  }`}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === 'content'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 dark:text-slate-400'
+                }`}
               >
                 Content
               </button>
               <button
                 onClick={() => setMobileTab('details')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 dark:text-slate-400'
-                  }`}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === 'details'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 dark:text-slate-400'
+                }`}
               >
                 Details
               </button>
@@ -811,8 +1107,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                 </div>
               )}
               <div
-                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
-                  }`}
+                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+                  mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                }`}
               >
                 {isEditingTask ? (
                   <div className="mb-5">
@@ -1007,7 +1304,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                           }}
                         />
                       ) : (
-                        <span className="text-gray-400 dark:text-slate-500">Add a description…</span>
+                        <span className="text-gray-400 dark:text-slate-500">
+                          Add a description…
+                        </span>
                       )}
                     </div>
                   )}
@@ -1130,8 +1429,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
               </div>
 
               <div
-                className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content' ? 'hidden sm:block sm:shrink-0' : 'block w-full sm:shrink-0'
-                  }`}
+                className={`overflow-y-auto bg-gray-50/60 ${
+                  mobileTab === 'content'
+                    ? 'hidden sm:block sm:shrink-0'
+                    : 'block w-full sm:shrink-0'
+                }`}
                 style={{ width: isMobile ? undefined : rightWidth }}
               >
                 <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
@@ -1153,8 +1455,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                           showStatusMenu: !prev.showStatusMenu,
                         }));
                       }}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
-                        }`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
+                        !canEditTask ? 'cursor-default' : ''
+                      }`}
                       style={{
                         color: selectedStatus?.color ?? '#6B7280',
                         backgroundColor: selectedStatus ? `${selectedStatus.color}15` : '#F3F4F6',
@@ -1214,7 +1517,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                                 <span className="flex-1 truncate">{status.label}</span>
 
-                                {isSelected && <Check size={14} className="text-blue-600 shrink-0" />}
+                                {isSelected && (
+                                  <Check size={14} className="text-blue-600 shrink-0" />
+                                )}
                               </button>
                             );
                           })
@@ -1234,8 +1539,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowAssigneeMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                          }`}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          canEditTask
+                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                            : 'cursor-default'
+                        }`}
                       >
                         {taskData.assigneeId ? (
                           <AssigneeAvatar
@@ -1279,8 +1587,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                             members?.map((m) => {
                               const name = m.full_name ?? m.user?.name ?? '';
                               const displayName =
-                                name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
-                              const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
+                                name ||
+                                m.user?.email?.split('@')[0] ||
+                                m.user?.email ||
+                                'Unknown User';
+                              const initials = getInitials(
+                                name || m.user?.email?.split('@')[0] || 'U'
+                              );
                               const color = getMemberColor(m.user_id);
                               const isSelected = m.user_id === taskData.assigneeId;
 
@@ -1389,15 +1702,15 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                     </div>
                     {taskData.assigneeName !==
                       (currentUser?.name || currentUser?.username || currentUser?.email) && (
-                        <WpButton
-                          variant="ghost"
-                          onClick={handleAssignToMe}
-                          disabled={isAssigning}
-                          className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
-                        >
-                          {isAssigning ? 'Assigning...' : 'Assign to me'}
-                        </WpButton>
-                      )}
+                      <WpButton
+                        variant="ghost"
+                        onClick={handleAssignToMe}
+                        disabled={isAssigning}
+                        className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                      >
+                        {isAssigning ? 'Assigning...' : 'Assign to me'}
+                      </WpButton>
+                    )}
                   </DetailRow>
 
                   <DetailRow label="Reporter">
@@ -1405,12 +1718,17 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowReporterMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask ? 'hover:bg-gray-100 dark:hover:bg-slate-700' : 'cursor-default'
-                          }`}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          canEditTask
+                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                            : 'cursor-default'
+                        }`}
                       >
                         {taskData.reporterId ? (
                           <AssigneeAvatar
-                            initials={taskData.reporterInitials || getInitials(taskData.reporterName)}
+                            initials={
+                              taskData.reporterInitials || getInitials(taskData.reporterName)
+                            }
                             color={taskData.reporterColor || colors.avatarIndigo}
                             size="sm"
                           />
@@ -1457,8 +1775,13 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                             reporterMembers?.map((m) => {
                               const name = m.full_name ?? m.user?.name ?? '';
                               const displayName =
-                                name || m.user?.email?.split('@')[0] || m.user?.email || 'Unknown User';
-                              const initials = getInitials(name || m.user?.email?.split('@')[0] || 'U');
+                                name ||
+                                m.user?.email?.split('@')[0] ||
+                                m.user?.email ||
+                                'Unknown User';
+                              const initials = getInitials(
+                                name || m.user?.email?.split('@')[0] || 'U'
+                              );
                               const color = getMemberColor(m.user_id);
                               const isSelected = m.user_id === taskData.reporterId;
                               return (
@@ -1565,9 +1888,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                             <Bug size={14} className="text-red-500 shrink-0" />
                           )}
 
-                          {taskTypeOptions.find(
-                            (option) => option.value === taskData.taskType
-                          )?.label || taskData.taskType || '—'}
+                          {taskTypeOptions.find((option) => option.value === taskData.taskType)
+                            ?.label ||
+                            taskData.taskType ||
+                            '—'}
                         </span>
 
                         <ChevronDown size={14} className="text-gray-400" />
@@ -1627,10 +1951,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
 
                           setShowUserStoryMenu((v) => !v);
                         }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${isUpdatingUserStory || !canEditTask
-                          ? 'opacity-60 cursor-not-allowed'
-                          : 'hover:bg-gray-100'
-                          }`}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          isUpdatingUserStory || !canEditTask
+                            ? 'opacity-60 cursor-not-allowed'
+                            : 'hover:bg-gray-100'
+                        }`}
                       >
                         <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                           {taskData.user_story_title || 'No user story'}
@@ -1682,7 +2007,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                                       return;
                                     }
 
-                                    const previousTitle = taskData.user_story_title || 'No user story';
+                                    const previousTitle =
+                                      taskData.user_story_title || 'No user story';
 
                                     try {
                                       setIsUpdatingUserStory(true);
@@ -1706,10 +2032,11 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                                       setIsUpdatingUserStory(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${isUpdatingUserStory
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : 'hover:bg-gray-50'
-                                    }`}
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                                    isUpdatingUserStory
+                                      ? 'opacity-50 cursor-not-allowed'
+                                      : 'hover:bg-gray-50'
+                                  }`}
                                 >
                                   <span className="truncate">{story.title}</span>
 
@@ -1987,6 +2314,12 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             setShowStatusModal(false);
             setSelecteddStatus(null);
           }}
+        />
+      )}
+      {activeParentStoryDrawer && (
+        <UserStoryDetailDrawer
+          userStory={activeParentStoryDrawer}
+          onClose={() => setActiveParentStoryDrawer(null)}
         />
       )}
     </div>

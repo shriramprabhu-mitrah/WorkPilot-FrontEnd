@@ -14,7 +14,11 @@ import {
   CornerDownRight,
   AlertCircle,
   AlertTriangle,
+  Archive,
+  Link2,
+  BookOpenText,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import type { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { AssigneeAvatar } from '../task';
@@ -75,9 +79,10 @@ import { RichContentViewer } from '../rich-content-viewer';
 export interface UserStoryDetailDrawerProps {
   userStory: UserStoryResponse;
   onClose: () => void;
-  onUpdate?: () => void;
+  onUpdate?: (updatedStory?: Partial<UserStoryResponse>) => void;
   onCreateTask?: () => void;
   onDelete?: () => void;
+  onOpenTask?: (task: KanbanTask) => void;
 }
 
 type ActivityTab = 'all' | 'comments' | 'history' | 'childTickets';
@@ -167,6 +172,7 @@ export const UserStoryDetailDrawer = ({
   onUpdate,
   onCreateTask,
   onDelete,
+  onOpenTask,
 }: UserStoryDetailDrawerProps) => {
   const {
     canEditUserStory,
@@ -186,6 +192,54 @@ export const UserStoryDetailDrawer = ({
   const effectiveProjectId = initialUserStory.project_id || storeProjectId;
   const effectiveStoryId = initialUserStory.key || initialUserStory.id;
 
+  const params = useParams();
+  const orgSlug = params?.orgSlug as string;
+  const projectSlug = params?.projectSlug as string;
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = useCallback(async () => {
+    const itemKey = effectiveStoryId || initialUserStory.key || initialUserStory.id;
+    if (!itemKey) return;
+
+    let url = '';
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.href;
+      if (currentUrl.includes(itemKey)) {
+        url = currentUrl;
+      } else {
+        const origin = window.location.origin;
+        const currentPath = window.location.pathname;
+        if (orgSlug && projectSlug) {
+          const section = currentPath.includes('/boards') ? 'boards' : 'backlog';
+          url = `${origin}/${orgSlug}/${projectSlug}/${section}/${itemKey}`;
+        } else {
+          url = `${origin}${currentPath}`;
+        }
+      }
+
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.opacity = '0';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+        setCopiedLink(true);
+        toast.success('Link copied to clipboard');
+        setTimeout(() => setCopiedLink(false), 2000);
+      } catch {
+        toast.error('Failed to copy link');
+      }
+    }
+  }, [effectiveStoryId, initialUserStory.key, initialUserStory.id, orgSlug, projectSlug]);
+
   // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
   const {
     userStory: fetchedUserStory,
@@ -197,14 +251,14 @@ export const UserStoryDetailDrawer = ({
 
   const apiErrorData = (
     storyError as
-    | {
-      status?: number;
-      data?: {
-        error?: { code?: string; status_code?: number; message?: string };
-        message?: string;
-      };
-    }
-    | undefined
+      | {
+          status?: number;
+          data?: {
+            error?: { code?: string; status_code?: number; message?: string };
+            message?: string;
+          };
+        }
+      | undefined
   )?.data;
 
   const isNotFound =
@@ -262,7 +316,7 @@ export const UserStoryDetailDrawer = ({
 
     const priority = story.priority
       ? ((story.priority.charAt(0).toUpperCase() +
-        story.priority.slice(1).toLowerCase()) as Priority)
+          story.priority.slice(1).toLowerCase()) as Priority)
       : ('Medium' as Priority);
 
     const sprintName = story.sprint_id ? (story.sprint_name ?? '') : '';
@@ -296,11 +350,11 @@ export const UserStoryDetailDrawer = ({
 
     const assigneeInitials = assigneeName
       ? assigneeName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     const reporterName =
@@ -311,11 +365,11 @@ export const UserStoryDetailDrawer = ({
 
     const reporterInitials = reporterName
       ? reporterName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
     return {
@@ -414,7 +468,7 @@ export const UserStoryDetailDrawer = ({
     currentUserStory.id,
     { page: 1, page_size: 50 },
     !!currentUserStory.project_id && !!currentUserStory.id && canViewComments
-  );  
+  );
 
   // Comment attachment hooks
   const { deleteCommentAttachmentAsync } = useDeleteUserStoryCommentAttachment(
@@ -490,7 +544,7 @@ export const UserStoryDetailDrawer = ({
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
   const childAssigneeMenuRef = useRef<HTMLDivElement>(null);
-  const { } = useGetProjectMembers(
+  const {} = useGetProjectMembers(
     currentUserStory.project_id ?? '',
     {
       page: 1,
@@ -619,6 +673,73 @@ export const UserStoryDetailDrawer = ({
     },
     [currentUserStory.project_id, currentUserStory.id, editableFields, queryClient]
   );
+
+  const isAlreadyInBacklog = !editableFields.sprintId && !currentUserStory.sprint_id;
+
+  const handleMoveToBacklog = useCallback(async () => {
+    if (isSaving || isAlreadyInBacklog || !canEditUserStory) return;
+
+    const projectId = currentUserStory.project_id;
+    const storyId = currentUserStory.id;
+
+    if (!projectId || !storyId) {
+      toast.error('Project ID or Story ID is missing');
+      return;
+    }
+
+    const previousFields = { ...editableFields };
+
+    try {
+      setIsSaving(true);
+      setSelectedSprintName('');
+      setEditableFields((prev) => ({
+        ...prev,
+        sprintId: '',
+        sprintName: '',
+      }));
+
+      await userStoryService.updateUserStory(projectId, storyId, {
+        sprint_id: null,
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ['user-story', projectId, storyId],
+      });
+      if (currentUserStory.key) {
+        await queryClient.invalidateQueries({
+          queryKey: ['user-story', projectId, currentUserStory.key],
+        });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['user-story'] });
+      await queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['user-stories'] });
+      await queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
+      await queryClient.invalidateQueries({ queryKey: ['sprints', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['sprints'] });
+
+      onUpdate?.({
+        ...currentUserStory,
+        sprint_id: undefined,
+        sprint_name: undefined,
+      });
+
+      toast.success('User story moved to backlog');
+    } catch (error) {
+      logger.log('Failed to move user story to backlog', error);
+      toast.error('Failed to move user story to backlog');
+      setEditableFields(previousFields);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    isSaving,
+    isAlreadyInBacklog,
+    canEditUserStory,
+    currentUserStory,
+    editableFields,
+    queryClient,
+    onUpdate,
+  ]);
   const handleAssignToMe = () => {
     if (!currentUser?.userid) {
       toast.error('Unable to determine current user');
@@ -888,7 +1009,6 @@ export const UserStoryDetailDrawer = ({
   };
 
   const totalTasks = currentUserStory.total_tasks ?? 0;
-  
 
   const tabs: Array<{ key: ActivityTab; label: string }> = [
     ...(canViewComments ? [{ key: 'comments' as ActivityTab, label: 'Comments' }] : []),
@@ -991,7 +1111,7 @@ export const UserStoryDetailDrawer = ({
                   isStoryError ? 'bg-red-500' : 'bg-blue-600'
                 } flex items-center justify-center shrink-0`}
               >
-                <FileText size={13} className="text-white" />
+                <BookOpenText size={13} className="text-white" />
               </span>
               <span
                 className={`text-base font-bold ${
@@ -1002,13 +1122,71 @@ export const UserStoryDetailDrawer = ({
               >
                 {effectiveStoryId || 'User Story'}
               </span>
+              {!isStoryError && (
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  title={copiedLink ? 'Copied!' : 'Copy link'}
+                  aria-label="Copy link"
+                >
+                  {copiedLink ? (
+                    <Check size={14} className="text-green-600 dark:text-green-400" />
+                  ) : (
+                    <Link2 size={14} />
+                  )}
+                </button>
+              )}
               {isStoryError && isNotFound && (
                 <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                   Not Found
                 </span>
               )}
+              {!isStoryError && (editableFields.sprintName || userStoryData.sprintName) && (
+                <>
+                  <span className="text-gray-300 dark:text-slate-600">/</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-slate-400">
+                    {editableFields.sprintName || userStoryData.sprintName}
+                  </span>
+                </>
+              )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              {/* Move to Backlog Button */}
+              {!isStoryError && canEditUserStory && (
+                <button
+                  type="button"
+                  onClick={handleMoveToBacklog}
+                  disabled={isSaving || isAlreadyInBacklog}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
+                    isAlreadyInBacklog
+                      ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 cursor-not-allowed'
+                      : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 shadow-sm cursor-pointer active:scale-95'
+                  }`}
+                  title={
+                    isAlreadyInBacklog
+                      ? 'User story is already in the backlog'
+                      : 'Move user story to backlog'
+                  }
+                >
+                  <Archive
+                    size={13}
+                    className={
+                      isAlreadyInBacklog
+                        ? 'text-gray-400 dark:text-slate-500'
+                        : 'text-gray-600 dark:text-slate-300'
+                    }
+                  />
+                  <span>
+                    {isSaving && !isAlreadyInBacklog
+                      ? 'Moving...'
+                      : isAlreadyInBacklog
+                        ? 'In Backlog'
+                        : 'Move to Backlog'}
+                  </span>
+                </button>
+              )}
+
               {!isStoryError && (canEditUserStory || canDeleteUserStory) && (
                 <div className="relative" ref={moreMenuRef}>
                   <button
@@ -1018,7 +1196,20 @@ export const UserStoryDetailDrawer = ({
                     <MoreHorizontal size={17} />
                   </button>
                   {showMoreMenu && (
-                    <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                    <div className="absolute top-full right-0 mt-1 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                      {/* {canEditUserStory && !isAlreadyInBacklog && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenu(false);
+                            handleMoveToBacklog();
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                        >
+                          <Archive size={14} />
+                          Move to Backlog
+                        </button>
+                      )} */}
                       {canEditUserStory && (
                         <button
                           onClick={() => {
@@ -1399,7 +1590,10 @@ export const UserStoryDetailDrawer = ({
                   <ChildTasksPanel
                     projectId={currentUserStory.project_id ?? ''}
                     userStoryId={currentUserStory.id ?? ''}
+                    userStoryKey={effectiveStoryId}
                     onCreateTask={onCreateTask}
+                    onOpenTask={onOpenTask}
+                    onUpdate={onUpdate}
                     totalTasks={totalTasks}
                   />
 
@@ -2337,6 +2531,40 @@ export const UserStoryDetailDrawer = ({
                                 placeholder="Search sprint..."
                               />
                             </div>
+
+                            {/* No sprint / Backlog option */}
+                            <button
+                              type="button"
+                              disabled={isUpdatingSprint}
+                              onClick={async () => {
+                                if (isUpdatingSprint) return;
+                                if (!userStoryData.sprintId) {
+                                  setShowSprintMenu(false);
+                                  setSprintSearch('');
+                                  return;
+                                }
+                                try {
+                                  setIsUpdatingSprint(true);
+                                  setShowSprintMenu(false);
+                                  setSprintSearch('');
+                                  setSelectedSprintName('');
+                                  await handleMoveToBacklog();
+                                } finally {
+                                  setIsUpdatingSprint(false);
+                                }
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left border-b border-gray-100 dark:border-slate-700 ${
+                                !userStoryData.sprintId
+                                  ? 'text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-900/20'
+                                  : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                              }`}
+                            >
+                              <Archive size={13} className="text-gray-400 shrink-0" />
+                              <span className="truncate">No sprint (Backlog)</span>
+                              {!userStoryData.sprintId && (
+                                <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                              )}
+                            </button>
 
                             {/* Loading */}
                             {(isLoadingSprints || isFetchingSprints) && (
