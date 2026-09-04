@@ -353,7 +353,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
                 {project?.name}
               </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
                 {project?.description}
               </p>
             </div>
@@ -391,13 +391,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">CREATED</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">CREATED</p>
             <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
               {project?.date}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">
               TOTAL SPRINTS
             </p>
             <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
@@ -405,7 +405,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">
               PROJECT OWNER
             </p>
             <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
@@ -413,13 +413,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500">TEAM SIZE</p>
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">TEAM SIZE</p>
             <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
               {selectedApiProject?.members?.length || project.members.length} members
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-500 mb-2">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200 mb-2">
               TEAM MEMBERS
             </p>
             {isRefreshingMembers ? (
@@ -500,10 +500,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
               <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">
                 No Sprints Found
               </h2>
-              <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
+              <p className="text-sm font-medium text-gray-400 dark:text-slate-100">
                 No sprints have been created for this project.
               </p>
-              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-100">
                 Create your first sprint to start planning work.
               </p>
               {canCreateSprint && (
@@ -541,7 +541,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                           {sprint.status}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
                         {sprint.startDate || 'No start date'} → {sprint.endDate || 'No end date'}
                       </p>
                     </div>
@@ -840,7 +840,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                   Team Members
                 </h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
                   {selectedApiProject?.members?.length || 0} members in this project
                 </p>
               </div>
@@ -895,7 +895,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                                 />
                               </div>
                             ) : (
-                              <p className="text-xs text-gray-500 dark:text-slate-400 capitalize flex items-center gap-2">
+                              <p className="text-xs text-gray-500 dark:text-slate-200 capitalize flex items-center gap-2">
                                 {updatingMemberId === member.user_id ? (
                                   <>
                                     <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />

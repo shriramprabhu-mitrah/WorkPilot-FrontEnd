@@ -42,7 +42,7 @@ export const DashboardTemplate = () => {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
           Super Admin Dashboard
         </h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+        <p className="text-sm text-gray-500 dark:text-slate-100 mt-1">
           Platform-wide overview across all organizations
         </p>
       </div>
@@ -147,22 +147,22 @@ export const DashboardTemplate = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Organization
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Industry
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Projects
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Members
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Created
                 </th>
               </tr>
@@ -201,7 +201,7 @@ export const DashboardTemplate = () => {
                           <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {org.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">{org.country}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-200">{org.country}</p>
                         </div>
                       </div>
                     </td>
@@ -228,7 +228,7 @@ export const DashboardTemplate = () => {
                       </span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-400">
+                      <span className="text-sm text-gray-500 dark:text-slate-200">
                         {new Date(org.created_at).toLocaleDateString()}
                       </span>
                     </td>

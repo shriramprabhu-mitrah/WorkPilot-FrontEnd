@@ -106,7 +106,10 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
             <span className="text-gray-500 dark:text-slate-400 font-medium hidden sm:inline">
               Organization
             </span>
-            <ChevronRight size={13} className="text-gray-400 dark:text-slate-500 hidden sm:inline" />
+            <ChevronRight
+              size={13}
+              className="text-gray-400 dark:text-slate-500 hidden sm:inline"
+            />
             <span className="text-gray-800 dark:text-white font-semibold">{title}</span>
           </div>
         </div>
@@ -121,8 +124,8 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
             aria-label="Search tasks, projects, stories..."
           >
             <div className="flex items-center gap-2 truncate">
-              <Search size={13} className="text-gray-400 dark:text-slate-400 shrink-0" />
-              <span className="truncate">Search tasks, projects...</span>
+              <Search size={13} className="text-gray-400 dark:text-slate-100 shrink-0" />
+              <span className="truncate dark:text-slate-100">Search tasks, projects...</span>
             </div>
             <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-gray-400 dark:text-slate-400 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded shadow-xs">
               ⌘K
@@ -140,110 +143,110 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
             <Search size={17} />
           </WpButton>
 
-        {/* Notifications */}
-        <WpButton
-          variant="ghost"
-          size="sm"
-          className="relative !p-1.5 text-gray-500 dark:text-slate-300"
-        >
-          <Bell size={17} />
-          <span
-            className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: colors.error }}
-          />
-        </WpButton>
-
-        {/* Theme toggle */}
-        <ThemeToggle />
-
-        {isOrgAdmin && (
+          {/* Notifications */}
           <WpButton
             variant="ghost"
             size="sm"
-            className="!p-1.5 text-gray-500 dark:text-slate-300 hidden md:flex"
-            onClick={() => push('/settings')}
-            aria-label="Settings"
+            className="relative !p-1.5 text-gray-500 dark:text-slate-300"
           >
-            <Settings size={17} />
-          </WpButton>
-        )}
-
-        {/* Divider */}
-        <div className="w-px h-5 bg-gray-300 dark:bg-slate-600 hidden md:block" />
-
-        {/* Profile Dropdown */}
-        <div ref={profileMenuRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setShowProfileMenu((prev) => !prev)}
-            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-              style={{ backgroundColor: user.color || '' }}
-            >
-              {getInitials(user.name)}
-            </div>
-
-            <span className="text-[13px] font-medium text-gray-700 dark:text-white hidden md:inline">
-              {user.name || 'User Name'}
-            </span>
-
-            <ChevronDown
-              size={13}
-              className={`text-gray-400 dark:text-slate-400 hidden md:inline transition-transform ${
-                showProfileMenu ? 'rotate-180' : ''
-              }`}
+            <Bell size={17} />
+            <span
+              className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: colors.error }}
             />
-          </button>
+          </WpButton>
 
-          {/* Dropdown */}
-          {showProfileMenu && (
-            <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg z-50 overflow-hidden">
-              {/* My Account */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  push('/profile');
-                }}
-                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left"
-              >
-                <User size={16} className="text-gray-500 dark:text-slate-400" />
-                <span>My Account</span>
-              </button>
+          {/* Theme toggle */}
+          <ThemeToggle />
 
-              {/* Change Password */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  push('/profile?changePassword=true');
-                }}
-                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left"
-              >
-                <Lock size={16} className="text-gray-500 dark:text-slate-400" />
-                <span>Change Password</span>
-              </button>
-
-              {/* Divider */}
-              <div className="border-t border-gray-100 dark:border-slate-700" />
-
-              {/* Logout */}
-              <button
-                type="button"
-                onClick={handleLogoutClick}
-                disabled={logOut.isLoading}
-                className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <LogOut size={16} />
-                <span>Logout</span>
-              </button>
-            </div>
+          {isOrgAdmin && (
+            <WpButton
+              variant="ghost"
+              size="sm"
+              className="!p-1.5 text-gray-500 dark:text-slate-300 hidden md:flex"
+              onClick={() => push('/settings')}
+              aria-label="Settings"
+            >
+              <Settings size={17} />
+            </WpButton>
           )}
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-gray-300 dark:bg-slate-600 hidden md:block" />
+
+          {/* Profile Dropdown */}
+          <div ref={profileMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setShowProfileMenu((prev) => !prev)}
+              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                style={{ backgroundColor: user.color || '' }}
+              >
+                {getInitials(user.name)}
+              </div>
+
+              <span className="text-[13px] font-medium text-gray-700 dark:text-white hidden md:inline">
+                {user.name || 'User Name'}
+              </span>
+
+              <ChevronDown
+                size={13}
+                className={`text-gray-400 dark:text-slate-400 hidden md:inline transition-transform ${
+                  showProfileMenu ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Dropdown */}
+            {showProfileMenu && (
+              <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg z-50 overflow-hidden">
+                {/* My Account */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    push('/profile');
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left"
+                >
+                  <User size={16} className="text-gray-500 dark:text-slate-400" />
+                  <span>My Account</span>
+                </button>
+
+                {/* Change Password */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    push('/profile?changePassword=true');
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left"
+                >
+                  <Lock size={16} className="text-gray-500 dark:text-slate-400" />
+                  <span>Change Password</span>
+                </button>
+
+                {/* Divider */}
+                <div className="border-t border-gray-100 dark:border-slate-700" />
+
+                {/* Logout */}
+                <button
+                  type="button"
+                  onClick={handleLogoutClick}
+                  disabled={logOut.isLoading}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
     </>
   );
 };

@@ -121,7 +121,7 @@ const EditProjectModal = ({
               Edit Project
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-200">
               Update project details and settings
             </p>
           </div>

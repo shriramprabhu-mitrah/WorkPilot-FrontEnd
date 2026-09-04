@@ -59,7 +59,7 @@ export const MemberSettings = () => {
           <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">
             Manage Members
           </h1>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-100">
             Manage your growing organization with ease
           </p>
         </div>
@@ -118,7 +118,7 @@ export const MemberSettings = () => {
             {['Member', 'Progress', 'Tasks', 'Done', 'Open', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-xs h-7  font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400 ${
+                className={`text-xs h-7  font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-100 ${
                   i >= 2 && i <= 4 ? 'text-center' : ''
                 }`}
               >
@@ -188,7 +188,7 @@ export const MemberSettings = () => {
                     No members invited
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
                     Invite members to your organization.
                   </p>
                 </div>

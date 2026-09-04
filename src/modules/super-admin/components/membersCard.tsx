@@ -51,7 +51,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
           <h4 className="font-semibold text-sm text-gray-900 dark:text-slate-100 truncate">
             {member.name}
           </h4>
-          <p className="text-xs text-gray-500 dark:text-slate-400">Member</p>
+          <p className="text-xs text-gray-500 dark:text-slate-200">Member</p>
         </div>
       </div>
       <span

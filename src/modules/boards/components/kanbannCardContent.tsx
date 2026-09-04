@@ -45,7 +45,7 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
           return (
             <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
               <Calendar size={11} className="text-gray-400 dark:text-slate-100" />
-              <span>{display}</span>
+              <span className='dark:text-slate-100'>{display}</span>
             </div>
           );
         })()}

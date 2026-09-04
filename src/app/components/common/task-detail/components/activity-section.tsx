@@ -480,17 +480,16 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
 
   return (
     <section>
-      <p className="text-base font-semibold text-gray-800 dark:text-white mb-3">
-        Activity
-      </p>
+      <p className="text-base font-semibold text-gray-800 dark:text-white mb-3">Activity</p>
 
       <div className="flex gap-1 border-b border-gray-200 mb-4">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-3 py-2 text-sm font-medium transition-colors relative ${tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-              }`}
+            className={`px-3 py-2 text-sm font-medium transition-colors relative ${
+              tab === t.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            }`}
             style={{
               borderBottom: tab === t.key ? `2px solid ${colors.primary}` : undefined,
             }}
@@ -562,8 +561,10 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
             ) : comments.length === 0 ? (
               tab === 'comments' && (
                 <div className="text-center py-8">
-                  <p className="text-sm text-gray-500">No comments yet</p>
-                  <p className="text-xs text-gray-400 mt-1">Be the first to comment</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-100">No comments yet</p>
+                  <p className="text-xs text-gray-400 mt-1  dark:text-slate-100">
+                    Be the first to comment
+                  </p>
                 </div>
               )
             ) : (

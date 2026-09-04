@@ -1685,10 +1685,10 @@ export const UserStoryDetailDrawer = ({
                           </div>
                         ) : comments.length === 0 ? (
                           <div className="text-center py-8">
-                            <p className="text-sm text-gray-500 dark:text-slate-400">
+                            <p className="text-sm text-gray-500 dark:text-slate-200">
                               No comments yet
                             </p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                            <p className="text-xs text-gray-400 dark:text-slate-200 mt-1">
                               Be the first to comment
                             </p>
                           </div>
@@ -2650,7 +2650,7 @@ export const UserStoryDetailDrawer = ({
 
                     <DetailRow label="Due Date">
                       {isDueDateExpired ? (
-                        <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600">
+                        <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600 dark:bg-gray-100">
                           <AlertTriangle size={14} />
                           <EditableDate
                             value={userStoryData.due_date}

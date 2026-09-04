@@ -171,7 +171,7 @@ const SprintDetail = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{sprint.name}</h1>
-            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-200">
               {formatDate(sprint.start_date)} → {formatDate(sprint.end_date)}
             </p>
           </div>
@@ -211,19 +211,19 @@ const SprintDetail = () => {
 
         <div className="grid grid-cols-3 gap-5">
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500">START DATE</p>
+            <p className="text-xs text-gray-400 dark:text-slate-200">START DATE</p>
             <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
               {formatDate(sprint.start_date)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500">END DATE</p>
+            <p className="text-xs text-gray-400 dark:text-slate-200">END DATE</p>
             <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
               {formatDate(sprint.end_date)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 dark:text-slate-500">GOAL</p>
+            <p className="text-xs text-gray-400 dark:text-slate-200">GOAL</p>
             <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">{sprint.goal || '-'}</p>
           </div>
         </div>
@@ -269,7 +269,7 @@ const SprintDetail = () => {
         <div className="flex min-h-[215px] items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-700 border-t-blue-600" />
-            <p className="mt-4 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mt-4 text-sm text-gray-500 dark:text-slate-200">
               Loading updated user stories...
             </p>
           </div>
@@ -299,9 +299,9 @@ const SprintDetail = () => {
               />
             )}
             {canDeleteUserStory && (
-              <span className="text-xs text-gray-500 dark:text-slate-400">Select all</span>
+              <span className="text-xs text-gray-500 dark:text-slate-200">Select all</span>
             )}
-            <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300">
+            <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-200">
               {(tasksList || []).length} {(tasksList || []).length === 1 ? 'story' : 'stories'}
             </span>
           </div>
@@ -359,7 +359,7 @@ const SprintDetail = () => {
 
                 {/* Story points */}
                 <span
-                  className="flex items-center gap-0.5 text-xs w-10 shrink-0 text-gray-400 dark:text-slate-500"
+                  className="flex items-center gap-0.5 text-xs w-10 shrink-0 text-gray-400 dark:text-slate-100"
                   title="Story points"
                 >
                   <Hash size={11} />

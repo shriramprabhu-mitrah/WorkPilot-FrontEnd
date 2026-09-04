@@ -66,7 +66,7 @@ export const WpInput = forwardRef<HTMLInputElement, WpInputProps>(
                 : '',
               props.disabled
                 ? 'bg-[var(--color-gray-100)] cursor-not-allowed text-[var(--color-gray-400)]'
-                : 'bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder:text-slate-400',
+                : 'bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder:text-slate-100',
               className,
             ]
               .filter(Boolean)

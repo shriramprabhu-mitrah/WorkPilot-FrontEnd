@@ -1793,7 +1793,7 @@ export const BacklogTemplate = () => {
                   Backlog
                 </h1>
                 {selectedApiProject && (
-                  <p className="text-sm mt-0.5 truncate text-gray-500 dark:text-slate-400">
+                  <p className="text-sm mt-0.5 truncate text-gray-500 dark:text-slate-100">
                     {selectedApiProject.name}
                     {selectedSprintStore ? ` · ${selectedSprintStore.name}` : ' · All Sprints'}
                   </p>
@@ -1802,7 +1802,7 @@ export const BacklogTemplate = () => {
               <WpInput
                 type="text"
                 placeholder="Search User Story..."
-                icon={<Search size={14} />}
+                icon={<Search size={14} className='dark:text-slate-100'/>}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 wrapperClassName="w-full sm:w-64"
@@ -1864,7 +1864,7 @@ export const BacklogTemplate = () => {
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${isOverBacklog
                           ? 'bg-green-200 text-green-800 scale-110'
-                          : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
+                          : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-200'
                           }`}
                       >
                         {unassignedStories.length}{' '}
@@ -1933,7 +1933,7 @@ export const BacklogTemplate = () => {
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                             />
                           </svg>
-                          <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                          <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
                             {!selectedProject
                               ? 'Select a project to view stories'
                               : 'No unassigned user stories'}
@@ -1986,8 +1986,8 @@ export const BacklogTemplate = () => {
                         Unassigned Tasks
                       </span>
                       {canViewTasks && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
-                          {isLoadingTasks ? '...' : filteredUnassignedTasks.length}{' '}
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-100">
+                          {isLoadingTasks && selectedProject ? '...' : filteredUnassignedTasks.length}{' '}
                           {filteredUnassignedTasks.length === 1 ? 'task' : 'tasks'}
                         </span>
                       )}
@@ -2042,7 +2042,7 @@ export const BacklogTemplate = () => {
 
                       {unassignedTasksOpen && (
                         <div>
-                          {isLoadingTasks ? (
+                          {isLoadingTasks && selectedProject ? (
                             <div className="flex flex-col gap-2 p-4">
                               {[...Array(3)].map((_, i) => (
                                 <div
@@ -2066,7 +2066,7 @@ export const BacklogTemplate = () => {
                                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                                 />
                               </svg>
-                              <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                              <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
                                 {!selectedProject
                                   ? 'Select a project to view tasks'
                                   : 'No unassigned tasks found'}
@@ -2114,7 +2114,7 @@ export const BacklogTemplate = () => {
                   <h2 className="font-semibold text-sm text-gray-900 dark:text-slate-100">
                     Sprints
                   </h2>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full text-gray-500 dark:text-slate-100 bg-gray-100 dark:bg-slate-700">
                     {allSprints.length} sprints
                   </span>
                 </div>
@@ -2137,7 +2137,7 @@ export const BacklogTemplate = () => {
                 </div>
               ) : allSprints.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8">
-                  <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
+                  <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
                     {!selectedProject
                       ? 'Select a project to view sprints.'
                       : 'No sprints found. Create a sprint to organize user stories.'}

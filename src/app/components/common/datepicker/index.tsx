@@ -252,11 +252,11 @@ export const WpDatePicker = ({
           <span
             className={`flex items-center gap-2 ${
               !value
-                ? 'text-[var(--color-gray-400)] dark:text-slate-500'
+                ? 'text-[var(--color-gray-400)] dark:text-slate-100'
                 : 'text-[var(--color-gray-900)] dark:text-slate-100'
             }`}
           >
-            <Calendar size={15} className="text-[var(--color-gray-400)] dark:text-slate-500" />
+            <Calendar size={15} className="text-[var(--color-gray-400)] dark:text-slate-100" />
             {value ? formatDisplay(value, showTime) : placeholder}
           </span>
           {value && !disabled ? (

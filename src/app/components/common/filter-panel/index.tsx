@@ -143,11 +143,11 @@ export const FilterPanel = ({
       <button
         onClick={clearCategory}
         disabled={selectedCount === 0}
-        className="text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium disabled:opacity-40"
+        className="text-xs text-gray-600 dark:text-white hover:text-gray-900  font-medium"
       >
         Clear
       </button>
-      <span className="text-xs text-gray-400 dark:text-gray-500">
+      <span className="text-xs text-gray-400 dark:text-slate-100">
         {selectedCount} of {totalCount}
       </span>
     </div>

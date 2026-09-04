@@ -54,7 +54,7 @@ export const WpMultiSelect = ({
   return (
     <div className="mb-5 w-full" ref={ref}>
       {label && (
-        <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-300">
+        <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-100">
           {label}
         </label>
       )}
@@ -80,7 +80,7 @@ export const WpMultiSelect = ({
         >
           <div className="flex flex-1 flex-wrap items-center gap-2">
             {selectedOptions.length === 0 ? (
-              <span className="text-[var(--color-gray-400)] dark:text-slate-400">
+              <span className="text-[var(--color-gray-400)] dark:text-slate-100">
                 {placeholder}
               </span>
             ) : (
@@ -151,7 +151,7 @@ export const WpMultiSelect = ({
       {error && <p className="mt-1 text-xs text-[var(--color-error)]">{error}</p>}
 
       {hint && !error && (
-        <p className="mt-1 text-xs text-[var(--color-gray-400)] dark:text-slate-500">{hint}</p>
+        <p className="mt-1 text-xs text-[var(--color-gray-400)] dark:text-slate-100">{hint}</p>
       )}
     </div>
   );

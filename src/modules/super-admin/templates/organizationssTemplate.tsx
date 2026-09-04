@@ -47,7 +47,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-gray-600 dark:text-slate-400 text-center mb-6">
+          <p className="text-sm text-gray-600 dark:text-slate-200 text-center mb-6">
             Are you sure you want to {action} &ldquo;{organization.name}&rdquo;? This will affect
             all members and projects within this organization.
           </p>
@@ -174,7 +174,7 @@ export const OrganizationsTemplate = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Organizations</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || organizations.length} organizations on the platform
         </p>
       </div>
@@ -184,7 +184,7 @@ export const OrganizationsTemplate = () => {
         <div className="flex items-center gap-3">
           <div className="relative w-72">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-100"
               size={16}
             />
             <input
@@ -192,7 +192,7 @@ export const OrganizationsTemplate = () => {
               placeholder="Search organizations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
             />
           </div>
           <div className="flex gap-2">
@@ -231,7 +231,7 @@ export const OrganizationsTemplate = () => {
                 ].map((col) => (
                   <th
                     key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider"
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider"
                   >
                     {col}
                   </th>
@@ -261,7 +261,7 @@ export const OrganizationsTemplate = () => {
                           <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {org.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">/{org.slug}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-200">/{org.slug}</p>
                         </div>
                       </div>
                     </td>
@@ -299,7 +299,7 @@ export const OrganizationsTemplate = () => {
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-400">
+                      <span className="text-sm text-gray-500 dark:text-slate-200">
                         {new Date(org.created_at).toLocaleDateString()}
                       </span>
                     </td>
@@ -330,7 +330,7 @@ export const OrganizationsTemplate = () => {
           </table>
           {organizations.length === 0 && !isLoadingOrganizations && (
             <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-slate-400 text-sm">
+              <p className="text-gray-500 dark:text-slate-100 text-sm">
                 No organizations found matching your criteria.
               </p>
             </div>

@@ -234,7 +234,7 @@ export const TeamTemplate = () => {
                     No members invited
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
                     Invite members to your organization.
                   </p>
                 </div>

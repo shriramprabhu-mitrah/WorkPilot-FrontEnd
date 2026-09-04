@@ -45,7 +45,7 @@ export default function TaskStatusCard({ taskStatus }: TaskStatusCardProps) {
   return (
     <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm h-full flex flex-col">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Task Status</h3>
-      <p className="mb-2 text-sm text-gray-500 dark:text-slate-400">Across all active projects</p>
+      <p className="mb-2 text-sm text-gray-500 dark:text-slate-100">Across all active projects</p>
 
       {/* Pie */}
       <div

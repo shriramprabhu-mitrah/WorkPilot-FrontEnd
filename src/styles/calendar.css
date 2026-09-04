@@ -34,7 +34,7 @@
 
 .dark .rbc-header {
   background: #1e293b;
-  color: #94a3b8;
+  color: #e2e8f0;
   border-bottom: 1px solid #334155 !important;
 }
 
@@ -209,7 +209,7 @@
 
 .dark .rbc-time-header-cell {
   background: #1e293b;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 
 .rbc-label {
@@ -217,7 +217,7 @@
 }
 
 .dark .rbc-label {
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 
 .rbc-today {

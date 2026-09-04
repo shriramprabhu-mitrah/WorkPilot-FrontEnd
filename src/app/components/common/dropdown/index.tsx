@@ -124,14 +124,14 @@ export const WpDropdown = ({
             .join(' ')}
         >
           <span
-            className={`flex items-center gap-2 ${!selected ? 'text-[var(--color-gray-400)] dark:text-slate-500' : 'text-[var(--color-gray-900)] dark:text-slate-100'}`}
+            className={`flex items-center gap-2 ${!selected ? 'text-[var(--color-gray-400)] dark:text-slate-100' : 'text-[var(--color-gray-900)] dark:text-slate-100'}`}
           >
             {selected?.icon && <span className="flex items-center">{selected.icon}</span>}
             {selected ? selected.label : placeholder}
           </span>
           <ChevronDown
             size={16}
-            className={`text-[var(--color-gray-400)] dark:text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`text-[var(--color-gray-400)] dark:text-slate-100 transition-transform ${open ? 'rotate-180' : ''}`}
           />
         </button>
 

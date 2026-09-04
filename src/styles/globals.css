@@ -679,7 +679,7 @@ body {
 }
 .dark .rbc-header {
   border-color: #334155;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 .dark .rbc-header + .rbc-header {
   border-left-color: #334155;
@@ -714,10 +714,10 @@ body {
 .dark .rbc-time-gutter,
 .dark .rbc-timeslot-group {
   border-color: #334155;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 .dark .rbc-time-slot {
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 .dark .rbc-time-header-content {
   border-color: #334155;
@@ -730,7 +730,7 @@ body {
 }
 .dark .rbc-agenda-table thead {
   background-color: #1e293b;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 .dark .rbc-agenda-date-cell,
 .dark .rbc-agenda-time-cell,

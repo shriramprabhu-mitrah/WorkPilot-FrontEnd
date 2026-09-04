@@ -203,7 +203,7 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                 </button>
               </div>
 
-              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-100">
                 Date format: MM/DD/YYYY. Time format: e.g. 1:00 PM.
               </p>
             </div>
@@ -264,7 +264,7 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                 )}
               </div>
 
-              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-100">
                 Date format: MM/DD/YYYY. Time format: e.g. 1:00 PM.
               </p>
             </div>

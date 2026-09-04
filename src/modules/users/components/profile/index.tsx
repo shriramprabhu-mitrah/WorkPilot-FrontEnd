@@ -225,18 +225,18 @@ export default function Profile() {
             </div>
 
             <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
-              <p className="mb-1">{user?.email || '-'}</p>
-              <p>{user?.username}</p>
+              <p className="mb-1 dark:text-slate-100">{user?.email || '-'}</p>
+              <p className="dark:text-slate-100">{user?.username}</p>
             </div>
 
             <div className="w-full space-y-3 text-sm text-gray-600 dark:text-gray-300 mb-6 border-t border-gray-100 dark:border-gray-700 pt-6">
               <div className="flex justify-between">
-                <span className="text-gray-400">Timezone</span>
-                <span className="font-medium">{user?.timezone || '-'}</span>
+                <span className="text-gray-400 dark:text-slate-100">Timezone</span>
+                <span className="font-medium dark:text-slate-100">{user?.timezone || '-'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Member since</span>
-                <span className="font-medium">{createdAt}</span>
+                <span className="text-gray-400 dark:text-slate-100">Member since</span>
+                <span className="font-medium dark:text-slate-100">{createdAt}</span>
               </div>
             </div>
             <WpButton
@@ -294,21 +294,21 @@ export default function Profile() {
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-medium text-gray-900 dark:text-white">Overall Completion</h3>
 
-                <span className="font-bold text-blue-600">
+                <span className="font-bold text-blue-600 dark:text-slate-100">
                   {insights?.completion_percentage ?? 0}%
                 </span>
               </div>
 
               <div className="mb-3 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
                 <div
-                  className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                  className="h-full rounded-full bg-blue-600 transition-all duration-300 "
                   style={{
                     width: `${insights?.completion_percentage ?? 0}%`,
                   }}
                 />
               </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500  dark:text-slate-100">
                 {insights?.completed ?? 0} of {insights?.total_assigned ?? 0} tasks completed
               </p>
             </div>
@@ -324,20 +324,20 @@ export default function Profile() {
                 Your Role: {user?.role ? ROLE_LABELS[user.role as ROLE_TYPE] : '-'}
               </h3>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-slate-100 mb-6 leading-relaxed">
               {roleDetails?.description}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 dark:text-slate-100">
                   Capabilities
                 </h4>
                 <ul className="space-y-3">
                   {roleDetails?.capabilities.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-slate-100"
                     >
                       <CheckCircle2 size={16} className="text-green-500 shrink-0 mt-0.5" />
                       {item}
@@ -346,14 +346,14 @@ export default function Profile() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 dark:text-slate-100">
                   Restrictions
                 </h4>
                 <ul className="space-y-3">
                   {roleDetails?.restrictions.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300"
+                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-slate-100"
                     >
                       <Ban size={16} className="text-red-400 shrink-0 mt-0.5" />
                       {item}
@@ -401,7 +401,7 @@ export default function Profile() {
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-100 mb-1.5">
                       Old Password
                     </label>
 
@@ -413,7 +413,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-100 mb-1.5">
                       New Password
                     </label>
                     <WpInput

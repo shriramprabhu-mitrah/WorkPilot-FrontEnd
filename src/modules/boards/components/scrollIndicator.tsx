@@ -288,7 +288,7 @@ export const ScrollIndicator = ({
       </div>
 
       {/* Scroll percentage text */}
-      <div className="absolute -top-7 right-0 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md shadow-md border border-gray-200 dark:border-gray-700">
+      <div className="absolute -top-7 right-0 text-xs font-semibold text-gray-700 dark:text-slate-100 bg-white dark:bg-gray-800 px-2.5 py-1 rounded-md shadow-md border border-gray-200 dark:border-gray-700">
         {hasHorizontalScroll && <span>{Math.round((scrollLeft / maxScrollLeft) * 100)}%</span>}
         {hasHorizontalScroll && hasVerticalScroll && <span className="mx-1.5">·</span>}
         {hasVerticalScroll && <span>{Math.round((scrollTop / maxScrollTop) * 100)}%</span>}

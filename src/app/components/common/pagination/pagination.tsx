@@ -74,7 +74,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-5 py-3 dark:border-slate-700 dark:bg-slate-900">
       {/* Page Info */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600 dark:text-slate-400">
+        <span className="text-sm text-gray-600 dark:text-slate-100">
           Page {currentPage} of {totalPages}
         </span>
       </div>
@@ -132,18 +132,18 @@ export const Pagination: React.FC<PaginationProps> = ({
           className="rounded p-1.5 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-700"
           aria-label="Next page"
         >
-          <ChevronRight size={18} className="text-gray-600 dark:text-slate-400" />
+          <ChevronRight size={18} className="text-gray-600 dark:text-slate-100" />
         </button>
       </div>
 
       {/* Page Size */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600 dark:text-slate-400">Items per Page</span>
+        <span className="text-sm text-gray-600 dark:text-slate-100">Items per Page</span>
 
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+          className="rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>

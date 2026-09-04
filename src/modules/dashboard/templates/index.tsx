@@ -198,7 +198,7 @@ export const DashBoardTemplate = () => {
             <BurndownCard chartHeight={300} burndownSprints={burndownSprints} />
           </div>
 
-          <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
+          <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full ">
             <SprintProgressCard
               isMobile={false}
               chartHeight={200}

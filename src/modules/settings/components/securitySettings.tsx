@@ -169,17 +169,17 @@ export const SecuritySetting = () => {
                   }`}
                 />
                 <div>
-                  <p className="text-xs font-medium text-gray-800 dark:text-slate-200">
+                  <p className="text-xs font-medium text-gray-800 dark:text-slate-100">
                     {activity.device}
                   </p>
-                  <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                  <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-100">
                     {activity.location}
                   </p>
                 </div>
               </div>
 
               <div className="text-right">
-                <p className="text-[11px] text-gray-500 dark:text-slate-400">{activity.date}</p>
+                <p className="text-[11px] text-gray-500 dark:text-slate-100">{activity.date}</p>
                 <p
                   className={`mt-1 text-[10px] font-medium ${activity.success ? 'text-green-500' : 'text-red-500'}`}
                 >

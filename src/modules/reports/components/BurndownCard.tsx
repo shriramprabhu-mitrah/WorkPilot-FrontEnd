@@ -42,7 +42,7 @@ export default function BurndownCard({ chartHeight, burndownSprints = [] }: Burn
       <div className="min-w-0">
         <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Sprint Burndown</p>
 
-        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
+        <p className="text-xs text-gray-500 dark:text-slate-100 truncate">
           {selectedBurndown?.sprint_name || 'No sprint selected'} · Ideal vs actual hours
         </p>
       </div>

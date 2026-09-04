@@ -193,7 +193,7 @@ export const SprintDropZone = ({
           className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
             isOver
               ? 'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 scale-110'
-              : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
+              : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-100'
           }`}
         >
           {storiesCount} {storiesCount === 1 ? 'story' : 'stories'}
@@ -201,7 +201,7 @@ export const SprintDropZone = ({
         </span>
         {sprint.start_date && sprint.end_date && (
           <span
-            className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-500'}`}
+            className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-100'}`}
           >
             {new Date(sprint.start_date).toLocaleDateString()} -{' '}
             {new Date(sprint.end_date).toLocaleDateString()}
@@ -351,10 +351,10 @@ export const SprintDropZone = ({
                     {directSprintTasks.length === 0 ? (
                       !isOverDirectTasks && (
                         <div className="flex flex-col items-center justify-center py-4 px-3 text-center">
-                          <p className="text-xs text-gray-400 dark:text-slate-500">
+                          <p className="text-xs text-gray-400 dark:text-slate-200">
                             No direct tasks in this sprint
                           </p>
-                          <p className="text-[11px] text-gray-300 dark:text-slate-600 mt-0.5">
+                          <p className="text-[11px] text-gray-300 dark:text-slate-200 mt-0.5">
                             Drop tasks here to assign them directly
                           </p>
                         </div>

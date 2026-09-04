@@ -177,10 +177,10 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             {attachments.length === 0 ? (
               <div className="rounded-xl border border-dashed border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700/40 px-4 py-4 text-center">
                 <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-700">
-                  <Paperclip size={16} className="text-gray-400 dark:text-slate-400" />
+                  <Paperclip size={16} className="text-gray-400 dark:text-slate-100" />
                 </div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">No attachments</p>
-                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                <p className="text-sm text-gray-500 dark:text-slate-100">No attachments</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-100">
                   Add files to this story
                 </p>
               </div>
