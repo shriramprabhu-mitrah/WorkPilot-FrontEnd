@@ -132,6 +132,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
   const [savedDescription, setSavedDescription] = useState('');
   const [actualHoursInput, setActualHoursInput] = useState('');
   const [actualMinutesInput, setActualMinutesInput] = useState('');
+  const [showTypeMenu, setShowTypeMenu] = useState(false);
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
@@ -207,7 +208,7 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
             fetchedTask.priority.slice(1).toLowerCase()) as Priority)
           : 'Medium',
         labels: task.labels || [],
-        dueDate: fetchedTask.due_date ? fetchedTask.due_date.replace(/Z$/, '') : '',
+        dueDate: fetchedTask.due_date ? fetchedTask.due_date.split('T')[0] : '',
         startDate: fetchedTask.start_date ? fetchedTask.start_date.replace(/Z$/, '') : '',
         user_story_title: fetchedTask.user_story_title ?? '',
         user_story_id: fetchedTask.user_story_id ?? '',
@@ -409,6 +410,9 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
           payload.priority = patch.priority.toLowerCase();
         }
 
+        if (patch.taskType !== undefined) {
+          payload.type = patch.taskType;
+        }
         if (patch.status !== undefined) {
           const STATUS_MAP: Record<string, string> = {
             todo: 'todo',
@@ -423,9 +427,10 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         }
 
         if (patch.dueDate !== undefined) {
-          payload.due_date = patch.dueDate ? patch.dueDate + 'Z' : null;
+          payload.due_date = patch.dueDate
+            ? `${patch.dueDate}T00:00:00Z`
+            : null;
         }
-
         if (patch.startDate !== undefined) {
           payload.start_date = patch.startDate || null;
         }
@@ -455,6 +460,8 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
         setIsSaving(true);
 
         await taskService.updateTask(task.projectId, task.taskId, payload);
+        await refetchTask();
+        onUpdate?.(patch as Partial<KanbanTask>);
 
         onUpdate?.(patch as Partial<KanbanTask>);
 
@@ -1544,14 +1551,53 @@ export const TaskDetailDrawer = ({ task, onClose, onUpdate, onDelete }: TaskDeta
                   </DetailRow>
 
                   <DetailRow label="Type">
-                    <span className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-slate-300 px-2 py-1 capitalize">
-                      {taskData.taskType?.toLowerCase() === 'bug' && (
-                        <Bug size={14} className="text-red-500 shrink-0" />
+                    <div className="relative">
+                      <button
+                        type="button"
+                        disabled={!canEditTask}
+                        onClick={() => {
+                          setShowTypeMenu((prev) => !prev);
+                        }}
+                        className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left"
+                      >
+                        <span className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-slate-300 capitalize">
+                          {taskData.taskType?.toLowerCase() === 'bug' && (
+                            <Bug size={14} className="text-red-500 shrink-0" />
+                          )}
+
+                          {taskTypeOptions.find(
+                            (option) => option.value === taskData.taskType
+                          )?.label || taskData.taskType || '—'}
+                        </span>
+
+                        <ChevronDown size={14} className="text-gray-400" />
+                      </button>
+
+                      {showTypeMenu && (
+                        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+                          {taskTypeOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={async () => {
+                                setShowTypeMenu(false);
+
+                                await handleUpdate({
+                                  taskType: option.value,
+                                });
+                              }}
+                              className="flex w-full items-center px-3 py-2 text-sm text-left hover:bg-gray-50"
+                            >
+                              {option.label}
+
+                              {taskData.taskType === option.value && (
+                                <Check size={14} className="ml-auto text-blue-600" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
                       )}
-                      {taskTypeOptions.find((o) => o.value === taskData.taskType)?.label
-                        || taskData.taskType
-                        || '—'}
-                    </span>
+                    </div>
                   </DetailRow>
 
                   <DetailRow label="Priority">

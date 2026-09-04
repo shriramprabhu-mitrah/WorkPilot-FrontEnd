@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, CornerDownLeft, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, CornerDownLeft, Plus, Trash2, Loader2 } from 'lucide-react';
 import { WpInput } from '@/src/app/components/common/input';
 import { useGetRoles, useCreateRole, useUpdateRole, useDeleteRole } from '../hooks/useSettings';
 import { Role, RolePermissions } from '@/src/types/settings';
@@ -21,6 +21,7 @@ interface PermissionSection {
 
 interface RoleListProps {
   roles: Role[];
+  isCreatingRole: boolean;
   selectedRole: Role | null;
   hasChanges: boolean;
   isAddingRole: boolean;
@@ -77,6 +78,7 @@ const RoleList = ({
   newRoleName,
   roleError,
   newRoleRef,
+  isCreatingRole,
   setSelectedRole,
   setExpandedSection,
   setSidebarOpen,
@@ -100,25 +102,22 @@ const RoleList = ({
                 setExpandedSection(null);
                 setSidebarOpen(false);
               }}
-              className={`group relative flex h-[50px] w-full items-center justify-between border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${
-                isSelected
-                  ? 'bg-white font-semibold text-blue-600 dark:bg-slate-800 dark:text-blue-400'
-                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
-              }`}
+              className={`group relative flex h-[50px] w-full items-center justify-between border-b border-slate-200 px-5 text-left text-[14px] transition-all dark:border-slate-700 ${isSelected
+                ? 'bg-white font-semibold text-blue-600 dark:bg-slate-800 dark:text-blue-400'
+                : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
+                }`}
             >
               <span
-                className={`absolute left-0 top-0 h-full w-[3px] rounded-r-full ${
-                  isSelected ? 'bg-blue-600' : 'bg-transparent'
-                }`}
+                className={`absolute left-0 top-0 h-full w-[3px] rounded-r-full ${isSelected ? 'bg-blue-600' : 'bg-transparent'
+                  }`}
               />
 
               <div className="flex min-w-0 items-center truncate">
                 <span
-                  className={`mr-3 h-[7px] w-[7px] shrink-0 rounded-full ${
-                    isSelected
-                      ? 'bg-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]'
-                      : 'bg-transparent group-hover:bg-slate-400'
-                  }`}
+                  className={`mr-3 h-[7px] w-[7px] shrink-0 rounded-full ${isSelected
+                    ? 'bg-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]'
+                    : 'bg-transparent group-hover:bg-slate-400'
+                    }`}
                 />
                 <span className="truncate">{role.name}</span>
               </div>
@@ -188,10 +187,15 @@ const RoleList = ({
               <button
                 type="button"
                 onClick={handleAddRole}
+                disabled={isCreatingRole}
                 className="mt-0.5 flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 title="Create role"
               >
-                <CornerDownLeft size={16} strokeWidth={2.5} />
+                {isCreatingRole ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <CornerDownLeft size={16} strokeWidth={2.5} />
+                )}
               </button>
             </div>
           </div>
@@ -341,7 +345,7 @@ const Permissions = () => {
           permissions: localPermissions,
         },
       });
-    } catch {}
+    } catch { }
   };
 
   const handleAddRole = async () => {
@@ -371,7 +375,7 @@ const Permissions = () => {
       setNewRoleName('');
       setRoleError('');
       setIsAddingRole(false);
-    } catch {}
+    } catch { }
   };
 
   const handleDeleteRole = async () => {
@@ -386,7 +390,7 @@ const Permissions = () => {
         setSelectedRoleId(remaining[0].id);
       }
       setExpandedSection(null);
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -417,6 +421,7 @@ const Permissions = () => {
     newRoleName,
     roleError,
     newRoleRef,
+    isCreatingRole,
     setSelectedRole: (role: Role) => {
       setSelectedRoleId(role.id);
     },
@@ -552,53 +557,47 @@ const Permissions = () => {
                     <button
                       type="button"
                       onClick={() => handleSectionClick(section.id)}
-                      className={`group flex min-h-[56px] w-full items-center px-4 text-left transition-all ${
-                        isExpanded
-                          ? 'bg-blue-50 dark:bg-blue-900/20'
-                          : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'
-                      }`}
+                      className={`group flex min-h-[56px] w-full items-center px-4 text-left transition-all ${isExpanded
+                        ? 'bg-blue-50 dark:bg-blue-900/20'
+                        : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'
+                        }`}
                     >
                       <span
-                        className={`mr-3 h-6 w-[3px] rounded-full ${
-                          isExpanded
-                            ? 'bg-blue-600'
-                            : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'
-                        }`}
+                        className={`mr-3 h-6 w-[3px] rounded-full ${isExpanded
+                          ? 'bg-blue-600'
+                          : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'
+                          }`}
                       />
 
                       <span
-                        className={`text-[15px] font-semibold ${
-                          isExpanded
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-slate-700 dark:text-slate-200'
-                        }`}
+                        className={`text-[15px] font-semibold ${isExpanded
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-slate-700 dark:text-slate-200'
+                          }`}
                       >
                         {section.name}
                       </span>
 
                       <span
-                        className={`ml-3 inline-flex min-w-[42px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                          isExpanded
-                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300'
-                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                        }`}
+                        className={`ml-3 inline-flex min-w-[42px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-bold ${isExpanded
+                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
                       >
                         {allowedCount}/{totalCount}
                       </span>
 
                       <span
-                        className={`ml-auto flex h-7 w-7 items-center justify-center rounded-lg ${
-                          isExpanded
-                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
-                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                        }`}
+                        className={`ml-auto flex h-7 w-7 items-center justify-center rounded-lg ${isExpanded
+                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
                       >
                         <ChevronDown
                           size={16}
                           strokeWidth={2.3}
-                          className={`transition-transform duration-200 ${
-                            isExpanded ? 'rotate-180' : ''
-                          }`}
+                          className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                            }`}
                         />
                       </span>
                     </button>
@@ -611,11 +610,10 @@ const Permissions = () => {
                           return (
                             <div
                               key={action.key}
-                              className={`flex min-h-[43px] items-center px-4 sm:px-8 ${
-                                i !== section.permissions.length - 1
-                                  ? 'border-b border-slate-100 dark:border-slate-700/50'
-                                  : ''
-                              }`}
+                              className={`flex min-h-[43px] items-center px-4 sm:px-8 ${i !== section.permissions.length - 1
+                                ? 'border-b border-slate-100 dark:border-slate-700/50'
+                                : ''
+                                }`}
                             >
                               <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
                                 {action.label}
@@ -627,20 +625,17 @@ const Permissions = () => {
                                 aria-checked={isEnabled}
                                 disabled={action.key === 'view'}
                                 onClick={() => handlePermissionToggle(section, action)}
-                                className={`relative ml-auto h-5 w-9 shrink-0 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                                  isEnabled
-                                    ? 'border-blue-600 bg-blue-600'
-                                    : 'border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700'
-                                } ${
-                                  action.key === 'view'
+                                className={`relative ml-auto h-5 w-9 shrink-0 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${isEnabled
+                                  ? 'border-blue-600 bg-blue-600'
+                                  : 'border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700'
+                                  } ${action.key === 'view'
                                     ? 'cursor-not-allowed opacity-70'
                                     : 'cursor-pointer'
-                                }`}
+                                  }`}
                               >
                                 <span
-                                  className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-200 ${
-                                    isEnabled ? 'left-[18px]' : 'left-[2px]'
-                                  }`}
+                                  className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow transition-all duration-200 ${isEnabled ? 'left-[18px]' : 'left-[2px]'
+                                    }`}
                                 />
                               </button>
                             </div>
