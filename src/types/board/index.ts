@@ -41,6 +41,7 @@ export interface KanbanTask {
   assigneeInitials: string;
   user_story_id?: string;
   user_story_title?: string;
+  user_story_key?: string;
   assigneeColor: string;
   storyPoints: number;
   dueDate: string;

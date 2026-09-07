@@ -369,8 +369,17 @@ export const TaskDetailDrawer = ({
     !!taskData.project_id && canViewUserStories
   );
 
+  const isUuid = (val?: string): boolean =>
+    !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
   const parentStoryId =
-    taskData.user_story_id || fetchedTask?.user_story_id || task.user_story_id || '';
+    taskData.user_story_id ||
+    fetchedTask?.user_story_id ||
+    task.user_story_id ||
+    (task.parent && task.parent !== 'direct-sprint-tasks' && task.parent !== 'no-story'
+      ? task.parent
+      : '') ||
+    '';
 
   const { userStory: fetchedParentStory } = useGetUserStoryById(
     effectiveProjectId,
@@ -382,7 +391,10 @@ export const TaskDetailDrawer = ({
     (s) => s.id === parentStoryId || s.key === parentStoryId
   );
   const parentStory = fetchedParentStory || matchedParentStory;
-  const parentStoryKey = parentStory?.key;
+  const parentStoryKey =
+    parentStory?.key ||
+    task.user_story_key ||
+    (parentStoryId && !isUuid(parentStoryId) ? parentStoryId : '');
   const parentStoryTitle =
     parentStory?.title ||
     taskData.user_story_title ||
@@ -396,11 +408,17 @@ export const TaskDetailDrawer = ({
 
   const handleParentStoryClick = useCallback(() => {
     if (!parentStoryId) return;
+    const resolvedKey =
+      parentStoryKey ||
+      parentStory?.key ||
+      task.user_story_key ||
+      (parentStoryId && !isUuid(parentStoryId) ? parentStoryId : undefined);
+
     const storyToOpen: UserStoryResponse =
       parentStory ||
       ({
         id: parentStoryId,
-        key: parentStoryKey || parentStoryId,
+        key: resolvedKey,
         title: parentStoryTitle || 'User Story',
         project_id: effectiveProjectId,
       } as UserStoryResponse);
@@ -417,6 +435,7 @@ export const TaskDetailDrawer = ({
     parentStoryTitle,
     effectiveProjectId,
     onOpenUserStory,
+    task.user_story_key,
   ]);
 
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
@@ -841,8 +860,11 @@ export const TaskDetailDrawer = ({
                 >
                   <BookOpenText size={12} className="text-blue-600 dark:text-blue-400 shrink-0" />
                   <span className="truncate">
-                    {parentStoryKey}
-                    {parentStoryTitle ? `: ${parentStoryTitle}` : ''}
+                    {parentStoryKey
+                      ? parentStoryTitle
+                        ? `${parentStoryKey}: ${parentStoryTitle}`
+                        : parentStoryKey
+                      : parentStoryTitle || 'User Story'}
                   </span>
                 </button>
 

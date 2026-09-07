@@ -188,6 +188,9 @@ export const UserStoryDetailDrawer = ({
   const [tab, setTab] = useState<ActivityTab>(canViewComments ? 'comments' : 'history');
   const [showCommentEditor, setShowCommentEditor] = useState(true);
 
+  const isUuid = (val?: string): boolean =>
+    !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
   const storeProjectId = useAppSelector((state) => state.project.selectedProject?.id) || '';
   const effectiveProjectId = initialUserStory.project_id || storeProjectId;
   const effectiveStoryId = initialUserStory.key || initialUserStory.id;
@@ -197,8 +200,27 @@ export const UserStoryDetailDrawer = ({
   const projectSlug = params?.projectSlug as string;
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
+  const {
+    userStory: fetchedUserStory,
+    isLoadingUserStory,
+    isError: isStoryError,
+    error: storyError,
+    refetchUserStory,
+  } = useGetUserStoryById(effectiveProjectId, effectiveStoryId);
+
+  // Use fetched data if available, otherwise fall back to initial prop
+  const currentUserStory = fetchedUserStory || initialUserStory;
+  const projectId = currentUserStory.project_id || effectiveProjectId;
+  const userStoryId = currentUserStory.id || effectiveStoryId;
+  const resolvedStoryKey =
+    (currentUserStory.key && !isUuid(currentUserStory.key) ? currentUserStory.key : undefined) ||
+    (initialUserStory.key && !isUuid(initialUserStory.key) ? initialUserStory.key : undefined);
+  const displayKey = resolvedStoryKey || userStoryId || 'User Story';
+
   const handleCopyLink = useCallback(async () => {
-    const itemKey = effectiveStoryId || initialUserStory.key || initialUserStory.id;
+    const itemKey =
+      resolvedStoryKey || effectiveStoryId || initialUserStory.key || initialUserStory.id;
     if (!itemKey) return;
 
     let url = '';
@@ -238,16 +260,34 @@ export const UserStoryDetailDrawer = ({
         toast.error('Failed to copy link');
       }
     }
-  }, [effectiveStoryId, initialUserStory.key, initialUserStory.id, orgSlug, projectSlug]);
+  }, [
+    resolvedStoryKey,
+    effectiveStoryId,
+    initialUserStory.key,
+    initialUserStory.id,
+    orgSlug,
+    projectSlug,
+  ]);
 
-  // Use the hook to fetch user story data - this will auto-refresh when query is invalidated
-  const {
-    userStory: fetchedUserStory,
-    isLoadingUserStory,
-    isError: isStoryError,
-    error: storyError,
-    refetchUserStory,
-  } = useGetUserStoryById(effectiveProjectId, effectiveStoryId);
+  useEffect(() => {
+    if (resolvedStoryKey && orgSlug && projectSlug && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      const section = currentPath.includes('/boards') ? 'boards' : 'backlog';
+      const storyId = initialUserStory.id;
+      if (
+        (storyId && currentPath.endsWith(`/${storyId}`)) ||
+        (initialUserStory.key &&
+          isUuid(initialUserStory.key) &&
+          currentPath.endsWith(`/${initialUserStory.key}`))
+      ) {
+        window.history.replaceState(
+          null,
+          '',
+          `/${orgSlug}/${projectSlug}/${section}/${resolvedStoryKey}`
+        );
+      }
+    }
+  }, [resolvedStoryKey, initialUserStory.id, initialUserStory.key, orgSlug, projectSlug]);
 
   const apiErrorData = (
     storyError as
@@ -271,11 +311,6 @@ export const UserStoryDetailDrawer = ({
     apiErrorData?.message ||
     (storyError as Error | undefined)?.message ||
     'User story not found';
-
-  // Use fetched data if available, otherwise fall back to initial prop
-  const currentUserStory = fetchedUserStory || initialUserStory;
-  const projectId = currentUserStory.project_id || effectiveProjectId;
-  const userStoryId = currentUserStory.id || effectiveStoryId;
 
   const { attachments, isLoadingAttachments } = useGetUserStoryAttachments(projectId, userStoryId);
   const currentUser = useAppSelector((state) => state.user);
@@ -1120,7 +1155,7 @@ export const UserStoryDetailDrawer = ({
                     : 'text-blue-600 dark:text-blue-400'
                 }`}
               >
-                {effectiveStoryId || 'User Story'}
+                {displayKey}
               </span>
               {!isStoryError && (
                 <button
@@ -1260,7 +1295,7 @@ export const UserStoryDetailDrawer = ({
                   <>
                     User story with key{' '}
                     <span className="font-semibold text-gray-800 dark:text-slate-200">
-                      &quot;{effectiveStoryId}&quot;
+                      &quot;{displayKey}&quot;
                     </span>{' '}
                     was not found in this project. It may have been deleted, moved, or the URL might
                     be invalid.
@@ -1590,7 +1625,7 @@ export const UserStoryDetailDrawer = ({
                   <ChildTasksPanel
                     projectId={currentUserStory.project_id ?? ''}
                     userStoryId={currentUserStory.id ?? ''}
-                    userStoryKey={effectiveStoryId}
+                    userStoryKey={resolvedStoryKey || userStoryId}
                     onCreateTask={onCreateTask}
                     onOpenTask={onOpenTask}
                     onUpdate={onUpdate}
@@ -2285,7 +2320,7 @@ export const UserStoryDetailDrawer = ({
                                 const initials = getInitials(
                                   name || m.user?.email?.split('@')[0] || 'U'
                                 );
-                                const color = getMemberColor(m.user_id);
+                                const color = m.color || getMemberColor(m.user_id);
                                 return (
                                   <WpButton
                                     key={m.user_id}
@@ -2409,7 +2444,7 @@ export const UserStoryDetailDrawer = ({
                                 const initials = getInitials(
                                   name || m.user?.email?.split('@')[0] || 'U'
                                 );
-                                const color = getMemberColor(m.user_id);
+                                const color = m.color || getMemberColor(m.user_id);
                                 const isSelected = m.user_id === userStoryData.reporterId;
                                 return (
                                   <WpButton
@@ -2713,7 +2748,11 @@ export const UserStoryDetailDrawer = ({
         </div>
       )}
       {selectedTask && (
-        <TaskDetailDrawer task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskDetailDrawer
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onOpenUserStory={() => setSelectedTask(null)}
+        />
       )}
       {/* Add Status Modal */}
       {/* {showStatusModal && (
