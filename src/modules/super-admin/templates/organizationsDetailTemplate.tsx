@@ -77,24 +77,6 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
     }
   };
 
-  const avatarColors = [
-    'bg-blue-500',
-    'bg-pink-500',
-    'bg-green-500',
-    'bg-amber-500',
-    'bg-purple-500',
-    'bg-teal-500',
-  ];
-
-  const getAvatarColor = (id: string) => {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % avatarColors.length;
-    return avatarColors[index];
-  };
-
   const orgStatus = getStatusStyle(organization.is_active ? 'Active' : 'Inactive');
 
   return (
@@ -332,6 +314,8 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
                   ) : (
                     orgMembers.map((member) => {
                       const statusStyle = getStatusStyle(member.status || 'Active');
+                      // Use color from API if available, otherwise generate based on ID
+                      const avatarBgColor = member.color 
                       return (
                         <tr
                           key={member.id}
@@ -340,7 +324,8 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
                           <td className="px-5 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-3">
                               <div
-                                className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+                                style={{ backgroundColor: avatarBgColor }}
                               >
                                 {getInitials(member.name || member.email)}
                               </div>

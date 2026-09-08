@@ -278,10 +278,10 @@ const SprintDetail = () => {
         <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
           <div className="flex flex-col items-center justify-center">
             <img src="/images/Time management-rafiki.png" alt="No Tasks" className="h-72 w-72" />
-            <p className="text-sm font-medium text-gray-400 dark:text-slate-500">
+            <p className="text-sm font-medium text-gray-400 dark:text-slate-200">
               No user stories have been assigned to this sprint.
             </p>
-            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
               Go to backlog to assign user stories to this sprint.
             </p>
           </div>

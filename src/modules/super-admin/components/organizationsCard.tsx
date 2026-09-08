@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AdminOrganization } from '@/src/types/superadmin';
 
 interface OrganizationCardProps {
@@ -6,6 +6,8 @@ interface OrganizationCardProps {
 }
 
 export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization }) => {
+  const [imgError, setImgError] = useState(false);
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -15,11 +17,22 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
       .slice(0, 2);
   };
 
+  const hasLogo = Boolean(organization.logo_url) && !imgError;
+
   return (
     <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0">
-          {getInitials(organization.name)}
+        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
+          {hasLogo ? (
+            <img
+              src={organization.logo_url}
+              alt={organization.name}
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            getInitials(organization.name)
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm text-gray-900 dark:text-slate-100 truncate">

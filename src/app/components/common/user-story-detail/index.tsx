@@ -27,6 +27,7 @@ import {
   EditableDate,
   EditableNumber,
   EditablePriority,
+  EditableText,
 } from '../task-detail/components/editable-fields';
 import { useResize } from '@/src/hooks/useResize';
 import { userStoryService } from '@/src/services/userstory';
@@ -1370,50 +1371,15 @@ export const UserStoryDetailDrawer = ({
                     mobileTab === 'details' ? 'hidden sm:block' : 'block'
                   }`}
                 >
-                  {editingTitle ? (
-                    <div className="mb-5">
-                      <input
-                        autoFocus
-                        value={userStoryData.title}
-                        onChange={(event) =>
-                          setEditableFields((prev) => ({ ...prev, title: event.target.value }))
-                        }
-                        className="w-full text-2xl font-bold text-gray-900 dark:text-slate-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:border-blue-500"
-                      />
-                      <div className="flex gap-2 mt-2">
-                        <button
-                          onClick={() => {
-                            setEditingTitle(false);
-                            handleUpdate({ title: userStoryData.title });
-                          }}
-                          disabled={isSaving}
-                          className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
-                          style={{ backgroundColor: colors.primary }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditableFields((prev) => ({
-                              ...prev,
-                              title: currentUserStory.title,
-                            }));
-                            setEditingTitle(false);
-                          }}
-                          className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <h1
-                      className="mb-5 break-words text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
-                      title={userStoryData.title}
-                    >
-                      {userStoryData.title}
-                    </h1>
-                  )}
+                  <div className="mb-5">
+                    <EditableText
+                      value={userStoryData.title}
+                      onChange={(title) => handleUpdate({ title })}
+                      placeholder="User story title"
+                      disabled={!canEditUserStory}
+                      textClassName="text-2xl font-bold leading-snug"
+                    />
+                  </div>
 
                   {/* Description Section */}
                   <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">

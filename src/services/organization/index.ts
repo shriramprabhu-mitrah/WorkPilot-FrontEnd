@@ -13,6 +13,7 @@ export interface OrganizationUser {
   email: string;
   role?: string;
   status?: string;
+  color?:string
 }
 
 export interface GetUsersParams {

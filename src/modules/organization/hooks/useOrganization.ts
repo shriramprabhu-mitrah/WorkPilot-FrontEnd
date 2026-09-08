@@ -109,14 +109,15 @@ export const useDeleteOrganization = () => {
   };
 };
 
-export const useGetCountries = () => {
+export const useGetCountries = (search?: string) => {
   const {
     data: countries,
     isLoading: isCountriesLoading,
     refetch: refetchCountries,
   } = useQuery({
-    queryKey: ['countries'],
-    queryFn: CountryService.getCountryList,
+    queryKey: ['countries',search],
+     queryFn: () => CountryService.getCountryList(search ? { name: search } : undefined),
+    placeholderData: (prev) => prev,
   });
 
   return {

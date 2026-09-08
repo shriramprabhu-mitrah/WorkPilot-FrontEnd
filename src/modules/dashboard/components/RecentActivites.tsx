@@ -60,7 +60,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
                   </span>
                 </div>
 
-                <span className="shrink-0 text-xs text-gray-400 dark:text-slate-500">
+                <span className="shrink-0 text-xs text-gray-400 dark:text-slate-200">
                   {new Date(activity.created_at).toLocaleString([], {
                     dateStyle: 'short',
                     timeStyle: 'short',

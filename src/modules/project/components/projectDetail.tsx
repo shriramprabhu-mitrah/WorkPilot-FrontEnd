@@ -322,7 +322,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
         <span
-          className="text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-700 dark:hover:text-slate-200"
+          className="text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-700 dark:text-slate-200"
           onClick={() => push('/projects')}
         >
           Projects
@@ -593,7 +593,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   <div className="border-t border-gray-100 dark:border-slate-700 p-5">
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
                           START DATE
                         </p>
                         <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
@@ -601,7 +601,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
                           END DATE
                         </p>
                         <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
@@ -609,7 +609,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
                           TASKS
                         </p>
                         <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">

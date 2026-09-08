@@ -530,6 +530,8 @@ export const TaskDetailDrawer = ({
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
+      const targetProjectId = fetchedTask?.project_id || task.projectId || effectiveProjectId;
+      const targetTaskId = fetchedTask?.id || task.taskId || task.id;
       if (!task.projectId || !task.taskId) {
         throw new Error('Project ID or Task ID is missing');
       }
@@ -1133,25 +1135,15 @@ export const TaskDetailDrawer = ({
                   mobileTab === 'details' ? 'hidden sm:block' : 'block'
                 }`}
               >
-                {isEditingTask ? (
-                  <div className="mb-5">
-                    <input
-                      type="text"
-                      value={editTaskTitle}
-                      onChange={(e) => setEditTaskTitle(e.target.value)}
-                      placeholder="Task name"
-                      autoFocus
-                      className="w-full px-3 py-2.5 text-2xl font-bold text-gray-900 dark:text-slate-100 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                ) : (
-                  <h1
-                    className="mb-5 break-words text-2xl font-bold leading-snug text-gray-900 dark:text-slate-100"
-                    title={taskData.title || task.title}
-                  >
-                    {taskData.title || task.title}
-                  </h1>
-                )}
+                <div className="mb-5">
+                  <EditableText
+                    value={taskData.title || task.title || ''}
+                    onChange={(title) => handleUpdate({ title })}
+                    placeholder="Task title"
+                    disabled={!canEditTask}
+                    textClassName="text-2xl font-bold leading-snug"
+                  />
+                </div>
 
                 {/* future purpose
              <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -1326,7 +1318,9 @@ export const TaskDetailDrawer = ({
                           }}
                         />
                       ) : (
-                        <span className="text-gray-400 dark:text-slate-200">Add a description…</span>
+                        <span className="text-gray-400 dark:text-slate-200">
+                          Add a description…
+                        </span>
                       )}
                     </div>
                   )}
@@ -1479,7 +1473,7 @@ export const TaskDetailDrawer = ({
                         !canEditTask ? 'cursor-default' : ''
                       }`}
                       style={{
-                        color: selectedStatus?.color ,
+                        color: selectedStatus?.color,
                         borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
                       }}
                     >
@@ -1929,7 +1923,7 @@ export const TaskDetailDrawer = ({
                                   taskType: option.value,
                                 });
                               }}
-                              className="flex w-full items-center px-3 py-2 text-sm text-left hover:bg-gray-50"
+                              className="flex w-full items-center px-3 py-2 text-sm text-left dark:bg-gray-800 hover:bg-gray-50"
                             >
                               {option.label}
 

@@ -265,10 +265,10 @@ export const SprintDropZone = ({
               {sprintStories.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-5 px-4">
                   <Inbox className="w-6 h-6 text-gray-300 dark:text-slate-600 mb-1" />
-                  <p className="text-xs text-gray-400 dark:text-slate-500 text-center">
+                  <p className="text-xs text-gray-400 dark:text-slate-200 text-center">
                     No user stories in this sprint
                   </p>
-                  <p className="text-[11px] text-gray-300 dark:text-slate-600 mt-0.5 text-center">
+                  <p className="text-[11px] text-gray-300 dark:text-slate-200 mt-0.5 text-center">
                     Drag stories here to assign them
                   </p>
                 </div>

@@ -6,14 +6,14 @@ interface MemberCardProps {
 }
 
 const avatarColors = [
-  'bg-blue-500',
-  'bg-pink-500',
-  'bg-green-500',
-  'bg-amber-500',
-  'bg-purple-500',
-  'bg-teal-500',
-  'bg-rose-500',
-  'bg-indigo-500',
+  '#3b82f6', // blue
+  '#ec4899', // pink
+  '#10b981', // green
+  '#f59e0b', // amber
+  '#8b5cf6', // purple
+  '#14b8a6', // teal
+  '#f43f5e', // rose
+  '#6366f1', // indigo
 ];
 
 export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
@@ -25,11 +25,14 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
       .toUpperCase()
       .slice(0, 2);
   };
-
+   
   const getAvatarColor = (id: string) => {
     const index = parseInt(id, 10) % avatarColors.length;
     return avatarColors[index];
   };
+
+  // Use color from API if available, otherwise generate based on ID
+  const avatarBgColor = member.color || getAvatarColor(member.id);
 
   return (
     <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors">
@@ -42,7 +45,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
           />
         ) : (
           <div
-            className={`w-10 h-10 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-sm shrink-0`}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+            style={{ backgroundColor: avatarBgColor }}
           >
             {getInitials(member.name)}
           </div>

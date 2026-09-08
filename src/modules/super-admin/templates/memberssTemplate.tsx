@@ -9,14 +9,14 @@ import MembersSkeleton from '../components/membersSkeleton';
 import Skeleton from '@/src/app/components/common/skeleton';
 
 const avatarColors = [
-  'bg-blue-500',
-  'bg-pink-500',
-  'bg-green-500',
-  'bg-amber-500',
-  'bg-purple-500',
-  'bg-teal-500',
-  'bg-rose-500',
-  'bg-indigo-500',
+  '#3b82f6', // blue
+  '#ec4899', // pink
+  '#10b981', // green
+  '#f59e0b', // amber
+  '#8b5cf6', // purple
+  '#14b8a6', // teal
+  '#f43f5e', // rose
+  '#6366f1', // indigo
 ];
 
 export const MembersTemplate = () => {
@@ -237,6 +237,9 @@ export const MembersTemplate = () => {
                     ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
                     : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
 
+                  // Use color from API if available, otherwise generate based on ID
+                  const avatarBgColor = member.color || getAvatarColor(member.id);
+
                   return (
                     <tr
                       key={member.id}
@@ -252,7 +255,8 @@ export const MembersTemplate = () => {
                             />
                           ) : (
                             <div
-                              className={`w-8 h-8 rounded-full ${getAvatarColor(member.id)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+                              style={{ backgroundColor: avatarBgColor }}
                             >
                               {getInitials(member.name)}
                             </div>

@@ -22,6 +22,7 @@ export default function Profile() {
   const { handleLogOutAsync } = useSignin();
   const [isChangingPwd, setIsChangingPwd] = useState(false);
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
+  const passwordSectionRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const { insights, isLoading: isInsightsLoading } = useUserInsights();
   const { push, replace } = useOrgNavigation();
@@ -50,10 +51,10 @@ export default function Profile() {
       setPwdSuccess(true);
       setPwdData({ old_password: '', new_password: '' });
       setTimeout(() => {
-        setIsChangingPwd(false);
         setPwdSuccess(false);
-        if (shouldChangePassword || requirePasswordChange) {
-          // After successful password change, redirect to dashboard
+        
+        // Only redirect if this was a required password change
+        if (requirePasswordChange) {
           if (user?.role === 'super_admin') {
             push('/super-admin/dashboard');
           } else if (user?.organization_name) {
@@ -63,6 +64,9 @@ export default function Profile() {
           } else {
             replace('/profile');
           }
+        } else {
+          // Normal password change - just close the form
+          setIsChangingPwd(false);
         }
       }, 2000);
     } catch (err: unknown) {
@@ -73,6 +77,11 @@ export default function Profile() {
     if (!shouldChangePassword && !requirePasswordChange) return;
 
     const timer = setTimeout(() => {
+      if (shouldChangePassword) {
+        // From navbar - just open the form and scroll
+        setIsChangingPwd(true);
+      }
+      
       changePasswordRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
@@ -84,7 +93,7 @@ export default function Profile() {
 
   // Auto-open password change form when required
   useEffect(() => {
-    if (requirePasswordChange || shouldChangePassword) {
+    if (requirePasswordChange) {
       // Use setTimeout to avoid cascading renders
       const timer = setTimeout(() => {
         setIsChangingPwd(true);
@@ -92,7 +101,26 @@ export default function Profile() {
 
       return () => clearTimeout(timer);
     }
-  }, [requirePasswordChange, shouldChangePassword]);
+  }, [requirePasswordChange]);
+
+  // Close password strength indicator when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        passwordSectionRef.current &&
+        !passwordSectionRef.current.contains(event.target as Node)
+      ) {
+        setShowPasswordStrength(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const getInitials = (name: string) => {
     if (!name) return 'U';
     const parts = name.split(' ');
@@ -241,7 +269,7 @@ export default function Profile() {
             </div>
             <WpButton
               type="button"
-              disabled={isEditing || requirePasswordChange || shouldChangePassword}
+              disabled={isEditing || requirePasswordChange}
               onClick={() => {
                 setFullName(user?.name || '');
                 setAvatarPreview(user?.avatar_url || '');
@@ -254,7 +282,7 @@ export default function Profile() {
             </WpButton>
             <WpButton
               type="button"
-              disabled={requirePasswordChange || shouldChangePassword}
+              disabled={requirePasswordChange}
               onClick={() => {
                 const nextState = !isChangingPwd;
 
@@ -365,12 +393,12 @@ export default function Profile() {
           </div>
 
           {/* Change Password Form */}
-          {(isChangingPwd || shouldChangePassword) && (
+          {isChangingPwd && (
             <div
               ref={changePasswordRef}
               className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
             >
-              {(requirePasswordChange || shouldChangePassword) && (
+              {requirePasswordChange && (
                 <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
                     ⚠️ Password change required
@@ -412,7 +440,7 @@ export default function Profile() {
                       required
                     />
                   </div>
-                  <div className="relative">
+                  <div className="relative" ref={passwordSectionRef}>
                     <label className="block text-sm font-medium text-gray-700 dark:text-slate-100 mb-1.5">
                       New Password
                     </label>
@@ -431,11 +459,15 @@ export default function Profile() {
                   <WpButton
                     type="button"
                     onClick={async () => {
-                      // If password change is required, logout on cancel
-                      if (requirePasswordChange || shouldChangePassword) {
+                      // If password change is required by the system, logout on cancel
+                      if (requirePasswordChange) {
                         await handleLogOutAsync();
                       } else {
+                        // Normal case: just close the form and clear data
                         setIsChangingPwd(false);
+                        setPwdData({ old_password: '', new_password: '' });
+                        setPwdError(null);
+                        setPwdSuccess(false);
                       }
                     }}
                     variant="warning"

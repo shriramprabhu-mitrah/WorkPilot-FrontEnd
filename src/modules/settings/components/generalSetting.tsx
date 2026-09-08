@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,6 +16,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { INDUSTRY_TYPE, ROLE_TYPE } from '@/src/app/components/common/enum';
 import { ImagePlus, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
@@ -53,9 +54,25 @@ export default function GeneralSettings() {
   const canEditOrganization = user?.role === ROLE_TYPE.ORG_ADMIN;
   const { updateOrg, isUpdatingOrg } = useUpdateOrganization();
   const { refetchOrganization } = useGetOrganization();
-  const { countries } = useGetCountries();
+  
+  const [countrySearch, setCountrySearch] = useState('');
+  const [showCountryList, setShowCountryList] = useState(false);
+  const debouncedCountrySearch = useDebounce(countrySearch, 400);
+  const countryWrapperRef = useRef<HTMLDivElement>(null);
+
+  const { countries, isCountriesLoading } = useGetCountries(debouncedCountrySearch);
   const countryOptions: WpDropdownOption[] =
     countries?.data?.map((c) => ({ label: c.name, value: c.id })) ?? [];
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (countryWrapperRef.current && !countryWrapperRef.current.contains(e.target as Node)) {
+        setShowCountryList(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const {
     register,
@@ -83,6 +100,12 @@ export default function GeneralSettings() {
       if (countryId) setValue('country', countryId);
     }
   }, [organization, countries, reset]);
+
+  useEffect(() => {
+    if (organization?.country) {
+      setCountrySearch(organization.country);
+    }
+  }, [organization]);
 
   const onSubmit = async (data: OrganizationFormData) => {
     try {
@@ -172,21 +195,57 @@ export default function GeneralSettings() {
           )}
         />
 
-        <Controller
-          control={control}
-          name="country"
-          render={({ field }) => (
-            <WpDropdown
-              label="Country"
-              placeholder="Select Country"
-              options={countryOptions}
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.country?.message}
-              disabled={!canEditOrganization}
-            />
-          )}
-        />
+        <div className="mb-5 relative" ref={countryWrapperRef}>
+          <label className="mb-2 block text-sm font-bold text-gray-700 dark:text-slate-300">
+            Country
+          </label>
+
+          <Controller
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <>
+                <WpInput
+                  id="country"
+                  placeholder="Search country..."
+                  value={countrySearch}
+                  onChange={(e) => {
+                    setCountrySearch(e.target.value);
+                    setShowCountryList(true);
+                    if (field.value) field.onChange(''); // clear selection once user edits
+                  }}
+                  onFocus={() => setShowCountryList(true)}
+                  error={errors.country?.message}
+                  disabled={!canEditOrganization}
+                />
+
+                {showCountryList && (
+                  <div className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg">
+                    {isCountriesLoading ? (
+                      <div className="px-3 py-2 text-sm text-gray-400">Loading...</div>
+                    ) : countryOptions.length ? (
+                      countryOptions.map((opt) => (
+                        <div
+                          key={opt.value}
+                          onClick={() => {
+                            field.onChange(opt.value);
+                            setCountrySearch(opt.label);
+                            setShowCountryList(false);
+                          }}
+                          className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-slate-700"
+                        >
+                          {opt.label}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-400">No results</div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          />
+        </div>
 
         <div className="mb-6">
           <label className="mb-2 block text-sm font-bold text-gray-700 dark:text-slate-300">

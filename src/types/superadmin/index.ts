@@ -10,6 +10,7 @@ export interface AdminOrganization {
   created_at: string;
   total_projects: number;
   total_members: number;
+  logo_url?:string
 }
 
 export interface AdminOrganizationMember {
@@ -25,6 +26,7 @@ export interface AdminOrganizationMember {
   is_verified: boolean;
   created_at: string;
   joined_at: string;
+  color?: string;
 }
 
 export interface Project {

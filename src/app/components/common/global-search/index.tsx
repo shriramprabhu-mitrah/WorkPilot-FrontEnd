@@ -417,7 +417,7 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search tasks, user stories, projects, members, sprints..."
-            className="flex-1 bg-transparent border-0 outline-none text-[15px] sm:text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 font-medium"
+            className="flex-1 bg-transparent border-0 outline-none text-[15px] sm:text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-200 font-medium"
           />
 
           {isFetching && <Loader2 size={17} className="animate-spin text-blue-500 shrink-0" />}
@@ -476,7 +476,7 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
           {/* Initial State (Query is empty) */}
           {!debouncedQuery && (
             <div className="py-2 px-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-2 px-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200 mb-2 px-2">
                 Quick Navigation
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
