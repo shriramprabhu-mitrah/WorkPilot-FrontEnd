@@ -103,7 +103,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-[13px] shrink-0">
-            <span className="text-gray-500 dark:text-slate-400 font-medium hidden sm:inline">
+            <span className="text-gray-500 dark:text-slate-200 font-medium hidden sm:inline">
               Organization
             </span>
             <ChevronRight

@@ -119,7 +119,7 @@ const RoleList = ({
                     : 'bg-transparent group-hover:bg-slate-400'
                     }`}
                 />
-                <span className="truncate">{role.name}</span>
+                <span className="truncate uppercase">{role.name}</span>
               </div>
 
               {isSelected && hasChanges && (
@@ -524,7 +524,7 @@ const Permissions = () => {
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-600 dark:bg-blue-400" />
                 </div>
 
-                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100 uppercase">
                   {selectedRole.name}
                 </h1>
               </div>

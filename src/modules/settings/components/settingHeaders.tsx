@@ -14,7 +14,7 @@ export default function SettingsHeader({ activeTab, onTabChange }: SettingsHeade
   return (
     <div className="mb-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Settings</h1>
-      <div className="mt-5 flex w-fit overflow-x-auto items-center gap-1 rounded-xl bg-gray-100 dark:bg-slate-800 p-1 scrollbar-none">
+      <div className="mt-5 flex w-fit overflow-x-auto items-center gap-1 rounded-xl bg-gray-200 dark:bg-slate-800 p-1 scrollbar-none">
         {tabs.map((tab) => (
           <button
             key={tab}

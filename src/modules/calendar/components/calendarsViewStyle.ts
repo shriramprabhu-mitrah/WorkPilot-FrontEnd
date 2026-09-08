@@ -116,8 +116,8 @@ export const eventStyleGetter: EventPropGetter<CalendarEvent> = (event) => {
     const palette = getSprintPalette(event.colorIndex ?? event.id);
     return {
       style: {
-        backgroundColor: isDarkMode ? palette.bgDark : palette.bgLight,
-        color: isDarkMode ? palette.textDark : palette.textLight,
+        backgroundColor: palette.bgLight,
+        color: palette.textLight,
         border: 'none',
         borderRadius: '6px',
         fontSize: '11px',

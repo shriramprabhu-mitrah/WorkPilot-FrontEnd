@@ -1391,7 +1391,7 @@ export const KanbanBoardTemplate = () => {
 
                 return (
                   <button
-                    key={member.id}
+                    key={member.id || member.user_id || member.user?.id}
                     onClick={() => toggleAssigneeFilter(userId, memberName)}
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
                       isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'

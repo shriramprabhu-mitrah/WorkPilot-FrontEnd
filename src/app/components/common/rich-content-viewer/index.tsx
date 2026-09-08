@@ -72,6 +72,13 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Make all links open in new tab
+    const links = containerRef.current.querySelectorAll<HTMLAnchorElement>('a');
+    links.forEach((link) => {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    });
+
     const images =
       containerRef.current.querySelectorAll<HTMLImageElement>('img');
 

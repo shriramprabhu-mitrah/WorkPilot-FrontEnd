@@ -10,12 +10,14 @@ export const EditableText = ({
   onChange,
   placeholder = 'None',
   className = '',
+  textClassName = 'text-sm font-medium',
   disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  textClassName?: string;
   disabled?: boolean;
 }) => {
   const [editing, setEditing] = useState(false);
@@ -34,7 +36,7 @@ export const EditableText = ({
   if (disabled) {
     return (
       <span
-        className={`text-sm font-medium ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'}`}
+        className={`${textClassName} ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'} ${className}`}
       >
         {value || placeholder}
       </span>
@@ -55,7 +57,7 @@ export const EditableText = ({
             setEditing(false);
           }
         }}
-        className={`w-full text-sm border border-blue-400 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 ${className}`}
+        className={`w-full ${textClassName} border border-blue-400 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 ${className}`}
       />
     );
   }
@@ -66,9 +68,11 @@ export const EditableText = ({
         setDraft(value);
         setEditing(true);
       }}
-      className="flex items-center gap-1.5 w-full text-left group/edit"
+      className={`flex items-center gap-1.5 w-full text-left group/edit ${className}`}
     >
-      <span className={`text-sm font-medium ${value ? 'text-gray-800' : 'text-gray-400'}`}>
+      <span
+        className={`${textClassName} ${value ? 'text-gray-800 dark:text-slate-200' : 'text-gray-400 dark:text-slate-500'}`}
+      >
         {value || placeholder}
       </span>
       <Pencil
@@ -242,7 +246,7 @@ export const EditablePriority = ({
         />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden min-w-[130px]">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-xl z-20 overflow-hidden min-w-[130px]">
           {PRIORITY_LIST.map((priority) => (
             <button
               key={priority}
@@ -250,10 +254,10 @@ export const EditablePriority = ({
                 setOpen(false);
                 onChange(priority);
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               <PriorityDot priority={priority} />
-              {priority === value && <Check size={11} className="ml-auto text-blue-500" />}
+              {priority === value && <Check size={11} className="ml-auto text-blue-500 dark:text-blue-400" />}
             </button>
           ))}
         </div>

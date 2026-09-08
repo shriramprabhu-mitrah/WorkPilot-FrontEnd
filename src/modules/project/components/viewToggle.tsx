@@ -10,7 +10,7 @@ interface Props {
 
 export const ViewToggle = ({ view, onChange }: Props) => {
   return (
-    <div className="flex items-center rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="flex items-center rounded-lg border border-gray-200 bg-white dark:bg-gray-800 shadow-sm">
       <WpButton
         variant="ghost"
         size="sm"

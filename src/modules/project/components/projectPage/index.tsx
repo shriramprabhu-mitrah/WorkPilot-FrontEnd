@@ -361,10 +361,10 @@ const ProjectPage = () => {
         )}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
               {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-                <h2 className="text-[25px] font-bold text-gray-900">New Project</h2>
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-5">
+                <h2 className="text-[25px] font-bold text-gray-900 dark:text-slate-200">New Project</h2>
 
                 <WpButton
                   type="button"
@@ -376,7 +376,7 @@ const ProjectPage = () => {
                     setIsModalOpen(false);
                   }}
                   aria-label="Close modal"
-                  className="!p-2 text-gray-400 hover:text-gray-600"
+                  className="!p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-slate-200"
                   leftIcon={<X size={18} />}
                 />
               </div>
@@ -395,7 +395,7 @@ const ProjectPage = () => {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-200">
                     Description
                   </label>
 
@@ -404,13 +404,13 @@ const ProjectPage = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Briefly describe the project goal and scope..."
                     rows={4}
-                    className="w-full resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full resize-none rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-100 px-4 py-3 text-sm text-gray-900 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900"
                   />
                 </div>
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+              <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-slate-800 px-6 py-4">
                 <WpButton
                   variant="secondary"
                   size="sm"
