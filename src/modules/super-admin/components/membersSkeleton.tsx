@@ -78,7 +78,10 @@ const MembersSkeleton = () => {
             <Skeleton className="h-8 w-8 rounded-md" />
           </div>
 
-          <Skeleton className="h-8 w-24 rounded-md" />
+          <div className="flex items-center gap-2 shrink-0">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-16 rounded-md" />
+          </div>
         </div>
       </div>
     </div>

@@ -289,7 +289,10 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
               )}
             </div>
             {showLabels && (
-              <span className="overflow-hidden whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-white">
+              <span
+                title={organization?.name || 'WorkPilot'}
+                className="overflow-hidden whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-white"
+              >
                 {organization?.name || 'WorkPilot'}
               </span>
             )}

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import { AdminProjectsParams } from '@/src/types/superadmin';
 import ProjectSkeleton from '../components/projectSkeleton';
+import Skeleton from '@/src/app/components/common/skeleton';
+
 export const ProjectsTemplate = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -22,14 +24,41 @@ export const ProjectsTemplate = () => {
   }, [searchQuery]);
 
   const queryParams = useMemo(() => {
-    const params: AdminProjectsParams = { page, page_size: pageSize };
+    const params: AdminProjectsParams = {
+      page,
+      page_size: pageSize,
+    };
+
     if (debouncedSearchQuery.trim()) {
       params.search = debouncedSearchQuery;
     }
+
     return params;
   }, [page, pageSize, debouncedSearchQuery]);
 
-  const { projects = [], meta, isLoadingProjects } = useGetAllProjects(queryParams);
+  const {
+    projects = [],
+    meta,
+    isLoadingProjects,
+    isFetchingProjects,
+    isPlaceholderData,
+  } = useGetAllProjects(queryParams);
+
+  /*
+   * Initial page:
+   * - isLoadingProjects = true
+   * - Show complete page skeleton
+   *
+   * Page number change:
+   * - keepPreviousData keeps old data temporarily
+   * - meta.page remains the previous page
+   * - page is the newly selected page
+   * - Show only table row skeletons
+   */
+  const isPaginationLoading =
+    isFetchingProjects &&
+    isPlaceholderData &&
+    Number(meta?.page) !== page;
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -38,13 +67,25 @@ export const ProjectsTemplate = () => {
           color: 'text-green-600 dark:text-green-400',
           bg: 'bg-green-50 dark:bg-green-900/30',
         };
+
       case 'Running':
       case 'Planning':
-        return { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' };
+        return {
+          color: 'text-blue-600 dark:text-blue-400',
+          bg: 'bg-blue-50 dark:bg-blue-900/30',
+        };
+
       case 'Cancelled':
-        return { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/30' };
+        return {
+          color: 'text-red-600 dark:text-red-400',
+          bg: 'bg-red-50 dark:bg-red-900/30',
+        };
+
       default:
-        return { color: 'text-gray-600 dark:text-slate-400', bg: 'bg-gray-50 dark:bg-slate-700' };
+        return {
+          color: 'text-gray-600 dark:text-slate-400',
+          bg: 'bg-gray-50 dark:bg-slate-700',
+        };
     }
   };
 
@@ -56,9 +97,16 @@ export const ProjectsTemplate = () => {
     setPageSize(newPageSize);
     setPage(1);
   };
+
+  /*
+   * Only the very first load shows the complete page skeleton.
+   * Pagination changes will not enter this condition because
+   * keepPreviousData prevents isLoadingProjects from becoming true.
+   */
   if (isLoadingProjects) {
     return <ProjectSkeleton />;
   }
+
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Page Header */}
@@ -76,6 +124,7 @@ export const ProjectsTemplate = () => {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
             size={20}
           />
+
           <input
             type="text"
             placeholder="Search projects..."
@@ -90,6 +139,7 @@ export const ProjectsTemplate = () => {
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-320px)]">
         <div className="overflow-auto flex-1">
           <table className="w-full">
+            {/* Table Header */}
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
                 {['Project', 'Organization', 'Key', 'Status', 'Sprints', 'Members', 'Created'].map(
@@ -104,14 +154,56 @@ export const ProjectsTemplate = () => {
                 )}
               </tr>
             </thead>
+
+            {/* Table Body */}
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-              {isLoadingProjects ? (
-                <tr>
-                  <td colSpan={9} className="px-5 py-8 text-center text-gray-500">
-                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                    Loading projects...
-                  </td>
-                </tr>
+              {isPaginationLoading ? (
+                /*
+                 * Page number clicked:
+                 * Keep header/search/footer normal.
+                 * Show skeleton only inside table rows.
+                 */
+                Array.from({ length: 8 }).map((_, index) => (
+                  <tr key={`skeleton-${index}`}>
+                    {/* Project */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-8 h-8 rounded" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                    </td>
+
+                    {/* Organization */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+
+                    {/* Key */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-4 w-12" />
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+
+                    {/* Sprints */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-4 w-8" />
+                    </td>
+
+                    {/* Members */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-4 w-8" />
+                    </td>
+
+                    {/* Created */}
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                  </tr>
+                ))
               ) : (
                 projects.map((project) => {
                   const statusStyle = getStatusStyle(project.status);
@@ -121,26 +213,36 @@ export const ProjectsTemplate = () => {
                       key={project.id}
                       className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
                     >
+                      {/* Project */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
-                            {(project.project_key ?? '').slice(0, 3).toUpperCase()}
+                            {(project.project_key ?? '')
+                              .slice(0, 3)
+                              .toUpperCase()}
                           </div>
+
                           <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
                             {project.name}
                           </span>
                         </div>
                       </td>
+
+                      {/* Organization */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-700 dark:text-slate-300">
                           {project.organization_name || '-'}
                         </span>
                       </td>
+
+                      {/* Key */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-600 dark:text-slate-200">
                           {project.project_key}
                         </span>
                       </td>
+
+                      {/* Status */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}
@@ -148,63 +250,75 @@ export const ProjectsTemplate = () => {
                           {project.status}
                         </span>
                       </td>
+
+                      {/* Sprints */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-700 dark:text-slate-300">
                           {project.sprint_count}
                         </span>
                       </td>
+
+                      {/* Members */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-700 dark:text-slate-300">
                           {project.total_members}
                         </span>
                       </td>
+
+                      {/* Created */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-500 dark:text-slate-200">
                           {new Date(project.created_at).toLocaleDateString()}
                         </span>
                       </td>
-                      {/* <td className="px-5 py-4 whitespace-nowrap">
-                        <button
-                          className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors"
-                          title="Delete project"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td> */}
                     </tr>
                   );
                 })
               )}
             </tbody>
           </table>
-          {projects.length === 0 && !isLoadingProjects && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-slate-400 text-sm">
-                No projects found matching your search.
-              </p>
-            </div>
-          )}
+
+          {/* Empty State */}
+          {projects.length === 0 &&
+            !isFetchingProjects && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-slate-400 text-sm">
+                  No projects found matching your search.
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Pagination Controls */}
-        {meta && Number(meta.total_items) > 0 && (
-          <div className="border-t border-gray-200 dark:border-slate-700">
+        <div className="border-t border-gray-200 dark:border-slate-700">
+          {meta && Number(meta.total_items) > 0 && (
             <Pagination
               meta={{
                 page: meta.page,
-                page_size: meta.page_size ?? meta.pageSize ?? pageSize,
-                total_items: meta.total_items ?? meta.totalItems,
-                total_pages: meta.total_pages ?? meta.totalPages ?? 0,
-                has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
-                has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
+                page_size:
+                  meta.page_size ?? meta.pageSize ?? pageSize,
+                total_items:
+                  meta.total_items ?? meta.totalItems,
+                total_pages:
+                  meta.total_pages ?? meta.totalPages ?? 0,
+                has_next:
+                  meta.has_next ??
+                  meta.hasNextPage ??
+                  meta.has_next_page ??
+                  false,
+                has_previous:
+                  meta.has_previous ??
+                  meta.hasPrevPage ??
+                  meta.has_prev_page ??
+                  false,
               }}
               currentPage={page}
               pageSize={pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

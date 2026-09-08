@@ -16,6 +16,7 @@ import { usePermissions } from '@/src/hooks/usePermissions';
 import TeamMemberCardSkeleton from '@/src/modules/teams/components/TeamSkeleton';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { Pagination } from '@/src/app/components/common/pagination/pagination';
+import Skeleton from '@/src/app/components/common/skeleton';
 
 export const MemberSettings = () => {
   const [page, setPage] = useState(1);
@@ -28,11 +29,21 @@ export const MemberSettings = () => {
   const [status, setStatus] = useState('');
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
-  const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
+  const {
+    teamMembers,
+    isTeamMembersLoading,
+    isTeamMembersFetching,
+    isTeamMembersPlaceholderData,
+  } = useGetTeamMembers(
     page,
     pageSize,
     status || undefined
   );
+
+  const isPaginationLoading =
+    isTeamMembersFetching &&
+    isTeamMembersPlaceholderData;
+
   const visibleMembers = teamMembers?.data ?? [];
   const { user, isUserLoading } = useGetUserById(selectedUserId);
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
@@ -118,9 +129,8 @@ export const MemberSettings = () => {
             {['Member', 'Progress', 'Tasks', 'Done', 'Open', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-xs h-7  font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-100 ${
-                  i >= 2 && i <= 4 ? 'text-center' : ''
-                }`}
+                className={`text-xs h-7  font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-100 ${i >= 2 && i <= 4 ? 'text-center' : ''
+                  }`}
               >
                 {h}
               </div>
@@ -139,43 +149,64 @@ export const MemberSettings = () => {
               dark:bg-slate-800
             "
           >
-            {visibleMembers.map((member, index) => {
-              const memberData: Member = {
-                id: member.id,
-                name: member.name,
-                role: member.role,
-                initials: member.name
-                  .split(' ')
-                  .map((w) => w[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 4),
-                avatarColor: member?.color || '',
-                tasks: member.total_assigned ?? 0,
-                done: member.completed ?? 0,
-                inProgress: member.in_progress ?? 0,
-                completionPercentage: member.completion_percentage ?? 0,
-                status: member?.status,
-              };
 
-              return (
-                <MemberCard
-                  key={member.id}
-                  member={memberData}
-                  canManageUsers={isOrgAdmin}
-                  onDelete={() => {
-                    setSelectedMember(memberData);
-                    setShowDeleteModal(true);
-                  }}
-                  onClick={() => {
-                    setSelectedUserId(member.id);
-                    setShowUserDetails(true);
-                  }}
-                  isLast={index === visibleMembers.length - 1}
-                />
-              );
-            })}
+            {isPaginationLoading ? (
+              Array.from({ length: pageSize }).map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="flex items-center gap-4 border-b border-gray-200 px-5 py-4 dark:border-slate-700"
+                >
+                  <Skeleton className="h-10 w-10 rounded-full" />
 
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+              ))
+            ) : (
+              visibleMembers.map((member, index) => {
+                const memberData: Member = {
+                  id: member.id,
+                  name: member.name,
+                  role: member.role,
+                  initials: member.name
+                    .split(' ')
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 4),
+                  avatarColor: member?.color || '',
+                  tasks: member.total_assigned ?? 0,
+                  done: member.completed ?? 0,
+                  inProgress: member.in_progress ?? 0,
+                  completionPercentage: member.completion_percentage ?? 0,
+                  status: member?.status,
+                };
+
+                return (
+                  <MemberCard
+                    key={member.id}
+                    member={memberData}
+                    canManageUsers={isOrgAdmin}
+                    onDelete={() => {
+                      setSelectedMember(memberData);
+                      setShowDeleteModal(true);
+                    }}
+                    onClick={() => {
+                      setSelectedUserId(member.id);
+                      setShowUserDetails(true);
+                    }}
+                    isLast={index === visibleMembers.length - 1}
+                  />
+                );
+              })
+            )}
             {/* Empty State */}
             {visibleMembers.length === 0 && !isTeamMembersLoading && (
               <div className="flex min-h-[160px] items-center justify-center">
@@ -195,14 +226,17 @@ export const MemberSettings = () => {
               </div>
             )}
           </div>
-          <Pagination
-            meta={teamMembers?.meta}
-            currentPage={page}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
         </div>
+      </div>
+
+      <div className="flex-shrink-0">
+        <Pagination
+          meta={teamMembers?.meta}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
 
       {/* Invite Modal */}
