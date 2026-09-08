@@ -741,8 +741,16 @@ export const KanbanBoardTemplate = () => {
 
   // Helper to map a TaskResponse to KanbanTask
   const mapToKanbanTask = useCallback(
-    (task: TaskResponse, parentStoryId: string, resolvedStatusId: string): KanbanTask => {
+    (
+      task: TaskResponse,
+      parentStoryId: string,
+      resolvedStatusId: string,
+      parentStoryKey?: string,
+      parentStoryTitle?: string
+    ): KanbanTask => {
       const taskKey = task.key ?? task.id ?? '';
+      const isRealStory =
+        parentStoryId && parentStoryId !== 'direct-sprint-tasks' && parentStoryId !== 'no-story';
       return {
         id: taskKey,
         taskId: task.id ?? '',
@@ -767,6 +775,9 @@ export const KanbanBoardTemplate = () => {
         columnId: resolvedStatusId,
         sprint: task.sprint_name ?? '',
         parent: parentStoryId,
+        user_story_id: task.user_story_id || (isRealStory ? parentStoryId : undefined),
+        user_story_title: task.user_story_title || parentStoryTitle,
+        user_story_key: parentStoryKey,
         assignee: task.assignee_name ?? task.assignee?.name ?? '',
       };
     },
@@ -855,7 +866,18 @@ export const KanbanBoardTemplate = () => {
         storyTasks.set(statusId, []);
       }
 
-      storyTasks.get(statusId)!.push(mapToKanbanTask(task, effectiveStoryId, statusId));
+      const matchedStory = userStories?.find(
+        (s) => s.id === effectiveStoryId || s.key === effectiveStoryId
+      );
+      storyTasks.get(statusId)!.push(
+        mapToKanbanTask(
+          task,
+          effectiveStoryId,
+          statusId,
+          matchedStory?.key,
+          matchedStory?.title
+        )
+      );
     });
 
     // 4. Map user stories with their tasks
@@ -921,12 +943,14 @@ export const KanbanBoardTemplate = () => {
       return;
     }
 
+    const matchedStory = userStories?.find(
+      (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
+    );
     const isStory =
-      taskKey.toUpperCase().startsWith('US-') || taskKey.toUpperCase().startsWith('US');
+      !!matchedStory ||
+      taskKey.toUpperCase().startsWith('US-') ||
+      taskKey.toUpperCase().startsWith('US');
     if (isStory) {
-      const matchedStory = userStories?.find(
-        (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
-      );
       if (matchedStory) {
         setSelectedUserStory(matchedStory);
       } else {
@@ -993,15 +1017,21 @@ export const KanbanBoardTemplate = () => {
   const handleUserStoryClick = useCallback(
     (story: UserStoryResponse) => {
       closedTaskKeyRef.current = null;
-      setSelectedUserStory(story);
+      const matched = userStories?.find(
+        (s) => s.id === story.id || s.key === story.id || s.id === story.key
+      );
+      const fullStory: UserStoryResponse = matched
+        ? { ...matched, ...story, key: matched.key || story.key }
+        : story;
+      setSelectedUserStory(fullStory);
       setSelectedTask(null);
       const currentSlug = projectSlug || storeProject?.slug || storeProject?.id;
       if (orgSlug && currentSlug) {
-        const key = story.key || story.id;
+        const key = fullStory.key || fullStory.id;
         window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards/${key}`);
       }
     },
-    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug]
+    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, userStories]
   );
 
   const handleCloseDrawer = useCallback(() => {

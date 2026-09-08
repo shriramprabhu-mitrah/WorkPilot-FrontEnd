@@ -76,6 +76,8 @@ const mapTaskResponseToKanbanTask = (task: TaskResponse): KanbanTask => ({
   sprint: task.sprint_name ?? '',
   user_story_id: task.user_story_id,
   user_story_title: task.user_story_title,
+  user_story_key: task.user_story_key,
+  parent: task.user_story_id || undefined,
   assigneeInitials: task.assignee_name
     ? task.assignee_name
       .split(' ')
@@ -325,12 +327,14 @@ export const BacklogTemplate = () => {
       return;
     }
 
+    const matchedStory = userStories?.find(
+      (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
+    );
     const isStory =
-      taskKey.toUpperCase().startsWith('US-') || taskKey.toUpperCase().startsWith('US');
+      !!matchedStory ||
+      taskKey.toUpperCase().startsWith('US-') ||
+      taskKey.toUpperCase().startsWith('US');
     if (isStory) {
-      const matchedStory = userStories?.find(
-        (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
-      );
       if (matchedStory) {
         setSelectedUserStory(matchedStory);
       } else {
@@ -384,15 +388,21 @@ export const BacklogTemplate = () => {
 
   const handleUserStoryClick = useCallback(
     (story: UserStoryResponse) => {
-      setSelectedUserStory(story);
+      const matched = userStories?.find(
+        (s) => s.id === story.id || s.key === story.id || s.id === story.key
+      );
+      const fullStory: UserStoryResponse = matched
+        ? { ...matched, ...story, key: matched.key || story.key }
+        : story;
+      setSelectedUserStory(fullStory);
       setSelectedTask(null);
       const currentSlug = projectSlug || selectedApiProject?.slug || selectedApiProject?.id;
       if (orgSlug && currentSlug) {
-        const key = story.key || story.id;
+        const key = fullStory.key || fullStory.id;
         window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/backlog/${key}`);
       }
     },
-    [projectSlug, selectedApiProject?.slug, selectedApiProject?.id, orgSlug]
+    [projectSlug, selectedApiProject?.slug, selectedApiProject?.id, orgSlug, userStories]
   );
 
   const handleCloseDrawer = useCallback(() => {

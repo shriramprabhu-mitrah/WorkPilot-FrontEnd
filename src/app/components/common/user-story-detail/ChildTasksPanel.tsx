@@ -54,7 +54,11 @@ const getInitials = (name: string) =>
 const getMemberColor = (userId: string) =>
   AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
-const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
+const mapToDrawerTask = (
+  task: TaskResponse,
+  parentStoryKey?: string,
+  parentStoryId?: string
+): KanbanTask => ({
   id: task.key ?? '',
   taskId: task.id ?? '',
   projectId: task.project_id ?? '',
@@ -70,7 +74,7 @@ const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
   startDate: task.start_date ?? '',
   storyPoints: task.story_points ?? 0,
   sprint: task.sprint_name ?? '',
-  parent: task.user_story_id ?? '',
+  parent: task.user_story_id ?? parentStoryId ?? '',
   subtasks: [],
   assigneeInitials: task.assignee_name
     ? task.assignee_name
@@ -85,7 +89,8 @@ const mapToDrawerTask = (task: TaskResponse): KanbanTask => ({
   reporterInitials: '',
   reporterColor: undefined,
   activity: [],
-  user_story_id: task.user_story_id,
+  user_story_id: task.user_story_id ?? parentStoryId,
+  user_story_key: parentStoryKey,
 });
 
 interface DropdownPortalProps {
@@ -239,7 +244,7 @@ export const ChildTasksPanel = ({
 
   const handleOpenTask = useCallback(
     (task: TaskResponse) => {
-      const drawerTask = mapToDrawerTask(task);
+      const drawerTask = mapToDrawerTask(task, userStoryKey, userStoryId);
       if (onOpenTask) {
         onOpenTask(drawerTask);
         return;

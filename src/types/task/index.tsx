@@ -49,6 +49,7 @@ export interface TaskResponse {
   status_id?: string;
   reporter_name?: string;
   user_story_title?: string;
+  user_story_key?: string;
   status_color?: string;
   story_points?: number;
   estimated_hours: number;
