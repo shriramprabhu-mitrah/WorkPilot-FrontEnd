@@ -287,9 +287,9 @@ const MembersSettings = () => {
                 .join('')
                 .toUpperCase()
                 .slice(0, 2);
-              
+
               const isOrgAdminRole = member.role?.toLowerCase() === 'org_admin';
-              
+
               const currentRole = roles.find(
                 (role) => role.name.toLowerCase() === member.role?.toLowerCase()
               );
@@ -348,11 +348,16 @@ const MembersSettings = () => {
                         </span>
                       </div>
                     ) : (
-                      <select
+                      <WpDropdown
+                        options={roles.map((role) => ({
+                          value: role.id,
+                          label: role.name,
+                        }))}
                         value={currentRole?.id ?? ''}
-                        onChange={(e) => {
-                          const selectedRole = roles.find((r) => r.id === e.target.value);
+                        onChange={(value) => {
+                          const selectedRole = roles.find((r) => r.id === value);
                           if (!selectedRole) return;
+
                           handleRoleSelect(
                             member.user_id,
                             memberName,
@@ -365,14 +370,7 @@ const MembersSettings = () => {
                           isRolesLoading ||
                           updatingMemberId === member.user_id
                         }
-                        className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {roles.map((role) => (
-                          <option key={role.id} value={role.id}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     )}
                   </div>
 
@@ -390,8 +388,10 @@ const MembersSettings = () => {
                   {/* Delete */}
                   <div className="flex justify-end md:justify-end">
                     {isOrgAdmin && !isOrgAdminRole && (
-                      <button
+                      <WpButton
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           setSelectedMember({
                             id: member.user_id,
@@ -399,11 +399,11 @@ const MembersSettings = () => {
                           });
                           setShowDeleteModal(true);
                         }}
-                        className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 dark:text-slate-500 transition-colors hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500"
+                        className="!p-2 text-slate-400 dark:text-slate-500 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500"
                         title="Remove member"
                       >
                         <Trash2 size={15} strokeWidth={1.8} className='dark:text-slate-100' />
-                      </button>
+                      </WpButton>
                     )}
                   </div>
                 </div>
@@ -429,24 +429,16 @@ const MembersSettings = () => {
         {/* View more / less */}
         {!showAll && members.length > 10 && (
           <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setShowAll(true)}
-              className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-            >
+            <WpButton variant="secondary" size="sm" onClick={() => setShowAll(true)}>
               View More
-            </button>
+            </WpButton>
           </div>
         )}
         {showAll && members.length > 10 && (
           <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setShowAll(false)}
-              className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-            >
+            <WpButton variant="secondary" size="sm" onClick={() => setShowAll(false)}>
               View Less
-            </button>
+            </WpButton>
           </div>
         )}
       </div>

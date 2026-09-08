@@ -459,6 +459,84 @@ const AddTaskModal = ({
             />
           </div>
 
+          {/* Row: Estimated Hours | Actual Hours */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Estimated Hours */}
+            <div>
+              <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-300">
+                Estimated Hours
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    {...register('estimatedHours')}
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    hr
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="0"
+                    {...register('estimatedMinutes')}
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    min
+                  </span>
+                </div>
+              </div>
+              {errors.estimatedHours?.message && (
+                <p className="mt-1 text-xs text-red-500">{errors.estimatedHours.message}</p>
+              )}
+            </div>
+
+            {/* Actual Hours */}
+            <div>
+              <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-300">
+                Actual Hours
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    {...register('actualHours')}
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    hr
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="0"
+                    {...register('actualMinutes')}
+                    className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                  <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
+                    min
+                  </span>
+                </div>
+              </div>
+              {errors.actualHours?.message && (
+                <p className="mt-1 text-xs text-red-500">{errors.actualHours.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Row: Story Points (left half only) */}
           <div className="grid grid-cols-2 gap-3">
             <WpInput
               id="storyPoints"
@@ -476,92 +554,6 @@ const AddTaskModal = ({
                 }
               }}
             />
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Estimated Hours */}
-              <div>
-                <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-300">
-                  Estimated Hours
-                </label>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      {...register('estimatedHours')}
-                      className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    />
-                    <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-200 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                      hr
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0"
-                      max="59"
-                      placeholder="0"
-                      {...register('estimatedMinutes')}
-                      className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white placeholder:dark:text-slate-200"
-                    />
-                    <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-200 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                      min
-                    </span>
-                  </div>
-                </div>
-
-                {errors.estimatedHours?.message && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.estimatedHours.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Actual Hours */}
-              <div>
-                <label className="mb-2 block text-sm font-bold text-[var(--color-text-body)] dark:text-slate-300">
-                  Actual Hours
-                </label>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      {...register('actualHours')}
-                      className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    />
-                    <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-200 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                      hr
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0"
-                      max="59"
-                      placeholder="0"
-                      {...register('actualMinutes')}
-                      className="w-16 h-9 rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    />
-                    <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-200 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                      min
-                    </span>
-                  </div>
-                </div>
-
-                {errors.actualHours?.message && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.actualHours.message}
-                  </p>
-                )}
-              </div>
-            </div>
           </div>
         </div>
         {/* Footer */}

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { userAdminService, AdminOrganizationsParams } from '@/src/services/superadmin';
 import {
   AdminMembersParams,
@@ -18,6 +18,7 @@ export const useGetOrganizations = (params?: AdminOrganizationsParams, enabled =
     queryKey: [QUERY_KEYS.ADMIN_ORGANIZATION, params],
     queryFn: () => userAdminService.getOrganizations(params),
     enabled,
+    placeholderData: keepPreviousData,
   });
 
   return {
@@ -27,6 +28,7 @@ export const useGetOrganizations = (params?: AdminOrganizationsParams, enabled =
     isFetchingOrganizations: query.isFetching,
     isError: query.isError,
     error: query.error,
+    isPlaceholderData: query.isPlaceholderData,
   };
 };
 
@@ -35,6 +37,7 @@ export const useGetMembers = (params?: AdminMembersParams, enabled = true) => {
     queryKey: [QUERY_KEYS.ADMIN_MEMBERS, params],
     queryFn: () => userAdminService.getMembers(params),
     enabled,
+    placeholderData: keepPreviousData,
   });
 
   return {
@@ -42,16 +45,21 @@ export const useGetMembers = (params?: AdminMembersParams, enabled = true) => {
     meta: query.data?.meta,
     isLoadingMembers: query.isLoading,
     isFetchingMembers: query.isFetching,
+    isPlaceholderData: query.isPlaceholderData,
     isError: query.isError,
     error: query.error,
   };
 };
 
-export const useGetAllProjects = (params?: AdminProjectsParams, enabled = true) => {
+export const useGetAllProjects = (
+  params?: AdminProjectsParams,
+  enabled = true
+) => {
   const query = useQuery({
     queryKey: [QUERY_KEYS.ADMIN_PROJECTS, params],
     queryFn: () => userAdminService.getAllProjects(params),
     enabled,
+    placeholderData: keepPreviousData,
   });
 
   return {
@@ -59,6 +67,7 @@ export const useGetAllProjects = (params?: AdminProjectsParams, enabled = true) 
     meta: query.data?.meta,
     isLoadingProjects: query.isLoading,
     isFetchingProjects: query.isFetching,
+    isPlaceholderData: query.isPlaceholderData,
     isError: query.isError,
     error: query.error,
   };

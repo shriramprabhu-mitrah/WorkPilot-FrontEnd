@@ -32,6 +32,7 @@ import {
 } from '@/src/types/search';
 import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
 import { getInitials } from '../format';
+import { usePermissions } from '@/src/hooks/usePermissions';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -138,6 +139,7 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
   } = useGlobalSearch();
 
   const { push } = useOrgNavigation();
+  const { isOrgAdmin } = usePermissions();
   const dispatch = useAppDispatch();
   const { projectsWithSprints } = useGetProjectsWithSprints();
   const currentProject = useAppSelector((state) => state.project.selectedProject);
@@ -337,18 +339,22 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
           push('/teams');
         },
       },
-      {
-        title: 'Settings',
-        desc: 'Configure organization and workspace settings',
-        icon: <Settings size={16} className="text-purple-600 dark:text-purple-400" />,
-        action: () => {
-          onClose();
-          push('/settings');
-        },
-      },
-    ],
-    [onClose, push]
-  );
+         ...(isOrgAdmin
+      ? [
+          {
+            title: 'Settings',
+            desc: 'Configure organization and workspace settings',
+            icon: <Settings size={16} className="text-purple-600 dark:text-purple-400" />,
+            action: () => {
+              onClose();
+              push('/settings');
+            },
+          },
+        ]
+      : []),
+  ],
+  [onClose, push, isOrgAdmin]
+);
 
   // Keyboard navigation listener inside modal
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
