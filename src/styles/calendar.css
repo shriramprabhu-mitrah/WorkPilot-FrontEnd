@@ -53,6 +53,7 @@
   position: relative;
   overflow: visible !important;
   border-top: 1px solid #f3f5f8 !important;
+  padding-bottom: 30px !important;
 }
 
 .dark .rbc-month-row {
@@ -74,6 +75,61 @@
   position: relative;
   z-index: 2;
   padding-bottom: 6px;
+}
+
+.rbc-row-content-expanded {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 6px;
+}
+
+.rbc-row-content-expanded .rbc-row-segment {
+  display: block !important;
+  width: 100% !important;
+  position: relative !important;
+  left: 0 !important;
+}
+
+.rbc-view-more-button {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.dark .rbc-view-more-button {
+  border-color: #475569;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+.rbc-view-more-button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.dark .rbc-view-more-button:hover {
+  background: #334155;
+  border-color: #64748b;
+}
+
+.rbc-view-more-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+  margin-top: 2px;
+}
+
+/* Make room for View More button */
+.rbc-row-segment {
+  padding: 1px 2px;
+  position: relative;
 }
 
 .rbc-row-content-scroll-container {

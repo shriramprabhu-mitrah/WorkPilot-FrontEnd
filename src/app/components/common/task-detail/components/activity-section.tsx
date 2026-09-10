@@ -62,21 +62,21 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
   const [showCommentEditor, setShowCommentEditor] = useState(false);
   const { mutateAsync: downloadAttachment } = useDownloadAttachment();
 
-  const handleDownloadImage = async (attachmentId: string) => {
-    if (!projectId || !taskId || !attachmentId) {
+  const handleDownloadImage = async (attachmentId: string, commentId: string) => {
+    if (!taskId || !commentId || !attachmentId) {
       logger.log('Download attempted with missing parameters:', {
-        projectId,
         taskId,
+        commentId,
         attachmentId,
       });
       toast.error('Missing required information to download attachment');
       return;
     }
 
-    logger.log('Attempting to download attachment:', { projectId, taskId, attachmentId });
+    logger.log('Attempting to download attachment:', { taskId, commentId, attachmentId });
 
     try {
-      const blob = await downloadAttachment({ projectId, taskId, attachmentId });
+      const blob = await downloadAttachment({ taskId, commentId, attachmentId });
 
       logger.log('Download response received:', blob);
 
@@ -397,7 +397,7 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                     content={c.content}
                     className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700`}
                     canDownload={true}
-                    onDownloadImage={handleDownloadImage}
+                    onDownloadImage={(attachmentId) => handleDownloadImage(attachmentId, c.id)}
                   />
                 </div>
 

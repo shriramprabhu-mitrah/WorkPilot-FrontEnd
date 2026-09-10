@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { useAppSelector } from '@/src/store';
 import {
   useGetCountries,
-  useGetOrganization,
   useUpdateOrganization,
 } from '@/src/modules/organization/hooks/useOrganization';
 import { WpDropdown, WpDropdownOption } from '@/src/app/components/common/dropdown';
@@ -53,7 +52,6 @@ export default function GeneralSettings() {
   const user = useAppSelector((state) => state.user);
   const canEditOrganization = user?.role === ROLE_TYPE.ORG_ADMIN;
   const { updateOrg, isUpdatingOrg } = useUpdateOrganization();
-  const { refetchOrganization } = useGetOrganization();
   
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryList, setShowCountryList] = useState(false);
@@ -117,7 +115,7 @@ export default function GeneralSettings() {
         team_size: data.team_size,
         country_id: data.country,
       });
-      await refetchOrganization();
+      // No need to refetch - updateOrg already invalidates the query
     } catch {}
   };
 

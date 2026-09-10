@@ -58,10 +58,10 @@ class CommentAttachmentService {
     });
   }
 
-  async downloadAttachment(projectId: string, taskId: string, attachmentId: string): Promise<Blob> {
-    const url = ApiEndpoints.CommentAttachment.downloadAttachment.withParams({
-      projectId,
+  async downloadAttachment(taskId: string, commentId: string, attachmentId: string): Promise<Blob> {
+    const url = ApiEndpoints.CommentAttachment.downloadCommentAttachment.withParams({
       taskId,
+      commentId,
       attachmentId,
     });
     return apiService.getBlob(url);

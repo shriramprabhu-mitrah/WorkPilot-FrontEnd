@@ -2,9 +2,9 @@
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../../../styles/calendar.css';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import moment from 'moment';
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
+import { Calendar, momentLocalizer, Views, Components } from 'react-big-calendar';
 import type { Formats } from 'react-big-calendar';
 import { CalendarEvent } from '../types';
 import CustomToolbar, { CalendarDisplayView } from './customsToolbars';
@@ -13,6 +13,7 @@ import CustomDateHeader from './customsDatesHeaders';
 import { eventStyleGetter } from './calendarsViewStyle';
 import { View } from 'react-big-calendar';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+import EventWrapper from './customMonthEventWrapper';
 import { useResize } from '@/src/hooks/useResize';
 
 const localizer = momentLocalizer(moment);
@@ -42,8 +43,16 @@ const CalendarView = ({
 }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const { width: screenWidth } = useResize();
   const { push } = useOrgNavigation();
+
+  const handleExpandChange = useCallback((rowKey: string, expanded: boolean) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [rowKey]: expanded,
+    }));
+  }, []);
 
   // RBC only accepts standard Views (MONTH, WEEK, DAY)
   const rbcView = (currentView === 'timeline' ? Views.MONTH : currentView) as View;
@@ -101,6 +110,16 @@ const CalendarView = ({
           event: CustomEvent,
           month: {
             dateHeader: (props) => <CustomDateHeader {...props} selectedDate={selectedDate} />,
+          },
+          eventWrapper: (props) => {
+            return (
+              <EventWrapper
+                {...props}
+                expandedRows={expandedRows}
+                allEvents={events}
+                onExpandChange={handleExpandChange}
+              />
+            );
           },
         }}
       />

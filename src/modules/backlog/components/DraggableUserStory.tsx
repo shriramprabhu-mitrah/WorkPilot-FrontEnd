@@ -5,7 +5,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { colors } from '@/src/styles/colors';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
-import { GripVertical, PlusCircle } from 'lucide-react';
+import { Flag, GripVertical, PlusCircle } from 'lucide-react';
+import { Chip } from '@/src/app/components/common/chip';
+import { PRIORITY_CONFIG } from '@/src/app/components/common/task-detail/components/badges';
+import { Priority } from '@/src/types/board';
 
 interface DraggableUserStoryProps {
   story: UserStoryResponse;
@@ -63,38 +66,11 @@ export const DraggableUserStory = ({
   };
 
   // Priority UI
-  const getPriorityStyle = (priority?: string | null) => {
-    switch (priority?.toLowerCase()) {
-      case 'critical':
-        return {
-          backgroundColor: colors.priorityCriticalBg,
-          color: colors.priorityCriticalText,
-        };
-
-      case 'high':
-        return {
-          backgroundColor: colors.priorityHighBg,
-          color: colors.priorityHighText,
-        };
-
-      case 'medium':
-        return {
-          backgroundColor: colors.priorityMediumBg,
-          color: colors.priorityMediumText,
-        };
-
-      case 'low':
-        return {
-          backgroundColor: colors.priorityLowBg,
-          color: colors.priorityLowText,
-        };
-
-      default:
-        return {
-          backgroundColor: colors.gray100,
-          color: colors.gray500,
-        };
-    }
+  const getPriorityConfig = (priority?: string | null) => {
+    const normalized = priority
+      ? ((priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) as Priority)
+      : ('Medium' as Priority);
+    return PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
   };
 
   const getStatusStyle = (status?: string | null) => {
@@ -135,7 +111,10 @@ export const DraggableUserStory = ({
     }
   };
 
-  const priorityStyle = getPriorityStyle(story.priority);
+  const priorityConfig = getPriorityConfig(story.priority);
+  const normalized = story.priority
+    ? ((story.priority.charAt(0).toUpperCase() + story.priority.slice(1).toLowerCase()) as Priority)
+    : ('Medium' as Priority);
   const statusStyle = getStatusStyle(story.status);
   const linkedTasks = tasks.filter((t) => t.user_story_id === story.id);
   const taskCount =
@@ -205,21 +184,13 @@ export const DraggableUserStory = ({
       )}
 
       {/* Priority */}
-      <span
-        className="
-        text-[11px]
-        px-3 py-1
-        rounded-full
-        capitalize
-        shrink-0
-        font-semibold
-        min-w-[70px]
-        text-center
-      "
-        style={priorityStyle}
-      >
-        {story.priority ?? 'medium'}
-      </span>
+      <Chip
+        label={normalized}
+        color={priorityConfig.color}
+        bg={priorityConfig.bg}
+        icon={<Flag size={11} />}
+        className="shrink-0"
+      />
 
       {/* Status */}
       <span

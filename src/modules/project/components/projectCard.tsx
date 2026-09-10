@@ -13,7 +13,7 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
     return (
       <div
         onClick={onClick}
-        className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-all hover:border-blue-500 hover:shadow-md cursor-pointer"
+        className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-800 p-5 shadow-sm transition-all hover:border-blue-500 hover:shadow-md cursor-pointer"
       >
         {/* Left */}
         <div className="flex flex-1 items-start gap-4">
@@ -62,7 +62,7 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
   return (
     <div
       onClick={onClick}
-      className="w-full cursor-pointer rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm hover:shadow-md"
+      className="w-full cursor-pointer rounded-2xl border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-800 p-5 shadow-sm hover:shadow-md"
     >
       <div className="flex justify-between">
         <div className="flex gap-3">
