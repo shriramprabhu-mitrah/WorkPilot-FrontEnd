@@ -35,8 +35,8 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
           <div key={activity.id} className="flex items-start gap-3">
             <AssigneeAvatar
               initials={
-                user?.name
-                  ? user.name
+                activity?.user?.name
+                  ? activity?.user.name
                       .split(' ')
                       .map((name) => name[0])
                       .join('')
@@ -44,7 +44,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
                       .toUpperCase()
                   : 'U'
               }
-              color={user?.color || ''}
+              color={activity?.user?.color || ''}
               size="md"
             />
 
@@ -52,7 +52,7 @@ export default function RecentActivityCard({ activities, user }: RecentActivityC
               <div className="flex items-start justify-between gap-4">
                 <div className="text-sm text-gray-700 dark:text-slate-300">
                   <span className="font-semibold text-gray-900 dark:text-slate-100">
-                    {user?.name || 'User'}
+                    {activity?.user?.name || 'User'}
                   </span>{' '}
                   <span>{activity.action}</span>{' '}
                   <span className="font-semibold text-blue-600 dark:text-blue-400">

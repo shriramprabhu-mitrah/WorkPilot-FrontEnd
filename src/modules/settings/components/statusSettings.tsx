@@ -284,6 +284,23 @@ function StatusRow({
   );
 }
 
+function StatusRowSkeleton() {
+  return (
+    <div className="grid grid-cols-[32px_32px_minmax(0,1fr)_80px_auto] items-center gap-3 min-h-[52px] border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 animate-pulse">
+      <div className="hidden sm:block h-4 w-4 bg-slate-200 dark:bg-slate-700 rounded" />
+      <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-lg" />
+      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
+      <div className="hidden sm:flex w-full justify-center">
+        <div className="h-5 w-5 bg-slate-200 dark:bg-slate-700 rounded-md" />
+      </div>
+      <div className="ml-auto flex shrink-0 items-center gap-1 opacity-0">
+        <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded" />
+        <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded" />
+      </div>
+    </div>
+  );
+}
+
 function AddStatusRow({
   onAdd,
   onCancel,
@@ -397,8 +414,8 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
   const isUserStory = config.key === 'userStory';
   const isTask = config.key === 'task';
 
-  const { userStoryStatuses } = useGetUserStoryStatuses(projectId, isUserStory);
-  const { data: taskStatuses = [] } = useGetStatus(projectId, isTask);
+  const { userStoryStatuses, isLoadingUserStoryStatuses } = useGetUserStoryStatuses(projectId, isUserStory);
+  const { data: taskStatuses = [], isLoading: isLoadingTask } = useGetStatus(projectId, isTask);
   const { createUserStoryStatusAsync } = useCreateUserStoryStatus();
   const { updateUserStoryStatusAsync } = useUpdateUserStoryStatus();
   const { deleteUserStoryStatusAsync } = useDeleteUserStoryStatus();
@@ -431,7 +448,7 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
     return [...list].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
   }, [isUserStory, isTask, userStoryStatuses, taskStatuses, statuses]);
 
-  const [items, setItems] = useState<Status[]>(serverStatuses);
+  const [items, setItems] = useState<Status[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -444,6 +461,9 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
   const [isOpen, setIsOpen] = useState(false);
   const [savingStatusId, setSavingStatusId] = useState<string | null>(null);
   const [isSavingNewStatus, setIsSavingNewStatus] = useState(false);
+  
+  const isLoading = isUserStory ? isLoadingUserStoryStatuses : isTask ? isLoadingTask : false;
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -797,72 +817,83 @@ function StatusSection({ config, projectId }: { config: SectionConfig; projectId
           </div>
 
           <div className="pb-4">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={items.map((s) => s.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {items.map((status) => (
-                  <StatusRow
-                    key={status.id}
-                    status={status}
-                    showArchived={config.showArchived}
-                    isEditing={editingId === status.id}
-                    isSaving={savingStatusId === status.id}
-                    onEdit={() => {
-                      setIsAdding(false);
-                      setEditingId(status.id);
-                    }}
-                    onDelete={() => handleDelete(status.id)}
-                    onSaveEdit={(name, color, isClosed) =>
-                      handleSaveEdit(status.id, name, color, isClosed)
-                    }
-                    onCancelEdit={() => setEditingId(null)}
+            {isLoading ? (
+              // Show skeleton loaders while loading
+              <>
+                <StatusRowSkeleton />
+                <StatusRowSkeleton />
+                <StatusRowSkeleton />
+              </>
+            ) : (
+              <>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={items.map((s) => s.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {items.map((status) => (
+                      <StatusRow
+                        key={status.id}
+                        status={status}
+                        showArchived={config.showArchived}
+                        isEditing={editingId === status.id}
+                        isSaving={savingStatusId === status.id}
+                        onEdit={() => {
+                          setIsAdding(false);
+                          setEditingId(status.id);
+                        }}
+                        onDelete={() => handleDelete(status.id)}
+                        onSaveEdit={(name, color, isClosed) =>
+                          handleSaveEdit(status.id, name, color, isClosed)
+                        }
+                        onCancelEdit={() => setEditingId(null)}
+                      />
+                    ))}
+                  </SortableContext>
+
+                  <DragOverlay>
+                    {activeStatus ? (
+                      <StatusRow
+                        status={activeStatus}
+                        showArchived={config.showArchived}
+                        isEditing={false}
+                        isOverlay
+                        onEdit={() => { }}
+                        onDelete={() => { }}
+                        onSaveEdit={() => { }}
+                        onCancelEdit={() => { }}
+                      />
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+
+                {isAdding && (
+                  <AddStatusRow
+                    onAdd={handleAdd}
+                    onCancel={() => setIsAdding(false)}
+                    isSaving={isSavingNewStatus}
                   />
-                ))}
-              </SortableContext>
+                )}
 
-              <DragOverlay>
-                {activeStatus ? (
-                  <StatusRow
-                    status={activeStatus}
-                    showArchived={config.showArchived}
-                    isEditing={false}
-                    isOverlay
-                    onEdit={() => { }}
-                    onDelete={() => { }}
-                    onSaveEdit={() => { }}
-                    onCancelEdit={() => { }}
-                  />
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-
-            {isAdding && (
-              <AddStatusRow
-                onAdd={handleAdd}
-                onCancel={() => setIsAdding(false)}
-                isSaving={isSavingNewStatus}
-              />
-            )}
-
-            {items.length === 0 && !isAdding && (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                  <Plus size={18} />
-                </div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  No statuses available
-                </p>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  Add a new status to get started.
-                </p>
-              </div>
+                {items.length === 0 && !isAdding && (
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                      <Plus size={18} />
+                    </div>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      No statuses available
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                      Add a new status to get started.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

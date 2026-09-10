@@ -11,7 +11,6 @@ import {
 } from '@/src/modules/project/hooks/useProject';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { AddProjectMembersPayload } from '@/src/types/project';
-import { ROLE_LABELS, ROLE_TYPE, PROJECT_ROLES } from '@/src/app/components/common/enum';
 import { showToast } from '@/src/utils/toast';
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetProjectMembers, useRemoveProjectMember } from '../hooks/useTeams';
@@ -30,7 +29,7 @@ const MembersSettings = () => {
 
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [memberRoles, setMemberRoles] = useState<Record<string, ROLE_TYPE>>({});
+  const [memberRoles, setMemberRoles] = useState<Record<string, string>>({});
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
@@ -149,10 +148,12 @@ const MembersSettings = () => {
     }));
   }, [users]);
 
-  const roleOptions = PROJECT_ROLES.map((role) => ({
-    value: role,
-    label: ROLE_LABELS[role],
-  }));
+  const roleOptions = useMemo(() => {
+    return roles.map((role) => ({
+      value: role.id,
+      label: role.name,
+    }));
+  }, [roles]);
 
   const handleMemberChange = (members: string[]) => {
     setSelectedMembers(members);
@@ -161,7 +162,9 @@ const MembersSettings = () => {
 
       members.forEach((id) => {
         if (!updated[id]) {
-          updated[id] = ROLE_TYPE.DEVELOPER;
+          // Set default role to the first available role from API
+          const defaultRole = roles.length > 0 ? roles[0].id : '';
+          updated[id] = defaultRole;
         }
       });
 
@@ -186,12 +189,17 @@ const MembersSettings = () => {
       return;
     }
 
+    if (roles.length === 0) {
+      showToast.error('No roles available. Please create roles first.');
+      return;
+    }
+
     try {
       const payload: AddProjectMembersPayload = {
         project_id: projectId,
         members: selectedMembers.map((memberId) => ({
           user_id: memberId,
-          project_role: memberRoles[memberId],
+          role_id: memberRoles[memberId],
         })),
       };
 
@@ -543,13 +551,27 @@ const MembersSettings = () => {
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5">
+              {isRolesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-sm text-gray-500 dark:text-slate-400">
+                    Loading roles...
+                  </div>
+                </div>
+              ) : roles.length === 0 ? (
+                <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4 mb-4">
+                  <p className="text-sm text-amber-800 dark:text-amber-300">
+                    No roles available. Please create roles in Settings → Permissions before adding members.
+                  </p>
+                </div>
+              ) : null}
+
               <WpMultiSelect
                 label="Members"
                 options={memberOptions}
                 value={selectedMembers}
                 onChange={handleMemberChange}
                 placeholder={isUsersLoading ? 'Loading members...' : 'Select members'}
-                disabled={isUsersLoading}
+                disabled={isUsersLoading || isRolesLoading || roles.length === 0}
                 hint="You can select multiple members to add to this project"
               />
 
@@ -573,16 +595,17 @@ const MembersSettings = () => {
                               {member?.label}
                             </div>
 
-                            <div className="flex-1">
+                            <div className="flex-1 mt-5">
                               <WpDropdown
                                 options={roleOptions}
                                 value={memberRoles[memberId]}
                                 onChange={(value) =>
                                   setMemberRoles((prev) => ({
                                     ...prev,
-                                    [memberId]: value as ROLE_TYPE,
+                                    [memberId]: value,
                                   }))
                                 }
+                                disabled={isRolesLoading}
                               />
                             </div>
                           </div>
@@ -620,7 +643,7 @@ const MembersSettings = () => {
                 type="button"
                 variant="primary"
                 size="md"
-                disabled={!selectedMembers.length || isAddingMembers}
+                disabled={!selectedMembers.length || isAddingMembers || roles.length === 0}
                 onClick={handleAddMember}
               >
                 {isAddingMembers

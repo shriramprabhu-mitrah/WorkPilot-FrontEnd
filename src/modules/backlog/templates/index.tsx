@@ -2339,7 +2339,6 @@ export const BacklogTemplate = () => {
           projectId={selectedProject}
           onClose={() => setShowAddSprintModal(false)}
           onSuccess={async () => {
-            await refetchSprints();
             setShowAddSprintModal(false);
           }}
         />
@@ -2362,8 +2361,6 @@ export const BacklogTemplate = () => {
 
               setShowStartSprintModal(false);
               setActionSprint(null);
-
-              await refetchSprints();
             } catch {
               // API error is handled by apiService
             }
@@ -2384,7 +2381,7 @@ export const BacklogTemplate = () => {
               toast.success('Sprint completed successfully');
 
               setSelectedCompleteSprint(null);
-              await refetchSprints();
+              
             } catch {
               toast.error('Failed to complete sprint');
             }

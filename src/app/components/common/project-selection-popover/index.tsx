@@ -191,11 +191,7 @@ export const ProjectSelectionPopover = ({
               </div>
 
               <div
-                className="mt-4 rounded-lg border p-3 dark:bg-gray-900"
-                style={{
-                  backgroundColor: colors.primaryLight,
-                  borderColor: colors.primary,
-                }}
+                className="mt-4 rounded-lg border p-3 dark:bg-gray-100"
               >
                 <p className="text-xs text-gray-700 dark:text-slate-300">
                   <span className="font-semibold text-gray-900 dark:text-slate-100">Tip:</span> You

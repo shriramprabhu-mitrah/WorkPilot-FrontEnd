@@ -2335,10 +2335,9 @@ export const UserStoryDetailDrawer = ({
                         <WpButton
                           variant="ghost"
                           onClick={handleAssignToMe}
-                          disabled={isSaving}
                           className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
                         >
-                          {isSaving ? 'Assigning...' : 'Assign to me'}
+                         Assign to me
                         </WpButton>
                       )}
                     </DetailRow>
@@ -2369,7 +2368,7 @@ export const UserStoryDetailDrawer = ({
                             </span>
                           )}
                           <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                            {userStoryData.reporterName || 'Unassigned'}
+                            {userStoryData.reporterName}
                           </span>
                           {canEditUserStory && (
                             <ChevronDown
@@ -2447,27 +2446,6 @@ export const UserStoryDetailDrawer = ({
                                 <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
                                   No members found
                                 </div>
-                              )}
-
-                            {/* Unassigned option */}
-                            {!isLoadingReporterMembers &&
-                              !isFetchingReporterMembers &&
-                              !reporterSearch && (
-                                <WpButton
-                                  type="button"
-                                  variant="ghost"
-                                  onClick={async () => {
-                                    setShowReporterMenu(false);
-                                    setReporterSearch('');
-                                    await handleUpdate({ reporterId: '', reporterName: '' });
-                                  }}
-                                  className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
-                                >
-                                  <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
-                                    <User size={11} className="text-gray-400 dark:text-slate-400" />
-                                  </span>
-                                  Unassigned
-                                </WpButton>
                               )}
                           </div>
                         )}

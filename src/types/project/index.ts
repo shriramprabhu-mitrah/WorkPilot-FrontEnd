@@ -57,7 +57,8 @@ export interface AddProjectMembersPayload {
   project_id: string;
   members: {
     user_id: string;
-    project_role: string;
+    role_id?: string;
+    project_role?: string; // Kept for backward compatibility
   }[];
 }
 

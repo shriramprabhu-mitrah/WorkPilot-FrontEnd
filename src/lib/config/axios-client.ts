@@ -7,6 +7,7 @@ import { signupService } from '@/src/services/signup';
 export const axiosInstance = axios.create({
   baseURL: '/api/v1',
   headers: {
+    'ngrok-skip-browser-warning': 'true',
     'Content-Type': 'application/json',
   },
   withCredentials: true,

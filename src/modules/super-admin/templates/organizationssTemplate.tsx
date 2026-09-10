@@ -81,6 +81,7 @@ export const OrganizationsTemplate = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [imageErrorIds, setImageErrorIds] = useState<Set<string>>(new Set());
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -290,8 +291,23 @@ export const OrganizationsTemplate = () => {
                     >
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0">
-                            {getInitials(org.name)}
+                          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
+                            {org.logo_url && !imageErrorIds.has(org.id) ? (
+                              <img
+                                src={org.logo_url}
+                                alt={org.name}
+                                className="w-full h-full object-cover"
+                                onError={() =>
+                                  setImageErrorIds((prev) => {
+                                    const next = new Set(prev);
+                                    next.add(org.id);
+                                    return next;
+                                  })
+                                }
+                              />
+                            ) : (
+                              getInitials(org.name)
+                            )}
                           </div>
 
                           <div>
@@ -335,11 +351,11 @@ export const OrganizationsTemplate = () => {
                         </span>
                       </td>
 
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-200">
-                        {new Date(org.created_at).toLocaleDateString()}
-                      </span>
-                    </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-500 dark:text-slate-200">
+                          {new Date(org.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
 
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">

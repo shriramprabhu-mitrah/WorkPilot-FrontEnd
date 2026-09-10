@@ -1,6 +1,6 @@
 'use client';
 import ProjectCard from '../projectCard';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ProjectFilter, filters } from '@/src/app/components/common/enum';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
@@ -78,13 +78,10 @@ const ProjectPage = () => {
   const searchParams = useSearchParams();
   const { canCreateProject } = usePermissions();
 
-  // Derive initial modal state from URL params
-  const shouldOpenModal = searchParams.get('openCreate') === 'true' && canCreateProject;
-
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<ProjectFilter>(ProjectFilter.ALL);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [isModalOpen, setIsModalOpen] = useState(shouldOpenModal);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
   const dispatch = useAppDispatch();
@@ -93,6 +90,15 @@ const ProjectPage = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [view, setView] = useState<ViewType>('grid');
   const [page, setPage] = useState(1);
+
+const shouldOpenCreateModal = searchParams.get('openCreate') === 'true' && canCreateProject;
+useEffect(() => {
+  if (!shouldOpenCreateModal) return;
+  const timeoutId = setTimeout(() => {
+    setIsModalOpen(true);
+  }, 0);
+  return () => clearTimeout(timeoutId);
+}, [shouldOpenCreateModal]);
 
   const pageSize = 10;
   const {
@@ -116,6 +122,16 @@ const ProjectPage = () => {
   const handleFilterChange = (value: ProjectFilter) => {
     setSelectedFilter(value);
     setPage(1);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setProjectName('');
+    setDescription('');
+    // Clear the openCreate query parameter
+    if (searchParams.get('openCreate') === 'true') {
+      replace('/projects');
+    }
   };
   const allProjects = useMemo((): Project[] => {
     if (!apiProjects || !Array.isArray(apiProjects)) return [];
@@ -146,10 +162,7 @@ const ProjectPage = () => {
       };
 
       const response = await createProjectAsync(payload);
-      setIsModalOpen(false);
-
-      setProjectName('');
-      setDescription('');
+      handleCloseModal();
 
       const createdProject = response?.data as { project_id?: string };
 
@@ -207,7 +220,7 @@ const ProjectPage = () => {
   };
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-gray-50">
-      <div className="sticky top-0 z-20 bg-gray-50 px-1 pt-1 pb-4">
+      <div className="sticky top-0 z-20 bg-gray-50 px-1 pt-1 pb-4 m-2">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h1 className="text-[25px] font-bold text-gray-900">Projects</h1>
@@ -264,7 +277,7 @@ const ProjectPage = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8">
+      <div className="flex-1 overflow-y-auto [scrollbar-width:thin] pb-8 m-2">
         {isFetchingProjects && !isLoadingProjects && (
           <div className="mb-3 flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -370,11 +383,7 @@ const ProjectPage = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setProjectName('');
-                    setDescription('');
-                    setIsModalOpen(false);
-                  }}
+                  onClick={handleCloseModal}
                   aria-label="Close modal"
                   className="!p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-slate-200"
                   leftIcon={<X size={18} />}
@@ -414,11 +423,7 @@ const ProjectPage = () => {
                 <WpButton
                   variant="secondary"
                   size="sm"
-                  onClick={() => {
-                    setProjectName('');
-                    setDescription('');
-                    setIsModalOpen(false);
-                  }}
+                  onClick={handleCloseModal}
                   disabled={isCreatingProject}
                 >
                   Cancel

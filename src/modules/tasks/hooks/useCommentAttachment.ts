@@ -67,13 +67,13 @@ export const useUploadCommentAttachment = (taskUuid: string) => {
 export const useDownloadAttachment = () => {
   return useMutation({
     mutationFn: ({
-      projectId,
       taskId,
+      commentId,
       attachmentId,
     }: {
-      projectId: string;
       taskId: string;
+      commentId: string;
       attachmentId: string;
-    }) => commentAttachmentService.downloadAttachment(projectId, taskId, attachmentId),
+    }) => commentAttachmentService.downloadAttachment(taskId, commentId, attachmentId),
   });
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
@@ -57,6 +57,16 @@ const EditProjectModal = ({
 
   const { updateProjectAsync, isUpdatingProject } = useUpdateProject();
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const handleChange = (field: keyof UpdateProjectPayload, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -103,16 +113,23 @@ const EditProjectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm overflow-y-auto pt-16 pb-8"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         className="
           w-full max-w-2xl
-          max-h-[90vh]
+          max-h-[calc(100vh-8rem)]
           overflow-y-auto
           rounded-2xl
           bg-white dark:bg-slate-900
           shadow-xl
+          mb-8
         "
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">

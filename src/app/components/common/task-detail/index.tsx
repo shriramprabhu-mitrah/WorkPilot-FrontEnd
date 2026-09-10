@@ -1851,36 +1851,6 @@ export const TaskDetailDrawer = ({
                                 No members found
                               </div>
                             )}
-
-                          {/* None option */}
-                          {!isLoadingReporterMembers &&
-                            !isFetchingReporterMembers &&
-                            !reporterSearch && (
-                              <WpButton
-                                type="button"
-                                variant="ghost"
-                                onClick={async () => {
-                                  setTaskData((prev) => ({
-                                    ...prev,
-                                    reporterId: '',
-                                    reporterName: '',
-                                    reporterInitials: '',
-                                    reporterColor: '',
-                                  }));
-                                  setShowReporterMenu(false);
-                                  setReporterSearch('');
-                                  if (!task.projectId || !task.taskId) return;
-                                  try {
-                                    await taskService.updateTask(task.projectId, task.taskId, {
-                                      reporter_id: null,
-                                    });
-                                  } catch (error) {
-                                    logger.log('Failed to clear reporter', error);
-                                  }
-                                }}
-                                className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
-                              ></WpButton>
-                            )}
                         </div>
                       )}
                     </div>

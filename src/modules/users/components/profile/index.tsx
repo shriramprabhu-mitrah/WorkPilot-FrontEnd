@@ -204,15 +204,6 @@ export default function Profile() {
                   {getInitials(displayName)}
                 </div>
               )}
-              {isEditing && (
-                <WpButton
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute -top-1 -right-1 !w-8 !h-8 !min-w-0 !p-0 rounded-full !bg-blue-600 !text-white shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200"
-                >
-                  <Pencil size={14} />
-                </WpButton>
-              )}
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             <div className="mb-1 flex items-center justify-center gap-2">

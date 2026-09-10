@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Plus, User } from 'lucide-react';
+import { Check, ChevronDown, Flag, Plus, User } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -16,9 +16,11 @@ import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { useGetChildTasks, useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import { TaskResponse } from '@/src/types/task';
-import { KanbanTask, ColumnId } from '@/src/types/board';
+import { KanbanTask, ColumnId, Priority } from '@/src/types/board';
 import { logger } from '@/src/lib/utils/logger';
 import toast from 'react-hot-toast';
+import { Chip } from '../chip';
+import { PRIORITY_CONFIG } from '../task-detail/components/badges';
 
 import { usePermissions } from '@/src/hooks/usePermissions';
 
@@ -416,9 +418,22 @@ export const ChildTasksPanel = ({
 
                     {/* Priority */}
                     <td className="px-4 py-3">
-                      <span className="text-gray-700 dark:text-slate-300 capitalize">
-                        {task.priority || 'Medium'}
-                      </span>
+                      {(() => {
+                        const normalized = task.priority
+                          ? ((task.priority.charAt(0).toUpperCase() +
+                              task.priority.slice(1).toLowerCase()) as Priority)
+                          : ('Medium' as Priority);
+                        const config =
+                          PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
+                        return (
+                          <Chip
+                            label={normalized}
+                            color={config.color}
+                            bg={config.bg}
+                            icon={<Flag size={11} />}
+                          />
+                        );
+                      })()}
                     </td>
 
                     {/* Assignee */}
