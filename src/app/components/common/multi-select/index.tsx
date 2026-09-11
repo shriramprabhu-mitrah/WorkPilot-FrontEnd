@@ -93,14 +93,21 @@ export const WpMultiSelect = ({
 
                   {option.label}
 
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
                     onClick={(e) => handleRemoveChip(option.value, e)}
-                    className="rounded-full p-0.5 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800/60"
-                    disabled={disabled}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRemoveChip(option.value, e as unknown as React.MouseEvent);
+                      }
+                    }}
+                    className="rounded-full p-0.5 transition-colors hover:bg-blue-100 dark:hover:bg-blue-800/60 cursor-pointer"
+                    aria-label={`Remove ${option.label}`}
                   >
                     <X size={12} className="text-blue-700 dark:text-blue-300" />
-                  </button>
+                  </span>
                 </span>
               ))
             )}

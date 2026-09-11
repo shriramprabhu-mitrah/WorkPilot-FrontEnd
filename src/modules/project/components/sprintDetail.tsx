@@ -16,9 +16,9 @@ import { UserStoryResponse } from '@/src/types/userstories';
 import { useGetProjectMembers } from '../hooks/useProject';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetUserStories, useDeleteUserStory } from '../../tasks/hooks/useUserStory';
-import { colors } from '@/src/styles/colors';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { useQueryClient } from '@tanstack/react-query';
+import { PriorityBadge, StatusBadge } from '@/src/app/components/common/task';
 
 const SprintDetail = () => {
   const router = useRouter();
@@ -97,45 +97,6 @@ const SprintDetail = () => {
 
   const handleSprintSuccess = async () => {
     await refetch();
-  };
-
-  // Priority UI helper
-  const getPriorityStyle = (priority?: string | null) => {
-    switch (priority?.toLowerCase()) {
-      case 'critical':
-        return { backgroundColor: colors.priorityCriticalBg, color: colors.priorityCriticalText };
-      case 'high':
-        return { backgroundColor: colors.priorityHighBg, color: colors.priorityHighText };
-      case 'medium':
-        return { backgroundColor: colors.priorityMediumBg, color: colors.priorityMediumText };
-      case 'low':
-        return { backgroundColor: colors.priorityLowBg, color: colors.priorityLowText };
-      default:
-        return { backgroundColor: colors.gray100, color: colors.gray500 };
-    }
-  };
-
-  // Status UI helper
-  const getStatusStyle = (status?: string | null) => {
-    switch (status?.toLowerCase()) {
-      case 'done':
-      case 'completed':
-        return { backgroundColor: colors.colDoneBg, color: colors.colDone };
-      case 'in_progress':
-      case 'in progress':
-        return { backgroundColor: colors.colInProgressBg, color: colors.colInProgress };
-      case 'in_review':
-      case 'in review':
-        return { backgroundColor: colors.colInReviewBg, color: colors.colInReview };
-      case 'testing':
-        return { backgroundColor: colors.priorityMediumBg, color: colors.priorityMediumText };
-      case 'blocked':
-        return { backgroundColor: '#FEE2E2', color: '#DC2626' };
-      case 'todo':
-      case 'to do':
-      default:
-        return { backgroundColor: colors.colTodoBg, color: colors.colTodo };
-    }
   };
 
   if (isLoadingSprint || isLoadingTasks) {
@@ -309,8 +270,6 @@ const SprintDetail = () => {
           {/* Story rows */}
           {(tasksList || []).map((story) => {
             const userStoryId = story.id ?? '';
-            const priorityStyle = getPriorityStyle(story.priority);
-            const statusStyle = getStatusStyle(story.status);
             const isSelected = selectedUserStoryIds.includes(userStoryId);
 
             return (
@@ -333,6 +292,13 @@ const SprintDetail = () => {
                   />
                 )}
 
+                {/* Story key */}
+                {story.key && (
+                  <span className="rounded bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                    {story.key}
+                  </span>
+                )}
+
                 {/* Story title */}
                 <div
                   onClick={() => setSelectedUserStory(story)}
@@ -349,14 +315,6 @@ const SprintDetail = () => {
                   )}
                 </div>
 
-                {/* Priority */}
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0 font-medium w-16 text-center"
-                  style={priorityStyle}
-                >
-                  {story.priority ?? 'medium'}
-                </span>
-
                 {/* Story points */}
                 <span
                   className="flex items-center gap-0.5 text-xs w-10 shrink-0 text-gray-400 dark:text-slate-100"
@@ -366,13 +324,15 @@ const SprintDetail = () => {
                   {story.story_points ?? 0}
                 </span>
 
+                {/* Priority */}
+                <div className="shrink-0">
+                  <PriorityBadge priority={story.priority ?? 'medium'} />
+                </div>
+
                 {/* Status */}
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full capitalize shrink-0 font-medium w-20 text-center"
-                  style={statusStyle}
-                >
-                  {story.status ?? 'todo'}
-                </span>
+                <div className="shrink-0">
+                  <StatusBadge status={story.status ?? 'todo'} color={story.status_color} />
+                </div>
               </div>
             );
           })}

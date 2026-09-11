@@ -83,7 +83,7 @@ export const StatusBadge = ({ status, color }: StatusBadgeProps) => {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap"
+      className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap min-w-[90px]"
       style={{
         color: statusColor,
         backgroundColor: statusBg,

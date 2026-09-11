@@ -226,7 +226,7 @@ export const TaskDetailDrawer = ({
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
-    status: task.status ?? task.columnId ?? '',
+    status: task.columnId ?? task.status ?? '',
     project_id: effectiveProjectId,
     description: task.description ?? '',
     priority: task.priority,
@@ -276,7 +276,7 @@ export const TaskDetailDrawer = ({
       setTaskData({
         title: fetchedTask.title || '',
         subtasks: task.subtasks ?? [],
-        status: fetchedTask.status || fetchedTask.status_id || '',
+        status: fetchedTask.status_id || fetchedTask.status || '',
         project_id: fetchedTask.project_id || effectiveProjectId,
         description: apiDescription,
         priority: fetchedTask.priority

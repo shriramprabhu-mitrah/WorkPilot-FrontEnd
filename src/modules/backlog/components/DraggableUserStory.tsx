@@ -73,7 +73,33 @@ export const DraggableUserStory = ({
     return PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
   };
 
-  const getStatusStyle = (status?: string | null) => {
+  // Helper function to convert hex to rgba
+  const hexToRgba = (hex: string, opacity: number) => {
+    if (!hex) return `rgba(156, 163, 175, ${opacity})`;
+
+    const cleanHex = hex.replace('#', '');
+
+    if (cleanHex.length !== 6) {
+      return hex;
+    }
+
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const getStatusStyle = (status?: string | null, apiColor?: string | null) => {
+    // If API provides color, use it (priority)
+    if (apiColor) {
+      return {
+        backgroundColor: hexToRgba(apiColor, 0.08),
+        color: apiColor,
+      };
+    }
+
+    // Fallback to hardcoded colors if no API color
     switch (status?.toLowerCase()) {
       case 'done':
         return {
@@ -115,7 +141,7 @@ export const DraggableUserStory = ({
   const normalized = story.priority
     ? ((story.priority.charAt(0).toUpperCase() + story.priority.slice(1).toLowerCase()) as Priority)
     : ('Medium' as Priority);
-  const statusStyle = getStatusStyle(story.status);
+  const statusStyle = getStatusStyle(story.status, story.status_color);
   const linkedTasks = tasks.filter((t) => t.user_story_id === story.id);
   const taskCount =
     linkedTasks.length > 0 ? linkedTasks.length : (story.tasks?.length ?? story.total_tasks ?? 0);
