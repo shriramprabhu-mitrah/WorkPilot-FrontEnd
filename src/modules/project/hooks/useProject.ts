@@ -60,8 +60,7 @@ export const useGetProjectsWithSprints = (searchSlug?: string) => {
   }, [baseProjects, slugSearchQuery.data?.data]);
 
   const isLoadingProjectsWithSprints =
-    baseQuery.isLoading ||
-    (Boolean(targetSlug && !isAlreadyInBase) && slugSearchQuery.isLoading);
+    baseQuery.isLoading || (Boolean(targetSlug && !isAlreadyInBase) && slugSearchQuery.isLoading);
 
   return {
     projectsWithSprints,

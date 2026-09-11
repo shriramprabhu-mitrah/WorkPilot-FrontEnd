@@ -91,16 +91,18 @@ const CalendarPage = () => {
     return <ProjectNotFound slug={projectSlug} />;
   }
 
-  const sprintEvents: CalendarEvent[] = (sprints ?? []).map((sprint: SprintDetail, idx: number) => ({
-    id: sprint.id,
-    title: sprint.name,
-    start: new Date(sprint.start_date),
-    end: new Date(sprint.end_date),
-    type: 'Sprint',
-    status: sprint.status,
-    colorIndex: idx,
-    sprint,
-  }));
+  const sprintEvents: CalendarEvent[] = (sprints ?? []).map(
+    (sprint: SprintDetail, idx: number) => ({
+      id: sprint.id,
+      title: sprint.name,
+      start: new Date(sprint.start_date),
+      end: new Date(sprint.end_date),
+      type: 'Sprint',
+      status: sprint.status,
+      colorIndex: idx,
+      sprint,
+    })
+  );
 
   const allEvents = [...sprintEvents];
   const displayEvents = currentView === Views.MONTH ? allEvents : expandMultiDayEvents(allEvents);

@@ -325,7 +325,9 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
                 onClick={handleMoveToBacklog}
                 disabled={isMovingToBacklog || !userStory.sprint_id}
                 leftIcon={<Archive size={14} />}
-                title={!userStory.sprint_id ? 'User story is already in the backlog' : 'Move to Backlog'}
+                title={
+                  !userStory.sprint_id ? 'User story is already in the backlog' : 'Move to Backlog'
+                }
                 className={!userStory.sprint_id ? 'opacity-60 cursor-not-allowed' : ''}
               >
                 {isMovingToBacklog

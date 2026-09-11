@@ -113,7 +113,7 @@ const EditProjectModal = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm overflow-y-auto pt-16 pb-8"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

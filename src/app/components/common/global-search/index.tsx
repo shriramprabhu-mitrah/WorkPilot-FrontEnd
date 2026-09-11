@@ -339,22 +339,22 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
           push('/teams');
         },
       },
-         ...(isOrgAdmin
-      ? [
-          {
-            title: 'Settings',
-            desc: 'Configure organization and workspace settings',
-            icon: <Settings size={16} className="text-purple-600 dark:text-purple-400" />,
-            action: () => {
-              onClose();
-              push('/settings');
+      ...(isOrgAdmin
+        ? [
+            {
+              title: 'Settings',
+              desc: 'Configure organization and workspace settings',
+              icon: <Settings size={16} className="text-purple-600 dark:text-purple-400" />,
+              action: () => {
+                onClose();
+                push('/settings');
+              },
             },
-          },
-        ]
-      : []),
-  ],
-  [onClose, push, isOrgAdmin]
-);
+          ]
+        : []),
+    ],
+    [onClose, push, isOrgAdmin]
+  );
 
   // Keyboard navigation listener inside modal
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

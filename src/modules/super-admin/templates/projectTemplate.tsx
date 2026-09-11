@@ -56,9 +56,7 @@ export const ProjectsTemplate = () => {
    * - Show only table row skeletons
    */
   const isPaginationLoading =
-    isFetchingProjects &&
-    isPlaceholderData &&
-    Number(meta?.page) !== page;
+    isFetchingProjects && isPlaceholderData && Number(meta?.page) !== page;
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -157,136 +155,131 @@ export const ProjectsTemplate = () => {
 
             {/* Table Body */}
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-              {isPaginationLoading ? (
-                /*
-                 * Page number clicked:
-                 * Keep header/search/footer normal.
-                 * Show skeleton only inside table rows.
-                 */
-                Array.from({ length: 8 }).map((_, index) => (
-                  <tr key={`skeleton-${index}`}>
-                    {/* Project */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="w-8 h-8 rounded" />
-                        <Skeleton className="h-4 w-28" />
-                      </div>
-                    </td>
-
-                    {/* Organization */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-
-                    {/* Key */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-4 w-12" />
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-6 w-16 rounded-full" />
-                    </td>
-
-                    {/* Sprints */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-4 w-8" />
-                    </td>
-
-                    {/* Members */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-4 w-8" />
-                    </td>
-
-                    {/* Created */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-4 w-20" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                projects.map((project) => {
-                  const statusStyle = getStatusStyle(project.status);
-
-                  return (
-                    <tr
-                      key={project.id}
-                      className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
-                    >
+              {isPaginationLoading
+                ? /*
+                   * Page number clicked:
+                   * Keep header/search/footer normal.
+                   * Show skeleton only inside table rows.
+                   */
+                  Array.from({ length: 8 }).map((_, index) => (
+                    <tr key={`skeleton-${index}`}>
                       {/* Project */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
-                            {(project.project_key ?? '')
-                              .slice(0, 3)
-                              .toUpperCase()}
-                          </div>
-
-                          <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
-                            {project.name}
-                          </span>
+                          <Skeleton className="w-8 h-8 rounded" />
+                          <Skeleton className="h-4 w-28" />
                         </div>
                       </td>
 
                       {/* Organization */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {project.organization_name || '-'}
-                        </span>
+                        <Skeleton className="h-4 w-32" />
                       </td>
 
                       {/* Key */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm font-mono text-gray-600 dark:text-slate-200">
-                          {project.project_key}
-                        </span>
+                        <Skeleton className="h-4 w-12" />
                       </td>
 
                       {/* Status */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}
-                        >
-                          {project.status}
-                        </span>
+                        <Skeleton className="h-6 w-16 rounded-full" />
                       </td>
 
                       {/* Sprints */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {project.sprint_count}
-                        </span>
+                        <Skeleton className="h-4 w-8" />
                       </td>
 
                       {/* Members */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {project.total_members}
-                        </span>
+                        <Skeleton className="h-4 w-8" />
                       </td>
 
                       {/* Created */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500 dark:text-slate-200">
-                          {new Date(project.created_at).toLocaleDateString()}
-                        </span>
+                        <Skeleton className="h-4 w-20" />
                       </td>
                     </tr>
-                  );
-                })
-              )}
+                  ))
+                : projects.map((project) => {
+                    const statusStyle = getStatusStyle(project.status);
+
+                    return (
+                      <tr
+                        key={project.id}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                      >
+                        {/* Project */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0">
+                              {(project.project_key ?? '').slice(0, 3).toUpperCase()}
+                            </div>
+
+                            <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                              {project.name}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Organization */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.organization_name || '-'}
+                          </span>
+                        </td>
+
+                        {/* Key */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm font-mono text-gray-600 dark:text-slate-200">
+                            {project.project_key}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.color} ${statusStyle.bg}`}
+                          >
+                            {project.status}
+                          </span>
+                        </td>
+
+                        {/* Sprints */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.sprint_count}
+                          </span>
+                        </td>
+
+                        {/* Members */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {project.total_members}
+                          </span>
+                        </td>
+
+                        {/* Created */}
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500 dark:text-slate-200">
+                            {new Date(project.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
             </tbody>
           </table>
 
           {/* Empty State */}
-          {projects.length === 0 &&
-            !isFetchingProjects && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-slate-400 text-sm">
-                  No projects found matching your search.
-                </p>
-              </div>
-            )}
+          {projects.length === 0 && !isFetchingProjects && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-slate-400 text-sm">
+                No projects found matching your search.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Pagination Controls */}
@@ -295,22 +288,11 @@ export const ProjectsTemplate = () => {
             <Pagination
               meta={{
                 page: meta.page,
-                page_size:
-                  meta.page_size ?? meta.pageSize ?? pageSize,
-                total_items:
-                  meta.total_items ?? meta.totalItems,
-                total_pages:
-                  meta.total_pages ?? meta.totalPages ?? 0,
-                has_next:
-                  meta.has_next ??
-                  meta.hasNextPage ??
-                  meta.has_next_page ??
-                  false,
-                has_previous:
-                  meta.has_previous ??
-                  meta.hasPrevPage ??
-                  meta.has_prev_page ??
-                  false,
+                page_size: meta.page_size ?? meta.pageSize ?? pageSize,
+                total_items: meta.total_items ?? meta.totalItems,
+                total_pages: meta.total_pages ?? meta.totalPages ?? 0,
+                has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
+                has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
               }}
               currentPage={page}
               pageSize={pageSize}

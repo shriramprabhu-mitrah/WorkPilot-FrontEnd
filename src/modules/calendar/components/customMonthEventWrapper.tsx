@@ -155,4 +155,3 @@ const EventWrapper = ({
 };
 
 export default EventWrapper;
-  

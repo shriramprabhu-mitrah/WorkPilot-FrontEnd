@@ -28,7 +28,9 @@ class DashboardService {
       q: query,
     });
 
-    return apiService.get<import('@/src/types/search').GlobalSearchData>(url, { showErrorToast: false });
+    return apiService.get<import('@/src/types/search').GlobalSearchData>(url, {
+      showErrorToast: false,
+    });
   }
 }
 

@@ -257,7 +257,9 @@ export const EditablePriority = ({
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               <PriorityDot priority={priority} />
-              {priority === value && <Check size={11} className="ml-auto text-blue-500 dark:text-blue-400" />}
+              {priority === value && (
+                <Check size={11} className="ml-auto text-blue-500 dark:text-blue-400" />
+              )}
             </button>
           ))}
         </div>

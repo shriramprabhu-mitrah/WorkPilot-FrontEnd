@@ -108,9 +108,7 @@ const StatusModal = ({ projectId, mode, status, statuses, onClose }: StatusModal
   return (
     <>
       {/* Main Modal */}
-      <div
-        className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4"
-      >
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
         <div
           className="w-full max-w-md rounded-2xl bg-white shadow-2xl"
           onClick={(event) => event.stopPropagation()}

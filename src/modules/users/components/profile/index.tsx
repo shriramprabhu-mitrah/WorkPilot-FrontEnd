@@ -52,7 +52,7 @@ export default function Profile() {
       setPwdData({ old_password: '', new_password: '' });
       setTimeout(() => {
         setPwdSuccess(false);
-        
+
         // Only redirect if this was a required password change
         if (requirePasswordChange) {
           if (user?.role === 'super_admin') {
@@ -81,7 +81,7 @@ export default function Profile() {
         // From navbar - just open the form and scroll
         setIsChangingPwd(true);
       }
-      
+
       changePasswordRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',

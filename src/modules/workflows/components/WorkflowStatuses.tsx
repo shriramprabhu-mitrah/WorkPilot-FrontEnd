@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Check,
-  GripVertical,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { Check, GripVertical, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { WpButton } from '@/src/app/components/common/button';
@@ -23,11 +16,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import { CSS } from '@dnd-kit/utilities';
 
@@ -48,14 +37,7 @@ const SortableStatusRow = ({
   onDelete,
   canDelete,
 }: SortableStatusRowProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: status.id,
   });
 
@@ -64,19 +46,15 @@ const SortableStatusRow = ({
     transition,
   };
 
-  const isSelected =
-    selectedStatusId === status.id;
+  const isSelected = selectedStatusId === status.id;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center rounded-md transition ${isDragging
-          ? 'z-10 bg-white shadow-md'
-          : isSelected
-            ? 'bg-gray-100'
-            : 'hover:bg-gray-50'
-        }`}
+      className={`group flex items-center rounded-md transition ${
+        isDragging ? 'z-10 bg-white shadow-md' : isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'
+      }`}
     >
       {/* Drag handle */}
       <button
@@ -92,9 +70,7 @@ const SortableStatusRow = ({
       {/* Status */}
       <button
         type="button"
-        onClick={() =>
-          onSelectStatus(status.id)
-        }
+        onClick={() => onSelectStatus(status.id)}
         className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left"
       >
         <span
@@ -108,9 +84,7 @@ const SortableStatusRow = ({
           {status.name}
         </span>
 
-        <span className="mr-2 shrink-0 text-[10px] text-gray-400">
-          {status.category}
-        </span>
+        <span className="mr-2 shrink-0 text-[10px] text-gray-400">{status.category}</span>
       </button>
 
       {/* Actions */}
@@ -126,9 +100,7 @@ const SortableStatusRow = ({
 
         <button
           type="button"
-          onClick={() =>
-            onDelete(status.id)
-          }
+          onClick={() => onDelete(status.id)}
           disabled={!canDelete}
           className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30"
           aria-label={`Delete ${status.name}`}
@@ -145,23 +117,12 @@ interface WorkflowStatusesProps {
   selectedStatusId: string | null;
   onSelectStatus: (statusId: string) => void;
   onAddStatus: (name: string) => void;
-  onUpdateStatus: (
-    statusId: string,
-    updates: Partial<WorkflowStatus>
-  ) => void;
+  onUpdateStatus: (statusId: string, updates: Partial<WorkflowStatus>) => void;
   onDeleteStatus: (statusId: string) => void;
-  onReorder: (
-    activeId: string,
-    overId: string
-  ) => void;
+  onReorder: (activeId: string, overId: string) => void;
 }
 
-const categories = [
-  'To Do',
-  'In Progress',
-  'Done',
-  'Cancelled',
-];
+const categories = ['To Do', 'In Progress', 'Done', 'Cancelled'];
 
 const WorkflowStatuses = ({
   statuses,
@@ -172,23 +133,17 @@ const WorkflowStatuses = ({
   onDeleteStatus,
   onReorder,
 }: WorkflowStatusesProps) => {
-  const [showForm, setShowForm] =
-    useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [editingId, setEditingId] =
-    useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [editName, setEditName] =
-    useState('');
+  const [editName, setEditName] = useState('');
 
-  const [editCategory, setEditCategory] =
-    useState('');
+  const [editCategory, setEditCategory] = useState('');
 
-  const [editColor, setEditColor] =
-    useState('#64748B');
+  const [editColor, setEditColor] = useState('#64748B');
 
-  const [newStatusName, setNewStatusName] =
-    useState('');
+  const [newStatusName, setNewStatusName] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -198,9 +153,7 @@ const WorkflowStatuses = ({
     })
   );
 
-  const startEditing = (
-    status: WorkflowStatus
-  ) => {
+  const startEditing = (status: WorkflowStatus) => {
     setEditingId(status.id);
     setEditName(status.name);
     setEditCategory(status.category);
@@ -215,10 +168,7 @@ const WorkflowStatuses = ({
   };
 
   const saveEditing = () => {
-    if (
-      !editingId ||
-      !editName.trim()
-    ) {
+    if (!editingId || !editName.trim()) {
       return;
     }
 
@@ -244,9 +194,7 @@ const WorkflowStatuses = ({
     setShowForm(false);
   };
 
-  const handleDelete = (
-    statusId: string
-  ) => {
+  const handleDelete = (statusId: string) => {
     if (statuses.length <= 1) {
       return;
     }
@@ -254,9 +202,7 @@ const WorkflowStatuses = ({
     onDeleteStatus(statusId);
   };
 
-  const handleDragEnd = (
-    event: DragEndEvent
-  ) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) {
@@ -267,10 +213,7 @@ const WorkflowStatuses = ({
       return;
     }
 
-    onReorder(
-      String(active.id),
-      String(over.id)
-    );
+    onReorder(String(active.id), String(over.id));
   };
 
   return (
@@ -288,17 +231,12 @@ const WorkflowStatuses = ({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={statuses.map(
-                (status) => status.id
-              )}
-              strategy={
-                verticalListSortingStrategy
-              }
+              items={statuses.map((status) => status.id)}
+              strategy={verticalListSortingStrategy}
             >
               <div className="space-y-1">
                 {statuses.map((status) => {
-                  const isEditing =
-                    editingId === status.id;
+                  const isEditing = editingId === status.id;
 
                   /*
                    * Keep the edit form outside the
@@ -319,24 +257,14 @@ const WorkflowStatuses = ({
 
                           <input
                             value={editName}
-                            onChange={(event) =>
-                              setEditName(
-                                event.target.value
-                              )
-                            }
+                            onChange={(event) => setEditName(event.target.value)}
                             autoFocus
                             onKeyDown={(event) => {
-                              if (
-                                event.key ===
-                                'Enter'
-                              ) {
+                              if (event.key === 'Enter') {
                                 saveEditing();
                               }
 
-                              if (
-                                event.key ===
-                                'Escape'
-                              ) {
+                              if (event.key === 'Escape') {
                                 cancelEditing();
                               }
                             }}
@@ -352,23 +280,14 @@ const WorkflowStatuses = ({
 
                           <select
                             value={editCategory}
-                            onChange={(event) =>
-                              setEditCategory(
-                                event.target.value
-                              )
-                            }
+                            onChange={(event) => setEditCategory(event.target.value)}
                             className="h-[32px] w-full rounded-md border border-gray-200 bg-white px-2 text-[12px] outline-none focus:border-blue-400"
                           >
-                            {categories.map(
-                              (category) => (
-                                <option
-                                  key={category}
-                                  value={category}
-                                >
-                                  {category}
-                                </option>
-                              )
-                            )}
+                            {categories.map((category) => (
+                              <option key={category} value={category}>
+                                {category}
+                              </option>
+                            ))}
                           </select>
                         </div>
 
@@ -382,21 +301,13 @@ const WorkflowStatuses = ({
                             <input
                               type="color"
                               value={editColor}
-                              onChange={(event) =>
-                                setEditColor(
-                                  event.target.value
-                                )
-                              }
+                              onChange={(event) => setEditColor(event.target.value)}
                               className="h-[32px] w-[40px] cursor-pointer rounded border border-gray-200 bg-white p-1"
                             />
 
                             <input
                               value={editColor}
-                              onChange={(event) =>
-                                setEditColor(
-                                  event.target.value
-                                )
-                              }
+                              onChange={(event) => setEditColor(event.target.value)}
                               className="h-[32px] flex-1 rounded-md border border-gray-200 bg-white px-2 text-[11px] uppercase outline-none focus:border-blue-400"
                             />
                           </div>
@@ -406,9 +317,7 @@ const WorkflowStatuses = ({
                         <div className="flex justify-end gap-1">
                           <button
                             type="button"
-                            onClick={
-                              cancelEditing
-                            }
+                            onClick={cancelEditing}
                             className="rounded-md p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
                             aria-label="Cancel"
                           >
@@ -417,12 +326,8 @@ const WorkflowStatuses = ({
 
                           <button
                             type="button"
-                            onClick={
-                              saveEditing
-                            }
-                            disabled={
-                              !editName.trim()
-                            }
+                            onClick={saveEditing}
+                            disabled={!editName.trim()}
                             className="rounded-md p-1.5 text-blue-600 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-40"
                             aria-label="Save"
                           >
@@ -437,17 +342,11 @@ const WorkflowStatuses = ({
                     <SortableStatusRow
                       key={status.id}
                       status={status}
-                      selectedStatusId={
-                        selectedStatusId
-                      }
-                      onSelectStatus={
-                        onSelectStatus
-                      }
+                      selectedStatusId={selectedStatusId}
+                      onSelectStatus={onSelectStatus}
                       onEdit={startEditing}
                       onDelete={handleDelete}
-                      canDelete={
-                        statuses.length > 1
-                      }
+                      canDelete={statuses.length > 1}
                     />
                   );
                 })}
@@ -462,9 +361,7 @@ const WorkflowStatuses = ({
         {showForm ? (
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-[12px] font-semibold text-gray-800">
-                Add status
-              </span>
+              <span className="text-[12px] font-semibold text-gray-800">Add status</span>
 
               <button
                 type="button"
@@ -482,21 +379,13 @@ const WorkflowStatuses = ({
             <input
               autoFocus
               value={newStatusName}
-              onChange={(event) =>
-                setNewStatusName(
-                  event.target.value
-                )
-              }
+              onChange={(event) => setNewStatusName(event.target.value)}
               onKeyDown={(event) => {
-                if (
-                  event.key === 'Enter'
-                ) {
+                if (event.key === 'Enter') {
                   handleAddStatus();
                 }
 
-                if (
-                  event.key === 'Escape'
-                ) {
+                if (event.key === 'Escape') {
                   setShowForm(false);
                   setNewStatusName('');
                 }
@@ -509,9 +398,7 @@ const WorkflowStatuses = ({
               type="button"
               size="sm"
               onClick={handleAddStatus}
-              disabled={
-                !newStatusName.trim()
-              }
+              disabled={!newStatusName.trim()}
               className="w-full"
             >
               <Plus size={14} />
@@ -519,12 +406,7 @@ const WorkflowStatuses = ({
             </WpButton>
           </div>
         ) : (
-          <WpButton
-            type="button"
-            size="sm"
-            onClick={() => setShowForm(true)}
-            className="w-full"
-          >
+          <WpButton type="button" size="sm" onClick={() => setShowForm(true)} className="w-full">
             <Plus size={14} />
             Add status
           </WpButton>

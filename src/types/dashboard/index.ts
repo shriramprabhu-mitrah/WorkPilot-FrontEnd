@@ -70,7 +70,7 @@ export interface DashboardActivity {
   type: string;
   details?: string;
   task_key?: string;
-  user?:DashboardActivityUser
+  user?: DashboardActivityUser;
 }
 
 export interface DashboardActivitiesResponse {

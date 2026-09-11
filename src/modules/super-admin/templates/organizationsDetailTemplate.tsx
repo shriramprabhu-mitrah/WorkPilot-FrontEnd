@@ -52,11 +52,11 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
   const getInitials = (name: string) =>
     name
       ? name
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
   const getStatusStyle = (status: string) => {
@@ -160,10 +160,11 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeTab === tab
-                ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800'
-                }`}
+              className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800'
+              }`}
             >
               {tab}{' '}
               <span className="ml-1 text-xs">
@@ -315,7 +316,7 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
                     orgMembers.map((member) => {
                       const statusStyle = getStatusStyle(member.status || 'Active');
                       // Use color from API if available, otherwise generate based on ID
-                      const avatarBgColor = member.color 
+                      const avatarBgColor = member.color;
                       return (
                         <tr
                           key={member.id}

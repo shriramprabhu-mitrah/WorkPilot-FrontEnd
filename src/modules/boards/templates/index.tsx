@@ -869,15 +869,11 @@ export const KanbanBoardTemplate = () => {
       const matchedStory = userStories?.find(
         (s) => s.id === effectiveStoryId || s.key === effectiveStoryId
       );
-      storyTasks.get(statusId)!.push(
-        mapToKanbanTask(
-          task,
-          effectiveStoryId,
-          statusId,
-          matchedStory?.key,
-          matchedStory?.title
-        )
-      );
+      storyTasks
+        .get(statusId)!
+        .push(
+          mapToKanbanTask(task, effectiveStoryId, statusId, matchedStory?.key, matchedStory?.title)
+        );
     });
 
     // 4. Map user stories with their tasks

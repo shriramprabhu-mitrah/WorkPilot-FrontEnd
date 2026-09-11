@@ -423,8 +423,7 @@ export const ChildTasksPanel = ({
                           ? ((task.priority.charAt(0).toUpperCase() +
                               task.priority.slice(1).toLowerCase()) as Priority)
                           : ('Medium' as Priority);
-                        const config =
-                          PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
+                        const config = PRIORITY_CONFIG[normalized] ?? PRIORITY_CONFIG['Medium'];
                         return (
                           <Chip
                             label={normalized}

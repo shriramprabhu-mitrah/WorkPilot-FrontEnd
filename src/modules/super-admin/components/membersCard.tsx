@@ -25,7 +25,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
       .toUpperCase()
       .slice(0, 2);
   };
-   
+
   const getAvatarColor = (id: string) => {
     const index = parseInt(id, 10) % avatarColors.length;
     return avatarColors[index];

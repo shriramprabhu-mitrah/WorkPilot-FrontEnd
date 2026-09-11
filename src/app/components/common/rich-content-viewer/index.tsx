@@ -40,7 +40,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
       if (attachmentIdFromQuery) {
         return attachmentIdFromQuery;
       }
-    } catch (e) { }
+    } catch (e) {}
 
     const match = imgSrc.match(/\/attachments\/([^/?]+)/);
 
@@ -79,8 +79,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
       link.setAttribute('rel', 'noopener noreferrer');
     });
 
-    const images =
-      containerRef.current.querySelectorAll<HTMLImageElement>('img');
+    const images = containerRef.current.querySelectorAll<HTMLImageElement>('img');
 
     images.forEach((img) => {
       if (img.parentElement?.classList.contains('img-overlay-wrapper')) {
@@ -89,8 +88,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
 
       const wrapper = document.createElement('div');
 
-      wrapper.className =
-        'img-overlay-wrapper relative inline-block group/img my-2 max-w-full';
+      wrapper.className = 'img-overlay-wrapper relative inline-block group/img my-2 max-w-full';
 
       // Wrap image
       img.parentNode?.insertBefore(wrapper, img);
@@ -245,10 +243,10 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
 
   return (
     <>
-      <div 
-        ref={containerRef} 
+      <div
+        ref={containerRef}
         className={`rich-content-viewer [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-700 hover:[&_a]:dark:text-blue-300 ${className}`}
-        dangerouslySetInnerHTML={{ __html: content }} 
+        dangerouslySetInnerHTML={{ __html: content }}
       />
 
       {/* Optional full-screen lightbox / preview */}
@@ -257,10 +255,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
           onClick={() => setSelectedPreviewImage(null)}
         >
-          <div
-            className="relative max-h-[90vh] max-w-[90vw]"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
             <img
               src={selectedPreviewImage.src}
               alt="Preview"
@@ -298,4 +293,3 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
     </>
   );
 };
-

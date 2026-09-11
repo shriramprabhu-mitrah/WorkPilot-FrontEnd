@@ -22,9 +22,13 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-200">{project.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-200">
+              {project.name}
+            </h3>
             <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">{project.code}</p>
-            <p className="mt-2 max-w-xl text-sm text-gray-500 dark:text-slate-200">{project.description}</p>
+            <p className="mt-2 max-w-xl text-sm text-gray-500 dark:text-slate-200">
+              {project.description}
+            </p>
           </div>
         </div>
 
@@ -106,7 +110,9 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
         <div className="flex items-center justify-between pt-4 border-gray-100 dark:border-gray-700">
           <div className="flex-1 text-center">
             <p className="text-xs text-gray-500 dark:text-slate-200 mr-2">Sprints</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-200 mr-2">{project.sprint_count}</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-200 mr-2">
+              {project.sprint_count}
+            </p>
           </div>
 
           <div className="" />

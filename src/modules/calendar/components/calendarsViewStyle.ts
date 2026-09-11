@@ -110,7 +110,8 @@ export const getSprintPalette = (indexOrId?: number | string): SprintColorPalett
 };
 
 export const eventStyleGetter: EventPropGetter<CalendarEvent> = (event) => {
-  const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+  const isDarkMode =
+    typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
 
   if (event.type === 'Sprint') {
     const palette = getSprintPalette(event.colorIndex ?? event.id);

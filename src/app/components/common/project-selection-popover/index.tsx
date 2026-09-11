@@ -118,9 +118,7 @@ export const ProjectSelectionPopover = ({
                 </div>
               </div>
 
-              <div
-                className="mt-4 rounded-lg border p-3 dark:bg-gray-200"
-              >
+              <div className="mt-4 rounded-lg border p-3 dark:bg-gray-200">
                 <p className="text-xs text-gray-700 dark:text-slate-300">
                   <span className="font-semibold text-gray-900 dark:text-slate-100">Note:</span>{' '}
                   Projects help you organize your work, manage sprints, and track tasks efficiently
@@ -186,9 +184,7 @@ export const ProjectSelectionPopover = ({
                 </div>
               </div>
 
-              <div
-                className="mt-4 rounded-lg border p-3 dark:bg-gray-100"
-              >
+              <div className="mt-4 rounded-lg border p-3 dark:bg-gray-100">
                 <p className="text-xs text-gray-700 dark:text-slate-300">
                   <span className="font-semibold text-gray-900 dark:text-slate-100">Tip:</span> You
                   can change your selection anytime by clicking the project selector again

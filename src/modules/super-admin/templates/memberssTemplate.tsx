@@ -60,19 +60,16 @@ export const MembersTemplate = () => {
     isPlaceholderData,
   } = useGetMembers(queryParams);
 
-  const isPaginationLoading =
-    isFetchingMembers &&
-    isPlaceholderData &&
-    Number(meta?.page) !== page;
+  const isPaginationLoading = isFetchingMembers && isPlaceholderData && Number(meta?.page) !== page;
 
   const getInitials = (name: string) =>
     name
       ? name
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
   const getAvatarColor = (id: string) => {
@@ -146,10 +143,11 @@ export const MembersTemplate = () => {
                       setSelectedOrg('All Organizations');
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedOrg === 'All Organizations'
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                      selectedOrg === 'All Organizations'
                         ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
                         : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                      }`}
+                    }`}
                   >
                     All Organizations
                   </button>
@@ -160,10 +158,11 @@ export const MembersTemplate = () => {
                         setSelectedOrg(org.name);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedOrg === org.name
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        selectedOrg === org.name
                           ? 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium'
                           : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                        }`}
+                      }`}
                     >
                       {org.name}
                     </button>
@@ -192,111 +191,109 @@ export const MembersTemplate = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-              {isPaginationLoading ? (
-                Array.from({ length: pageSize }).map((_, index) => (
-                  <tr key={`skeleton-${index}`}>
-                    {/* Member */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="w-8 h-8 rounded-full shrink-0" />
-                        <Skeleton className="h-3.5 w-32" />
-                      </div>
-                    </td>
-
-                    {/* Email */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-3.5 w-48" />
-                    </td>
-
-                    {/* Organization */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-3.5 w-36" />
-                    </td>
-
-                    {/* Role */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-5 w-16 rounded-md" />
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-5 w-14 rounded-full" />
-                    </td>
-
-                    {/* Joined */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <Skeleton className="h-3.5 w-20" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                members.map((member) => {
-                  const isActive = member.is_active;
-
-                  const statusCls = isActive
-                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
-                    : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
-
-                  // Use color from API if available, otherwise generate based on ID
-                  const avatarBgColor = member.color || getAvatarColor(member.id);
-
-                  return (
-                    <tr
-                      key={member.id}
-                      className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
-                    >
+              {isPaginationLoading
+                ? Array.from({ length: pageSize }).map((_, index) => (
+                    <tr key={`skeleton-${index}`}>
+                      {/* Member */}
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          {member.avatar_url ? (
-                            <img
-                              src={member.avatar_url}
-                              alt={member.name}
-                              className="w-8 h-8 rounded-full"
-                            />
-                          ) : (
-                            <div
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
-                              style={{ backgroundColor: avatarBgColor }}
-                            >
-                              {getInitials(member.name)}
-                            </div>
-                          )}
-                          <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
-                            {member.name}
-                          </span>
+                          <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                          <Skeleton className="h-3.5 w-32" />
                         </div>
                       </td>
+
+                      {/* Email */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {member.email}
-                        </span>
+                        <Skeleton className="h-3.5 w-48" />
                       </td>
+
+                      {/* Organization */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {member.organization_name || '-'}
-                        </span>
+                        <Skeleton className="h-3.5 w-36" />
                       </td>
+
+                      {/* Role */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
-                          Member
-                        </span>
+                        <Skeleton className="h-5 w-16 rounded-md" />
                       </td>
+
+                      {/* Status */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
-                        >
-                          {isActive ? 'Active' : 'Inactive'}
-                        </span>
+                        <Skeleton className="h-5 w-14 rounded-full" />
                       </td>
+
+                      {/* Joined */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
-                          {new Date(member.joined_at).toLocaleDateString()}
-                        </span>
+                        <Skeleton className="h-3.5 w-20" />
                       </td>
                     </tr>
-                  );
-                })
-              )}
+                  ))
+                : members.map((member) => {
+                    const isActive = member.is_active;
+
+                    const statusCls = isActive
+                      ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+                      : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
+
+                    // Use color from API if available, otherwise generate based on ID
+                    const avatarBgColor = member.color || getAvatarColor(member.id);
+
+                    return (
+                      <tr
+                        key={member.id}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                      >
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            {member.avatar_url ? (
+                              <img
+                                src={member.avatar_url}
+                                alt={member.name}
+                                className="w-8 h-8 rounded-full"
+                              />
+                            ) : (
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+                                style={{ backgroundColor: avatarBgColor }}
+                              >
+                                {getInitials(member.name)}
+                              </div>
+                            )}
+                            <span className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                              {member.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {member.email}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {member.organization_name || '-'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded">
+                            Member
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
+                          >
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500 dark:text-slate-400">
+                            {new Date(member.joined_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
             </tbody>
           </table>
           {members.length === 0 && !isLoadingMembers && (

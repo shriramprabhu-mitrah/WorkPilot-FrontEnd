@@ -267,15 +267,10 @@ export const SignUp = () => {
                 showRequired
               />
 
-              <PasswordStrength
-                password={password}
-                show={showPasswordStrength}
-              />
+              <PasswordStrength password={password} show={showPasswordStrength} />
             </div>
 
-            {firstErrorField === 'password' && (
-              <ErrorMessage message={errors.password?.message} />
-            )}
+            {firstErrorField === 'password' && <ErrorMessage message={errors.password?.message} />}
 
             <WpInput
               id="confirmPwd"

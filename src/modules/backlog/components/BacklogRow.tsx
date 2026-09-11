@@ -90,9 +90,7 @@ export const BacklogRow = ({
         className="ml-2 min-w-0 flex-1 flex items-center gap-1.5 truncate text-sm font-semibold text-gray-800 dark:text-slate-200"
         title={task.title ?? ''}
       >
-        {task.type?.toLowerCase() === 'bug' && (
-          <Bug size={13} className="text-red-500 shrink-0" />
-        )}
+        {task.type?.toLowerCase() === 'bug' && <Bug size={13} className="text-red-500 shrink-0" />}
         <span className="truncate">
           {(task.title ?? '').length > 50
             ? `${(task.title ?? '').slice(0, 50)}...`

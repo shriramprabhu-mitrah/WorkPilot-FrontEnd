@@ -2337,7 +2337,7 @@ export const UserStoryDetailDrawer = ({
                           onClick={handleAssignToMe}
                           className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
                         >
-                         Assign to me
+                          Assign to me
                         </WpButton>
                       )}
                     </DetailRow>

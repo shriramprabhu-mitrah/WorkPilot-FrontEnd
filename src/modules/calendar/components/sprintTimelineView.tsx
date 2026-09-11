@@ -2,7 +2,13 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 import moment from 'moment';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, ArrowRight } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Clock,
+  ArrowRight,
+} from 'lucide-react';
 import { getSprintPalette } from './calendarsViewStyle';
 import { WpButton } from '@/src/app/components/common/button';
 import MonthYearPicker from './monthhYearrPickerr';
@@ -22,19 +28,10 @@ const SprintTimelineView = ({
   onSprintClick,
 }: SprintTimelineViewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sprintEvents = useMemo(
-    () => events.filter((e) => e.type === 'Sprint'),
-    [events]
-  );
+  const sprintEvents = useMemo(() => events.filter((e) => e.type === 'Sprint'), [events]);
 
-  const startOfMonth = useMemo(
-    () => moment(currentDate).startOf('month'),
-    [currentDate]
-  );
-  const endOfMonth = useMemo(
-    () => moment(currentDate).endOf('month'),
-    [currentDate]
-  );
+  const startOfMonth = useMemo(() => moment(currentDate).startOf('month'), [currentDate]);
+  const endOfMonth = useMemo(() => moment(currentDate).endOf('month'), [currentDate]);
   const daysInMonth = useMemo(() => startOfMonth.daysInMonth(), [startOfMonth]);
 
   const days = useMemo(() => {
@@ -136,7 +133,8 @@ const SprintTimelineView = ({
         {/* Sprint Summary Metrics */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-2.5 py-1 font-medium text-gray-700 dark:text-slate-300">
-            Total Sprints: <strong className="text-gray-900 dark:text-slate-100">{stats.total}</strong>
+            Total Sprints:{' '}
+            <strong className="text-gray-900 dark:text-slate-100">{stats.total}</strong>
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-300">
             Active: <strong>{stats.active}</strong>
@@ -163,7 +161,8 @@ const SprintTimelineView = ({
               No Sprints Scheduled for {moment(currentDate).format('MMMM YYYY')}
             </h3>
             <p className="mt-1 max-w-sm text-sm text-gray-500 dark:text-slate-400">
-              There are no active or planned sprints in this period. Create a sprint in the Backlog or Project page to see its timeline track here.
+              There are no active or planned sprints in this period. Create a sprint in the Backlog
+              or Project page to see its timeline track here.
             </p>
           </div>
         ) : (
@@ -174,7 +173,10 @@ const SprintTimelineView = ({
                 <div className="flex items-center px-4 py-3 border-r border-gray-200 dark:border-slate-700 font-semibold text-xs text-gray-600 dark:text-slate-400 uppercase tracking-wider">
                   Sprint Name & Info
                 </div>
-                <div className="grid" style={{ gridTemplateColumns: `repeat(${daysInMonth}, minmax(40px, 1fr))` }}>
+                <div
+                  className="grid"
+                  style={{ gridTemplateColumns: `repeat(${daysInMonth}, minmax(40px, 1fr))` }}
+                >
                   {days.map((d) => (
                     <div
                       key={d.dayNumber}
@@ -207,13 +209,27 @@ const SprintTimelineView = ({
                   const sprintEnd = moment(sprint.end);
 
                   // Calculate column span within current month
-                  const effectiveStartDay = Math.max(1, sprintStart.isBefore(startOfMonth) ? 1 : sprintStart.date());
-                  const effectiveEndDay = Math.min(daysInMonth, sprintEnd.isAfter(endOfMonth) ? daysInMonth : sprintEnd.date());
-                  const durationDays = Math.max(1, Math.round((sprint.end.getTime() - sprint.start.getTime()) / (1000 * 60 * 60 * 24)));
+                  const effectiveStartDay = Math.max(
+                    1,
+                    sprintStart.isBefore(startOfMonth) ? 1 : sprintStart.date()
+                  );
+                  const effectiveEndDay = Math.min(
+                    daysInMonth,
+                    sprintEnd.isAfter(endOfMonth) ? daysInMonth : sprintEnd.date()
+                  );
+                  const durationDays = Math.max(
+                    1,
+                    Math.round(
+                      (sprint.end.getTime() - sprint.start.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                  );
 
                   const status = (sprint.status || '').toLowerCase();
                   const isCompleted = status.includes('complete') || status.includes('close');
-                  const isActive = status.includes('active') || status.includes('progress') || (!isCompleted && !status.includes('plan'));
+                  const isActive =
+                    status.includes('active') ||
+                    status.includes('progress') ||
+                    (!isCompleted && !status.includes('plan'));
 
                   return (
                     <div
@@ -287,7 +303,10 @@ const SprintTimelineView = ({
                             >
                               {sprint.title}
                             </span>
-                            <span className="hidden md:inline text-[11px] opacity-75 font-medium" style={{ color: palette.textLight }}>
+                            <span
+                              className="hidden md:inline text-[11px] opacity-75 font-medium"
+                              style={{ color: palette.textLight }}
+                            >
                               ({sprintStart.format('MMM D')} – {sprintEnd.format('MMM D')})
                             </span>
                           </div>
@@ -299,7 +318,10 @@ const SprintTimelineView = ({
                             >
                               {durationDays}d
                             </span>
-                            <ArrowRight size={14} className="opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                            <ArrowRight
+                              size={14}
+                              className="opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+                            />
                           </div>
                         </div>
                       </div>

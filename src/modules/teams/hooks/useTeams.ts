@@ -55,26 +55,25 @@ export const useAddProjectMembers = () => {
 };
 
 export const useGetTeamMembers = (page: number, pageSize: number, status?: string) => {
-  
-const {
-  data,
-  isLoading: isTeamMembersLoading,
-  isFetching: isTeamMembersFetching,
-  isPlaceholderData: isTeamMembersPlaceholderData,
-  refetch: refetchTeamMembers,
-} = useQuery({
+  const {
+    data,
+    isLoading: isTeamMembersLoading,
+    isFetching: isTeamMembersFetching,
+    isPlaceholderData: isTeamMembersPlaceholderData,
+    refetch: refetchTeamMembers,
+  } = useQuery({
     queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize, status],
     queryFn: () => teamService.getTeamMembers(page, pageSize, status),
     placeholderData: (previousData) => previousData,
   });
 
   return {
-  teamMembers: data,
-  isTeamMembersLoading,
-  isTeamMembersFetching,
-  isTeamMembersPlaceholderData,
-  refetchTeamMembers,
-};
+    teamMembers: data,
+    isTeamMembersLoading,
+    isTeamMembersFetching,
+    isTeamMembersPlaceholderData,
+    refetchTeamMembers,
+  };
 };
 
 export const useRemoveProjectMember = () => {

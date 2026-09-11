@@ -123,18 +123,16 @@ export const OrganizationsTemplate = () => {
   const { mutate: updateOrganization } = useUpdateOrganization();
 
   const isPaginationLoading =
-    isFetchingOrganizations &&
-    isPlaceholderData &&
-    Number(meta?.page) !== page;
+    isFetchingOrganizations && isPlaceholderData && Number(meta?.page) !== page;
 
   const getInitials = (name: string) =>
     name
       ? name
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : '';
 
   // const handleViewOrg = (orgSlug: string) => {
@@ -217,10 +215,11 @@ export const OrganizationsTemplate = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeFilter === filter
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                  }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeFilter === filter
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                }`}
               >
                 {filter}
               </button>
@@ -257,128 +256,130 @@ export const OrganizationsTemplate = () => {
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {isPaginationLoading
                 ? [...Array(pageSize)].map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-slate-700 shrink-0" />
-                        <div className="space-y-1.5">
-                          <div className="h-3.5 w-28 rounded bg-gray-200 dark:bg-slate-700" />
-                          <div className="h-3 w-20 rounded bg-gray-100 dark:bg-slate-600" />
-                        </div>
-                      </div>
-                    </td>
-                    {[...Array(6)].map((_, j) => (
-                      <td key={j} className="px-5 py-4">
-                        <div className="h-3.5 w-20 rounded bg-gray-200 dark:bg-slate-700" />
-                      </td>
-                    ))}
-                    <td className="px-5 py-4">
-                      <div className="h-3.5 w-16 rounded bg-gray-200 dark:bg-slate-700" />
-                    </td>
-                  </tr>
-                ))
-                : organizations.map((org) => {
-                  const isActive = org.is_active;
-
-                  const statusCls = isActive
-                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
-                    : 'text-gray-400 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
-
-                  return (
-                    <tr
-                      key={org.id}
-                      className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
-                    >
-                      <td className="px-5 py-4 whitespace-nowrap">
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
-                            {org.logo_url && !imageErrorIds.has(org.id) ? (
-                              <img
-                                src={org.logo_url}
-                                alt={org.name}
-                                className="w-full h-full object-cover"
-                                onError={() =>
-                                  setImageErrorIds((prev) => {
-                                    const next = new Set(prev);
-                                    next.add(org.id);
-                                    return next;
-                                  })
-                                }
-                              />
-                            ) : (
-                              getInitials(org.name)
-                            )}
-                          </div>
-
-                          <div>
-                            <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
-                              {org.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-slate-400">/{org.slug}</p>
+                          <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-slate-700 shrink-0" />
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-28 rounded bg-gray-200 dark:bg-slate-700" />
+                            <div className="h-3 w-20 rounded bg-gray-100 dark:bg-slate-600" />
                           </div>
                         </div>
                       </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {org.industry}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {org.country}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
-                        >
-                          {isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {org.total_projects}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          {org.total_members}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500 dark:text-slate-200">
-                          {new Date(org.created_at).toLocaleDateString()}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {isActive ? (
-                            <button
-                              onClick={() => handleOpenConfirmation(org, 'deactivate')}
-                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium hover:underline"
-                            >
-                              Deactivate
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleOpenConfirmation(org, 'activate')}
-                              className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium hover:underline"
-                            >
-                              Activate
-                            </button>
-                          )}
-                        </div>
+                      {[...Array(6)].map((_, j) => (
+                        <td key={j} className="px-5 py-4">
+                          <div className="h-3.5 w-20 rounded bg-gray-200 dark:bg-slate-700" />
+                        </td>
+                      ))}
+                      <td className="px-5 py-4">
+                        <div className="h-3.5 w-16 rounded bg-gray-200 dark:bg-slate-700" />
                       </td>
                     </tr>
-                  );
-                })}
+                  ))
+                : organizations.map((org) => {
+                    const isActive = org.is_active;
+
+                    const statusCls = isActive
+                      ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+                      : 'text-gray-400 dark:text-slate-400 bg-gray-50 dark:bg-slate-700';
+
+                    return (
+                      <tr
+                        key={org.id}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
+                      >
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
+                              {org.logo_url && !imageErrorIds.has(org.id) ? (
+                                <img
+                                  src={org.logo_url}
+                                  alt={org.name}
+                                  className="w-full h-full object-cover"
+                                  onError={() =>
+                                    setImageErrorIds((prev) => {
+                                      const next = new Set(prev);
+                                      next.add(org.id);
+                                      return next;
+                                    })
+                                  }
+                                />
+                              ) : (
+                                getInitials(org.name)
+                              )}
+                            </div>
+
+                            <div>
+                              <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                                {org.name}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-slate-400">
+                                /{org.slug}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {org.industry}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {org.country}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusCls}`}
+                          >
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {org.total_projects}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-700 dark:text-slate-300">
+                            {org.total_members}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500 dark:text-slate-200">
+                            {new Date(org.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {isActive ? (
+                              <button
+                                onClick={() => handleOpenConfirmation(org, 'deactivate')}
+                                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium hover:underline"
+                              >
+                                Deactivate
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenConfirmation(org, 'activate')}
+                                className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium hover:underline"
+                              >
+                                Activate
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
             </tbody>
           </table>
           {organizations.length === 0 && !isPaginationLoading && (
@@ -400,16 +401,8 @@ export const OrganizationsTemplate = () => {
                 page_size: meta.page_size ?? meta.pageSize ?? pageSize,
                 total_items: meta.total_items ?? meta.totalItems,
                 total_pages: meta.total_pages ?? meta.totalPages ?? 0,
-                has_next:
-                  meta.has_next ??
-                  meta.hasNextPage ??
-                  meta.has_next_page ??
-                  false,
-                has_previous:
-                  meta.has_previous ??
-                  meta.hasPrevPage ??
-                  meta.has_prev_page ??
-                  false,
+                has_next: meta.has_next ?? meta.hasNextPage ?? meta.has_next_page ?? false,
+                has_previous: meta.has_previous ?? meta.hasPrevPage ?? meta.has_prev_page ?? false,
               }}
               currentPage={page}
               pageSize={pageSize}

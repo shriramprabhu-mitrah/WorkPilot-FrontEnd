@@ -12,8 +12,13 @@ const EventLegends = () => {
       </span>
       {statusLegends.map((item) => (
         <div key={item.label} className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full shadow-xs" style={{ backgroundColor: item.color }} />
-          <span className="text-xs font-medium text-gray-700 dark:text-slate-300">{item.label}</span>
+          <span
+            className="h-2.5 w-2.5 rounded-full shadow-xs"
+            style={{ backgroundColor: item.color }}
+          />
+          <span className="text-xs font-medium text-gray-700 dark:text-slate-300">
+            {item.label}
+          </span>
         </div>
       ))}
     </div>

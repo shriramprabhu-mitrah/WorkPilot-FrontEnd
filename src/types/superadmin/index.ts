@@ -10,7 +10,7 @@ export interface AdminOrganization {
   created_at: string;
   total_projects: number;
   total_members: number;
-  logo_url?:string
+  logo_url?: string;
 }
 
 export interface AdminOrganizationMember {

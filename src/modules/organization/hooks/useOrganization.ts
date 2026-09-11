@@ -115,8 +115,8 @@ export const useGetCountries = (search?: string) => {
     isLoading: isCountriesLoading,
     refetch: refetchCountries,
   } = useQuery({
-    queryKey: ['countries',search],
-     queryFn: () => CountryService.getCountryList(search ? { name: search } : undefined),
+    queryKey: ['countries', search],
+    queryFn: () => CountryService.getCountryList(search ? { name: search } : undefined),
     placeholderData: (prev) => prev,
   });
 

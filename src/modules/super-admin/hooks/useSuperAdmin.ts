@@ -51,10 +51,7 @@ export const useGetMembers = (params?: AdminMembersParams, enabled = true) => {
   };
 };
 
-export const useGetAllProjects = (
-  params?: AdminProjectsParams,
-  enabled = true
-) => {
+export const useGetAllProjects = (params?: AdminProjectsParams, enabled = true) => {
   const query = useQuery({
     queryKey: [QUERY_KEYS.ADMIN_PROJECTS, params],
     queryFn: () => userAdminService.getAllProjects(params),

@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { WorkflowHeader } from '../components/WorkflowHeader';
 import { workflowStatuses } from '../data';
 import { WorkflowStatus } from '../data';
-import WorkflowTransitions, {
-  type WorkflowTransition,
-} from '../components/WorkflowTransitions';
+import WorkflowTransitions, { type WorkflowTransition } from '../components/WorkflowTransitions';
 import WorkflowStatuses from '../components/WorkflowStatuses';
 import { arrayMove } from '@dnd-kit/sortable';
 import WorkflowCanvas from '../components/WorkflowCanvas';
@@ -16,15 +14,9 @@ interface WorkflowNodePosition {
   y: number;
 }
 export const CreateWorkflowTemplate = () => {
-  const [workflowName, setWorkflowName] = useState(
-    'Software Development'
-  );
-  const [activeTab, setActiveTab] = useState<'statuses' | 'transitions'>(
-    'statuses'
-  );
-  const [nodePositions, setNodePositions] = useState<
-    Record<string, WorkflowNodePosition>
-  >({
+  const [workflowName, setWorkflowName] = useState('Software Development');
+  const [activeTab, setActiveTab] = useState<'statuses' | 'transitions'>('statuses');
+  const [nodePositions, setNodePositions] = useState<Record<string, WorkflowNodePosition>>({
     todo: {
       x: 80,
       y: 80,
@@ -50,11 +42,7 @@ export const CreateWorkflowTemplate = () => {
       y: 260,
     },
   });
-  const handleMoveStatus = (
-    statusId: string,
-    x: number,
-    y: number
-  ) => {
+  const handleMoveStatus = (statusId: string, x: number, y: number) => {
     setNodePositions((current) => ({
       ...current,
       [statusId]: {
@@ -69,16 +57,9 @@ export const CreateWorkflowTemplate = () => {
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>(
     workflowStatuses[0]?.id ?? null
   );
-  const handleUpdateStatus = (
-    statusId: string,
-    updates: Partial<WorkflowStatus>
-  ) => {
+  const handleUpdateStatus = (statusId: string, updates: Partial<WorkflowStatus>) => {
     setStatuses((current) =>
-      current.map((status) =>
-        status.id === statusId
-          ? { ...status, ...updates }
-          : status
-      )
+      current.map((status) => (status.id === statusId ? { ...status, ...updates } : status))
     );
   };
   const handleAddStatus = (name: string) => {
@@ -89,10 +70,7 @@ export const CreateWorkflowTemplate = () => {
       color: '#64748B',
     };
 
-    setStatuses((current) => [
-      ...current,
-      newStatus,
-    ]);
+    setStatuses((current) => [...current, newStatus]);
 
     setNodePositions((current) => ({
       ...current,
@@ -104,14 +82,10 @@ export const CreateWorkflowTemplate = () => {
 
     setSelectedStatusId(newStatus.id);
   };
-  const handleAddTransition = (
-    fromStatusId: string,
-    toStatusId: string
-  ) => {
+  const handleAddTransition = (fromStatusId: string, toStatusId: string) => {
     const alreadyExists = transitions.some(
       (transition) =>
-        transition.fromStatusId === fromStatusId &&
-        transition.toStatusId === toStatusId
+        transition.fromStatusId === fromStatusId && transition.toStatusId === toStatusId
     );
 
     if (alreadyExists) return;
@@ -127,31 +101,19 @@ export const CreateWorkflowTemplate = () => {
   };
 
   const handleDeleteTransition = (transitionId: string) => {
-    setTransitions((current) =>
-      current.filter(
-        (transition) => transition.id !== transitionId
-      )
-    );
+    setTransitions((current) => current.filter((transition) => transition.id !== transitionId));
   };
 
-  const handleDeleteStatus = (
-    statusId: string
-  ) => {
+  const handleDeleteStatus = (statusId: string) => {
     if (statuses.length <= 1) {
       return;
     }
 
-    setStatuses((current) =>
-      current.filter(
-        (status) => status.id !== statusId
-      )
-    );
+    setStatuses((current) => current.filter((status) => status.id !== statusId));
 
     setTransitions((current) =>
       current.filter(
-        (transition) =>
-          transition.fromStatusId !== statusId &&
-          transition.toStatusId !== statusId
+        (transition) => transition.fromStatusId !== statusId && transition.toStatusId !== statusId
       )
     );
 
@@ -164,41 +126,22 @@ export const CreateWorkflowTemplate = () => {
     });
 
     if (selectedStatusId === statusId) {
-      const remainingStatus = statuses.find(
-        (status) => status.id !== statusId
-      );
+      const remainingStatus = statuses.find((status) => status.id !== statusId);
 
-      setSelectedStatusId(
-        remainingStatus?.id ?? null
-      );
+      setSelectedStatusId(remainingStatus?.id ?? null);
     }
   };
-  const handleReorderStatuses = (
-    activeId: string,
-    overId: string
-  ) => {
+  const handleReorderStatuses = (activeId: string, overId: string) => {
     setStatuses((current) => {
-      const oldIndex = current.findIndex(
-        (status) => status.id === activeId
-      );
+      const oldIndex = current.findIndex((status) => status.id === activeId);
 
-      const newIndex = current.findIndex(
-        (status) => status.id === overId
-      );
+      const newIndex = current.findIndex((status) => status.id === overId);
 
-      if (
-        oldIndex === -1 ||
-        newIndex === -1 ||
-        oldIndex === newIndex
-      ) {
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
         return current;
       }
 
-      return arrayMove(
-        current,
-        oldIndex,
-        newIndex
-      );
+      return arrayMove(current, oldIndex, newIndex);
     });
   };
   return (
@@ -206,8 +149,8 @@ export const CreateWorkflowTemplate = () => {
       <WorkflowHeader
         workflowName={workflowName}
         onWorkflowNameChange={setWorkflowName}
-        onDiscard={() => { }}
-        onSave={() => { }}
+        onDiscard={() => {}}
+        onSave={() => {}}
       />
 
       <div className="flex min-h-0 flex-1">
@@ -231,13 +174,11 @@ export const CreateWorkflowTemplate = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('statuses')}
-                className={`relative flex-1 text-[13px] font-medium ${activeTab === 'statuses'
-                  ? 'text-blue-600'
-                  : 'text-gray-500'
-                  }`}
+                className={`relative flex-1 text-[13px] font-medium ${
+                  activeTab === 'statuses' ? 'text-blue-600' : 'text-gray-500'
+                }`}
               >
                 Statuses ({statuses.length})
-
                 {activeTab === 'statuses' && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600" />
                 )}
@@ -246,13 +187,11 @@ export const CreateWorkflowTemplate = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('transitions')}
-                className={`relative flex-1 text-[13px] font-medium ${activeTab === 'transitions'
-                  ? 'text-blue-600'
-                  : 'text-gray-500'
-                  }`}
+                className={`relative flex-1 text-[13px] font-medium ${
+                  activeTab === 'transitions' ? 'text-blue-600' : 'text-gray-500'
+                }`}
               >
                 Transitions ({transitions.length})
-
                 {activeTab === 'transitions' && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600" />
                 )}
@@ -286,4 +225,4 @@ export const CreateWorkflowTemplate = () => {
     </div>
   );
 };
-export default CreateWorkflowTemplate
+export default CreateWorkflowTemplate;

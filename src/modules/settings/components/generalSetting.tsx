@@ -52,7 +52,7 @@ export default function GeneralSettings() {
   const user = useAppSelector((state) => state.user);
   const canEditOrganization = user?.role === ROLE_TYPE.ORG_ADMIN;
   const { updateOrg, isUpdatingOrg } = useUpdateOrganization();
-  
+
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryList, setShowCountryList] = useState(false);
   const debouncedCountrySearch = useDebounce(countrySearch, 400);

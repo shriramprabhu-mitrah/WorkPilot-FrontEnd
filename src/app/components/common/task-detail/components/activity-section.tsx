@@ -293,25 +293,25 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
     key: ActivityTab;
     label: string;
   }> = [
-      ...(canViewComments
-        ? [
+    ...(canViewComments
+      ? [
           {
             key: 'comments' as ActivityTab,
             label: 'Comments',
           },
         ]
-        : []),
-      {
-        key: 'history' as ActivityTab,
-        label: 'History',
-      },
-    ];
+      : []),
+    {
+      key: 'history' as ActivityTab,
+      label: 'History',
+    },
+  ];
 
   const renderComment = (c: Comment, isReply = false, parentCommentId?: string) => {
     const name = c.user_name || c.full_name || c.user?.name || 'Unknown';
     const initials = getInitials(name);
     const isEditing = editingId === c.id;
-    const userColor = c.color 
+    const userColor = c.color;
 
     return (
       <div key={c.id} className={`${isReply ? '' : 'mb-4'}`}>
@@ -336,7 +336,10 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                       className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                       title="Edit comment"
                     >
-                      <Pencil size={isReply ? 11 : 13} className="text-gray-500 dark:text-slate-400" />
+                      <Pencil
+                        size={isReply ? 11 : 13}
+                        className="text-gray-500 dark:text-slate-400"
+                      />
                     </button>
                   )}
                   {canDeleteComments && (
@@ -388,10 +391,11 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
             ) : (
               <>
                 <div
-                  className={`${isReply
+                  className={`${
+                    isReply
                       ? 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700'
                       : 'bg-gray-50 dark:bg-slate-800'
-                    } rounded-lg px-3 py-2`}
+                  } rounded-lg px-3 py-2`}
                 >
                   <RichContentViewer
                     content={c.content}

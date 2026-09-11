@@ -26,10 +26,14 @@ const CustomEvent = ({ event, continuesPrior, continuesAfter }: Props) => {
     const palette = getSprintPalette(event.colorIndex ?? event.id);
     const startDate = moment(event.start).format('MMM D');
     const endDate = moment(event.end).format('MMM D');
-    const totalDays = Math.max(1, Math.round((event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60 * 24)));
+    const totalDays = Math.max(
+      1,
+      Math.round((event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60 * 24))
+    );
 
     const rawStatus = (event.status || '').toLowerCase();
-    const isCompleted = rawStatus.includes('complete') || rawStatus.includes('close') || rawStatus.includes('done');
+    const isCompleted =
+      rawStatus.includes('complete') || rawStatus.includes('close') || rawStatus.includes('done');
     const isPlanned = rawStatus.includes('plan') || rawStatus === 'todo';
     const isActive = !isCompleted && !isPlanned;
 
@@ -69,9 +73,7 @@ const CustomEvent = ({ event, continuesPrior, continuesAfter }: Props) => {
           >
             {displayStatus}
           </span>
-          <span className="text-[9px] opacity-75 font-medium hidden xs:inline">
-            {totalDays}d
-          </span>
+          <span className="text-[9px] opacity-75 font-medium hidden xs:inline">{totalDays}d</span>
         </div>
       </div>
     );
@@ -81,10 +83,7 @@ const CustomEvent = ({ event, continuesPrior, continuesAfter }: Props) => {
 
   return (
     <div className="flex h-full w-full items-center gap-1.5 overflow-hidden rounded-md px-2 py-0.5 text-[#292727] dark:text-slate-200">
-      <span
-        className="h-2 w-2 shrink-0 rounded-full"
-        style={{ backgroundColor: style.color }}
-      />
+      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: style.color }} />
       <span className="truncate text-[11px] font-semibold">{event.title}</span>
     </div>
   );

@@ -208,7 +208,7 @@ const MembersSettings = () => {
       setShowAddMemberModal(false);
       setSelectedMembers([]);
       setMemberRoles({});
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleDelete = () => {
@@ -277,8 +277,9 @@ const MembersSettings = () => {
             {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100 ${i === 1 ? 'relative -left-24' : ''
-                  }`}
+                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100 ${
+                  i === 1 ? 'relative -left-24' : ''
+                }`}
               >
                 {h}
               </div>
@@ -305,10 +306,11 @@ const MembersSettings = () => {
               return (
                 <div
                   key={member.user_id}
-                  className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 md:grid md:grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] md:items-center md:gap-3 md:py-3 ${index !== visibleMembers.length - 1
-                    ? 'border-b border-slate-200 dark:border-slate-700'
-                    : ''
-                    }`}
+                  className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 md:grid md:grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] md:items-center md:gap-3 md:py-3 ${
+                    index !== visibleMembers.length - 1
+                      ? 'border-b border-slate-200 dark:border-slate-700'
+                      : ''
+                  }`}
                 >
                   {/* Member info */}
                   <div className="flex min-w-0 items-center gap-3">
@@ -374,9 +376,7 @@ const MembersSettings = () => {
                           );
                         }}
                         disabled={
-                          !isOrgAdmin ||
-                          isRolesLoading ||
-                          updatingMemberId === member.user_id
+                          !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
                         }
                       />
                     )}
@@ -410,7 +410,7 @@ const MembersSettings = () => {
                         className="!p-2 text-slate-400 dark:text-slate-500 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500"
                         title="Remove member"
                       >
-                        <Trash2 size={15} strokeWidth={1.8} className='dark:text-slate-100' />
+                        <Trash2 size={15} strokeWidth={1.8} className="dark:text-slate-100" />
                       </WpButton>
                     )}
                   </div>
@@ -553,14 +553,13 @@ const MembersSettings = () => {
             <div className="flex-1 overflow-y-auto p-5">
               {isRolesLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="text-sm text-gray-500 dark:text-slate-400">
-                    Loading roles...
-                  </div>
+                  <div className="text-sm text-gray-500 dark:text-slate-400">Loading roles...</div>
                 </div>
               ) : roles.length === 0 ? (
                 <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4 mb-4">
                   <p className="text-sm text-amber-800 dark:text-amber-300">
-                    No roles available. Please create roles in Settings → Permissions before adding members.
+                    No roles available. Please create roles in Settings → Permissions before adding
+                    members.
                   </p>
                 </div>
               ) : null}
@@ -648,8 +647,9 @@ const MembersSettings = () => {
               >
                 {isAddingMembers
                   ? 'Adding...'
-                  : `Add ${selectedMembers.length > 0 ? `${selectedMembers.length} ` : ''
-                  }Member${selectedMembers.length !== 1 ? 's' : ''}`}
+                  : `Add ${
+                      selectedMembers.length > 0 ? `${selectedMembers.length} ` : ''
+                    }Member${selectedMembers.length !== 1 ? 's' : ''}`}
               </WpButton>
             </div>
           </div>

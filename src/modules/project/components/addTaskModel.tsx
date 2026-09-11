@@ -267,7 +267,7 @@ const AddTaskModal = ({
         });
       }
       onClose();
-    } catch (error) { }
+    } catch (error) {}
   };
   const taskNameRegister = register('taskName');
   const storyPointsRegister = register('storyPoints');

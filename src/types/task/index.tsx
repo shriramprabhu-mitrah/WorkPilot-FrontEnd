@@ -155,7 +155,7 @@ export interface Comment {
   replies_count: number;
   user?: CommentUser;
   replies?: Comment[];
-  color?:string
+  color?: string;
 }
 
 export interface CreateCommentPayload {

@@ -172,11 +172,11 @@ export const DashboardTemplate = () => {
                 const getInitials = (name: string) => {
                   return name
                     ? name
-                      .split(' ')
-                      .map((w) => w[0])
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2)
+                        .split(' ')
+                        .map((w) => w[0])
+                        .join('')
+                        .toUpperCase()
+                        .slice(0, 2)
                     : '';
                 };
 

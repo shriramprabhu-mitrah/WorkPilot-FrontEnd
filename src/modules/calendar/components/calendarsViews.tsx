@@ -130,7 +130,9 @@ const CalendarView = ({
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="w-[calc(100vw-2rem)] sm:w-[420px] rounded-2xl bg-white dark:bg-slate-800 p-5 sm:p-6 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Event Details</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
+                  Event Details
+                </h2>
 
                 <button
                   onClick={() => setSelectedEvent(null)}
@@ -144,7 +146,9 @@ const CalendarView = ({
                 <div>
                   <p className="text-xs uppercase text-gray-500 dark:text-slate-400">Title</p>
 
-                  <p className="mt-1 font-semibold text-gray-900 dark:text-slate-100">{selectedEvent.title}</p>
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-slate-100">
+                    {selectedEvent.title}
+                  </p>
                 </div>
 
                 <div>

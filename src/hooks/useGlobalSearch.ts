@@ -56,12 +56,7 @@ export const useGlobalSearch = (debounceMs = 300) => {
       projects: projects.length,
       members: members.length,
       sprints: sprints.length,
-      all:
-        tasks.length +
-        userStories.length +
-        projects.length +
-        members.length +
-        sprints.length,
+      all: tasks.length + userStories.length + projects.length + members.length + sprints.length,
     }),
     [tasks, userStories, projects, members, sprints]
   );

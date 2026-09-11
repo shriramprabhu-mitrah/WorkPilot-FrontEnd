@@ -91,14 +91,14 @@ const ProjectPage = () => {
   const [view, setView] = useState<ViewType>('grid');
   const [page, setPage] = useState(1);
 
-const shouldOpenCreateModal = searchParams.get('openCreate') === 'true' && canCreateProject;
-useEffect(() => {
-  if (!shouldOpenCreateModal) return;
-  const timeoutId = setTimeout(() => {
-    setIsModalOpen(true);
-  }, 0);
-  return () => clearTimeout(timeoutId);
-}, [shouldOpenCreateModal]);
+  const shouldOpenCreateModal = searchParams.get('openCreate') === 'true' && canCreateProject;
+  useEffect(() => {
+    if (!shouldOpenCreateModal) return;
+    const timeoutId = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [shouldOpenCreateModal]);
 
   const pageSize = 10;
   const {
@@ -377,7 +377,9 @@ useEffect(() => {
             <div className="w-full max-w-[512px] overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-5">
-                <h2 className="text-[25px] font-bold text-gray-900 dark:text-slate-200">New Project</h2>
+                <h2 className="text-[25px] font-bold text-gray-900 dark:text-slate-200">
+                  New Project
+                </h2>
 
                 <WpButton
                   type="button"
