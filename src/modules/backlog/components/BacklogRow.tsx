@@ -126,7 +126,7 @@ export const BacklogRow = ({
       </div> */}
 
       {/* Status */}
-      <div className="flex w-24 shrink-0 items-center justify-center">
+      <div className="shrink-0">
         <StatusBadge status={task.status} color={task.status_color} />
       </div>
     </div>

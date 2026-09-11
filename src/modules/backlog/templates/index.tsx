@@ -18,6 +18,9 @@ import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import BacklogSkeleton from '../components/backlogSkeleton';
+import UnassignedUserStoriesSkeleton from '../components/UnassignedUserStoriesSkeleton';
+import UnassignedTasksSkeleton from '../components/UnassignedTasksSkeleton';
+import SprintSkeleton from '../components/SprintSkeleton';
 import {
   useGetUserStories,
   useUpdateUserStory,
@@ -300,13 +303,13 @@ export const BacklogTemplate = () => {
     })
   );
 
-  const { userStories, isLoadingUserStories } = useGetUserStories(
+  const { userStories, isLoadingUserStories, isFetchingUserStories } = useGetUserStories(
     selectedProject,
     {},
     !!selectedProject && canViewUserStories
   );
 
-  const { tasksList, isLoadingTasks } = useGetTasks(
+  const { tasksList, isLoadingTasks, isFetchingTasks } = useGetTasks(
     selectedProject,
     undefined,
     !!selectedProject && canViewTasks
@@ -1898,6 +1901,9 @@ export const BacklogTemplate = () => {
                         You do not have permission to view user stories.
                       </p>
                     </div>
+                  ) : isFetchingUserStories && !isLoadingUserStories ? (
+                    // Show skeleton loader while refetching data (e.g., after adding a user story)
+                    <UnassignedUserStoriesSkeleton />
                   ) : (
                     <>
                       {isOverBacklog && (
@@ -2061,6 +2067,9 @@ export const BacklogTemplate = () => {
                                 />
                               ))}
                             </div>
+                          ) : isFetchingTasks && !isLoadingTasks ? (
+                            // Show skeleton loader while refetching data (e.g., after adding a task)
+                            <UnassignedTasksSkeleton />
                           ) : !filteredUnassignedTasks || filteredUnassignedTasks.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 px-4">
                               <svg
@@ -2142,9 +2151,7 @@ export const BacklogTemplate = () => {
               </div>
 
               {isLoadingSprints ? (
-                <div className="text-sm text-gray-500 dark:text-slate-400 text-center py-4">
-                  Loading sprints...
-                </div>
+                <SprintSkeleton />
               ) : allSprints.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8">
                   <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
