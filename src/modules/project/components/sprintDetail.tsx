@@ -92,7 +92,7 @@ const SprintDetail = () => {
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       setSelectedUserStoryIds([]);
       setShowDeleteUserStoryConfirm(false);
-    } catch (error) {}
+    } catch {}
   };
 
   const handleSprintSuccess = async () => {
@@ -407,7 +407,7 @@ const SprintDetail = () => {
                     });
                     queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
                     setSelectedUserStory(null);
-                  } catch (error) {}
+                  } catch {}
                 }
               : undefined
           }

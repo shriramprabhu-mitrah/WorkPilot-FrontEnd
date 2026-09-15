@@ -8,15 +8,11 @@ import {
   CheckSquare,
   BookOpen,
   FolderKanban,
-  User,
   Zap,
   ArrowRight,
   CornerDownLeft,
-  LayoutGrid,
-  FileText,
   Users,
   Settings,
-  ListTodo,
 } from 'lucide-react';
 import { useGlobalSearch } from '@/src/hooks/useGlobalSearch';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';

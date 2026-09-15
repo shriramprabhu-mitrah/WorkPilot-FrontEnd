@@ -188,7 +188,6 @@ export const ChildTasksPanel = ({
   onCreateTask,
   onOpenTask,
   onUpdate,
-  totalTasks,
 }: ChildTasksPanelProps) => {
   const queryClient = useQueryClient();
   const { canCreateTask, canEditTask } = usePermissions();

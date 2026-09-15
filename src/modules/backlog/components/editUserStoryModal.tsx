@@ -70,7 +70,7 @@ const EditUserStoryModal = ({
       });
 
       onSuccess();
-    } catch (error) {
+    } catch {
       // Error is handled by toast
     }
   };

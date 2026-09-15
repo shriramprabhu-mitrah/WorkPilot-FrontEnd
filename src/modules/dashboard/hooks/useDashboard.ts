@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, useCallback } from 'react';
 import { dashboardService } from '@/src/services/dashboard';
 
 export const useGetDashboard = (projectId: string, sprintId?: string, enabled = true) => {

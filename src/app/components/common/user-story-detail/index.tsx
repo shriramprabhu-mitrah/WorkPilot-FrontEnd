@@ -47,11 +47,10 @@ import { WpInput } from '../input';
 import { UserStoryResponse, UserStoryReplyResponse } from '@/src/types/userstories';
 import { TaskResponse } from '@/src/types/task';
 import { TaskDetailDrawer } from '../task-detail';
-import { KanbanTask, ColumnId } from '@/src/types/board';
+import { KanbanTask } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-import { useGetStatus, useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
-import { CustomStatus } from '@/src/types/colors';
+import { useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
 import {
   useCreateUserStoryComment,
   useGetUserStoryComments,
@@ -70,7 +69,6 @@ import {
   useDeleteUserStoryAttachment,
 } from '@/src/modules/tasks/hooks/useUserStoryAttachment';
 
-import { useUpdateTask } from '@/src/modules/tasks/hooks/useTask';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChildTasksPanel } from './ChildTasksPanel';
 import usePermissions from '@/src/hooks/usePermissions';
@@ -180,7 +178,6 @@ export const UserStoryDetailDrawer = ({
     canDeleteUserStory,
     canViewComments,
     canAddComments,
-    canComment,
     canEditComments,
     canDeleteComments,
   } = usePermissions();
@@ -825,21 +822,7 @@ export const UserStoryDetailDrawer = ({
     colors.avatarAmber,
     colors.avatarIndigo,
   ];
-  const handleDeleteStatus = async (status: CustomStatus) => {
-    if (!status.id) return;
 
-    try {
-      await deleteStatus({
-        projectId: currentUserStory.project_id ?? '',
-        statusId: status.id,
-      });
-
-      setShowStatusMenu(false);
-      onUpdate?.();
-    } catch (error) {
-      logger.log('Failed to delete custom status', error);
-    }
-  };
   const getMemberColor = (userId: string) =>
     AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
@@ -947,11 +930,6 @@ export const UserStoryDetailDrawer = ({
       toast.error('Failed to add reply');
       logger.log('Failed to add reply', error);
     }
-  };
-
-  const handleCancelReply = () => {
-    setReplyContent('');
-    setReplyingToCommentId(null);
   };
 
   // Reply edit/delete handlers

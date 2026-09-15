@@ -89,7 +89,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       await queryClient.invalidateQueries({
         queryKey: ['user-stories', projectId],
       });
-    } catch (error) {}
+    } catch {}
   };
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);

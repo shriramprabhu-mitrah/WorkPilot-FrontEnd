@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpInput } from '@/src/app/components/common/input';
 import { ThemeToggle } from '@/src/app/components/common/theme-toggle';
 import { useAppSelector } from '@/src/store';
 import { getInitials } from '../format';

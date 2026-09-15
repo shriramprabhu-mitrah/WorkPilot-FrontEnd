@@ -18,7 +18,6 @@ import {
   Eye,
   Search,
 } from 'lucide-react';
-import { TrackrLogoSvg } from '@/src/assets/svgs';
 import { colors } from '@/src/styles/colors';
 import { getInitials } from '../format';
 import { useEffect, useState, useRef, useMemo } from 'react';

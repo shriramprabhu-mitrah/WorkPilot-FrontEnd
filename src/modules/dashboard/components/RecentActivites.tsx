@@ -8,7 +8,7 @@ interface RecentActivityCardProps {
   user?: DashboardActivityUser;
 }
 
-export default function RecentActivityCard({ activities, user }: RecentActivityCardProps) {
+export default function RecentActivityCard({ activities }: RecentActivityCardProps) {
   const renderActivityDetails = (details: string) => {
     if (!details) return null;
 

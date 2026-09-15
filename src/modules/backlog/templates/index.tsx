@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plus, Search, ChevronDown, ChevronRight, Inbox } from 'lucide-react';
 import {
   DndContext,
@@ -315,7 +315,7 @@ export const BacklogTemplate = () => {
     !!selectedProject && canViewTasks
   );
 
-  const { sprints, isLoadingSprints, refetchSprints } = useGetSprints(
+  const { sprints, isLoadingSprints } = useGetSprints(
     selectedProject,
     undefined,
     !!selectedProject && canViewSprints
@@ -1139,7 +1139,7 @@ export const BacklogTemplate = () => {
               });
             }
             toast.success(`Task assigned to sprint "${targetSprint?.name || 'Sprint'}"`);
-          } catch (err) {
+          } catch {
             // Rollback optimistic update
             setOptimisticTaskUpdates((prev) => {
               const next = new Map(prev);
@@ -2339,7 +2339,7 @@ export const BacklogTemplate = () => {
               });
               queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
               handleCloseDrawer();
-            } catch (error) {
+            } catch {
               // Error is already handled by the mutation
             }
           }}

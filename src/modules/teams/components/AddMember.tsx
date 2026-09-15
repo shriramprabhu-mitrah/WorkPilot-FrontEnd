@@ -128,7 +128,7 @@ const MembersSettings = () => {
       });
 
       await refetchProjectMembers();
-    } catch (error) {
+    } catch {
     } finally {
       setUpdatingMemberId(null);
       setPendingRoleChange(null);
@@ -208,7 +208,7 @@ const MembersSettings = () => {
       setShowAddMemberModal(false);
       setSelectedMembers([]);
       setMemberRoles({});
-    } catch (error) {}
+    } catch {}
   };
 
   const handleDelete = () => {

@@ -472,14 +472,8 @@ export const KanbanBoardTemplate = () => {
 
   const queryClient = useQueryClient();
   const deleteUserStoryMutation = useDeleteUserStory();
-  const {
-    canViewTasks,
-    canCreateTask,
-    canEditTask,
-    canViewUserStories,
-    canDeleteUserStory,
-    canViewSprints,
-  } = usePermissions();
+  const { canViewTasks, canCreateTask, canEditTask, canViewUserStories, canViewSprints } =
+    usePermissions();
 
   const router = useRouter();
   const params = useParams();
@@ -1622,7 +1616,7 @@ export const KanbanBoardTemplate = () => {
               });
               queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
               handleCloseDrawer();
-            } catch (error) {
+            } catch {
               // Error is already handled by the mutation
             }
           }}

@@ -6,7 +6,6 @@ import { useGetOrganizations, useUpdateOrganization } from '../hooks/useSuperAdm
 import { AdminOrganization } from '@/src/types/superadmin';
 import { AdminOrganizationsParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
-import Skeleton from '@/src/app/components/common/skeleton';
 import OrganizationsSkeleton from '../components/organizationSkeleton';
 
 type FilterType = 'All' | 'Active' | 'Inactive';

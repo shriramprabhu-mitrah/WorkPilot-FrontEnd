@@ -85,9 +85,6 @@ const EventWrapper = ({
 
   const showLess = isExpanded && isLastOverall;
 
-  const isDarkMode =
-    typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-
   return (
     <div
       style={{

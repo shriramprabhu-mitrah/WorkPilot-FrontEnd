@@ -100,7 +100,7 @@ export const useSignin = () => {
               });
             }
           }
-        } catch (error) {}
+        } catch {}
       }
 
       return { ...response, organization: organizationData, userProfile };

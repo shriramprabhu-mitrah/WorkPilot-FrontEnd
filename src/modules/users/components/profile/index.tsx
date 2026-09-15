@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useUserInsights } from '../../hooks/useUser';
 import StatCard from '@/src/app/components/common/statcard/statcard';
-import { Briefcase, CheckCircle2, Ban, Pencil, X, Check } from 'lucide-react';
+import { Briefcase, CheckCircle2, Ban, X, Check } from 'lucide-react';
 import { formatMonthYear } from '@/src/app/components/common/format';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
@@ -151,7 +151,7 @@ export default function Profile() {
       setSelectedAvatar(null);
       setAvatarPreview('');
       setIsEditing(false);
-    } catch (error) {}
+    } catch {}
   };
 
   const handleCancel = () => {

@@ -15,7 +15,6 @@ import {
   AlertCircle,
   Bug,
   Archive,
-  Bookmark,
   ChevronRight,
   Link2,
   BookOpenText,
@@ -530,8 +529,6 @@ export const TaskDetailDrawer = ({
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
-      const targetProjectId = fetchedTask?.project_id || task.projectId || effectiveProjectId;
-      const targetTaskId = fetchedTask?.id || task.taskId || task.id;
       if (!task.projectId || !task.taskId) {
         throw new Error('Project ID or Task ID is missing');
       }
@@ -790,7 +787,7 @@ export const TaskDetailDrawer = ({
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) {}
+    } catch {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -799,7 +796,7 @@ export const TaskDetailDrawer = ({
     formData.append('file', file);
     try {
       await uploadAttachment.mutateAsync(formData);
-    } catch (error) {
+    } catch {
     } finally {
       event.target.value = '';
     }
@@ -816,7 +813,7 @@ export const TaskDetailDrawer = ({
       });
       setShowCloneModal(false);
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to clone task');
     }
   };
@@ -830,7 +827,7 @@ export const TaskDetailDrawer = ({
       setShowDeleteConfirm(false);
       onDelete?.();
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete task');
     }
   };

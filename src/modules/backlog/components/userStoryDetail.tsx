@@ -150,7 +150,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       // Invalidate user stories cache to refresh the list
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       push('/backlog');
-    } catch (error) {
+    } catch {
       setShowDeleteConfirm(false);
     }
   };
@@ -176,7 +176,7 @@ const UserStoryDetail = ({ projectId, storyId }: UserStoryDetailProps) => {
       queryClient.invalidateQueries({ queryKey: ['sprints'] });
       await refetchUserStory();
       toast.success('User story moved to backlog');
-    } catch (error) {
+    } catch {
       toast.error('Failed to move user story to backlog');
     } finally {
       setIsMovingToBacklog(false);

@@ -40,7 +40,7 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
       if (attachmentIdFromQuery) {
         return attachmentIdFromQuery;
       }
-    } catch (e) {}
+    } catch {}
 
     const match = imgSrc.match(/\/attachments\/([^/?]+)/);
 
