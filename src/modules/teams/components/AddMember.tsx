@@ -248,11 +248,11 @@ const MembersSettings = () => {
 
   return (
     <>
-      <div className="w-full pb-10">
+      <div className="w-full pb-10 px-3 sm:px-5">
         {/* Header */}
-        <div className="flex min-h-[65px] flex-wrap items-center justify-between gap-3">
+        <div className="flex min-h-[65px] flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
               Team
             </h2>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-100">
@@ -264,6 +264,7 @@ const MembersSettings = () => {
               size="sm"
               leftIcon={<UserPlus size={15} />}
               onClick={() => setShowAddMemberModal(true)}
+              className="w-full sm:w-auto"
             >
               Add Member
             </WpButton>
@@ -277,9 +278,7 @@ const MembersSettings = () => {
             {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100 ${
-                  i === 1 ? 'relative -left-24' : ''
-                }`}
+                className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100`}
               >
                 {h}
               </div>
@@ -306,7 +305,7 @@ const MembersSettings = () => {
               return (
                 <div
                   key={member.user_id}
-                  className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 md:grid md:grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] md:items-center md:gap-3 md:py-3 ${
+                  className={`flex flex-col gap-3 px-3 sm:px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 lg:grid lg:grid-cols-[minmax(200px,1.5fr)_minmax(200px,1fr)_120px_60px] lg:items-center lg:gap-3 lg:py-3 ${
                     index !== visibleMembers.length - 1
                       ? 'border-b border-slate-200 dark:border-slate-700'
                       : ''
@@ -320,7 +319,7 @@ const MembersSettings = () => {
                     >
                       {initials || 'U'}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                         {memberName}
                       </p>
@@ -330,61 +329,47 @@ const MembersSettings = () => {
                     </div>
                   </div>
 
-                  {/* Admin badge — label on mobile */}
-                  {/* <div className="flex items-center gap-2 md:block">
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
-                      Admin:
-                    </span>
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                        isMemberAdmin
-                          ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
-                          : 'text-slate-400 dark:text-slate-500'
-                      }`}
-                    >
-                      {isMemberAdmin ? 'Yes' : 'No'}
-                    </span>
-                  </div> */}
-
                   {/* Role selector */}
-                  <div className="relative -left-32 flex items-center gap-2 md:block">
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
+                  <div className="flex items-start gap-2 lg:block">
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 lg:hidden min-w-[60px] pt-2">
                       Role:
                     </span>
-                    {isOrgAdminRole ? (
-                      <div className="h-8 flex items-center px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                        <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
-                          Org Admin
-                        </span>
-                      </div>
-                    ) : (
-                      <WpDropdown
-                        options={roles.map((role) => ({
-                          value: role.id,
-                          label: role.name,
-                        }))}
-                        value={currentRole?.id ?? ''}
-                        onChange={(value) => {
-                          const selectedRole = roles.find((r) => r.id === value);
-                          if (!selectedRole) return;
+                    <div className="flex-1">
+                      {isOrgAdminRole ? (
+                        <div className="h-8 flex items-center px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                          <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                            Org Admin
+                          </span>
+                        </div>
+                      ) : (
+                        <WpDropdown
+                          options={roles.map((role) => ({
+                            value: role.id,
+                            label: role.name.toUpperCase(),
+                          }))}
+                          value={currentRole?.id ?? ''}
+                          onChange={(value) => {
+                            const selectedRole = roles.find((r) => r.id === value);
+                            if (!selectedRole) return;
 
-                          handleRoleSelect(
-                            member.user_id,
-                            memberName,
-                            selectedRole.id,
-                            selectedRole.name
-                          );
-                        }}
-                        disabled={
-                          !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
-                        }
-                      />
-                    )}
+                            handleRoleSelect(
+                              member.user_id,
+                              memberName,
+                              selectedRole.id,
+                              selectedRole.name
+                            );
+                          }}
+                          disabled={
+                            !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
+                          }
+                        />
+                      )}
+                    </div>
                   </div>
 
                   {/* Status */}
-                  <div className="flex items-center gap-2 md:block md:w-[280px]">
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 md:hidden">
+                  <div className="flex items-center gap-2 lg:block">
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 lg:hidden min-w-[60px]">
                       Status:
                     </span>
                     <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
@@ -394,7 +379,7 @@ const MembersSettings = () => {
                   </div>
 
                   {/* Delete */}
-                  <div className="flex justify-end md:justify-end">
+                  <div className="flex justify-end lg:justify-center">
                     {isOrgAdmin && !isOrgAdminRole && (
                       <WpButton
                         type="button"
@@ -453,12 +438,12 @@ const MembersSettings = () => {
       {showRoleConfirmModal && pendingRoleChange && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
-            <div className="border-b border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100">
+            <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
                 Change Role
               </h2>
 
-              <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs sm:text-[13px] text-slate-500 dark:text-slate-400">
                 Are you sure you want to change{' '}
                 <span className="font-semibold text-slate-700 dark:text-slate-200">
                   {pendingRoleChange.userName}
@@ -471,8 +456,12 @@ const MembersSettings = () => {
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 p-5">
-              <WpButton variant="secondary" onClick={handleCancelRoleChange}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-5">
+              <WpButton 
+                variant="secondary" 
+                onClick={handleCancelRoleChange}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </WpButton>
 
@@ -480,6 +469,7 @@ const MembersSettings = () => {
                 variant="primary"
                 onClick={handleConfirmRoleChange}
                 isLoading={updatingMemberId === pendingRoleChange.userId}
+                className="w-full sm:w-auto"
               >
                 OK
               </WpButton>
@@ -491,12 +481,12 @@ const MembersSettings = () => {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
-            <div className="border-b border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100">
+            <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
                 Delete Member
               </h2>
 
-              <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs sm:text-[13px] text-slate-500 dark:text-slate-400">
                 Are you sure you want to remove{' '}
                 <span className="font-semibold text-slate-700 dark:text-slate-200">
                   {selectedMember?.name}
@@ -505,18 +495,24 @@ const MembersSettings = () => {
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 p-5">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-5">
               <WpButton
                 variant="secondary"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setSelectedMember(null);
                 }}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </WpButton>
 
-              <WpButton variant="danger" onClick={handleDelete} isLoading={isRemovingMember}>
+              <WpButton 
+                variant="danger" 
+                onClick={handleDelete} 
+                isLoading={isRemovingMember}
+                className="w-full sm:w-auto"
+              >
                 Delete
               </WpButton>
             </div>
@@ -524,16 +520,16 @@ const MembersSettings = () => {
         </div>
       )}
       {showAddMemberModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="flex h-auto max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+            <div className="flex items-start sm:items-center justify-between border-b border-gray-100 dark:border-slate-700 p-4 sm:p-5">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100">
                   Add Members
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
+                <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-slate-100">
                   Select members to add to this project.
                 </p>
               </div>
@@ -543,21 +539,21 @@ const MembersSettings = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAddMemberModal(false)}
-                className="!p-2 text-gray-400 dark:text-slate-500"
+                className="!p-2 text-gray-400 dark:text-slate-500 ml-2 shrink-0"
               >
                 <X size={17} />
               </WpButton>
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
               {isRolesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-sm text-gray-500 dark:text-slate-400">Loading roles...</div>
                 </div>
               ) : roles.length === 0 ? (
-                <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4 mb-4">
-                  <p className="text-sm text-amber-800 dark:text-amber-300">
+                <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 sm:p-4 mb-4">
+                  <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-300">
                     No roles available. Please create roles in Settings → Permissions before adding
                     members.
                   </p>
@@ -577,7 +573,7 @@ const MembersSettings = () => {
               <div className="mt-5">
                 {selectedMembers.length > 0 ? (
                   <>
-                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-100">
+                    <p className="mb-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-slate-100">
                       Member Roles
                     </p>
 
@@ -588,13 +584,13 @@ const MembersSettings = () => {
                         return (
                           <div
                             key={memberId}
-                            className="flex items-center rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-3"
+                            className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 sm:px-4 py-3"
                           >
-                            <div className="w-40 text-sm font-medium text-gray-700 dark:text-slate-200">
+                            <div className="sm:w-40 text-xs sm:text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
                               {member?.label}
                             </div>
 
-                            <div className="flex-1 mt-5">
+                            <div className="flex-1">
                               <WpDropdown
                                 options={roleOptions}
                                 value={memberRoles[memberId]}
@@ -613,8 +609,8 @@ const MembersSettings = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800">
-                    <p className="text-base font-medium text-gray-700 dark:text-slate-200">
+                  <div className="flex min-h-[200px] sm:min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800">
+                    <p className="text-sm sm:text-base font-medium text-gray-700 dark:text-slate-200">
                       No members selected
                     </p>
                   </div>
@@ -623,7 +619,7 @@ const MembersSettings = () => {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 dark:border-slate-700 p-4 sm:p-5">
               <WpButton
                 type="button"
                 variant="secondary"
@@ -634,6 +630,7 @@ const MembersSettings = () => {
                   setMemberRoles({});
                 }}
                 disabled={isAddingMembers}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </WpButton>
@@ -644,6 +641,7 @@ const MembersSettings = () => {
                 size="md"
                 disabled={!selectedMembers.length || isAddingMembers || roles.length === 0}
                 onClick={handleAddMember}
+                className="w-full sm:w-auto"
               >
                 {isAddingMembers
                   ? 'Adding...'

@@ -415,13 +415,13 @@ export const LandingPage = () => {
               <div className="flex flex-col gap-1">
                 <div>
                   <span className="text-sm lp-contact-label">Email</span>
-                  <a className="ml-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  <a className="ml-2 text-sm hover:underline">
                     support@workpilot.com
                   </a>
                 </div>
                 <div>
                   <span className="text-sm lp-contact-label">Phone</span>
-                  <span className="ml-2 text-sm text-blue-600 dark:text-blue-400">12345678</span>
+                  <span className="ml-2 text-sm">12345678</span>
                 </div>
               </div>
             </section>

@@ -80,13 +80,23 @@ export interface InsertImagePayload {
   src: string;
   altText: string;
   attachmentId?: string;
+  width?: number;
+  height?: number;
 }
 
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
   createCommand('INSERT_IMAGE_COMMAND');
 
 type SerializedImageNode = Spread<
-  { src: string; altText: string; attachmentId?: string; type: 'image'; version: 1 },
+  { 
+    src: string; 
+    altText: string; 
+    attachmentId?: string; 
+    width?: number;
+    height?: number;
+    type: 'image'; 
+    version: 1 
+  },
   SerializedLexicalNode
 >;
 
@@ -94,7 +104,9 @@ function convertImageElement(domNode: HTMLElement): DOMConversionOutput | null {
   if (domNode instanceof HTMLImageElement) {
     const { src, alt } = domNode;
     const attachmentId = domNode.getAttribute('data-attachment-id') || undefined;
-    const node = $createImageNode({ src, altText: alt || '', attachmentId });
+    const width = domNode.getAttribute('width') ? parseInt(domNode.getAttribute('width')!) : undefined;
+    const height = domNode.getAttribute('height') ? parseInt(domNode.getAttribute('height')!) : undefined;
+    const node = $createImageNode({ src, altText: alt || '', attachmentId, width, height });
     return { node };
   }
   return null;
@@ -104,32 +116,117 @@ function ImageComponent({
   src,
   altText,
   nodeKey,
+  width: initialWidth,
+  height: initialHeight,
 }: {
   src: string;
   altText: string;
   nodeKey: NodeKey;
+  width?: number;
+  height?: number;
 }) {
   const [editor] = useLexicalComposerContext();
   const [hovered, setHovered] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: initialWidth, height: initialHeight });
+  const [naturalDimensions, setNaturalDimensions] = useState({ width: 0, height: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
+  const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0, corner: '' });
 
   const handleRemove = () => {
     editor.update(() => {
       const node = $getNodeByKey(nodeKey);
-
       if (node) {
         node.remove();
       }
     });
   };
 
+  const updateNodeDimensions = (width: number, height: number) => {
+    editor.update(() => {
+      const node = $getNodeByKey(nodeKey);
+      if (node && $isImageNode(node)) {
+        const writable = node.getWritable();
+        writable.__width = width;
+        writable.__height = height;
+      }
+    });
+  };
+
+  const startResize = (e: React.MouseEvent, corner: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsResizing(true);
+    const currentWidth = dimensions.width || naturalDimensions.width;
+    const currentHeight = dimensions.height || naturalDimensions.height;
+    
+    resizeStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: currentWidth,
+      height: currentHeight,
+      corner,
+    };
+
+    let latestWidth = currentWidth;
+    let latestHeight = currentHeight;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizeStartRef.current.x;
+      const deltaY = e.clientY - resizeStartRef.current.y;
+      const aspectRatio = resizeStartRef.current.width / resizeStartRef.current.height;
+      
+      let newWidth = resizeStartRef.current.width;
+      let newHeight = resizeStartRef.current.height;
+
+      switch (resizeStartRef.current.corner) {
+        case 'se': // bottom-right
+          newWidth = Math.max(50, resizeStartRef.current.width + deltaX);
+          newHeight = newWidth / aspectRatio;
+          break;
+        case 'sw': // bottom-left
+          newWidth = Math.max(50, resizeStartRef.current.width - deltaX);
+          newHeight = newWidth / aspectRatio;
+          break;
+        case 'ne': // top-right
+          newWidth = Math.max(50, resizeStartRef.current.width + deltaX);
+          newHeight = newWidth / aspectRatio;
+          break;
+        case 'nw': // top-left
+          newWidth = Math.max(50, resizeStartRef.current.width - deltaX);
+          newHeight = newWidth / aspectRatio;
+          break;
+      }
+
+      latestWidth = Math.round(newWidth);
+      latestHeight = Math.round(newHeight);
+      setDimensions({ width: latestWidth, height: latestHeight });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      updateNodeDimensions(latestWidth, latestHeight);
+      
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const displayWidth = dimensions.width || initialWidth;
+  const displayHeight = dimensions.height || initialHeight;
+
   return (
     <span
       className="relative my-2 inline-block max-w-full align-top"
       contentEditable={false}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => !isResizing && setHovered(false)}
     >
       {!loaded && !hasError && (
         <div className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-md border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
@@ -143,34 +240,73 @@ function ImageComponent({
       {hasError ? (
         <div className="flex min-h-[100px] min-w-[220px] flex-col items-center justify-center rounded-md border border-red-200 bg-red-50 px-4 py-3 text-center">
           <ImageIcon size={24} className="mb-2 text-red-400" />
-
           <p className="text-sm font-medium text-red-600">Unable to load image</p>
-
           <p className="mt-1 max-w-[280px] break-all text-xs text-red-500">{src}</p>
         </div>
       ) : (
-        <img
-          src={src}
-          alt={altText}
-          draggable={false}
-          onLoad={() => {
-            setLoaded(true);
-            setHasError(false);
-          }}
-          onError={() => {
-            setLoaded(false);
-            setHasError(true);
-          }}
-          className={`max-w-full rounded-md border border-gray-200 dark:border-slate-700 ${loaded ? 'block' : 'hidden'}`}
-          style={{
-            maxHeight: 320,
-            width: 'auto',
-            height: 'auto',
-          }}
-        />
+        <div className="relative inline-block">
+          <img
+            ref={imageRef}
+            src={src}
+            alt={altText}
+            draggable={false}
+            onLoad={(e) => {
+              setLoaded(true);
+              setHasError(false);
+              const img = e.target as HTMLImageElement;
+              setNaturalDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+            }}
+            onError={() => {
+              setLoaded(false);
+              setHasError(true);
+            }}
+            className={`max-w-full rounded-md border ${
+              (hovered || isResizing) 
+                ? 'border-blue-400 dark:border-blue-500 border-2' 
+                : 'border-gray-200 dark:border-slate-700'
+            } ${loaded ? 'block' : 'hidden'}`}
+            style={{
+              width: displayWidth ? `${displayWidth}px` : 'auto',
+              height: displayHeight ? `${displayHeight}px` : 'auto',
+              maxHeight: displayWidth || displayHeight ? 'none' : 320,
+            }}
+          />
+
+          {/* Resize Handles */}
+          {(hovered || isResizing) && loaded && (
+            <>
+              {/* Corner handles */}
+              <div
+                onMouseDown={(e) => startResize(e, 'nw')}
+                className="absolute -left-1.5 -top-1.5 h-3 w-3 cursor-nw-resize rounded-full border-2 border-blue-500 bg-white dark:bg-slate-800"
+                style={{ zIndex: 10 }}
+              />
+              <div
+                onMouseDown={(e) => startResize(e, 'ne')}
+                className="absolute -right-1.5 -top-1.5 h-3 w-3 cursor-ne-resize rounded-full border-2 border-blue-500 bg-white dark:bg-slate-800"
+                style={{ zIndex: 10 }}
+              />
+              <div
+                onMouseDown={(e) => startResize(e, 'sw')}
+                className="absolute -bottom-1.5 -left-1.5 h-3 w-3 cursor-sw-resize rounded-full border-2 border-blue-500 bg-white dark:bg-slate-800"
+                style={{ zIndex: 10 }}
+              />
+              <div
+                onMouseDown={(e) => startResize(e, 'se')}
+                className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-se-resize rounded-full border-2 border-blue-500 bg-white dark:bg-slate-800"
+                style={{ zIndex: 10 }}
+              />
+
+              {/* Dimension display */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 rounded bg-blue-500 px-2 py-1 text-xs text-white whitespace-nowrap">
+                {displayWidth || naturalDimensions.width} × {displayHeight || naturalDimensions.height}
+              </div>
+            </>
+          )}
+        </div>
       )}
 
-      {hovered && (
+      {hovered && !isResizing && (
         <button
           type="button"
           title="Remove image"
@@ -182,6 +318,7 @@ function ImageComponent({
             rounded-full bg-black/60 text-white
             transition-colors hover:bg-black/80
           "
+          style={{ zIndex: 11 }}
         >
           <X size={14} />
         </button>
@@ -225,18 +362,27 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   __src: string;
   __altText: string;
   __attachmentId?: string;
+  __width?: number;
+  __height?: number;
 
   static getType(): string {
     return 'image';
   }
 
   static clone(node: ImageNode): ImageNode {
-    return new ImageNode(node.__src, node.__altText, node.__attachmentId, node.__key);
+    return new ImageNode(
+      node.__src, 
+      node.__altText, 
+      node.__attachmentId, 
+      node.__width,
+      node.__height,
+      node.__key
+    );
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { src, altText, attachmentId } = serializedNode;
-    return $createImageNode({ src, altText, attachmentId });
+    const { src, altText, attachmentId, width, height } = serializedNode;
+    return $createImageNode({ src, altText, attachmentId, width, height });
   }
 
   exportJSON(): SerializedImageNode {
@@ -244,6 +390,8 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
       src: this.__src,
       altText: this.__altText,
       attachmentId: this.__attachmentId,
+      width: this.__width,
+      height: this.__height,
       type: 'image',
       version: 1,
     };
@@ -265,14 +413,29 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
     if (this.__attachmentId) {
       element.setAttribute('data-attachment-id', this.__attachmentId);
     }
+    if (this.__width) {
+      element.setAttribute('width', String(this.__width));
+    }
+    if (this.__height) {
+      element.setAttribute('height', String(this.__height));
+    }
     return { element };
   }
 
-  constructor(src: string, altText: string, attachmentId?: string, key?: NodeKey) {
+  constructor(
+    src: string, 
+    altText: string, 
+    attachmentId?: string, 
+    width?: number,
+    height?: number,
+    key?: NodeKey
+  ) {
     super(key);
     this.__src = src;
     this.__altText = altText;
     this.__attachmentId = attachmentId;
+    this.__width = width;
+    this.__height = height;
   }
 
   createDOM(): HTMLElement {
@@ -284,12 +447,20 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   }
 
   decorate(): React.ReactNode {
-    return <ImageComponent src={this.__src} altText={this.__altText} nodeKey={this.getKey()} />;
+    return (
+      <ImageComponent 
+        src={this.__src} 
+        altText={this.__altText} 
+        nodeKey={this.getKey()} 
+        width={this.__width}
+        height={this.__height}
+      />
+    );
   }
 }
 
-export function $createImageNode({ src, altText, attachmentId }: InsertImagePayload): ImageNode {
-  return new ImageNode(src, altText, attachmentId);
+export function $createImageNode({ src, altText, attachmentId, width, height }: InsertImagePayload): ImageNode {
+  return new ImageNode(src, altText, attachmentId, width, height);
 }
 
 export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {

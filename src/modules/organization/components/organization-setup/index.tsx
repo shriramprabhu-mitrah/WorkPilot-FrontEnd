@@ -83,14 +83,23 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
       });
     }
 
+    // Handle team member invitations - don't block navigation if this fails
     const validMembers = teamMembers.filter((m) => m.email.trim() !== '');
     if (validMembers.length > 0) {
-      await inviteOrgUsers({ members: validMembers });
+      try {
+        await inviteOrgUsers({ members: validMembers });
+      } catch (inviteError) {
+      }
     }
+
+    // Handle logo upload - don't block navigation if this fails
     if (uploadLogo && logoFile) {
-      await updateOrg({
-        logo: logoFile || '',
-      });
+      try {
+        await updateOrg({
+          logo: logoFile || '',
+        });
+      } catch (logoError) {
+      }
     }
     const userProfile = await userService.getUserProfile();
     dispatch(
@@ -468,12 +477,28 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
                         className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
-                    <button
-                      onClick={() => removeTeamMember(index)}
-                      className="w-10 h-10 flex items-center justify-center border border-gray-200 dark:border-slate-600 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 transition-colors bg-white dark:bg-slate-800 shrink-0"
-                    >
-                      <X size={16} className="dark:text-slate-200" />
-                    </button>
+                    {index === 0 ? (
+                      // Member 1: Clear button (disabled when empty)
+                      <button
+                        onClick={() => updateTeamMember(index, '')}
+                        disabled={!member.email.trim()}
+                        className={`w-10 h-10 flex items-center justify-center border rounded-lg transition-colors bg-white dark:bg-slate-800 shrink-0 ${
+                          member.email.trim()
+                            ? 'border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 cursor-pointer'
+                            : 'border-gray-100 dark:border-slate-700 text-gray-300 dark:text-slate-600 cursor-not-allowed opacity-50'
+                        }`}
+                      >
+                        <X size={16} className={member.email.trim() ? 'dark:text-slate-200' : ''} />
+                      </button>
+                    ) : (
+                      // Member 2+: Remove button (always enabled)
+                      <button
+                        onClick={() => removeTeamMember(index)}
+                        className="w-10 h-10 flex items-center justify-center border border-gray-200 dark:border-slate-600 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 transition-colors bg-white dark:bg-slate-800 shrink-0"
+                      >
+                        <X size={16} className="dark:text-slate-200" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
