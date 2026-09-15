@@ -226,6 +226,7 @@ export const TaskDetailDrawer = ({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
     status: task.columnId ?? task.status ?? '',
+    statusName: task.status ?? '',
     project_id: effectiveProjectId,
     description: task.description ?? '',
     priority: task.priority,
@@ -276,6 +277,7 @@ export const TaskDetailDrawer = ({
         title: fetchedTask.title || '',
         subtasks: task.subtasks ?? [],
         status: fetchedTask.status_id || fetchedTask.status || '',
+        statusName: fetchedTask.status || '',
         project_id: fetchedTask.project_id || effectiveProjectId,
         description: apiDescription,
         priority: fetchedTask.priority
@@ -1482,7 +1484,7 @@ export const TaskDetailDrawer = ({
                           }}
                         />
 
-                        {selectedStatus?.label ?? taskData.status ?? 'Select status'}
+                        {selectedStatus?.label ?? taskData.statusName ?? 'Select status'}
                       </span>
 
                       {canEditTask && <ChevronDown size={14} />}

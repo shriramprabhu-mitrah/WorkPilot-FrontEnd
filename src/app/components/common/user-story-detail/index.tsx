@@ -1040,7 +1040,44 @@ export const UserStoryDetailDrawer = ({
     userStoryStatusOptions.map((option) => [option.value, option])
   );
 
-  const handleEditorImageUpload = async (file: File): Promise<string> => {
+  // Handler for user story description images - uses user story attachment API
+  const handleDescriptionImageUpload = async (file: File): Promise<string> => {
+    const result = await uploadUserStoryAttachmentAsync({ userStoryId, file });
+
+    const raw = result as unknown as Record<string, unknown>;
+    const dataField = raw?.data as Record<string, unknown> | undefined;
+
+    const attachments = (dataField?.data ?? dataField) as
+      Array<Record<string, string | undefined>> | undefined;
+
+    const attachment = Array.isArray(attachments) ? attachments[0] : undefined;
+
+    if (!attachment) {
+      throw new Error('No attachment returned from upload API');
+    }
+
+    const imageUrl =
+      attachment.url ?? attachment.file_url ?? attachment.file_path ?? attachment.path;
+
+    const attachmentId = attachment.id ?? attachment.attachment_id ?? attachment.uuid;
+
+    if (!imageUrl) {
+      throw new Error('Uploaded attachment does not contain an image URL');
+    }
+
+    // Encode attachment ID in the URL as a query parameter so it can be extracted later
+    if (attachmentId) {
+      const urlWithId = imageUrl.includes('?')
+        ? `${imageUrl}&attachment_id=${attachmentId}`
+        : `${imageUrl}?attachment_id=${attachmentId}`;
+      return urlWithId;
+    }
+
+    return imageUrl;
+  };
+
+  // Handler for comment images - uses comment attachment API
+  const handleCommentImageUpload = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -1374,7 +1411,7 @@ export const UserStoryDetailDrawer = ({
                           }
                           placeholder="Add a description..."
                           minHeight="180px"
-                          onImageUpload={handleEditorImageUpload}
+                          onImageUpload={handleDescriptionImageUpload}
                         />
                         <div className="flex gap-2 mt-3">
                           <button
@@ -1617,7 +1654,7 @@ export const UserStoryDetailDrawer = ({
                               onChange={setComment}
                               placeholder="Write a comment..."
                               minHeight="120px"
-                              onImageUpload={handleEditorImageUpload}
+                              onImageUpload={handleCommentImageUpload}
                             />
 
                             <div className="flex items-center justify-end gap-2">
@@ -1730,7 +1767,7 @@ export const UserStoryDetailDrawer = ({
                                           onChange={setEditingCommentContent}
                                           placeholder="Edit comment..."
                                           minHeight="100px"
-                                          onImageUpload={handleEditorImageUpload}
+                                          onImageUpload={handleCommentImageUpload}
                                         />
                                         <div className="flex items-center gap-2">
                                           <WpButton
@@ -1839,7 +1876,7 @@ export const UserStoryDetailDrawer = ({
                                                             onChange={setEditingReplyContent}
                                                             placeholder="Edit reply..."
                                                             minHeight="80px"
-                                                            onImageUpload={handleEditorImageUpload}
+                                                            onImageUpload={handleCommentImageUpload}
                                                           />
                                                           <div className="flex items-center gap-2">
                                                             <WpButton
@@ -1956,7 +1993,7 @@ export const UserStoryDetailDrawer = ({
                                                 onChange={setReplyContent}
                                                 placeholder="Write a reply..."
                                                 minHeight="80px"
-                                                onImageUpload={handleEditorImageUpload}
+                                                onImageUpload={handleCommentImageUpload}
                                               />
                                               <div className="flex items-center gap-2">
                                                 <WpButton

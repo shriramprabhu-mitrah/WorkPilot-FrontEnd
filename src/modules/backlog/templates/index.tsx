@@ -1838,10 +1838,10 @@ export const BacklogTemplate = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row gap-4">
           {/* Left Section: Unassigned User Stories & Backlog Tasks */}
           <div
-            className="flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1"
+            className="flex-none lg:flex-1 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1"
             style={{ minHeight: '400px' }}
           >
             {isLoadingUserStories && selectedProject ? (
@@ -2134,7 +2134,7 @@ export const BacklogTemplate = () => {
 
           {/* Right Section: Sprint Drop Zones */}
           {canViewSprints && (
-            <div className="w-full lg:w-[480px] xl:w-[560px] 2xl:w-[640px] flex-shrink-0 overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l dark:border-slate-700 pt-4 lg:pt-0 lg:pl-4">
+            <div className="w-full lg:w-[480px] xl:w-[560px] 2xl:w-[640px] flex-none overflow-y-auto [scrollbar-width:thin] pr-0 sm:pr-1 border-t lg:border-t-0 lg:border-l dark:border-slate-700 pt-4 lg:pt-0 lg:pl-4" style={{ minHeight: '400px' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <h2 className="font-semibold text-sm text-gray-900 dark:text-slate-100">

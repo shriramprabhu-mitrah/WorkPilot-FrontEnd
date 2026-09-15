@@ -3,21 +3,25 @@
 .lp-page {
   font-family: 'Inter', sans-serif;
   color: var(--color-slate-800);
-  overflow-x: hidden;
   background-color: var(--color-white);
 }
 
 .lp-header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.9);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgb(255, 255, 255);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--color-slate-200);
   padding: 16px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .lp-logo {
@@ -98,7 +102,7 @@
 
 /* Hero Section */
 .lp-hero {
-  padding: 80px 40px 100px;
+  padding: 160px 40px 100px;
   text-align: center;
   max-width: 1000px;
   margin: 0 auto;
@@ -412,22 +416,22 @@
 
 /* CTA Section */
 .lp-cta-section {
-  background: var(--color-slate-800);
+  background: var(--color-white);
   padding: 100px 40px;
   text-align: center;
-  color: white;
+  color: var(--color-slate-900);
 }
 
 .lp-cta-title {
   font-size: 40px;
   font-weight: 800;
   margin-bottom: 24px;
-  color: white;
+  color: var(--color-slate-900);
 }
 
 .lp-cta-desc {
   font-size: 18px;
-  color: var(--color-slate-300);
+  color: var(--color-slate-600);
   max-width: 600px;
   margin: 0 auto 40px;
   line-height: 1.6;
@@ -435,8 +439,8 @@
 
 /* Footer */
 .lp-footer {
-  background: var(--color-slate-900);
-  color: var(--color-slate-300);
+  background: var(--color-white);
+  color: var(--color-slate-600);
   padding: 80px 40px 40px;
 }
 
@@ -452,18 +456,17 @@
 .lp-footer-logo {
   height: 32px;
   margin-bottom: 24px;
-  filter: brightness(0) invert(1);
 }
 
 .lp-footer-tagline {
   font-size: 14px;
-  color: var(--color-slate-400);
+  color: var(--color-slate-600);
   line-height: 1.6;
   max-width: 300px;
 }
 
 .lp-footer-col-title {
-  color: white;
+  color: var(--color-slate-900);
   font-weight: 600;
   margin-bottom: 24px;
   font-size: 16px;
@@ -479,21 +482,21 @@
 }
 
 .lp-footer-link {
-  color: var(--color-slate-400);
+  color: var(--color-slate-600);
   text-decoration: none;
   font-size: 14px;
   transition: color 0.2s;
 }
 
 .lp-footer-link:hover {
-  color: white;
+  color: var(--color-slate-900);
 }
 
 .lp-footer-bottom {
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 24px;
-  border-top: 1px solid var(--color-slate-800);
+  border-top: 1px solid var(--color-slate-200);
   text-align: center;
   font-size: 14px;
   color: var(--color-slate-500);
@@ -592,21 +595,27 @@
 }
 
 .lp-contact-label {
-  color: var(--color-slate-500);
+  color: var(--color-slate-600);
+}
+
+/* Logo text */
+.logo {
+  color: var(--color-slate-900);
 }
 
 /* ─── Dark mode overrides ─── */
 
 /* Page root */
 .dark .lp-page {
-  background-color: #0f172a;
+  background-color: #1e293b;
   color: #f1f5f9; /* slate-100 */
 }
 
 /* Header */
 .dark .lp-header {
-  background: rgba(15, 23, 42, 0.92);
-  border-bottom-color: #1e293b;
+  background: rgb(30, 41, 59);
+  border-bottom-color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dark .lp-nav-link {
@@ -744,12 +753,21 @@
 
 /* CTA section stays dark by design — already dark bg */
 .dark .lp-cta-section {
-  background: #020617;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.dark .lp-cta-title {
+  color: #f1f5f9;
+}
+
+.dark .lp-cta-desc {
+  color: #cbd5e1;
 }
 
 /* Footer */
 .dark .lp-footer {
-  background: #020617;
+  background: #1e293b;
   color: #94a3b8;
 }
 
@@ -762,7 +780,7 @@
 }
 
 .dark .lp-footer-link {
-  color: #64748b;
+  color: #f0f2f5;
 }
 
 .dark .lp-footer-link:hover {
@@ -775,7 +793,7 @@
 }
 
 .dark .lp-contact-label {
-  color: #64748b;
+  color: #ececed;
 }
 
 /* Logo text */
