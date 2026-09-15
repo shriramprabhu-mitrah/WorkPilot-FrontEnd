@@ -58,7 +58,6 @@ export const SignIn = () => {
     resetPasswordConfirm,
     isMobile,
   } = useSignin();
-  const [rememberMe, setRememberMe] = useState(false);
 
   const [showForgotSidebar, setShowForgotSidebar] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
@@ -129,7 +128,6 @@ export const SignIn = () => {
       await handleSignInAsync({
         email: data.email,
         password: data.password,
-        rememberMe,
       });
     } catch {
       // Error is handled by React Query and toast

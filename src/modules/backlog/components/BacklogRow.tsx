@@ -36,7 +36,7 @@ export const BacklogRow = ({
     cursor: isDragging ? 'grabbing' : 'grab',
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     if (!isDragging) {
       onClick?.();
     }
