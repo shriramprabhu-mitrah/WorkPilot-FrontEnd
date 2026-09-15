@@ -50,7 +50,6 @@ import { TaskDetailDrawer } from '../task-detail';
 import { KanbanTask } from '@/src/types/board';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-import { useDeleteStatus } from '@/src/modules/project/hooks/useLabels';
 import {
   useCreateUserStoryComment,
   useGetUserStoryComments,
@@ -489,7 +488,6 @@ export const UserStoryDetailDrawer = ({
   );
 
   const { userStoryStatuses = [] } = useGetUserStoryStatuses(currentUserStory.project_id ?? '');
-  const { mutateAsync: deleteStatus, isPending: isDeletingStatus } = useDeleteStatus();
 
   // Comment hooks
   const { createCommentAsync, isCreatingComment } = useCreateUserStoryComment(
@@ -530,7 +528,7 @@ export const UserStoryDetailDrawer = ({
     editingCommentId ?? ''
   );
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
-  const { deleteCommentAsync, isDeletingComment } = useDeleteUserStoryComment(
+  const { deleteCommentAsync } = useDeleteUserStoryComment(
     currentUserStory.project_id ?? '',
     currentUserStory.id,
     deletingCommentId ?? ''
@@ -1550,7 +1548,7 @@ export const UserStoryDetailDrawer = ({
                                   onClick={async () => {
                                     try {
                                       await deleteAttachmentAsync(attachment.id);
-                                    } catch (error) {}
+                                    } catch {}
                                   }}
                                   className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                                   title="Delete attachment"
@@ -2561,7 +2559,7 @@ export const UserStoryDetailDrawer = ({
                                         await handleUpdate({
                                           sprintId: sprint.id,
                                         });
-                                      } catch (error) {
+                                      } catch {
                                         setSelectedSprintName(previousSprintName);
                                       } finally {
                                         setIsUpdatingSprint(false);

@@ -694,7 +694,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         src: url,
         altText: file.name,
       });
-    } catch (err) {
+    } catch {
       setImageError('Image upload failed, please try again.');
     } finally {
       setIsUploadingImage(false);

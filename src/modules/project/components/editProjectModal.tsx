@@ -105,7 +105,7 @@ const EditProjectModal = ({
       }
 
       onSuccess?.();
-    } catch (error) {
+    } catch {
       // Error is already handled by the mutation
     } finally {
       onLoadingChange?.(false);

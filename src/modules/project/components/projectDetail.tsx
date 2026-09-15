@@ -145,7 +145,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       }
       setSelectedMembers([]);
       setMemberRoles({});
-    } catch (error) {
+    } catch {
       // Error is already handled by the mutation
     } finally {
       setIsRefreshingMembers(false);
@@ -165,7 +165,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       await deleteProjectAsync(project.id);
       setShowDeleteConfirm(false);
       push('/projects');
-    } catch (error) {
+    } catch {
       setShowDeleteConfirm(false);
     }
   };
@@ -183,7 +183,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) {}
+    } catch {}
   };
 
   const getInitials = (name: string) => {
@@ -232,7 +232,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch (error) {
+    } catch {
       showToast.error('Failed to update member role');
     } finally {
       setUpdatingMemberId(null);
@@ -280,7 +280,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       setSelectedSprint(null);
 
       await refetchSprints();
-    } catch (error) {
+    } catch {
       // Error is already handled by apiService
     } finally {
       setIsStartingSprint(false);
