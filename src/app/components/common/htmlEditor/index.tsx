@@ -64,6 +64,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { logger } from '@/src/lib/utils/logger';
 
 interface WpRichTextEditorProps {
   value?: string;
@@ -180,7 +181,6 @@ function ImageComponent({
 
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - resizeStartRef.current.x;
-      const deltaY = e.clientY - resizeStartRef.current.y;
       const aspectRatio = resizeStartRef.current.width / resizeStartRef.current.height;
 
       let newWidth = resizeStartRef.current.width;
@@ -528,7 +528,9 @@ const theme = {
 const initialConfig = {
   namespace: 'WpRichTextEditor',
   theme,
-  onError(error: Error) {},
+  onError(error: Error) {
+    logger.log('Error is ', error);
+  },
   nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, ImageNode],
 };
 

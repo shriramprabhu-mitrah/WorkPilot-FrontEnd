@@ -245,7 +245,7 @@ export const BillingSettings = () => {
       name: 'WorkPilot',
       description: `${confirmModal.plan?.name} Plan Subscription`,
       image: '/images/mitrahsoft-logo.png',
-      handler: function (response: RazorpayResponse) {
+      handler: function () {
         handleCloseModal();
         // Here you would typically send the payment details to your backend
       },

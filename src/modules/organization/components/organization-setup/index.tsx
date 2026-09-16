@@ -30,7 +30,7 @@ interface OrgSetupModalProps {
 // Helper: Convert enum value to readable label
 const toLabel = (val: string) => val.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProps) => {
+export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);

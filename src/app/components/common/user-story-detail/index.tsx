@@ -551,12 +551,11 @@ export const UserStoryDetailDrawer = ({
       currentUserStory.id,
       editingReplyId ?? ''
     );
-  const { deleteCommentAsync: deleteReplyAsync, isDeletingComment: isDeletingReply } =
-    useDeleteUserStoryComment(
-      currentUserStory.project_id ?? '',
-      currentUserStory.id,
-      deletingReplyId ?? ''
-    );
+  const { deleteCommentAsync: deleteReplyAsync } = useDeleteUserStoryComment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id,
+    deletingReplyId ?? ''
+  );
 
   const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
     currentUserStory.project_id ?? '',

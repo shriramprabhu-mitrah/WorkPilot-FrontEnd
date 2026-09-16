@@ -530,16 +530,15 @@ export const KanbanBoardTemplate = () => {
   }, [projectSlug, storeProject?.slug, orgSlug, taskKey, router]);
 
   // Fetch project members for outer avatar display (always fetch all members, no search)
-  const { members: displayMembers, isLoadingMembers: isLoadingDisplayMembers } =
-    useGetProjectMembers(
-      selectedProject,
-      {
-        page: 1,
-        page_size: 50,
-        name: '', // No search filter for display members
-      },
-      true // Always fetch
-    );
+  const { members: displayMembers } = useGetProjectMembers(
+    selectedProject,
+    {
+      page: 1,
+      page_size: 50,
+      name: '', // No search filter for display members
+    },
+    true // Always fetch
+  );
 
   // Fetch project members for assignee filtering with search
   const {

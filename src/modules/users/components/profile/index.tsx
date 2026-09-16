@@ -24,7 +24,7 @@ export default function Profile() {
   const [showPasswordStrength, setShowPasswordStrength] = useState(false);
   const passwordSectionRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
-  const { insights, isLoading: isInsightsLoading } = useUserInsights();
+  const { insights } = useUserInsights();
   const { push, replace } = useOrgNavigation();
 
   const shouldChangePassword = searchParams.get('changePassword') === 'true';
