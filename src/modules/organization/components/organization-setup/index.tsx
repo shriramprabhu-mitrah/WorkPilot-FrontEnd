@@ -20,6 +20,7 @@ import { getAuthSource } from '@/src/lib/utils/auth';
 import { signupService } from '@/src/services/signup';
 import { getAccessToken } from '@/src/lib/utils/cookies';
 import Cookies from 'js-cookie';
+import { logger } from '@/src/lib/utils/logger';
 
 interface OrgSetupModalProps {
   onComplete?: () => void;
@@ -89,6 +90,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
       try {
         await inviteOrgUsers({ members: validMembers });
       } catch (inviteError) {
+        logger.log('error is ', inviteError);
       }
     }
 
@@ -99,6 +101,7 @@ export const OrganizationSetupModal = ({ onComplete, onBack }: OrgSetupModalProp
           logo: logoFile || '',
         });
       } catch (logoError) {
+        logger.log('Error is', logoError);
       }
     }
     const userProfile = await userService.getUserProfile();

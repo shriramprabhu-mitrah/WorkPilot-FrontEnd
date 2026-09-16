@@ -450,7 +450,6 @@ export const UserStoryDetailDrawer = ({
   const [reporterSearch, setReporterSearch] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
   const [editingDesc, setEditingDesc] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -1263,7 +1262,6 @@ export const UserStoryDetailDrawer = ({
                         <button
                           onClick={() => {
                             setShowMoreMenu(false);
-                            setEditingTitle(true);
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                         >

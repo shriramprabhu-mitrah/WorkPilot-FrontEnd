@@ -88,14 +88,14 @@ export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
   createCommand('INSERT_IMAGE_COMMAND');
 
 type SerializedImageNode = Spread<
-  { 
-    src: string; 
-    altText: string; 
-    attachmentId?: string; 
+  {
+    src: string;
+    altText: string;
+    attachmentId?: string;
     width?: number;
     height?: number;
-    type: 'image'; 
-    version: 1 
+    type: 'image';
+    version: 1;
   },
   SerializedLexicalNode
 >;
@@ -104,8 +104,12 @@ function convertImageElement(domNode: HTMLElement): DOMConversionOutput | null {
   if (domNode instanceof HTMLImageElement) {
     const { src, alt } = domNode;
     const attachmentId = domNode.getAttribute('data-attachment-id') || undefined;
-    const width = domNode.getAttribute('width') ? parseInt(domNode.getAttribute('width')!) : undefined;
-    const height = domNode.getAttribute('height') ? parseInt(domNode.getAttribute('height')!) : undefined;
+    const width = domNode.getAttribute('width')
+      ? parseInt(domNode.getAttribute('width')!)
+      : undefined;
+    const height = domNode.getAttribute('height')
+      ? parseInt(domNode.getAttribute('height')!)
+      : undefined;
     const node = $createImageNode({ src, altText: alt || '', attachmentId, width, height });
     return { node };
   }
@@ -158,11 +162,11 @@ function ImageComponent({
   const startResize = (e: React.MouseEvent, corner: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setIsResizing(true);
     const currentWidth = dimensions.width || naturalDimensions.width;
     const currentHeight = dimensions.height || naturalDimensions.height;
-    
+
     resizeStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -178,7 +182,7 @@ function ImageComponent({
       const deltaX = e.clientX - resizeStartRef.current.x;
       const deltaY = e.clientY - resizeStartRef.current.y;
       const aspectRatio = resizeStartRef.current.width / resizeStartRef.current.height;
-      
+
       let newWidth = resizeStartRef.current.width;
       let newHeight = resizeStartRef.current.height;
 
@@ -209,7 +213,7 @@ function ImageComponent({
     const handleMouseUp = () => {
       setIsResizing(false);
       updateNodeDimensions(latestWidth, latestHeight);
-      
+
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -261,8 +265,8 @@ function ImageComponent({
               setHasError(true);
             }}
             className={`max-w-full rounded-md border ${
-              (hovered || isResizing) 
-                ? 'border-blue-400 dark:border-blue-500 border-2' 
+              hovered || isResizing
+                ? 'border-blue-400 dark:border-blue-500 border-2'
                 : 'border-gray-200 dark:border-slate-700'
             } ${loaded ? 'block' : 'hidden'}`}
             style={{
@@ -299,7 +303,8 @@ function ImageComponent({
 
               {/* Dimension display */}
               <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 rounded bg-blue-500 px-2 py-1 text-xs text-white whitespace-nowrap">
-                {displayWidth || naturalDimensions.width} × {displayHeight || naturalDimensions.height}
+                {displayWidth || naturalDimensions.width} ×{' '}
+                {displayHeight || naturalDimensions.height}
               </div>
             </>
           )}
@@ -371,9 +376,9 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
 
   static clone(node: ImageNode): ImageNode {
     return new ImageNode(
-      node.__src, 
-      node.__altText, 
-      node.__attachmentId, 
+      node.__src,
+      node.__altText,
+      node.__attachmentId,
       node.__width,
       node.__height,
       node.__key
@@ -423,9 +428,9 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   }
 
   constructor(
-    src: string, 
-    altText: string, 
-    attachmentId?: string, 
+    src: string,
+    altText: string,
+    attachmentId?: string,
     width?: number,
     height?: number,
     key?: NodeKey
@@ -448,10 +453,10 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
 
   decorate(): React.ReactNode {
     return (
-      <ImageComponent 
-        src={this.__src} 
-        altText={this.__altText} 
-        nodeKey={this.getKey()} 
+      <ImageComponent
+        src={this.__src}
+        altText={this.__altText}
+        nodeKey={this.getKey()}
         width={this.__width}
         height={this.__height}
       />
@@ -459,7 +464,13 @@ export class ImageNode extends DecoratorNode<React.ReactNode> {
   }
 }
 
-export function $createImageNode({ src, altText, attachmentId, width, height }: InsertImagePayload): ImageNode {
+export function $createImageNode({
+  src,
+  altText,
+  attachmentId,
+  width,
+  height,
+}: InsertImagePayload): ImageNode {
   return new ImageNode(src, altText, attachmentId, width, height);
 }
 

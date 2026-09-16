@@ -457,8 +457,8 @@ const MembersSettings = () => {
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-5">
-              <WpButton 
-                variant="secondary" 
+              <WpButton
+                variant="secondary"
                 onClick={handleCancelRoleChange}
                 className="w-full sm:w-auto"
               >
@@ -507,9 +507,9 @@ const MembersSettings = () => {
                 Cancel
               </WpButton>
 
-              <WpButton 
-                variant="danger" 
-                onClick={handleDelete} 
+              <WpButton
+                variant="danger"
+                onClick={handleDelete}
                 isLoading={isRemovingMember}
                 className="w-full sm:w-auto"
               >

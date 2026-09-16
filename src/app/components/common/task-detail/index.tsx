@@ -333,7 +333,6 @@ export const TaskDetailDrawer = ({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
   const [selecteddStatus, setSelecteddStatus] = useState<CustomStatus | null>(null);
-  const [isAssignedToMe, setIsAssignedToMe] = useState(false);
 
   const { mutate: assignTaskToMe, isPending: isAssigning } = useAssignTaskToMe();
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
@@ -477,7 +476,6 @@ export const TaskDetailDrawer = ({
     const displayName = currentUser.name || currentUser.username || currentUser.email || '';
     const initials = getInitials(displayName || 'U');
     const color = currentUser.color || colors.avatarBlue;
-    setIsAssignedToMe(true);
     setTaskData((prev) => ({
       ...prev,
       assigneeId: prev.assigneeId,
@@ -495,7 +493,6 @@ export const TaskDetailDrawer = ({
           });
         },
         onError: () => {
-          setIsAssignedToMe(false);
           setTaskData((prev) => ({
             ...prev,
             ...previousAssignee,
