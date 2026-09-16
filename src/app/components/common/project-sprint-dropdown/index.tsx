@@ -68,7 +68,6 @@ export const ProjectSprintDropdowns = ({
         setProjects(actualData);
       })
       .catch((err) => logger.error('Error fetching projects', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -97,7 +96,6 @@ export const ProjectSprintDropdowns = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSprint('');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProject]);
 
   const projectOptions = (projects || []).map((p) => ({ label: p.name || '', value: p.id || '' }));
