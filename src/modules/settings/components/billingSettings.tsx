@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { CheckCircle2, CreditCard } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
-interface RazorpayResponse {
-  razorpay_payment_id: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
-}
+// interface RazorpayResponse {
+//   razorpay_payment_id: string;
+//   razorpay_order_id?: string;
+//   razorpay_signature?: string;
+// }
 
 interface Plan {
   id: string;

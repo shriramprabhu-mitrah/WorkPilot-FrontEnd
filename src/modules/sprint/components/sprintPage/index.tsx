@@ -13,6 +13,8 @@ import AddTaskModal from '../AddTaskModal';
 import { Task } from '../../types/sprint';
 import SprintSkeleton from '../sprintSkeleton';
 import { logger } from '@/src/lib/utils/logger';
+import Image from 'next/image';
+
 type NewTask = Task & {
   description: string;
   assignee: string;
@@ -187,8 +189,13 @@ const SprintPage = () => {
         {!hasTasks ? (
           <div className="rounded-xl border border-gray-200 bg-white py-16">
             <div className="flex flex-col items-center justify-center">
-              <img src="/images/Empty-rafiki.svg" alt="No Sprint Tasks" className="h-72 w-72" />
-
+              <Image
+                src="/images/Empty-rafiki.svg"
+                alt="No Sprint Tasks"
+                width={288}
+                height={288}
+                className="h-72 w-72"
+              />
               <h2 className="mt-6 text-2xl font-bold text-gray-900">No Sprint Tasks</h2>
 
               <p className="mt-2 max-w-md text-center text-gray-500">

@@ -9,7 +9,7 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { useGetSprintUserStories } from '../../tasks/hooks/useUserStory';
-
+import Image from 'next/image';
 import {
   useAddProjectMembers,
   useDeleteProject,
@@ -496,7 +496,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         ) : sprints.length === 0 ? (
           <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
             <div className="flex flex-col items-center justify-center">
-              <img src="/images/agile method-amico.svg" alt="No Sprints" className="h-72 w-72" />
+              <Image
+                src="/images/agile method-amico.svg"
+                alt="No Sprints"
+                width={288}
+                height={288}
+                className="h-72 w-72"
+              />
               <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">
                 No Sprints Found
               </h2>

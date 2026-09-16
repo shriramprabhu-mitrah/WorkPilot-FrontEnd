@@ -7,6 +7,7 @@ import { Pagination } from '../../../app/components/common/pagination/pagination
 import { AdminMembersParams } from '@/src/types/superadmin';
 import MembersSkeleton from '../components/membersSkeleton';
 import Skeleton from '@/src/app/components/common/skeleton';
+import Image from 'next/image';
 
 const avatarColors = [
   '#3b82f6', // blue
@@ -246,10 +247,12 @@ export const MembersTemplate = () => {
                         <td className="px-5 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             {member.avatar_url ? (
-                              <img
+                              <Image
                                 src={member.avatar_url}
                                 alt={member.name}
-                                className="w-8 h-8 rounded-full"
+                                width={32}
+                                height={32}
+                                className="h-8 w-8 rounded-full"
                               />
                             ) : (
                               <div

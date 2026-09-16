@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Pencil, Trash2, Hash } from 'lucide-react';
-
+import Image from 'next/image';
 import { WpButton } from '@/src/app/components/common/button';
 import { useGetSprintById, useDeleteSprint } from '@/src/modules/project/hooks/useSprint';
 import SprintDetailSkeleton from './sprintDetailSkeleton';
@@ -238,7 +238,13 @@ const SprintDetail = () => {
       ) : !(tasksList || []).length ? (
         <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-16">
           <div className="flex flex-col items-center justify-center">
-            <img src="/images/Time management-rafiki.png" alt="No Tasks" className="h-72 w-72" />
+            <Image
+              src="/images/Time management-rafiki.png"
+              alt="No Tasks"
+              width={288}
+              height={288}
+              className="h-72 w-72"
+            />
             <p className="text-sm font-medium text-gray-400 dark:text-slate-200">
               No user stories have been assigned to this sprint.
             </p>

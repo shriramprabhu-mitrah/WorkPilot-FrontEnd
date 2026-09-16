@@ -1,5 +1,6 @@
 import React from 'react';
 import { AdminOrganizationMember } from '@/src/types/superadmin';
+import Image from 'next/image';
 
 interface MemberCardProps {
   member: AdminOrganizationMember;
@@ -38,10 +39,12 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
     <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {member.avatar_url ? (
-          <img
+          <Image
             src={member.avatar_url}
             alt={member.name}
-            className="w-10 h-10 rounded-full shrink-0"
+            width={40}
+            height={40}
+            className="h-10 w-10 shrink-0 rounded-full"
           />
         ) : (
           <div

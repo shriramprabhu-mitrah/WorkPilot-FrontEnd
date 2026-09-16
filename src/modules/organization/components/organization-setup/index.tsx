@@ -21,7 +21,7 @@ import { signupService } from '@/src/services/signup';
 import { getAccessToken } from '@/src/lib/utils/cookies';
 import Cookies from 'js-cookie';
 import { logger } from '@/src/lib/utils/logger';
-
+import Image from 'next/image';
 interface OrgSetupModalProps {
   onComplete?: () => void;
   onBack: () => void;
@@ -576,11 +576,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
                 <div className="flex gap-4 items-center">
                   <div className="w-20 h-20 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     {logoPreview ? (
-                      <img
-                        src={logoPreview}
-                        alt="Logo preview"
-                        className="w-full h-full object-cover"
-                      />
+                      <Image src={logoPreview} alt="Logo preview" fill className="object-cover" />
                     ) : (
                       <TrackrLogoSvg />
                     )}
@@ -628,7 +624,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
                   style={{ backgroundColor: colors.primary }}
                 >
                   {logoPreview ? (
-                    <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
+                    <Image src={logoPreview} alt="logo" fill className="object-cover" />
                   ) : orgName ? (
                     orgName.charAt(0).toUpperCase()
                   ) : (

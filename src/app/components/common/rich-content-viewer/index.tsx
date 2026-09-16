@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-
+import Image from 'next/image';
 interface RichContentViewerProps {
   content: string;
   className?: string;
@@ -256,10 +256,12 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
           onClick={() => setSelectedPreviewImage(null)}
         >
           <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
-            <img
+            <Image
               src={selectedPreviewImage.src}
               alt="Preview"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+              width={1200}
+              height={800}
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
             />
 
             {canDownload && selectedPreviewImage.attachmentId && (
