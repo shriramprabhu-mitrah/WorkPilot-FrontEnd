@@ -213,7 +213,6 @@ const SprintDetail = () => {
       {/* User Stories list */}
       {!canViewUserStories ? (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/kanban method-pana.svg"
             alt="Access Restricted"

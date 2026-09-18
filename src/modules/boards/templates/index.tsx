@@ -1403,7 +1403,6 @@ export const KanbanBoardTemplate = () => {
       {!canViewBoard ? (
         <div className="flex flex-1 items-center justify-center px-3 sm:px-0">
           <div className="flex flex-col items-center justify-center text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/kanban method-pana.svg"
               alt="Access Restricted"
@@ -1424,7 +1423,6 @@ export const KanbanBoardTemplate = () => {
       ) : !hasTasks ? (
         <div className="flex flex-1 items-center justify-center px-3 sm:px-0">
           <div className="flex flex-col items-center justify-center text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/kanban method-pana.svg" alt="No Tasks" className="h-90 w-90" />
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">No tasks found</h2>

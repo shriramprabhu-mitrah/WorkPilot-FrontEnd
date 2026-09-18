@@ -1892,7 +1892,6 @@ export const BacklogTemplate = () => {
 
                   {!canViewUserStories ? (
                     <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/images/kanban method-pana.svg"
                         alt="Access Restricted"
@@ -2035,7 +2034,6 @@ export const BacklogTemplate = () => {
 
                   {!canViewTasks ? (
                     <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/images/kanban method-pana.svg"
                         alt="Access Restricted"

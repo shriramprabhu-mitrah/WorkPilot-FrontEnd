@@ -20,7 +20,6 @@ export const SettingPageTemplate = () => {
     return (
       <div className="flex flex-1 items-center justify-center py-20 px-3 sm:px-0">
         <div className="flex flex-col items-center justify-center text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/kanban method-pana.svg"
             alt="Access Restricted"
