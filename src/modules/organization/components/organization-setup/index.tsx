@@ -15,13 +15,19 @@ import { colors } from '@/src/styles/colors';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { userService } from '@/src/services/user';
-import { setUser } from '@/src/store/slices/users';
+import { setUser, clearUser } from '@/src/store/slices/users';
 import { getAuthSource } from '@/src/lib/utils/auth';
 import { signupService } from '@/src/services/signup';
-import { getAccessToken } from '@/src/lib/utils/cookies';
+import { getAccessToken, removeTokens } from '@/src/lib/utils/cookies';
 import Cookies from 'js-cookie';
 import { logger } from '@/src/lib/utils/logger';
 import Image from 'next/image';
+import { clearSelectedProject } from '@/src/store/slices/project';
+import { clearOrganization } from '@/src/store/slices/organization';
+import { setIsLoggingOut } from '@/src/lib/config/axios-client';
+import { persistor } from '@/src/store';
+import { useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '@/src/hooks/useDebounce';
 interface OrgSetupModalProps {
   onComplete?: () => void;
   onBack: () => void;
@@ -33,6 +39,7 @@ const toLabel = (val: string) => val.replace(/_/g, ' ').replace(/\b\w/g, (c) => 
 export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [orgName, setOrgName] = useState('');
   const [orgSlug, setOrgSlug] = useState('');
@@ -41,10 +48,16 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
   const [countryId, setCountryId] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [hasUserTyped, setHasUserTyped] = useState(false);
 
   const [teamMembers, setTeamMembers] = useState([{ email: '' }]);
 
-  const { countries } = useGetCountries();
+  const debouncedCountrySearch = useDebounce(countrySearch, 400);
+
+  // Only send search query to API if user has actually typed something
+  const { countries, isCountriesLoading } = useGetCountries(
+    hasUserTyped ? debouncedCountrySearch : undefined
+  );
 
   // Branding state
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -134,7 +147,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
 
   const filteredCountries =
     countries?.data?.filter((country) =>
-      country.name.toLowerCase().includes(countrySearch.toLowerCase())
+      country.name.toLowerCase().includes(debouncedCountrySearch.toLowerCase())
     ) || [];
 
   const handleNextStep = async () => {
@@ -173,6 +186,52 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
     if (step > 1) {
       setStep(step - 1);
       setError(null);
+    }
+  };
+
+  const handleBackToSignIn = async () => {
+    try {
+      setIsLoggingOut(true);
+      dispatch(clearUser());
+      dispatch(clearSelectedProject());
+      dispatch(clearOrganization());
+      removeTokens();
+      const cookiesToRemove = ['access_token', 'refresh_token', 'org_slug'];
+      const domain = typeof window !== 'undefined' ? window.location.hostname : '';
+      
+      cookiesToRemove.forEach((cookieName) => {
+        Cookies.remove(cookieName);
+        Cookies.remove(cookieName, { path: '/' });
+        Cookies.remove(cookieName, { path: '/', domain });
+        Cookies.remove(cookieName, { path: '/', domain: `.${domain}` });
+      });
+
+      const allCookies = Cookies.get();
+      Object.keys(allCookies).forEach((cookieName) => {
+        Cookies.remove(cookieName);
+        Cookies.remove(cookieName, { path: '/' });
+        Cookies.remove(cookieName, { path: '/', domain });
+        Cookies.remove(cookieName, { path: '/', domain: `.${domain}` });
+      });
+
+      try {
+        await persistor.purge();
+      } catch {
+      }
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch {
+        }
+      }
+      queryClient.cancelQueries();
+      queryClient.clear();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.replace('/signin?from=setup');
+    } catch (error) {
+      logger.log('Error during cleanup:', error);
+      window.location.replace('/signin?from=setup');
     }
   };
 
@@ -382,16 +441,28 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
                   type="text"
                   placeholder="Search country..."
                   value={countrySearch}
-                  onFocus={() => setShowCountryDropdown(true)}
+                  onFocus={() => {
+                    setShowCountryDropdown(true);
+                    // Reset hasUserTyped when focusing to load all countries
+                    if (!hasUserTyped) {
+                      setHasUserTyped(false);
+                    }
+                  }}
                   onChange={(e) => {
                     setCountrySearch(e.target.value);
+                    setHasUserTyped(true);
                     setShowCountryDropdown(true);
+                    if (countryId) setCountryId(''); // clear selection once user edits
                   }}
                   className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
                 {showCountryDropdown && (
                   <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-                    {filteredCountries.length > 0 ? (
+                    {isCountriesLoading ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">
+                        Loading...
+                      </div>
+                    ) : filteredCountries.length > 0 ? (
                       filteredCountries.map((country) => (
                         <button
                           key={country.id}
@@ -400,6 +471,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
                             setCountryId(country.id);
                             setCountrySearch(`${country.flag_emoji} ${country.name}`);
                             setShowCountryDropdown(false);
+                            setHasUserTyped(false); // Reset typing state after selection
                           }}
                           className="w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm text-gray-800 dark:text-slate-200"
                         >
@@ -422,7 +494,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
               <WpButton
                 variant="ghost"
                 size="sm"
-                onClick={onBack}
+                onClick={handleBackToSignIn}
                 leftIcon={<ArrowLeft size={18} />}
                 className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100"
               >

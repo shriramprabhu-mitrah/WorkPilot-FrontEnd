@@ -83,8 +83,13 @@ export const useSignin = () => {
       );
 
       // Fetch organization to get the slug
+      // Only call organization API if user has organization_id and organization_name
       let organizationData = null;
-      if (userProfile.role !== 'super_admin') {
+      if (
+        userProfile.role !== 'super_admin' &&
+        userProfile.organization_id &&
+        userProfile.organization_name
+      ) {
         try {
           const organizationResponse = await organizationService.getOrganization();
           if (organizationResponse.data) {

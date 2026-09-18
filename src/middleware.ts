@@ -44,6 +44,10 @@ export async function middleware(req: NextRequest) {
   const fromSetup = req.nextUrl.searchParams.get('from') === 'setup';
   const fromSignup = req.nextUrl.searchParams.get('from') === 'signup';
 
+  if (pathname === '/signin' && fromSetup) {
+    return NextResponse.next();
+  }
+
   // Handle setup route
   if (isSetupRoute) {
     if (accessToken && fromSignup) {

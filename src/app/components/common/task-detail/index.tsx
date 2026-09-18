@@ -1308,7 +1308,7 @@ export const TaskDetailDrawer = ({
                     >
                       {taskData.description ? (
                         <div
-                          className="pointer-events-none"
+                          className="pointer-events-none [&_img]:max-w-[200px] [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-lg"
                           dangerouslySetInnerHTML={{
                             __html: taskData.description,
                           }}

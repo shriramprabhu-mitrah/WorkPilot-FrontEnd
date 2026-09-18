@@ -32,6 +32,15 @@ export const getAccessToken = () => {
 };
 
 export const removeTokens = () => {
+  Cookies.remove(ACCESS_TOKEN_KEY, { path: '/' });
+  Cookies.remove(REFRESH_TOKEN_KEY, { path: '/' });
+  
   Cookies.remove(ACCESS_TOKEN_KEY);
   Cookies.remove(REFRESH_TOKEN_KEY);
+  
+  if (typeof window !== 'undefined') {
+    const domain = window.location.hostname;
+    Cookies.remove(ACCESS_TOKEN_KEY, { path: '/', domain });
+    Cookies.remove(REFRESH_TOKEN_KEY, { path: '/', domain });
+  }
 };

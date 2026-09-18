@@ -61,7 +61,7 @@ export const BacklogRow = ({
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      className={`group flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
+      className={`group flex items-center gap-2 px-3 py-2.5 sm:px-4 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
         onClick ? 'cursor-pointer' : ''
       } ${
         isDragging
@@ -86,11 +86,13 @@ export const BacklogRow = ({
         {task.key || '-'}
       </span>
 
+      {/* Title */}
       <span
         className="ml-2 min-w-0 flex-1 flex items-center gap-1.5 truncate text-sm font-semibold text-gray-800 dark:text-slate-200"
         title={task.title ?? ''}
       >
-        {task.type?.toLowerCase() === 'bug' && <Bug size={13} className="text-red-500 shrink-0" />}
+        {task.type?.toLowerCase() === 'bug' && <Bug size={13} className="shrink-0 text-red-500" />}
+
         <span className="truncate">
           {(task.title ?? '').length > 50
             ? `${(task.title ?? '').slice(0, 50)}...`
@@ -99,9 +101,9 @@ export const BacklogRow = ({
       </span>
 
       {/* Assignee */}
-      <div className="flex w-20 shrink-0 items-center justify-center">
+      <div className="flex w-[80px] shrink-0 items-center justify-center">
         <div
-          className="flex items-center justify-center"
+          className="flex h-7 w-7 items-center justify-center"
           title={task.assignee_name || 'Unassigned'}
         >
           <AssigneeAvatar
@@ -112,7 +114,7 @@ export const BacklogRow = ({
       </div>
 
       {/* Priority */}
-      <div className="flex w-16 shrink-0 items-center justify-center">
+      <div className="flex w-[80px] shrink-0 items-center justify-center">
         <PriorityBadge priority={task.priority || 'Medium'} />
       </div>
 
@@ -124,7 +126,7 @@ export const BacklogRow = ({
       </div> */}
 
       {/* Status */}
-      <div className="shrink-0">
+      <div className="flex w-[80px] shrink-0 items-center justify-center">
         <StatusBadge status={task.status} color={task.status_color} />
       </div>
     </div>
