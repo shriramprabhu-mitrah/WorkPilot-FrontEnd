@@ -1940,27 +1940,35 @@ export const BacklogTemplate = () => {
                       {unassignedStories.length === 0 && !isOverBacklog ? (
                         <div className="flex flex-col items-center justify-center py-12 px-4">
                           <svg
-                            className="w-8 h-8 text-gray-300 mb-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
+                                className="w-8 h-8 text-gray-300 dark:text-slate-600 mb-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                />
+                              </svg>
                           <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
                             {!selectedProject
                               ? 'Select a project to view stories'
                               : 'No unassigned user stories'}
                           </p>
                           {selectedProject && canCreateUserStory && (
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1 text-center">
-                              Create one or drag stories from sprints
-                            </p>
+                            <div className="mt-3">
+                                  <WpButton
+                                    size="sm"
+                                    variant="secondary"
+                                    leftIcon={<Plus size={14} />}
+                                    onClick={() => setShowCreateStoryModal(true)}
+                                    className="text-xs"
+                                  >
+                                    Create User story
+                                  </WpButton>
+                                </div>
                           )}
                         </div>
                       ) : (

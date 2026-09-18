@@ -55,10 +55,14 @@ export default function GeneralSettings() {
 
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryList, setShowCountryList] = useState(false);
+  const [hasUserTyped, setHasUserTyped] = useState(false);
   const debouncedCountrySearch = useDebounce(countrySearch, 400);
   const countryWrapperRef = useRef<HTMLDivElement>(null);
 
-  const { countries, isCountriesLoading } = useGetCountries(debouncedCountrySearch);
+  // Only send search query to API if user has actually typed something
+  const { countries, isCountriesLoading } = useGetCountries(
+    hasUserTyped ? debouncedCountrySearch : undefined
+  );
   const countryOptions: WpDropdownOption[] =
     countries?.data?.map((c) => ({ label: c.name, value: c.id })) ?? [];
 
@@ -209,10 +213,17 @@ export default function GeneralSettings() {
                   value={countrySearch}
                   onChange={(e) => {
                     setCountrySearch(e.target.value);
+                    setHasUserTyped(true);
                     setShowCountryList(true);
                     if (field.value) field.onChange(''); // clear selection once user edits
                   }}
-                  onFocus={() => setShowCountryList(true)}
+                  onFocus={() => {
+                    setShowCountryList(true);
+                    // Reset hasUserTyped when focusing to load all countries
+                    if (!hasUserTyped) {
+                      setHasUserTyped(false);
+                    }
+                  }}
                   error={errors.country?.message}
                   disabled={!canEditOrganization}
                 />
@@ -229,6 +240,7 @@ export default function GeneralSettings() {
                             field.onChange(opt.value);
                             setCountrySearch(opt.label);
                             setShowCountryList(false);
+                            setHasUserTyped(false); // Reset typing state after selection
                           }}
                           className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-slate-700"
                         >
