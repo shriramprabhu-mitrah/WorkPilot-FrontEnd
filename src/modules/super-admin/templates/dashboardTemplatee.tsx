@@ -36,13 +36,13 @@ export const DashboardTemplate = () => {
     return <SuperAdminDasSkeleton />;
   }
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
           Super Admin Dashboard
         </h1>
-        <p className="text-sm text-gray-500 dark:text-slate-100 mt-1">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-100 mt-1">
           Platform-wide overview across all organizations
         </p>
       </div>
@@ -98,10 +98,10 @@ export const DashboardTemplate = () => {
       </div>
 
       {/* Recent Sections Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Recent Organizations */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
             Recent Organizations
           </h3>
           <div className="space-y-2">
@@ -112,8 +112,8 @@ export const DashboardTemplate = () => {
         </div>
 
         {/* Recent Projects */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
             Recent Projects
           </h3>
           <div className="space-y-2">
@@ -124,8 +124,8 @@ export const DashboardTemplate = () => {
         </div>
 
         {/* Recent Members */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100 mb-4">
             Recent Members
           </h3>
           <div className="space-y-2">
@@ -138,31 +138,31 @@ export const DashboardTemplate = () => {
 
       {/* Organization Activity Overview Table */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
+        <div className="px-4 sm:px-5 py-4 border-b border-gray-200 dark:border-slate-700">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-slate-100">
             Organization Activity Overview
           </h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Organization
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Industry
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Projects
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Members
                 </th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+                <th className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
                   Created
                 </th>
               </tr>
@@ -192,43 +192,43 @@ export const DashboardTemplate = () => {
                     key={org.id}
                     className="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors"
                   >
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-xs shrink-0">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-xs shrink-0">
                           {getInitials(org.name)}
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-gray-900 dark:text-slate-100">
+                        <div className="min-w-0">
+                          <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-slate-100 truncate">
                             {org.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-200">{org.country}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-200 truncate">{org.country}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
+                      <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-300">
                         {org.industry}
                       </span>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusColor} ${statusBg}`}
+                        className={`inline-flex px-2 sm:px-2.5 py-1 rounded-full text-xs font-medium ${statusColor} ${statusBg}`}
                       >
                         {org.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
+                      <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-300">
                         {org.total_projects}
                       </span>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700 dark:text-slate-300">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
+                      <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-300">
                         {org.total_members}
                       </span>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 dark:text-slate-200">
+                    <td className="px-3 sm:px-5 py-4 whitespace-nowrap">
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-slate-200">
                         {new Date(org.created_at).toLocaleDateString()}
                       </span>
                     </td>

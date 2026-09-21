@@ -19,6 +19,8 @@ import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { useGetRoles } from '../../settings/hooks/useSettings';
+import { Search } from 'lucide-react';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 const MembersSettings = () => {
   const router = useRouter();
@@ -33,7 +35,8 @@ const MembersSettings = () => {
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
   const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
-
+  const [nameSearch, setNameSearch] = useState('');
+  const debouncedNameSearch = useDebounce(nameSearch, 500);
   const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
 
   const { projectsWithSprints, isLoadingProjectsWithSprints } = useGetProjectsWithSprints();
@@ -91,7 +94,8 @@ const MembersSettings = () => {
   const { projectMembers, isProjectMembersLoading, refetchProjectMembers } = useGetProjectMembers(
     projectId,
     page,
-    pageSize
+    pageSize,
+    debouncedNameSearch || undefined
   );
   const { isOrgAdmin } = usePermissions();
   const { updateProjectRoleAsync } = useUpdateProjectRole();
@@ -259,16 +263,33 @@ const MembersSettings = () => {
               Manage Project members and their roles
             </p>
           </div>
-          {isOrgAdmin && selectedApiProject && (
-            <WpButton
-              size="sm"
-              leftIcon={<UserPlus size={15} />}
-              onClick={() => setShowAddMemberModal(true)}
-              className="w-full sm:w-auto"
-            >
-              Add Member
-            </WpButton>
-          )}
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative h-9 w-full sm:w-[220px]">
+              <Search
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 z-10"
+              />
+              <input
+                type="text"
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                placeholder="Search members..."
+                className="h-9 w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-8 pr-3 text-sm text-gray-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-slate-500"
+              />
+            </div>
+
+            {isOrgAdmin && selectedApiProject && (
+              <WpButton
+                size="sm"
+                leftIcon={<UserPlus size={15} />}
+                onClick={() => setShowAddMemberModal(true)}
+                className="w-full sm:w-auto shrink-0"
+              >
+                Add Member
+              </WpButton>
+            )}
+          </div>
         </div>
 
         {/* Table */}

@@ -2,22 +2,22 @@ import Skeleton from '@/src/app/components/common/skeleton';
 
 const ProjectSkeleton = () => {
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-4 w-72 mt-2" />
+        <Skeleton className="h-6 sm:h-7 w-32 sm:w-40" />
+        <Skeleton className="h-3 sm:h-4 w-56 sm:w-72 mt-2" />
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <Skeleton className="h-10 w-72 rounded-lg" />
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
+        <Skeleton className="h-10 w-full sm:w-72 rounded-lg" />
       </div>
 
       {/* Projects Table */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             {/* Header */}
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>

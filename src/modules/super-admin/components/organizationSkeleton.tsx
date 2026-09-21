@@ -2,24 +2,24 @@ import Skeleton from '@/src/app/components/common/skeleton';
 
 const OrganizationsSkeleton = () => {
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       <div>
-        <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-4 w-72 mt-2" />
+        <Skeleton className="h-6 sm:h-7 w-40 sm:w-48" />
+        <Skeleton className="h-3 sm:h-4 w-56 sm:w-72 mt-2" />
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-72 rounded-lg" />
-          <Skeleton className="h-10 w-12 rounded-lg" />
-          <Skeleton className="h-10 w-16 rounded-lg" />
-          <Skeleton className="h-10 w-20 rounded-lg" />
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <Skeleton className="h-10 w-full sm:w-72 rounded-lg" />
+          <Skeleton className="h-10 w-16 sm:w-12 rounded-lg" />
+          <Skeleton className="h-10 w-20 sm:w-16 rounded-lg" />
+          <Skeleton className="h-10 w-24 sm:w-20 rounded-lg" />
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
                 {[

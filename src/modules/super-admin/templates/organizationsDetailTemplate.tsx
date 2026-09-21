@@ -80,46 +80,46 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
   const orgStatus = getStatusStyle(organization.is_active ? 'Active' : 'Inactive');
 
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Back Button */}
       <button
         onClick={() => router.push('/super-admin/organizations')}
         className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 transition-colors"
       >
         <ChevronLeft size={20} />
-        <span className="text-sm font-medium">Organizations</span>
+        <span className="text-xs sm:text-sm font-medium">Organizations</span>
       </button>
 
       {/* Organization Header Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-2xl shrink-0">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:justify-between">
+          <div className="flex items-start gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-lg sm:text-2xl shrink-0">
               {getInitials(organization.name || '')}
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-slate-100 break-words">
                 {organization.name}
               </h1>
-              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1 break-all">
                 /{organization.slug} · {organization.industry} · {organization.country}
               </p>
             </div>
           </div>
           <span
-            className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium ${orgStatus.color} ${orgStatus.bg}`}
+            className={`inline-flex px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium shrink-0 ${orgStatus.color} ${orgStatus.bg}`}
           >
             {organization.is_active ? 'Active' : 'Inactive'}
           </span>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-slate-700">
           <div>
             <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
               Created
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
               {organization.created_at
                 ? new Date(organization.created_at).toLocaleDateString()
                 : 'N/A'}
@@ -129,7 +129,7 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
             <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
               Size
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
               {organization.team_size}
             </p>
           </div>
@@ -137,7 +137,7 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
             <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
               Projects
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
               {orgProjects.length}
             </p>
           </div>
@@ -145,7 +145,7 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
             <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
               Members
             </p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
+            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100 mt-1">
               {orgMembers.length}
             </p>
           </div>
@@ -155,12 +155,12 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
       {/* Tabs + Content */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         {/* Tab Bar */}
-        <div className="flex border-b border-gray-200 dark:border-slate-700">
+        <div className="flex border-b border-gray-200 dark:border-slate-700 overflow-x-auto">
           {(['Projects', 'Members'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-[120px] px-4 sm:px-6 py-3 text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === tab
                   ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
                   : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800'
@@ -177,7 +177,7 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
         {/* Projects Tab */}
         {activeTab === 'Projects' && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[900px]">
               <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                 <tr>
                   {[
@@ -283,15 +283,15 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
 
         {/* Members Tab */}
         {activeTab === 'Members' && (
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             <div className="flex justify-end mb-4">
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium">
                 <Plus size={16} />
                 Invite Member
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                   <tr>
                     {['Member', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((col) => (

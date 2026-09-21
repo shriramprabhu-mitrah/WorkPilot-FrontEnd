@@ -159,6 +159,7 @@ export interface ActivityUser {
   id: string;
   name: string;
   role: string;
+  color?:string;
 }
 
 export interface Activity {

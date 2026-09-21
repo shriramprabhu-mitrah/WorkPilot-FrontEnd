@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSignin } from '../../hooks/useSignin';
 import { useForm } from 'react-hook-form';
@@ -133,6 +133,18 @@ export const SignIn = () => {
       // Error is handled by React Query and toast
     }
   };
+
+  useEffect(() => {
+  if (showForgotSidebar) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+
+  return () => {
+    document.body.style.overflow = '';
+  };
+}, [showForgotSidebar]);
 
   const resetForgotPasswordFlow = () => {
     setForgotStep(1);

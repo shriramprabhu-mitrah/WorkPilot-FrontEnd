@@ -600,7 +600,7 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
 
                   const userName = activity.user?.name || 'Unknown User';
                   const userInitials = getInitials(userName);
-                  const userColor = getMemberColor(activity.user?.id || '');
+                  const userColor = activity.user?.color
 
                   let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                   let changeText: React.ReactNode = null;

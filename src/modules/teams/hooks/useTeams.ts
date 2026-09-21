@@ -15,20 +15,30 @@ export const QUERY_KEYS = {
   PROJECT: 'project',
 } as const;
 
-export const useGetProjectMembers = (projectId: string, page: number, pageSize: number) => {
+export const useGetProjectMembers = (
+  projectId: string,
+  page: number,
+  pageSize: number,
+  name?: string
+) => {
   const {
     data: projectMembers,
     isLoading: isProjectMembersLoading,
+    isFetching: isProjectMembersFetching,
+    isPlaceholderData: isProjectMembersPlaceholderData,
     refetch: refetchProjectMembers,
   } = useQuery({
-    queryKey: [QUERY_KEYS.PROJECT_MEMBERS, projectId, page, pageSize],
-    queryFn: () => teamService.getProjectMembers(projectId, page, pageSize),
+    queryKey: [QUERY_KEYS.PROJECT_MEMBERS, projectId, page, pageSize, name],
+    queryFn: () => teamService.getProjectMembers(projectId, page, pageSize, name),
     enabled: !!projectId,
+    placeholderData: (previousData) => previousData,
   });
 
   return {
     projectMembers,
     isProjectMembersLoading,
+    isProjectMembersFetching,
+    isProjectMembersPlaceholderData,
     refetchProjectMembers,
   };
 };
@@ -54,7 +64,12 @@ export const useAddProjectMembers = () => {
   };
 };
 
-export const useGetTeamMembers = (page: number, pageSize: number, status?: string) => {
+export const useGetTeamMembers = (
+  page: number,
+  pageSize: number,
+  status?: string,
+  name?: string
+) => {
   const {
     data,
     isLoading: isTeamMembersLoading,
@@ -62,8 +77,8 @@ export const useGetTeamMembers = (page: number, pageSize: number, status?: strin
     isPlaceholderData: isTeamMembersPlaceholderData,
     refetch: refetchTeamMembers,
   } = useQuery({
-    queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize, status],
-    queryFn: () => teamService.getTeamMembers(page, pageSize, status),
+    queryKey: [QUERY_KEYS.TEAM_MEMBERS, page, pageSize, status, name],
+    queryFn: () => teamService.getTeamMembers(page, pageSize, status, name),
     placeholderData: (previousData) => previousData,
   });
 

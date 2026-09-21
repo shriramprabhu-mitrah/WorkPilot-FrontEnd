@@ -2,31 +2,31 @@ import Skeleton from '@/src/app/components/common/skeleton';
 
 const SubscriptionsSkeleton = () => {
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       <div>
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-4 w-80 mt-2" />
+        <Skeleton className="h-6 sm:h-7 w-32 sm:w-40" />
+        <Skeleton className="h-3 sm:h-4 w-64 sm:w-80 mt-2" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4"
           >
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-7 w-8 mt-3" />
+            <Skeleton className="h-3 w-16 sm:w-20" />
+            <Skeleton className="h-6 sm:h-7 w-6 sm:w-8 mt-3" />
           </div>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
         <Skeleton className="h-10 w-full rounded-lg" />
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
                 {[
