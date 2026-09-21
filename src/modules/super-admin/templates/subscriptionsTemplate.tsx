@@ -253,7 +253,7 @@ export const SubscriptionsTemplate = () => {
     return <SubscriptionsSkeleton />;
   }
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Subscription Detail Modal */}
       <SubscriptionDetailModal
         isOpen={isModalOpen}
@@ -263,50 +263,50 @@ export const SubscriptionsTemplate = () => {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Subscriptions</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">Subscriptions</h1>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           All organization subscription plans across the platform
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
           <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Active
           </p>
-          <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
             {statusCounts.Active}
           </p>
         </div>
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
           <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Trial
           </p>
-          <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
             {statusCounts.Trial}
           </p>
         </div>
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
           <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Expired / Failed
           </p>
-          <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+          <p className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">
             {statusCounts['Expired / Failed']}
           </p>
         </div>
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5">
           <p className="text-xs font-medium text-gray-500 dark:text-slate-200 uppercase tracking-wide mb-2">
             Pending
           </p>
-          <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+          <p className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
             {statusCounts.Pending}
           </p>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
@@ -325,7 +325,7 @@ export const SubscriptionsTemplate = () => {
       {/* Subscriptions Table */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
               <tr>
                 {[

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Search } from 'lucide-react';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
+import { WpInput } from '@/src/app/components/common/input';
 import InviteTeamModal from '@/src/modules/teams/components/invitePopup';
 import {
   useGetTeamMembers,
@@ -17,6 +18,7 @@ import TeamMemberCardSkeleton from '@/src/modules/teams/components/TeamSkeleton'
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { Pagination } from '@/src/app/components/common/pagination/pagination';
 import Skeleton from '@/src/app/components/common/skeleton';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 export const MemberSettings = () => {
   const [page, setPage] = useState(1);
@@ -27,10 +29,12 @@ export const MemberSettings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [status, setStatus] = useState('');
+  const [nameSearch, setNameSearch] = useState('');
+  const debouncedNameSearch = useDebounce(nameSearch, 500);
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
   const { teamMembers, isTeamMembersLoading, isTeamMembersFetching, isTeamMembersPlaceholderData } =
-    useGetTeamMembers(page, pageSize, status || undefined);
+    useGetTeamMembers(page, pageSize, status || undefined, debouncedNameSearch || undefined);
 
   const isPaginationLoading = isTeamMembersFetching && isTeamMembersPlaceholderData;
 
@@ -45,6 +49,11 @@ export const MemberSettings = () => {
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
+    setPage(1);
+  };
+
+  const handleNameSearchChange = (value: string) => {
+    setNameSearch(value);
     setPage(1);
   };
 
@@ -65,12 +74,28 @@ export const MemberSettings = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Search by name */}
+          <div className="relative h-9 w-[220px]">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 z-10"
+            />
+            <input
+              type="text"
+              value={nameSearch}
+              onChange={(e) => handleNameSearchChange(e.target.value)}
+              placeholder="Search members..."
+              className="h-9 w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-8 pr-3 text-sm text-gray-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            />
+          </div>
+
           {/* Status */}
           <div className="h-9 w-[140px]">
             <WpDropdown
               value={status}
               onChange={(value) => {
                 setStatus(value);
+                setPage(1);
               }}
               options={[
                 { label: 'ALL', value: '' },

@@ -95,20 +95,20 @@ export const MembersTemplate = () => {
     return <MembersSkeleton />;
   }
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">All Members</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">All Members</h1>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || members.length} members across all organizations
         </p>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <div className="flex items-center gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search Input */}
-          <div className="relative w-72">
+          <div className="relative flex-1 sm:flex-initial sm:w-72">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
               size={16}
@@ -123,7 +123,7 @@ export const MembersTemplate = () => {
           </div>
 
           {/* Organization Filter Dropdown */}
-          <div className="relative w-52">
+          <div className="relative flex-1 sm:flex-initial sm:w-52">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 hover:border-gray-400 dark:hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
@@ -176,15 +176,15 @@ export const MembersTemplate = () => {
       </div>
 
       {/* Members Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-320px)]">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-280px)] sm:h-[calc(100vh-320px)]">
         <div className="overflow-auto flex-1">
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
                 {['Member', 'Email', 'Organization', 'Role', 'Status', 'Joined'].map((col) => (
                   <th
                     key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider"
+                    className="px-3 sm:px-5 py-3 text-left text-xs font-semibold text-gray-600 dark:text-slate-200 uppercase tracking-wider"
                   >
                     {col}
                   </th>

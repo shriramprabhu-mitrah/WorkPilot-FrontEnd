@@ -176,7 +176,7 @@ export const OrganizationsTemplate = () => {
     return <OrganizationsSkeleton />;
   }
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
         organization={confirmModal.organization}
@@ -187,16 +187,16 @@ export const OrganizationsTemplate = () => {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Organizations</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">Organizations</h1>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || organizations.length} organizations on the platform
         </p>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <div className="flex items-center gap-3">
-          <div className="relative w-72">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1 sm:flex-initial sm:w-72">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-100"
               size={16}
@@ -209,12 +209,12 @@ export const OrganizationsTemplate = () => {
               className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
             {(['All', 'Active', 'Inactive'] as FilterType[]).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                   activeFilter === filter
                     ? 'bg-purple-600 text-white shadow-md'
                     : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
@@ -228,9 +228,9 @@ export const OrganizationsTemplate = () => {
       </div>
 
       {/* Organizations Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-320px)]">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-280px)] sm:h-[calc(100vh-320px)]">
         <div className="overflow-auto flex-1">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
                 {[

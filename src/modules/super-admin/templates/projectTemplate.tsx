@@ -106,18 +106,18 @@ export const ProjectsTemplate = () => {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">All Projects</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-200 mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">All Projects</h1>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || projects.length} projects across all organizations
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
-        <div className="relative max-w-xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4">
+        <div className="relative w-full sm:max-w-xs">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-200"
             size={20}
@@ -134,9 +134,9 @@ export const ProjectsTemplate = () => {
       </div>
 
       {/* Projects Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-320px)]">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-280px)] sm:h-[calc(100vh-320px)]">
         <div className="overflow-auto flex-1">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             {/* Table Header */}
             <thead className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10">
               <tr>
