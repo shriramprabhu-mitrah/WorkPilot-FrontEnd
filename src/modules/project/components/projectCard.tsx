@@ -68,20 +68,24 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
       onClick={onClick}
       className="w-full cursor-pointer rounded-2xl border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-800 p-5 shadow-sm hover:shadow-md"
     >
-      <div className="flex justify-between">
-        <div className="flex gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
+      <div className="flex min-w-0 justify-between">
+        <div className="flex min-w-0 flex-1 gap-3">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
             {project.initials}
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-slate-200 transition-colors hover:text-blue-700">
+
+          <div className="min-w-0 flex-1">
+            <h3
+              className="truncate text-xl font-semibold text-gray-700 transition-colors hover:text-blue-700 dark:text-slate-200"
+              title={project.name}
+            >
               {project.name}
             </h3>
             <p className="text-xs text-gray-400 dark:text-slate-200">{project.code}</p>
           </div>
         </div>
         <span
-          className={`inline-flex h-6 items-center rounded-full px-3 text-xs font-medium ${
+          className={`inline-flex h-6 flex-shrink-0 items-center rounded-full px-3 text-xs font-medium ${
             project.status === 'Active'
               ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
               : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'

@@ -13,7 +13,7 @@ import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
 import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
-import TeamMemberCardSkeleton from '../components/TeamSkeleton';
+import TeamMemberCardSkeleton, { TeamMemberTableSkeleton } from '../components/TeamSkeleton';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { Pagination } from '@/src/app/components/common/pagination/pagination';
 
@@ -68,6 +68,7 @@ export const TeamTemplate = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [status, setStatus] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
   const { teamMembers, isTeamMembersLoading } = useGetTeamMembers(
@@ -76,6 +77,14 @@ export const TeamTemplate = () => {
     status || undefined
   );
   const visibleMembers = teamMembers?.data ?? [];
+
+const [prevIsLoading, setPrevIsLoading] = useState(isTeamMembersLoading);
+if (isTeamMembersLoading !== prevIsLoading) {
+  setPrevIsLoading(isTeamMembersLoading);
+  if (!isTeamMembersLoading) {
+    setIsInitialLoad(false);
+  }
+}
   const { user, isUserLoading } = useGetUserById(selectedUserId);
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
   const projects = userProjects?.data?.project ?? [];
@@ -93,7 +102,8 @@ export const TeamTemplate = () => {
     return <ProjectNotFound slug={projectSlug} />;
   }
 
-  if (isTeamMembersLoading) {
+  // Show full page skeleton only on initial load
+  if (isTeamMembersLoading && isInitialLoad) {
     return <TeamMemberCardSkeleton />;
   }
 
@@ -185,60 +195,67 @@ export const TeamTemplate = () => {
               dark:bg-slate-800
             "
           >
-            {visibleMembers.map((member, index) => {
-              const memberData: Member = {
-                id: member.id,
-                name: member.name,
-                role: member.role,
-                initials: member.name
-                  .split(' ')
-                  .map((w) => w[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 4),
-                avatarColor: member?.color || '',
-                tasks: member.total_assigned ?? 0,
-                done: member.completed ?? 0,
-                inProgress: member.in_progress ?? 0,
-                completionPercentage: member.completion_percentage ?? 0,
-                status: member?.status,
-              };
+            {/* Show table skeleton when loading after initial load (e.g., filtering) */}
+            {isTeamMembersLoading && !isInitialLoad ? (
+              <TeamMemberTableSkeleton />
+            ) : (
+              <>
+                {visibleMembers.map((member, index) => {
+                  const memberData: Member = {
+                    id: member.id,
+                    name: member.name,
+                    role: member.role,
+                    initials: member.name
+                      .split(' ')
+                      .map((w) => w[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 4),
+                    avatarColor: member?.color || '',
+                    tasks: member.total_assigned ?? 0,
+                    done: member.completed ?? 0,
+                    inProgress: member.in_progress ?? 0,
+                    completionPercentage: member.completion_percentage ?? 0,
+                    status: member?.status,
+                  };
 
-              return (
-                <MemberCard
-                  key={member.id}
-                  member={memberData}
-                  canManageUsers={isOrgAdmin}
-                  onDelete={() => {
-                    setSelectedMember(memberData);
-                    setShowDeleteModal(true);
-                  }}
-                  onClick={() => {
-                    setSelectedUserId(member.id);
-                    setShowUserDetails(true);
-                  }}
-                  isLast={index === visibleMembers.length - 1}
-                />
-              );
-            })}
+                  return (
+                    <MemberCard
+                      key={member.id}
+                      member={memberData}
+                      canManageUsers={isOrgAdmin}
+                      onDelete={() => {
+                        setSelectedMember(memberData);
+                        setShowDeleteModal(true);
+                      }}
+                      onClick={() => {
+                        setSelectedUserId(member.id);
+                        setShowUserDetails(true);
+                      }}
+                      isLast={index === visibleMembers.length - 1}
+                    />
+                  );
+                })}
 
-            {/* Empty State */}
-            {visibleMembers.length === 0 && !isTeamMembersLoading && (
-              <div className="flex min-h-[160px] items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
-                    <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
+                {/* Empty State */}
+                {visibleMembers.length === 0 && !isTeamMembersLoading && (
+                  <div className="flex min-h-[160px] items-center justify-center">
+                    <div className="text-center">
+                      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
+                        <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
+                      </div>
+
+                      <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">
+                        No members invited
+                      </p>
+
+                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
+                        Invite members to your organization.
+                      </p>
+                    </div>
                   </div>
-
-                  <p className="text-sm font-semibold text-gray-700 dark:text-slate-300">
-                    No members invited
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
-                    Invite members to your organization.
-                  </p>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
           <Pagination

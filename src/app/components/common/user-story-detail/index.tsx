@@ -2036,8 +2036,11 @@ export const UserStoryDetailDrawer = ({
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                           </div>
                         ) : activities && activities.length > 0 ? (
-                          <div className="space-y-3">
-                            {activities.map((activity) => {
+                          <div className="relative space-y-0">
+                            {/* Timeline Line */}
+                            <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-gray-200 dark:from-blue-800 dark:via-purple-800 dark:to-slate-700" />
+
+                            {activities.map((activity, index) => {
                               const activityDate = new Date(activity.timestamp);
                               const formattedDate = activityDate.toLocaleDateString('en-US', {
                                 month: 'long',
@@ -2052,10 +2055,42 @@ export const UserStoryDetailDrawer = ({
 
                               const userName = activity.user?.name || 'Unknown User';
                               const userInitials = getInitials(userName);
-                              const userColor = activity.user?.color
+                              const userColor = activity.user?.color;
 
                               let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                               let changeText: React.ReactNode = null;
+                              let activityIcon: React.ReactNode = null;
+                              let activityBadge: React.ReactNode = null;
+                              let badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+
+                              // Determine activity type and icon
+                              const resourceType = activity.resource_type;
+                              const action = activity.action.toLowerCase();
+
+                              if (action === 'created') {
+                                activityIcon = <Plus size={12} className="text-green-600 dark:text-green-400" />;
+                                badgeColor = 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+                                activityBadge = <span className="text-green-600 dark:text-green-400">●</span>;
+                              } else if (action === 'updated' || action === 'changed') {
+                                activityIcon = <Pencil size={12} className="text-blue-600 dark:text-blue-400" />;
+                                badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                                activityBadge = <span className="text-blue-600 dark:text-blue-400">●</span>;
+                              } else if (action === 'deleted') {
+                                activityIcon = <Trash2 size={12} className="text-red-600 dark:text-red-400" />;
+                                badgeColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+                                activityBadge = <span className="text-red-600 dark:text-red-400">●</span>;
+                              } else if (resourceType === 'comment') {
+                                activityIcon = <FileText size={12} className="text-purple-600 dark:text-purple-400" />;
+                                badgeColor = 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
+                                activityBadge = <span className="text-purple-600 dark:text-purple-400">●</span>;
+                              } else if (resourceType === 'user_story_attachment' || resourceType === 'task_attachment') {
+                                activityIcon = <FileText size={12} className="text-amber-600 dark:text-amber-400" />;
+                                badgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+                                activityBadge = <span className="text-amber-600 dark:text-amber-400">●</span>;
+                              } else {
+                                activityIcon = <User size={12} className="text-gray-600 dark:text-gray-400" />;
+                                activityBadge = <span className="text-gray-600 dark:text-gray-400">●</span>;
+                              }
 
                               if (activity.details) {
                                 const changeMatch = activity.details.match(
@@ -2069,10 +2104,14 @@ export const UserStoryDetailDrawer = ({
 
                                   const formatVal = (val: string) => (val === 'nil' ? 'None' : val);
                                   changeText = (
-                                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-700 dark:text-slate-300">
-                                      <span className="text-gray-500">{formatVal(fromVal)}</span>
-                                      <span className="text-gray-400">→</span>
-                                      <span>{formatVal(toVal)}</span>
+                                    <div className="flex items-center gap-2 mt-2.5 p-2.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+                                      <span className="text-sm text-gray-600 dark:text-slate-400 px-2 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
+                                        {formatVal(fromVal)}
+                                      </span>
+                                      <span className="text-gray-400 dark:text-slate-500">→</span>
+                                      <span className="text-sm text-gray-900 dark:text-slate-200 px-2 py-0.5 bg-white dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700 font-medium">
+                                        {formatVal(toVal)}
+                                      </span>
                                     </div>
                                   );
                                 } else if (activity.details.includes('details updated')) {
@@ -2084,14 +2123,16 @@ export const UserStoryDetailDrawer = ({
                                   const commentMatch = activity.details.match(/ as (.*)$/);
                                   if (commentMatch) {
                                     changeText = (
-                                      <div
-                                        className="mt-2 text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
-                                        dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
-                                      />
+                                      <div className="mt-2.5 p-2.5 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-900/30">
+                                        <div
+                                          className="text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
+                                          dangerouslySetInnerHTML={{ __html: commentMatch[1] }}
+                                        />
+                                      </div>
                                     );
                                   } else {
                                     changeText = (
-                                      <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                                      <div className="mt-2.5 p-2.5 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-900/30 text-sm text-gray-700 dark:text-slate-300">
                                         {activity.details}
                                       </div>
                                     );
@@ -2099,13 +2140,14 @@ export const UserStoryDetailDrawer = ({
                                 } else if (activity.resource_type === 'user_story_attachment') {
                                   titleAction = `uploaded an attachment`;
                                   changeText = (
-                                    <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
-                                      {activity.details}
+                                    <div className="mt-2.5 p-2.5 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-900/30 text-sm text-gray-700 dark:text-slate-300 flex items-center gap-2">
+                                      <FileText size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                                      <span className="truncate">{activity.details}</span>
                                     </div>
                                   );
                                 } else {
                                   changeText = (
-                                    <div className="mt-2 text-sm text-gray-700 dark:text-slate-300">
+                                    <div className="mt-2.5 p-2.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700 text-sm text-gray-700 dark:text-slate-300">
                                       {activity.details}
                                     </div>
                                   );
@@ -2113,39 +2155,69 @@ export const UserStoryDetailDrawer = ({
                               }
 
                               return (
-                                <div key={activity.id} className="flex gap-4">
-                                  {/* Avatar */}
-                                  <div
-                                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-                                    style={{ backgroundColor: userColor }}
-                                  >
-                                    {userInitials}
+                                <div 
+                                  key={activity.id} 
+                                  className="relative flex gap-4 pb-6 group"
+                                >
+                                  {/* Timeline Node */}
+                                  <div className="relative z-10 flex items-center justify-center">
+                                    <div
+                                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-md ring-4 ring-white dark:ring-slate-900 transition-all group-hover:shadow-lg group-hover:scale-105"
+                                      style={{ backgroundColor: userColor }}
+                                    >
+                                      {userInitials}
+                                    </div>
+                                    {/* Action Badge */}
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm ring-2 ring-white dark:ring-slate-900">
+                                      <div className="w-4 h-4 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center">
+                                        {activityIcon}
+                                      </div>
+                                    </div>
                                   </div>
 
-                                  {/* Content */}
-                                  <div className="flex-1 min-w-0 pt-0.5">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="font-semibold text-gray-900 dark:text-slate-100 text-[15px]">
-                                        {userName}
-                                      </span>
-                                      <span className="text-gray-700 dark:text-slate-300 text-[15px]">
-                                        {titleAction}
-                                      </span>
-                                    </div>
+                                  {/* Content Card */}
+                                  <div className="flex-1 min-w-0 -mt-0.5">
+                                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-slate-700 p-3.5 shadow-sm hover:shadow-md transition-all group-hover:border-gray-300 dark:group-hover:border-slate-600">
+                                      {/* Header */}
+                                      <div className="flex items-start justify-between gap-2 mb-2">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm">
+                                            {userName}
+                                          </span>
+                                          <span className="text-gray-700 dark:text-slate-300 text-sm">
+                                            {titleAction}
+                                          </span>
+                                        </div>
+                                        {/* Activity Type Badge */}
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide shrink-0 ${badgeColor}`}>
+                                          {action}
+                                        </span>
+                                      </div>
 
-                                    <div className="text-[13px] text-gray-500 dark:text-slate-400 mt-1">
-                                      {formattedDate} at {formattedTime}
-                                    </div>
+                                      {/* Timestamp */}
+                                      <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 mb-1">
+                                        <span>{formattedDate}</span>
+                                        <span className="text-gray-300 dark:text-slate-600">•</span>
+                                        <span>{formattedTime}</span>
+                                      </div>
 
-                                    {changeText}
+                                      {/* Change Details */}
+                                      {changeText}
+                                    </div>
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
                         ) : (
-                          <div className="text-sm text-gray-500 dark:text-slate-400 py-8 text-center">
-                            <p>No history yet.</p>
+                          <div className="flex flex-col items-center justify-center py-12">
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                              <FileText size={28} className="text-gray-400 dark:text-slate-500" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-600 dark:text-slate-300">No history yet</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                              Changes will appear here
+                            </p>
                           </div>
                         )}
                       </div>
