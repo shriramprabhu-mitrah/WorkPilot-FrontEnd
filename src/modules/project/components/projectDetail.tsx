@@ -70,7 +70,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { isUpdatingProjectRole, updateProjectRoleAsync } = useUpdateProjectRole();
   const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
-  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);  
 
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
@@ -208,6 +208,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     ];
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
+  };
+
+  const getAvatarColor = (member: ProjectDetailMember) => {
+    return member.color || getColorFromId(member.user_id);
   };
 
   const updateMember = async (member: ProjectDetailMember) => {
@@ -874,7 +878,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     // Org admins should not have edit/delete buttons for themselves
                     const canEdit = !memberIsOrgAdmin && canManageProjects();
                     const canDelete = !memberIsOrgAdmin && canManageProjects();
-
+                    
                     return (
                       <div
                         key={member.user_id}
@@ -882,7 +886,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${getColorFromId(member.user_id)}`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${getAvatarColor(member)}`}
                           >
                             {getInitials(member.full_name || member.username)}
                           </div>

@@ -14,6 +14,8 @@ import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
 import { useGetStatus } from '../hooks/useLabels';
 import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
+import { taskAttachmentService } from '@/src/services/taskAttachment';
+import { taskService } from '@/src/services/tasks';
 
 export interface Task {
   title: string;
@@ -62,6 +64,14 @@ interface FormValues {
   actualMinutes: string;
 }
 
+type AttachmentInfo = {
+  url?: string;
+  file_url?: string;
+  file_path?: string;
+  path?: string;
+};
+type AttachmentUploadResponse = AttachmentInfo | AttachmentInfo[];
+
 const AddTaskModal = ({
   projectId,
   userStoryId,
@@ -103,6 +113,7 @@ const AddTaskModal = ({
     label: status.name,
     value: status.id,
   }));
+  const [pendingImages, setPendingImages] = useState<Map<string, File>>(new Map());
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -196,6 +207,14 @@ const AddTaskModal = ({
     }
   };
 
+  const handleEditorImageUpload = async (file: File): Promise<string> => {
+    // Create a temporary blob URL for immediate preview
+    const blobUrl = URL.createObjectURL(file);
+    // Store the file to upload after task creation
+    setPendingImages((prev) => new Map(prev).set(blobUrl, file));
+    return blobUrl;
+  };
+
   const handleSave = async () => {
     const fieldsToValidate: (keyof FormValues)[] = ['taskName', 'type', 'priority'];
     for (const field of fieldsToValidate) {
@@ -252,6 +271,45 @@ const AddTaskModal = ({
       const response = await createTaskAsync(payload);
       const createdTask = response.data?.[0];
       if (createdTask) {
+        const taskId = createdTask.id;
+
+        // Handle pending images from the editor
+        if (pendingImages.size > 0 && taskId) {
+          let finalDescription = data.description;
+
+          for (const [blobUrl, file] of pendingImages.entries()) {
+            try {
+              const formData = new FormData();
+              formData.append('file', file);
+
+              const result = await taskAttachmentService.uploadTaskAttachment(
+                projectId,
+                taskId,
+                formData
+              );
+
+           const attachmentData = result?.data as AttachmentUploadResponse | undefined;
+           if (attachmentData) {
+             const first = Array.isArray(attachmentData) ? attachmentData[0] : attachmentData;
+             const realUrl = first?.url || first?.file_url || first?.file_path || first?.path;
+             if (realUrl) {
+               finalDescription = finalDescription.split(blobUrl).join(realUrl);
+             }
+           }
+            } catch (error) {
+            } finally {
+              URL.revokeObjectURL(blobUrl);
+            }
+          }
+
+          // Update task description if images were replaced
+          if (finalDescription !== data.description) {
+            await taskService.updateTask(projectId, taskId, {
+              description: finalDescription,
+            });
+          }
+        }
+
         onCreate({
           title: createdTask.title ?? '',
           description: createdTask.description,
@@ -333,6 +391,7 @@ const AddTaskModal = ({
                   value={field.value ?? ''}
                   placeholder="Optional details..."
                   minHeight="120px"
+                  onImageUpload={handleEditorImageUpload}
                   onChange={(html) => {
                     field.onChange(html);
                     clearFieldError('description');

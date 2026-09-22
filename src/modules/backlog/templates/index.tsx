@@ -210,6 +210,7 @@ export const BacklogTemplate = () => {
     >
   >(new Map());
   const [unassignedTasksOpen, setUnassignedTasksOpen] = useState(true);
+  const [unassignedUserStoriesOpen, setUnassignedUserStoriesOpen] = useState(true);
   const [showStartSprintModal, setShowStartSprintModal] = useState(false);
   const router = useRouter();
   const params = useParams();
@@ -1326,6 +1327,8 @@ export const BacklogTemplate = () => {
         let targetStatusId: string | undefined;
         let targetStatusName: string | undefined;
 
+        let targetStatusColor: string | undefined;
+
         // Todo -> Active Sprint = In Progress
         if (normalizedTarget && isTargetSprintActive && normalizedStatus === 'todo') {
           const statusObj = userStoryStatuses.find(
@@ -1333,6 +1336,7 @@ export const BacklogTemplate = () => {
           );
           targetStatusId = statusObj?.id;
           targetStatusName = statusObj?.name;
+          targetStatusColor = statusObj?.color;
         }
 
         // In Progress -> Non-active Sprint = Todo
@@ -1342,6 +1346,7 @@ export const BacklogTemplate = () => {
           );
           targetStatusId = statusObj?.id;
           targetStatusName = statusObj?.name;
+          targetStatusColor = statusObj?.color;
         }
 
         // Sprint -> Unassigned = Todo
@@ -1351,6 +1356,7 @@ export const BacklogTemplate = () => {
           );
           targetStatusId = statusObj?.id;
           targetStatusName = statusObj?.name;
+          targetStatusColor = statusObj?.color;
         }
 
         const updatedStory: UserStoryResponse = {
@@ -1360,6 +1366,7 @@ export const BacklogTemplate = () => {
             ? {
                 status_id: targetStatusId,
                 status: targetStatusName,
+                status_color: targetStatusColor,
               }
             : {}),
         };
@@ -1535,6 +1542,7 @@ export const BacklogTemplate = () => {
         sprint_id: update.sprintId ?? undefined,
         status_id: update.statusId ?? undefined,
         status: updatedStatus?.name ?? story.status,
+        status_color: updatedStatus?.color ?? story.status_color,
       };
     }
 
@@ -1854,133 +1862,152 @@ export const BacklogTemplate = () => {
                 <div
                   ref={canViewUserStories ? backlogRefCallback : undefined}
                   data-backlog-drop="true"
-                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 min-h-[200px] ${
+                  className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
+                    unassignedUserStoriesOpen ? 'min-h-[200px]' : ''
+                  } ${
                     canViewUserStories && isOverBacklog
                       ? 'border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/30 shadow-xl ring-2 ring-green-300 ring-opacity-50 scale-[1.01]'
                       : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
                   }`}
                 >
                   <div
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b transition-all ${
+                    className={`flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-all select-none border-b ${
                       canViewUserStories && isOverBacklog
                         ? 'border-green-200 bg-green-100 dark:bg-green-900/20'
                         : 'border-gray-100 dark:border-slate-700'
                     }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUnassignedUserStoriesOpen((v) => !v);
+                    }}
                   >
-                    <span
-                      className={`font-semibold text-sm transition-colors ${
-                        canViewUserStories && isOverBacklog
-                          ? 'text-green-700 dark:text-green-400'
-                          : 'text-gray-900 dark:text-slate-100'
-                      }`}
-                    >
-                      Unassigned UserStories
-                    </span>
-                    {canViewUserStories && (
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <span className="text-gray-400 dark:text-slate-500 shrink-0">
+                        {unassignedUserStoriesOpen ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}
+                      </span>
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-                          isOverBacklog
-                            ? 'bg-green-200 text-green-800 scale-110'
-                            : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-200'
+                        className={`font-semibold text-sm transition-colors ${
+                          canViewUserStories && isOverBacklog
+                            ? 'text-green-700 dark:text-green-400'
+                            : 'text-gray-900 dark:text-slate-100'
                         }`}
                       >
-                        {unassignedStories.length}{' '}
-                        {unassignedStories.length === 1 ? 'story' : 'stories'}
+                        Unassigned UserStories
                       </span>
-                    )}
+                      {canViewUserStories && (
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
+                            isOverBacklog
+                              ? 'bg-green-200 text-green-800 scale-110'
+                              : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-200'
+                          }`}
+                        >
+                          {unassignedStories.length}{' '}
+                          {unassignedStories.length === 1 ? 'story' : 'stories'}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {!canViewUserStories ? (
-                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                      <img
-                        src="/images/kanban method-pana.svg"
-                        alt="Access Restricted"
-                        className="h-28 w-28 opacity-60 mb-2"
-                      />
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        Access Restricted
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
-                        You do not have permission to view user stories.
-                      </p>
-                    </div>
-                  ) : isFetchingUserStories && !isLoadingUserStories ? (
-                    // Show skeleton loader while refetching data (e.g., after adding a user story)
-                    <UnassignedUserStoriesSkeleton />
-                  ) : (
+                  {unassignedUserStoriesOpen && (
                     <>
-                      {isOverBacklog && (
-                        <div className="px-3 sm:px-4 pt-2 pb-1">
-                          <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
-                            <div className="flex items-center justify-center gap-2">
-                              <svg
-                                className="w-5 h-5 text-green-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              <p className="text-sm text-green-700 font-semibold">
-                                {activeDragType === 'task'
-                                  ? 'Drop task here to unassign from sprint'
-                                  : 'Drop here to remove from sprint'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Empty state or user stories */}
-                      {unassignedStories.length === 0 && !isOverBacklog ? (
-                        <div className="flex flex-col items-center justify-center py-12 px-4">
-                          <svg
-                                className="w-8 h-8 text-gray-300 dark:text-slate-600 mb-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                />
-                              </svg>
-                          <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
-                            {!selectedProject
-                              ? 'Select a project to view stories'
-                              : 'No unassigned user stories'}
-                          </p>
-                          {selectedProject && canCreateUserStory && (
-                            <div className="mt-3">
-                                  <WpButton
-                                    size="sm"
-                                    variant="secondary"
-                                    leftIcon={<Plus size={14} />}
-                                    onClick={() => setShowCreateStoryModal(true)}
-                                    className="text-xs"
-                                  >
-                                    Create User story
-                                  </WpButton>
-                                </div>
-                          )}
-                        </div>
-                      ) : (
-                        unassignedStories.map((story) => (
-                          <DraggableUserStory
-                            key={story.id}
-                            story={story}
-                            projectId={selectedProject}
-                            tasks={optimisticTasks}
-                            onStoryClick={handleUserStoryClick}
+                      {!canViewUserStories ? (
+                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                          <img
+                            src="/images/kanban method-pana.svg"
+                            alt="Access Restricted"
+                            className="h-28 w-28 opacity-60 mb-2"
                           />
-                        ))
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            Access Restricted
+                          </h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                            You do not have permission to view user stories.
+                          </p>
+                        </div>
+                      ) : isFetchingUserStories && !isLoadingUserStories ? (
+                        // Show skeleton loader while refetching data (e.g., after adding a user story)
+                        <UnassignedUserStoriesSkeleton />
+                      ) : (
+                        <>
+                          {isOverBacklog && (
+                            <div className="px-3 sm:px-4 pt-2 pb-1">
+                              <div className="border-2 border-dashed border-green-400 rounded-lg p-4 text-center bg-white bg-opacity-60 backdrop-blur-sm animate-pulse">
+                                <div className="flex items-center justify-center gap-2">
+                                  <svg
+                                    className="w-5 h-5 text-green-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                  </svg>
+                                  <p className="text-sm text-green-700 font-semibold">
+                                    {activeDragType === 'task'
+                                      ? 'Drop task here to unassign from sprint'
+                                      : 'Drop here to remove from sprint'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Empty state or user stories */}
+                          {unassignedStories.length === 0 && !isOverBacklog ? (
+                            <div className="flex flex-col items-center justify-center py-12 px-4">
+                              <svg
+                                    className="w-8 h-8 text-gray-300 dark:text-slate-600 mb-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                    />
+                                  </svg>
+                              <p className="text-sm text-gray-500 dark:text-slate-200 text-center">
+                                {!selectedProject
+                                  ? 'Select a project to view stories'
+                                  : 'No unassigned user stories'}
+                              </p>
+                              {selectedProject && canCreateUserStory && (
+                                <div className="mt-3">
+                                      <WpButton
+                                        size="sm"
+                                        variant="secondary"
+                                        leftIcon={<Plus size={14} />}
+                                        onClick={() => setShowCreateStoryModal(true)}
+                                        className="text-xs"
+                                      >
+                                        Create User story
+                                      </WpButton>
+                                    </div>
+                              )}
+                            </div>
+                          ) : (
+                            unassignedStories.map((story) => (
+                              <DraggableUserStory
+                                key={story.id}
+                                story={story}
+                                projectId={selectedProject}
+                                tasks={optimisticTasks}
+                                onStoryClick={handleUserStoryClick}
+                              />
+                            ))
+                          )}
+                        </>
                       )}
                     </>
                   )}

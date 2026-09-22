@@ -34,6 +34,7 @@ export interface TaskPayload {
   estimated_hours?: number;
   actual_hours?: number;
   type?: string;
+  id?:string;
 }
 
 export interface TaskResponse {

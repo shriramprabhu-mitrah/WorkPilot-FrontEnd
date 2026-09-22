@@ -120,6 +120,7 @@ export interface ProjectDetailMember {
   full_name: string;
   role: string;
   email?: string;
+  color?:string
 }
 
 // Project Detail Response (includes sprints and members)

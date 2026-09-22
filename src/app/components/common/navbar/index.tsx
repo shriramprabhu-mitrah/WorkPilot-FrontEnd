@@ -187,7 +187,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
                 {getInitials(user.name)}
               </div>
 
-              <span className="text-[13px] font-medium text-gray-700 dark:text-white hidden md:inline">
+              <span className="text-[13px] font-medium text-gray-700 dark:text-white hidden md:inline capitalize">
                 {user.name || 'User Name'}
               </span>
 
