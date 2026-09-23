@@ -143,21 +143,24 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   useGetUserProjectRole(effectiveProject?.id);
 
   // Search within manage project modal
-  const { data: modalSearchData, isLoading: isLoadingModalSearch } = useQuery({
-    queryKey: ['sidebar-modal-project-search', debouncedProjectSearch],
+  const PROJECTS_PER_PAGE = 5;
+  const [projectPage, setProjectPage] = useState(1);
+
+  const { data: modalProjectsData, isLoading: isLoadingModalProjects } = useQuery({
+    queryKey: ['sidebar-modal-projects', debouncedProjectSearch, projectPage],
     queryFn: () =>
-      projectService.getProject({ include_sprints: true, name: debouncedProjectSearch }),
-    enabled: showManageProject && debouncedProjectSearch.trim().length > 0,
+      projectService.getProject({
+        include_sprints: true,
+        name: debouncedProjectSearch || undefined,
+        page: projectPage,
+        page_size: PROJECTS_PER_PAGE,
+      }),
+    enabled: showManageProject,
     staleTime: 60 * 1000,
   });
 
-  const displayedProjects = useMemo(() => {
-    if (debouncedProjectSearch.trim().length > 0) {
-      return modalSearchData?.data ?? [];
-    }
-    return projectsWithSprints;
-  }, [debouncedProjectSearch, modalSearchData?.data, projectsWithSprints]);
-
+  const displayedProjects = modalProjectsData?.data ?? [];
+  const totalProjectPages = modalProjectsData?.meta?.total_pages ?? 1;
   // Derive sprints from projectsWithSprints or displayedProjects based on tempProject
   const tempSprints = useMemo(() => {
     if (!tempProject?.id) return [];
@@ -189,6 +192,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   const openManageProject = () => {
     setProjectSearchTerm('');
+    setProjectPage(1);
     setTempProject(effectiveProject);
     setTempSprint(selectedSprint);
     setShowManageProject(true);
@@ -479,7 +483,10 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   type="text"
                   placeholder="Search projects..."
                   value={projectSearchTerm}
-                  onChange={(e) => setProjectSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                        setProjectPage(1);
+                        setProjectSearchTerm(e.target.value);
+                 }}
                   className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-200 outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
                 />
                 {projectSearchTerm && (
@@ -493,7 +500,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 )}
               </div>
 
-              {isLoadingProjectsWithSprints || (debouncedProjectSearch && isLoadingModalSearch) ? (
+              {isLoadingProjectsWithSprints ? (
                 <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
                   Loading projects...
                 </div>
@@ -555,7 +562,23 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   ))}
                 </div>
               )}
-
+              {totalProjectPages > 1 && (
+                <div className="flex items-center justify-center gap-1 mb-4 flex-wrap">
+                  {Array.from({ length: totalProjectPages }, (_, i) => i + 1).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setProjectPage(pageNum)}
+                      className={`w-6 h-6 flex items-center justify-center rounded-md text-[11px] font-medium transition-colors ${
+                        projectPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-500 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                </div>
+              )}
               {/* Sprints */}
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold text-gray-700 dark:text-slate-100">

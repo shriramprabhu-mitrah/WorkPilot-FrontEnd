@@ -38,5 +38,25 @@ export const useGetRecentActivities = (page = 1, pageSize = 10, enabled = true) 
   };
 };
 
+export const useGetUpcomingDeadlines = (
+  projectId: string,
+  enabled = true
+) => {
+  const query = useQuery({
+    queryKey: ['upcomingDeadlines', projectId],
+    queryFn: () => dashboardService.getUpcomingDeadlines(projectId),
+    enabled: enabled && !!projectId,
+    staleTime: 0,
+  });
+
+  return {
+    upcomingDeadlines: query.data?.data ?? [],
+    isLoadingUpcomingDeadlines: query.isLoading,
+    isFetchingUpcomingDeadlines: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+    refetchUpcomingDeadlines: query.refetch,
+  };
+};
 // Re-export useGlobalSearch for convenience
 export { useGlobalSearch } from '@/src/hooks/useGlobalSearch';

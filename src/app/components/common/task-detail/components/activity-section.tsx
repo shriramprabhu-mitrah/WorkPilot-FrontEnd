@@ -715,12 +715,6 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                         >
                           {userInitials}
                         </div>
-                        {/* Action Badge */}
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm ring-2 ring-white dark:ring-slate-900">
-                          <div className="w-4 h-4 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center">
-                            {activityIcon}
-                          </div>
-                        </div>
                       </div>
 
                       {/* Content Card */}

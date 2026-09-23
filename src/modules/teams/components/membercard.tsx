@@ -44,7 +44,7 @@ export const MemberCard = ({
           <div className="min-w-0 flex-1">
             <div className="flex items-center">
               {/* Fixed name area */}
-              <p className="w-[100px] truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
+              <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                 {member.name}
               </p>
 
