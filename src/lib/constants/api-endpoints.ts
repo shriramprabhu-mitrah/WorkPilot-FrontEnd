@@ -195,6 +195,7 @@ export const ApiEndpoints = {
   Dashboard: {
     getDashboard: createQueryEndpoint('/{projectId}/dashboard'),
     globalSearch: createQueryEndpoint('/search'),
+    getUpcomingDeadlines: createQueryEndpoint('/{projectId}/upcoming-deadlines'),
   },
 
   Search: {

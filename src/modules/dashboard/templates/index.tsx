@@ -34,6 +34,7 @@ export const DashBoardTemplate = () => {
   const { selectedProject: storeProject, selectedSprint } = useAppSelector(
     (state) => state.project
   );
+  const projectId = storeProject?.id
   const user = useAppSelector((state) => state.user);
   const isOrgAdmin = user.role === 'org_admin';
 
@@ -219,7 +220,7 @@ export const DashBoardTemplate = () => {
 
           <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
             <RecentActivityCard activities={activities} user={activityUser} />
-            <UpcomingDeadlines />
+            <UpcomingDeadlines projectId={projectId || ''} />
           </div>
         </div>
       </div>

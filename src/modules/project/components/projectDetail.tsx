@@ -534,29 +534,35 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             return (
               <div
                 key={sprint.id}
-                className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm"
+                className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
               >
-                <div className="flex w-full items-center justify-between p-5">
+                <div className="flex w-full items-center justify-between gap-4 p-5">
                   <button
                     type="button"
                     onClick={() => handleSprintClick(sprint)}
-                    className="flex flex-1 items-start text-left"
+                    className="flex min-w-0 flex-1 items-start text-left"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-slate-100">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3">
+                        <h3
+                          title={sprint.name}
+                          className="truncate text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
                           {sprint.name}
                         </h3>
-                        <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+
+                        <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                           {sprint.status}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-200">
+
+                      <p className="mt-2 text-xs text-gray-400 dark:text-slate-400">
                         {sprint.startDate || 'No start date'} → {sprint.endDate || 'No end date'}
                       </p>
                     </div>
                   </button>
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex shrink-0 items-center gap-2">
                     {sprint.status === 'Planned' && canEditSprint && (
                       <WpButton
                         type="button"
@@ -588,41 +594,44 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     <button
                       type="button"
                       onClick={() => setExpandedSprint(isExpanded ? null : sprint.id)}
-                      className="rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
+                      className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     >
                       <ChevronDown
                         size={18}
-                        className={`text-gray-400 dark:text-slate-500 transition-transform duration-200 ${
+                        className={`transition-transform duration-200 ${
                           isExpanded ? 'rotate-180' : ''
                         }`}
                       />
                     </button>
                   </div>
                 </div>
+
                 {isExpanded && (
-                  <div className="border-t border-gray-100 dark:border-slate-700 p-5">
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
-                          START DATE
+                  <div className="border-t border-gray-100 bg-gray-50/50 p-5 dark:border-slate-700 dark:bg-slate-800/30">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                          Start Date
                         </p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                        <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
                           {sprint.startDate || '-'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
-                          END DATE
+
+                      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                          End Date
                         </p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                        <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
                           {sprint.endDate || '-'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-400 dark:text-slate-200">
-                          TASKS
+
+                      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                          Tasks
                         </p>
-                        <p className="mt-1 text-sm text-gray-900 dark:text-slate-100">
+                        <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
                           {sprint.tasks}
                         </p>
                       </div>

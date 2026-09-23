@@ -180,7 +180,7 @@ export const DraggableUserStory = ({
           <div className="min-w-0 flex-1">
             <span
               title={story.title}
-              className={`block truncate text-sm font-semibold ${
+              className={`block truncate text-sm font-semibold text-[#155dfc] ${
                 story.is_closed ? 'line-through text-gray-500 opacity-60' : 'dark:text-slate-100'
               }`}
               style={{

@@ -77,3 +77,16 @@ export interface DashboardActivitiesResponse {
   user: DashboardActivityUser;
   activities: DashboardActivity[];
 }
+
+export interface UpcomingDeadline {
+  id: string;
+  project_id: string;
+  project_name: string;
+  sprint_id: string;
+  sprint_name: string;
+  key: string;
+  title: string;
+  priority: string;
+  due_date: string;
+  deadline_status: string;
+}

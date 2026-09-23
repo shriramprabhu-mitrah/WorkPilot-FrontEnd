@@ -1,7 +1,7 @@
 import { ApiEndpoints } from '@/src/lib/constants/api-endpoints';
 import { apiService, PaginatedApiResponse } from '../axios';
 import { ApiResponse } from '@/src/types/core';
-import { DashboardData, DashboardActivitiesResponse } from '@/src/types/dashboard';
+import { DashboardData, DashboardActivitiesResponse, UpcomingDeadline } from '@/src/types/dashboard';
 
 class DashboardService {
   async getDashboard(projectId: string, sprintId?: string): Promise<ApiResponse<DashboardData>> {
@@ -31,6 +31,14 @@ class DashboardService {
     return apiService.get<import('@/src/types/search').GlobalSearchData>(url, {
       showErrorToast: false,
     });
+  }
+
+    async getUpcomingDeadlines(
+    projectId: string
+  ): Promise<ApiResponse<UpcomingDeadline[]>> {
+    const endpoint =
+      ApiEndpoints.Dashboard.getUpcomingDeadlines.withParams(projectId);
+    return apiService.get<UpcomingDeadline[]>(endpoint.url);
   }
 }
 

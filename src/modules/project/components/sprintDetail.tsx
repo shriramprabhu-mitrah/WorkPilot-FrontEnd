@@ -299,7 +299,9 @@ const SprintDetail = () => {
 
                 {/* Story key */}
                 {story.key && (
-                  <span className="rounded bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                  <span
+                  onClick={() => setSelectedUserStory(story)}
+                  className="cursor-pointer rounded bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0">
                     {story.key}
                   </span>
                 )}
@@ -312,12 +314,6 @@ const SprintDetail = () => {
                   <span className="text-sm truncate block text-gray-800 dark:text-slate-100">
                     {story.title}
                   </span>
-                  {story.description && (
-                    <div
-                      className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 line-clamp-2 [&_p]:mb-1 [&_ol]:mb-1 [&_ul]:mb-1 [&_li]:mb-0.5"
-                      dangerouslySetInnerHTML={{ __html: story.description }}
-                    />
-                  )}
                 </div>
 
                 {/* Story points */}
