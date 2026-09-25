@@ -12,12 +12,19 @@ class DashboardService {
 
   async getRecentActivities(
     page = 1,
-    pageSize = 10
+    pageSize = 10,
+    projectId?: string
   ): Promise<PaginatedApiResponse<DashboardActivitiesResponse>> {
-    const url = ApiEndpoints.Audit.getActivities.withQuery({
+    const queryParams: Record<string, string> = {
       page: String(page),
       page_size: String(pageSize),
-    });
+    };
+    
+    if (projectId) {
+      queryParams.project_id = projectId;
+    }
+    
+    const url = ApiEndpoints.Audit.getActivities.withQuery(queryParams);
     return apiService.getPaginated<DashboardActivitiesResponse>(url);
   }
 

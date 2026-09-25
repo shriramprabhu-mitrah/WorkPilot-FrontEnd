@@ -81,6 +81,52 @@ export const useDeleteLabel = () => {
   });
 };
 
+export const useAttachLabel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      taskId,
+      labelId,
+    }: {
+      projectId: string;
+      taskId: string;
+      labelId: string;
+    }) => labelService.attachLabel(projectId, taskId, labelId),
+
+    onSuccess: (_, variables) => {
+      // Invalidate the specific task query
+      queryClient.invalidateQueries({
+        queryKey: ['task', variables.projectId, variables.taskId],
+      });
+    },
+  });
+};
+
+export const useRemoveLabel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      projectId,
+      taskId,
+      labelId,
+    }: {
+      projectId: string;
+      taskId: string;
+      labelId: string;
+    }) => labelService.removeLabel(projectId, taskId, labelId),
+
+    onSuccess: (_, variables) => {
+      // Invalidate the specific task query
+      queryClient.invalidateQueries({
+        queryKey: ['task', variables.projectId, variables.taskId],
+      });
+    },
+  });
+};
+
 export const useGetStatus = (projectId: string, enabled = true) => {
   return useQuery({
     queryKey: colorsKeys.list(projectId),

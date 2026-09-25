@@ -70,7 +70,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const { isUpdatingProjectRole, updateProjectRoleAsync } = useUpdateProjectRole();
   const { sprints: apiSprints, isLoadingSprints, refetchSprints } = useGetSprints(project.id || '');
 
-  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);  
+  const selectedApiProject = useAppSelector((state) => state.project.selectedProject);
 
   const mapApiSprintToUiSprint = (apiSprint: SprintDetail): Sprint => {
     const formatDate = (dateStr: string) => {
@@ -183,7 +183,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch {}
+    } catch { }
   };
 
   const getInitials = (name: string) => {
@@ -439,8 +439,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   {selectedApiProject.members.slice(0, 5).map((member, index) => (
                     <div
                       key={member.user_id}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 text-xs font-semibold text-white ${getColorFromId(member.user_id)}`}
-                      style={{ zIndex: 5 - index }}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 text-xs font-semibold text-white`}
+                      style={{
+                        zIndex: 5 - index,
+                        backgroundColor: member.color
+                      }}
                       title={member.full_name || member.username}
                     >
                       {getInitials(member.full_name || member.username)}
@@ -598,9 +601,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     >
                       <ChevronDown
                         size={18}
-                        className={`transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
+                        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </button>
                   </div>
@@ -887,7 +889,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     // Org admins should not have edit/delete buttons for themselves
                     const canEdit = !memberIsOrgAdmin && canManageProjects();
                     const canDelete = !memberIsOrgAdmin && canManageProjects();
-                    
+
                     return (
                       <div
                         key={member.user_id}
@@ -895,7 +897,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ${getAvatarColor(member)}`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white`}
+                            style={{
+                              backgroundColor: member.color
+                            }}
                           >
                             {getInitials(member.full_name || member.username)}
                           </div>

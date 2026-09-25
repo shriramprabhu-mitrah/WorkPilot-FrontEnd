@@ -5,14 +5,14 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { PriorityBadge, StatusBadge, AssigneeAvatar } from '@/src/app/components/common/task';
 import { colors } from '@/src/styles/colors';
-import { TaskResponse } from '@/src/types/task';
+import { TaskLabel, TaskResponse } from '@/src/types/task';
 
 export const BacklogRow = ({
   task,
   onClick,
 }: {
   task: TaskResponse & {
-    labels?: string[];
+    labels?: TaskLabel[];
     assigneeInitials?: string;
     assigneeColor?: string;
     storyPoints?: number;

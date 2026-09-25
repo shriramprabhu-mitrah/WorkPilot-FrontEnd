@@ -59,6 +59,7 @@ import { useGetUserStories, useGetUserStoryById } from '@/src/modules/tasks/hook
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector } from '@/src/store';
 import { UserStoryResponse } from '@/src/types/userstories';
+import { TaskLabel } from '@/src/types/task';
 
 const UserStoryDetailDrawer = dynamic(
   () => import('../user-story-detail').then((mod) => mod.UserStoryDetailDrawer),
@@ -196,14 +197,14 @@ export const TaskDetailDrawer = ({
 
   const apiErrorData = (
     error as
-      | {
-          status?: number;
-          data?: {
-            error?: { code?: string; status_code?: number; message?: string };
-            message?: string;
-          };
-        }
-      | undefined
+    | {
+      status?: number;
+      data?: {
+        error?: { code?: string; status_code?: number; message?: string };
+        message?: string;
+      };
+    }
+    | undefined
   )?.data;
 
   const isNotFound =
@@ -216,6 +217,10 @@ export const TaskDetailDrawer = ({
     apiErrorData?.message ||
     (error as Error | undefined)?.message ||
     'Task not found';
+
+  const resolvedProjectId = fetchedTask?.project_id || task.projectId || storeProjectId || '';
+  const resolvedTaskId = fetchedTask?.id || task.taskId || '';
+  const hasResolvedIds = !!resolvedProjectId && !!resolvedTaskId;
   const [estimatedHoursInput, setEstimatedHoursInput] = useState('');
   const [estimatedMinutesInput, setEstimatedMinutesInput] = useState('');
   const [savedDescription, setSavedDescription] = useState('');
@@ -282,9 +287,9 @@ export const TaskDetailDrawer = ({
         description: apiDescription,
         priority: fetchedTask.priority
           ? ((fetchedTask.priority.charAt(0).toUpperCase() +
-              fetchedTask.priority.slice(1).toLowerCase()) as Priority)
+            fetchedTask.priority.slice(1).toLowerCase()) as Priority)
           : 'Medium',
-        labels: task.labels || [],
+        labels: fetchedTask.labels ?? task.labels ?? [],
         dueDate: fetchedTask.due_date ? fetchedTask.due_date.split('T')[0] : '',
         startDate: fetchedTask.start_date ? fetchedTask.start_date.replace(/Z$/, '') : '',
         user_story_title: fetchedTask.user_story_title ?? '',
@@ -452,8 +457,8 @@ export const TaskDetailDrawer = ({
     uploadAttachment,
     downloadAttachment,
     deleteAttachment,
-  } = useTaskAttachments(task.projectId ?? '', task.taskId ?? '');
-  const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(task.projectId ?? '');
+  } = useTaskAttachments(resolvedProjectId, resolvedTaskId, hasResolvedIds);
+  const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(resolvedProjectId);
   const statusOptions = statuses.map((status) => ({
     value: status.id,
     label: status.name,
@@ -462,7 +467,7 @@ export const TaskDetailDrawer = ({
 
   const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
   const { cloneTaskAsync, isCloningTask } = useCloneTask();
-  const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(task.projectId ?? '');
+  const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(resolvedProjectId);
   const currentUser = useAppSelector((state) => state.user);
 
   const handleAssignToMe = () => {
@@ -487,6 +492,11 @@ export const TaskDetailDrawer = ({
       { projectId: task.projectId, taskId: task.taskId },
       {
         onSuccess: () => {
+          // Invalidate tasks list to update unassigned tasks in backlog
+          queryClient.invalidateQueries({
+            queryKey: ['tasks', task.projectId],
+          });
+          
           onUpdate?.({
             assigneeInitials: initials,
             assigneeColor: color,
@@ -528,7 +538,7 @@ export const TaskDetailDrawer = ({
 
   const handleUpdate = useCallback(
     async (patch: Partial<typeof taskData>) => {
-      if (!task.projectId || !task.taskId) {
+      if (!resolvedProjectId || !resolvedTaskId) {
         throw new Error('Project ID or Task ID is missing');
       }
 
@@ -600,12 +610,46 @@ export const TaskDetailDrawer = ({
           payload.reporter_id = patch.reporterId || null;
         }
 
+        if (patch.labels !== undefined) {
+          payload.label_ids = Array.isArray(patch.labels)
+            ? patch.labels.map((label) =>
+                typeof label === 'string' ? label : label.id
+              )
+            : [];
+        }
+
         setIsSaving(true);
 
-        await taskService.updateTask(task.projectId, task.taskId, payload);
+        await taskService.updateTask(resolvedProjectId, resolvedTaskId, payload);
+        
+        // Invalidate and refetch queries
         await refetchTask();
-        onUpdate?.(patch as Partial<KanbanTask>);
-
+        
+        // Invalidate the tasks list to update unassigned tasks in backlog
+        await queryClient.invalidateQueries({
+          queryKey: ['tasks', resolvedProjectId],
+        });
+        
+        // Invalidate specific task query
+        await queryClient.invalidateQueries({
+          queryKey: ['task', resolvedProjectId, resolvedTaskId],
+        });
+        
+        // If task has a key, invalidate that too
+        if (task.key) {
+          await queryClient.invalidateQueries({
+            queryKey: ['task', resolvedProjectId, task.key],
+          });
+        }
+        
+        // If task is assigned to a sprint, invalidate sprint-related queries
+        const taskSprintId = fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
+        if (taskSprintId) {
+          // Invalidate sprint orphan tasks (tasks without user story in a sprint)
+          await queryClient.invalidateQueries({
+            queryKey: ['sprint-orphan-tasks', resolvedProjectId, taskSprintId],
+          });
+        }
         onUpdate?.(patch as Partial<KanbanTask>);
 
         return true;
@@ -620,7 +664,7 @@ export const TaskDetailDrawer = ({
         setIsSaving(false);
       }
     },
-    [task.projectId, task.taskId, taskData, onUpdate]
+    [resolvedProjectId, resolvedTaskId, taskData, onUpdate, refetchTask, queryClient, task.key, task.sprintId, task.sprint_id, task.user_story_id, fetchedTask]
   );
 
   const currentSprintId =
@@ -786,11 +830,11 @@ export const TaskDetailDrawer = ({
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch {}
+    } catch { }
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !hasResolvedIds) return;
     const formData = new FormData();
     formData.append('file', file);
     try {
@@ -2041,8 +2085,16 @@ export const TaskDetailDrawer = ({
 
                   <DetailRow label="Labels">
                     <EditableLabels
-                      value={taskData.labels}
-                      onChange={(labels) => setTaskData((prev) => ({ ...prev, labels }))}
+                      projectId={resolvedProjectId}
+                      taskId={resolvedTaskId}
+                      value={
+                        Array.isArray(taskData.labels)
+                          ? taskData.labels.map((label) =>
+                              typeof label === 'string' ? label : label.id
+                            )
+                          : []
+                      }
+                      onChange={(labelIds) => handleUpdate({ labels: labelIds as unknown as TaskLabel[] })}
                       disabled={!canEditTask}
                     />
                   </DetailRow>

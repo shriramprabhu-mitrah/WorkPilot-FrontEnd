@@ -1,11 +1,11 @@
 import { colors } from '@/src/styles/colors';
 import { Priority } from '@/src/types/board';
+import { TaskLabel } from '@/src/types/task';
 
 export interface BacklogTask {
   id: string;
   title: string;
   priority: Priority;
-  labels: string[];
   assigneeInitials: string;
   assigneeColor: string;
   storyPoints: number;
@@ -33,7 +33,6 @@ export const SPRINTS: Sprint[] = [
         id: 'ATL-2',
         title: 'Implement rate limiting middleware',
         priority: 'Critical',
-        labels: ['backend', 'performance'],
         assigneeInitials: 'MJ',
         assigneeColor: colors.avatarBlue,
         storyPoints: 13,
@@ -45,7 +44,6 @@ export const SPRINTS: Sprint[] = [
         id: 'ATL-3',
         title: 'Refactor database connection pooling',
         priority: 'High',
-        labels: ['backend', 'database'],
         assigneeInitials: 'MJ',
         assigneeColor: colors.avatarBlue,
         storyPoints: 8,
@@ -57,7 +55,6 @@ export const SPRINTS: Sprint[] = [
         id: 'ATL-4',
         title: 'Update API documentation with examples',
         priority: 'Medium',
-        labels: ['docs'],
         assigneeInitials: 'PP',
         assigneeColor: colors.avatarPink,
         storyPoints: 3,
@@ -69,7 +66,6 @@ export const SPRINTS: Sprint[] = [
         id: 'MOB-1',
         title: 'Redesign home screen layout',
         priority: 'High',
-        labels: ['design', 'mobile'],
         assigneeInitials: 'AK',
         assigneeColor: colors.avatarGreen,
         storyPoints: 8,
@@ -81,7 +77,6 @@ export const SPRINTS: Sprint[] = [
         id: 'MOB-3',
         title: 'Fix crash on iOS 16.4 deep link flow',
         priority: 'Critical',
-        labels: ['bug', 'ios'],
         assigneeInitials: 'PP',
         assigneeColor: colors.avatarPink,
         storyPoints: 3,
@@ -101,7 +96,6 @@ export const SPRINTS: Sprint[] = [
         id: 'ATL-5',
         title: 'Set up CI/CD pipeline for staging',
         priority: 'High',
-        labels: ['devops'],
         assigneeInitials: 'JW',
         assigneeColor: colors.avatarAmber,
         storyPoints: 5,
@@ -113,7 +107,6 @@ export const SPRINTS: Sprint[] = [
         id: 'DAT-3',
         title: 'Write unit tests for ETL jobs',
         priority: 'Medium',
-        labels: ['testing', 'backend'],
         assigneeInitials: 'JW',
         assigneeColor: colors.avatarAmber,
         storyPoints: 5,
@@ -125,7 +118,6 @@ export const SPRINTS: Sprint[] = [
         id: 'DS-3',
         title: 'Document component usage guidelines',
         priority: 'Low',
-        labels: ['docs', 'design'],
         assigneeInitials: 'AK',
         assigneeColor: colors.avatarGreen,
         storyPoints: 2,

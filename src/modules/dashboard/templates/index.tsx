@@ -80,7 +80,8 @@ export const DashBoardTemplate = () => {
     }
   }, [projectSlug, storeProject?.slug, orgSlug, router]);
 
-  const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(1, 7);
+  const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(1, 7, effectiveProject?.id, !!effectiveProject?.id
+  );
 
   const { dashboard, isLoadingDashboard } = useGetDashboard(
     effectiveProject?.id ?? '',
@@ -220,7 +221,7 @@ export const DashBoardTemplate = () => {
 
           <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full">
             <RecentActivityCard activities={activities} user={activityUser} />
-            <UpcomingDeadlines projectId={projectId || ''} />
+            <UpcomingDeadlines projectId={effectiveProject?.id || ''} />
           </div>
         </div>
       </div>
