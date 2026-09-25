@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
 import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
-import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
+import { useGetStatus, useGetLabels } from '@/src/modules/project/hooks/useLabels';
 import {
   useGetProjectMembers,
   useGetProjectsWithSprints,
@@ -630,6 +630,9 @@ export const KanbanBoardTemplate = () => {
   // Fetch status columns
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
 
+  // Fetch labels for filtering
+  const { data: labelsResponse, isLoading: isLoadingLabels } = useGetLabels(selectedProject);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
@@ -703,6 +706,20 @@ export const KanbanBoardTemplate = () => {
         const taskAssigneeId =
           task.assignee_id || task.assignee?.id || (task.assignee as { user_id?: string })?.user_id;
         if (!taskAssigneeId || !assigneeIdFilter.includes(taskAssigneeId)) {
+          return false;
+        }
+      }
+
+      // Label filter
+      if (filters.labels.length > 0) {
+        const taskLabelIds = (task.labels || []).map((label) => 
+          typeof label === 'string' ? label : label.id
+        );
+        // Check if task has at least one of the selected labels
+        const hasMatchingLabel = filters.labels.some((labelId) =>
+          taskLabelIds.includes(labelId)
+        );
+        if (!hasMatchingLabel) {
           return false;
         }
       }
@@ -1050,15 +1067,10 @@ export const KanbanBoardTemplate = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [filterMembers]);
 
+  // Use labels from API instead of extracting from tasks
   const allLabels = useMemo(() => {
-    const set = new Set<string>();
-    processedStories.forEach((story) =>
-      story.tasksByStatus.forEach((tasks) =>
-        tasks.forEach((task: KanbanTask) => task.labels.forEach((label: string) => set.add(label)))
-      )
-    );
-    return Array.from(set).sort();
-  }, [processedStories]);
+    return labelsResponse?.data || [];
+  }, [labelsResponse]);
 
   // Use predefined task type options
   const allTypes = useMemo(() => {

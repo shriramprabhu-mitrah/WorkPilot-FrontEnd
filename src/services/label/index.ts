@@ -49,6 +49,34 @@ class LabelService {
       successMessage: 'Label deleted successfully',
     });
   }
+
+  async attachLabel(
+    projectId: string,
+    taskId: string,
+    labelId: string
+  ): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Task.attachLabel.withParams({
+      projectId,
+      taskId,
+      labelId,
+    });
+
+    return apiService.put<unknown>(url, {});
+  }
+
+  async removeLabel(
+    projectId: string,
+    taskId: string,
+    labelId: string
+  ): Promise<ApiResponse<unknown>> {
+    const url = ApiEndpoints.Task.removeLabel.withParams({
+      projectId,
+      taskId,
+      labelId,
+    });
+
+    return apiService.delete<unknown>(url);
+  }
 }
 
 export const labelService = new LabelService();

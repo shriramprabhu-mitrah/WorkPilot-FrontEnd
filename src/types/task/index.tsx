@@ -1,6 +1,12 @@
 import { TaskStatus } from '@/src/app/components/common/task';
 import { Priority } from '../board';
 
+export interface TaskLabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export type Task = {
   id: string;
   key: string;
@@ -17,7 +23,7 @@ export type Task = {
   dueDate: string;
   sprint: string;
   sprintId?: string;
-  labels: string[];
+  labels: TaskLabel[];
 };
 
 export interface TaskPayload {
@@ -74,6 +80,7 @@ export interface TaskResponse {
     name?: string;
     color?: string;
   };
+  labels?: TaskLabel[];
 }
 
 export interface UpdateTaskPayload {

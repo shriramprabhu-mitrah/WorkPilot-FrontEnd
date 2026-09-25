@@ -241,18 +241,16 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
         className={`
-          fixed xl:static
-          inset-y-0 left-0
-          z-50
+          ${
+            onClose
+              ? `fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out xl:static xl:translate-x-0 ${
+                  isOpen ? 'translate-x-0' : '-translate-x-full'
+                }`
+              : 'relative'
+          }
           h-screen
           overflow-y-auto
           overflow-x-hidden
-          transform
-          transition-transform
-          duration-300
-          ease-in-out
-          ${onClose ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-          xl:translate-x-0
         `}
       >
         <aside
@@ -484,9 +482,9 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   placeholder="Search projects..."
                   value={projectSearchTerm}
                   onChange={(e) => {
-                        setProjectPage(1);
-                        setProjectSearchTerm(e.target.value);
-                 }}
+                    setProjectPage(1);
+                    setProjectSearchTerm(e.target.value);
+                  }}
                   className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-200 outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
                 />
                 {projectSearchTerm && (

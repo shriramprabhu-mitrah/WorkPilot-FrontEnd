@@ -689,9 +689,32 @@ export const UserStoryDetailDrawer = ({
           currentUserStory.id,
           payload
         );
+        
+        // Invalidate specific user story query
         await queryClient.invalidateQueries({
           queryKey: ['user-story', currentUserStory.project_id, currentUserStory.id],
         });
+        
+        // Invalidate user story by key if it exists
+        if (currentUserStory.key) {
+          await queryClient.invalidateQueries({
+            queryKey: ['user-story', currentUserStory.project_id, currentUserStory.key],
+          });
+        }
+        
+        // Invalidate user stories list to update backlog UI
+        await queryClient.invalidateQueries({
+          queryKey: ['user-stories', currentUserStory.project_id],
+        });
+        
+        // If user story is assigned to a sprint, invalidate sprint-related queries
+        const userStorySprintId = currentUserStory.sprint_id || editableFields.sprintId;
+        if (userStorySprintId) {
+          // Invalidate sprint user stories
+          await queryClient.invalidateQueries({
+            queryKey: ['sprint-user-stories', currentUserStory.project_id, userStorySprintId],
+          });
+        }
       } catch (error) {
         logger.log('Failed to update user story', error);
         setEditableFields(previousFields);
@@ -700,7 +723,7 @@ export const UserStoryDetailDrawer = ({
         setIsSaving(false);
       }
     },
-    [currentUserStory.project_id, currentUserStory.id, editableFields, queryClient]
+    [currentUserStory.project_id, currentUserStory.id, currentUserStory.key, currentUserStory.sprint_id, editableFields, queryClient, refetchUserStory]
   );
 
   const isAlreadyInBacklog = !editableFields.sprintId && !currentUserStory.sprint_id;

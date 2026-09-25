@@ -20,7 +20,11 @@ interface Props {
     name: string;
     color: string | null;
   }>;
-  allLabels: string[];
+  allLabels: Array<{
+    id: string;
+    name: string;
+    color: string;
+  }>;
   allTypes: string[];
   allStatuses: Array<{ id: string; name: string; color: string }>;
   onChange: (filters: FilterState) => void;
@@ -327,32 +331,45 @@ export const FilterPanel = ({
 
       case 'label': {
         const filteredLabels = allLabels.filter((l) =>
-          l.toLowerCase().includes(searchTerm.toLowerCase())
+          l.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
         return (
           <div className="flex flex-col h-full">
             <SearchInput placeholder="Search labels" />
             <div className="flex-1 overflow-y-auto">
-              {filteredLabels.map((label) => (
-                <label
-                  key={label}
-                  className="flex items-center gap-2.5 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700/60 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.labels.includes(label)}
-                    onChange={() => onChange({ ...filters, labels: toggle(filters.labels, label) })}
-                    className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
-                  />
-                  <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
-                    {label}
-                  </span>
-                </label>
-              ))}
-              {filteredLabels.length === 0 && searchTerm && (
+              {filteredLabels.length === 0 && allLabels.length === 0 ? (
+                <div className="px-4 py-6 text-center text-xs sm:text-sm text-gray-400 dark:text-gray-500">
+                  No labels available
+                </div>
+              ) : filteredLabels.length === 0 ? (
                 <div className="px-4 py-6 text-center text-xs sm:text-sm text-gray-400 dark:text-gray-500">
                   No labels found
                 </div>
+              ) : (
+                filteredLabels.map((label) => (
+                  <label
+                    key={label.id}
+                    className="flex items-center gap-2.5 px-3.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700/60 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters.labels.includes(label.id)}
+                      onChange={() =>
+                        onChange({ ...filters, labels: toggle(filters.labels, label.id) })
+                      }
+                      className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
+                    />
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: label.color }}
+                      />
+                      <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+                        {label.name}
+                      </span>
+                    </div>
+                  </label>
+                ))
               )}
             </div>
             <Footer selectedCount={filters.labels.length} totalCount={allLabels.length} />

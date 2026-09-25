@@ -6,7 +6,7 @@ export const useGetDashboard = (projectId: string, sprintId?: string, enabled = 
     queryKey: ['dashboard', projectId, sprintId ?? 'all'],
     queryFn: () => dashboardService.getDashboard(projectId, sprintId),
     enabled: enabled && !!projectId,
-    staleTime: 0,
+    staleTime: 30 * 1000, // 30 seconds cache
   });
 
   return {
@@ -19,11 +19,12 @@ export const useGetDashboard = (projectId: string, sprintId?: string, enabled = 
   };
 };
 
-export const useGetRecentActivities = (page = 1, pageSize = 10, enabled = true) => {
+export const useGetRecentActivities = (page = 1, pageSize = 10, projectId?: string, enabled = true) => {
   const query = useQuery({
-    queryKey: ['recentActivities', page, pageSize],
-    queryFn: () => dashboardService.getRecentActivities(page, pageSize),
-    enabled,
+    queryKey: ['recentActivities', page, pageSize, projectId],
+    queryFn: () => dashboardService.getRecentActivities(page, pageSize, projectId),
+    enabled: enabled && !!projectId, // Only fetch when enabled and projectId exists
+    staleTime: 30 * 1000, // 30 seconds cache
   });
 
   return {
@@ -46,7 +47,7 @@ export const useGetUpcomingDeadlines = (
     queryKey: ['upcomingDeadlines', projectId],
     queryFn: () => dashboardService.getUpcomingDeadlines(projectId),
     enabled: enabled && !!projectId,
-    staleTime: 0,
+    staleTime: 30 * 1000, // 30 seconds cache
   });
 
   return {

@@ -228,11 +228,8 @@ export const TaskTable = ({
 
                   <td className="p-3">
                     <div className="flex flex-wrap gap-2">
-                      {task.labels.map((label) => (
-                        <span key={label} className="rounded bg-gray-200 px-2 py-1 text-xs">
-                          {label}
+                        <span className="rounded bg-gray-200 px-2 py-1 text-xs">
                         </span>
-                      ))}
                     </div>
                   </td>
 

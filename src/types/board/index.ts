@@ -1,3 +1,5 @@
+import { TaskLabel } from "../task";
+
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
 // Allow both predefined and custom status IDs
@@ -37,7 +39,7 @@ export interface KanbanTask {
   title: string;
   status?: string;
   priority: Priority;
-  labels: string[];
+  labels?: TaskLabel[];
   assigneeInitials: string;
   user_story_id?: string;
   user_story_title?: string;
