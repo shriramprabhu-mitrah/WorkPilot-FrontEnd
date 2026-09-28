@@ -326,39 +326,44 @@ const MembersSettings = () => {
               return (
                 <div
                   key={member.user_id}
-                  className={`flex flex-col gap-3 px-3 sm:px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 lg:grid lg:grid-cols-[minmax(200px,1.5fr)_minmax(200px,1fr)_120px_60px] lg:items-center lg:gap-3 lg:py-3 ${
+                  className={`group flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40 sm:px-5 lg:grid lg:grid-cols-[minmax(220px,1.5fr)_minmax(220px,1fr)_120px_52px] lg:items-center lg:gap-4 ${
                     index !== visibleMembers.length - 1
                       ? 'border-b border-slate-200 dark:border-slate-700'
                       : ''
                   }`}
                 >
-                  {/* Member info */}
+                  {/* Member */}
                   <div className="flex min-w-0 items-center gap-3">
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-sm font-bold text-slate-100 dark:text-slate-100"
-                      style={{ backgroundColor: member.color || '' }}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
+                      style={{
+                        backgroundColor: member.color || '#64748b',
+                      }}
                     >
                       {initials || 'U'}
                     </div>
+
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                         {memberName}
                       </p>
-                      <p className="truncate text-xs text-slate-500 dark:text-slate-300">
-                        {member.username ?? 'No username'}
+
+                      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                        {member.username ? `@${member.username}` : 'No username'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Role selector */}
-                  <div className="flex items-start gap-2 lg:block">
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 lg:hidden min-w-[60px] pt-2">
-                      Role:
+                  {/* Role */}
+                  <div className="flex items-center gap-3 lg:block">
+                    <span className="min-w-[60px] text-xs font-medium text-slate-400 dark:text-slate-500 lg:hidden">
+                      Role
                     </span>
+
                     <div className="flex-1">
                       {isOrgAdminRole ? (
-                        <div className="h-8 flex items-center px-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                          <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                        <div className="flex h-8 items-center">
+                          <span className="inline-flex items-center rounded-lg border border-blue-100 bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-600 dark:border-blue-900/50 dark:bg-blue-900/30 dark:text-blue-300">
                             Org Admin
                           </span>
                         </div>
@@ -371,6 +376,7 @@ const MembersSettings = () => {
                           value={currentRole?.id ?? ''}
                           onChange={(value) => {
                             const selectedRole = roles.find((r) => r.id === value);
+
                             if (!selectedRole) return;
 
                             handleRoleSelect(
@@ -389,12 +395,13 @@ const MembersSettings = () => {
                   </div>
 
                   {/* Status */}
-                  <div className="flex items-center gap-2 lg:block">
-                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 lg:hidden min-w-[60px]">
-                      Status:
+                  <div className="flex items-center gap-3 lg:block">
+                    <span className="min-w-[60px] text-xs font-medium text-slate-400 dark:text-slate-500 lg:hidden">
+                      Status
                     </span>
-                    <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
-                      <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                       Active
                     </span>
                   </div>
@@ -413,10 +420,10 @@ const MembersSettings = () => {
                           });
                           setShowDeleteModal(true);
                         }}
-                        className="!p-2 text-slate-400 dark:text-slate-500 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500"
+                        className="!h-8 !w-8 !p-0 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         title="Remove member"
                       >
-                        <Trash2 size={15} strokeWidth={1.8} className="dark:text-slate-100" />
+                        <Trash2 size={15} strokeWidth={1.8} />
                       </WpButton>
                     )}
                   </div>

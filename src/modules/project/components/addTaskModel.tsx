@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
@@ -70,10 +71,19 @@ type AttachmentInfo = {
   file_path?: string;
   path?: string;
 };
-type AttachmentUploadResponse = AttachmentInfo | AttachmentInfo[];
+
+const extractUploadedUrl = (result: unknown): string | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const r = result as any;
+  const body = r?.data ?? r;
+  const payload = body?.data ?? body;
+  const first: AttachmentInfo | undefined = Array.isArray(payload) ? payload[0] : payload;
+  return first?.url ?? first?.file_url ?? first?.file_path ?? first?.path;
+};
 
 const AddTaskModal = ({
   projectId,
+  sprintId,
   userStoryId,
   assigneeOptions,
   memberSearch,
@@ -82,7 +92,8 @@ const AddTaskModal = ({
   onClose,
   onCreate,
 }: AddTaskModalProps) => {
-  const { createTaskAsync, isCreatingTask } = useCreateTask(projectId);
+  const queryClient = useQueryClient();
+  // const { createTaskAsync, isCreatingTask } = useCreateTask(projectId);
   const {
     control,
     register,
@@ -108,6 +119,7 @@ const AddTaskModal = ({
   });
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const assigneeRef = useRef<HTMLDivElement>(null);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(projectId);
   const statusOptions = statuses.map((status) => ({
     label: status.name,
@@ -208,9 +220,7 @@ const AddTaskModal = ({
   };
 
   const handleEditorImageUpload = async (file: File): Promise<string> => {
-    // Create a temporary blob URL for immediate preview
     const blobUrl = URL.createObjectURL(file);
-    // Store the file to upload after task creation
     setPendingImages((prev) => new Map(prev).set(blobUrl, file));
     return blobUrl;
   };
@@ -222,7 +232,9 @@ const AddTaskModal = ({
         return;
       }
     }
+
     try {
+      setIsCreatingTask(true);
       const data = getValues();
 
       const payload: TaskPayload = {
@@ -231,104 +243,82 @@ const AddTaskModal = ({
         priority: data.priority,
       };
 
-      if (data.status_id) {
-        payload.status_id = data.status_id;
-      }
+      if (data.status_id) payload.status_id = data.status_id;
 
       if (data.estimatedHours || data.estimatedMinutes) {
         const hours = Number(data.estimatedHours) || 0;
         const minutes = Number(data.estimatedMinutes) || 0;
-
         payload.estimated_hours = hours + minutes / 60;
       }
 
-      if (data.description.trim()) {
-        payload.description = data.description.trim();
-      }
-
-      if (data.assignee) {
-        payload.assignee_id = data.assignee;
-      }
-
-      if (data.dueDate) {
-        payload.due_date = formatISODateTime(data.dueDate);
-      }
-
-      if (userStoryId) {
-        payload.user_story_id = userStoryId;
-      }
-
-      if (data.storyPoints) {
-        payload.story_points = Number(data.storyPoints);
-      }
+      if (data.description.trim()) payload.description = data.description.trim();
+      if (data.assignee) payload.assignee_id = data.assignee;
+      if (data.dueDate) payload.due_date = formatISODateTime(data.dueDate);
+      if (userStoryId) payload.user_story_id = userStoryId;
+      if (data.storyPoints) payload.story_points = Number(data.storyPoints);
 
       if (data.actualHours || data.actualMinutes) {
         const hours = Number(data.actualHours) || 0;
         const minutes = Number(data.actualMinutes) || 0;
-
         payload.actual_hours = hours + minutes / 60;
       }
-      const response = await createTaskAsync(payload);
-      const createdTask = response.data?.[0];
-      if (createdTask) {
-        const taskId = createdTask.id;
 
-        // Handle pending images from the editor
-        if (pendingImages.size > 0 && taskId) {
-          let finalDescription = data.description;
+      // 1) Create the task directly (no hook, so no automatic invalidations)
+      const response = await taskService.createTask(projectId, payload);
 
-          for (const [blobUrl, file] of pendingImages.entries()) {
-            try {
-              const formData = new FormData();
-              formData.append('file', file);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const taskId: string | undefined = (response as any)?.data?.task_id;
+      if (!taskId) {
+        return;
+      }
 
-              const result = await taskAttachmentService.uploadTaskAttachment(
-                projectId,
-                taskId,
-                formData
-              );
+      const imagesToUpload = Array.from(pendingImages.entries());
+      const originalDescription = data.description;
 
-           const attachmentData = result?.data as AttachmentUploadResponse | undefined;
-           if (attachmentData) {
-             const first = Array.isArray(attachmentData) ? attachmentData[0] : attachmentData;
-             const realUrl = first?.url || first?.file_url || first?.file_path || first?.path;
-             if (realUrl) {
-               finalDescription = finalDescription.split(blobUrl).join(realUrl);
-             }
-           }
-            } catch (error) {
-            } finally {
-              URL.revokeObjectURL(blobUrl);
+      onClose();
+
+      if (imagesToUpload.length > 0) {
+        let finalDescription = originalDescription;
+
+        for (const [blobUrl, file] of imagesToUpload) {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const result = await taskAttachmentService.uploadTaskAttachment(
+              projectId,
+              taskId,
+              formData
+            );
+
+            const realUrl = extractUploadedUrl(result);
+            if (realUrl) {
+              finalDescription = finalDescription.split(blobUrl).join(realUrl);
             }
-          }
-
-          // Update task description if images were replaced
-          if (finalDescription !== data.description) {
-            await taskService.updateTask(projectId, taskId, {
-              description: finalDescription,
-            });
+          } catch (error) {
+          } finally {
+            URL.revokeObjectURL(blobUrl);
           }
         }
 
-        onCreate({
-          title: createdTask.title ?? '',
-          description: createdTask.description,
-          assignee_id: createdTask.assignee_id,
-          due_date: createdTask.due_date,
-          priority: createdTask.priority,
-          sprint_id: createdTask.sprint_id,
-          status_id: createdTask.status_id,
-          story_points: createdTask.story_points,
-          estimated_hours: createdTask.estimated_hours,
-          actual_hours: createdTask.actual_hours,
-          type: createdTask.type,
-        });
+        if (finalDescription !== originalDescription) {
+          await taskService.updateTask(projectId, taskId, {
+            description: finalDescription,
+          });
+        }
       }
-      onClose();
-    } catch {}
+
+      // 4) ONE refetch of the tasks list, after everything is done
+      await queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+    } catch (error) {
+    } finally {
+      setIsCreatingTask(false);
+    }
   };
+
   const taskNameRegister = register('taskName');
   const storyPointsRegister = register('storyPoints');
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">

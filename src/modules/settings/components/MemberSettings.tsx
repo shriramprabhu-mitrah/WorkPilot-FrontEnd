@@ -258,82 +258,142 @@ export const MemberSettings = () => {
       {/* User Details Modal */}
       {showUserDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
-                Team Member Details
-              </h2>
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                  Team Member Details
+                </h2>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+                  Member information and assigned projects
+                </p>
+              </div>
 
-              <WpButton
-                variant="ghost"
+              <button
+                type="button"
                 onClick={() => {
                   setShowUserDetails(false);
                   setSelectedUserId('');
                 }}
-                className="dark:text-slate-300"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
               >
-                ✕
-              </WpButton>
+                <span className="text-xl leading-none">×</span>
+              </button>
             </div>
 
-            {isUserLoading ? (
-              <div className="py-8 text-center text-gray-500 dark:text-slate-400">Loading...</div>
-            ) : (
-              <div className="mt-2 space-y-5">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Name</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100">
-                    {user?.data?.name}
-                  </p>
+            {/* Content */}
+            <div className="px-6 py-5">
+              {isUserLoading ? (
+                <div className="space-y-4">
+                  <div className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
+                  <div className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
+                  <div className="h-32 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Email</p>
-                  <p className="text-gray-800 dark:text-slate-200">{user?.data?.email}</p>
-                </div>
-                <div>
-                  <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">
-                    Projects
-                  </p>
-                  {isProjectLoading ? (
-                    <p className="text-sm text-gray-500 dark:text-slate-400">Loading projects...</p>
-                  ) : projects.length > 0 ? (
-                    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700">
-                      <table className="w-full">
-                        <thead className="bg-gray-100 dark:bg-slate-700">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">
-                              Project
-                            </th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-slate-200">
-                              Role
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {projects.map((project) => (
-                            <tr
-                              key={project.project_id}
-                              className="border-t border-gray-200 dark:border-slate-700"
-                            >
-                              <td className="px-4 py-3 text-sm text-gray-800 dark:text-slate-200">
-                                {project.project_name}
-                              </td>
-                              <td className="px-4 py-3 text-sm capitalize text-gray-800 dark:text-slate-200">
-                                {project.role}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+              ) : (
+                <div className="space-y-5">
+                  {/* Member Info */}
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <div
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
+                        style={{
+                          backgroundColor:
+                            visibleMembers.find((member) => member.id === selectedUserId)?.color ||
+                            '#6366f1',
+                        }}
+                      >
+                        {user?.data?.name
+                          ?.split(' ')
+                          .map((word) => word[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2) || 'U'}
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold text-gray-900 dark:text-slate-100">
+                          {user?.data?.name || '—'}
+                        </h3>
+
+                        <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-slate-400">
+                          {user?.data?.email || '—'}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 dark:text-slate-400">
-                      No projects assigned.
-                    </p>
-                  )}
+                  </div>
+
+                  {/* Projects */}
+                  <div>
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                        Projects
+                      </h3>
+
+                      {projects.length > 0 && (
+                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+                          {projects.length}
+                        </span>
+                      )}
+                    </div>
+
+                    {isProjectLoading ? (
+                      <div className="space-y-2">
+                        <div className="h-14 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
+                        <div className="h-14 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
+                      </div>
+                    ) : projects.length > 0 ? (
+                      <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700">
+                        {projects.map((project, index) => (
+                          <div
+                            key={project.project_id}
+                            className={`flex items-center justify-between gap-4 px-4 py-3.5 ${
+                              index !== projects.length - 1
+                                ? 'border-b border-gray-200 dark:border-slate-700'
+                                : ''
+                            } hover:bg-gray-50 dark:hover:bg-slate-700/40`}
+                          >
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                {project.project_name?.charAt(0)?.toUpperCase() || 'P'}
+                              </div>
+
+                              <p className="truncate text-sm font-medium text-gray-800 dark:text-slate-200">
+                                {project.project_name}
+                              </p>
+                            </div>
+
+                            <span className="shrink-0 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+                              {project.role}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-gray-300 px-5 py-8 text-center dark:border-slate-700">
+                        <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
+                          No projects assigned
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-slate-700 dark:bg-slate-900/50">
+              <WpButton
+                variant="secondary"
+                onClick={() => {
+                  setShowUserDetails(false);
+                  setSelectedUserId('');
+                }}
+              >
+                Close
+              </WpButton>
+            </div>
           </div>
         </div>
       )}

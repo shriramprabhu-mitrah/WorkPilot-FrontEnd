@@ -52,73 +52,100 @@ const SubscriptionDetailModal: React.FC<SubscriptionDetailModalProps> = ({
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all relative">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Close"
-          >
-            <X size={20} className="text-gray-500 dark:text-slate-400" />
-          </button>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]">
+        <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
+          {/* Header */}
+          <div className="border-b border-gray-100 px-6 py-5 dark:border-slate-800">
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
 
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-6">
-            {subscription.organizationName}
-          </h2>
+            <div className="pr-10">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">
+                Subscription
+              </p>
 
-          {/* Details */}
-          <div className="space-y-4">
-            {/* Plan */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Plan</span>
-              <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
-                {subscription.currentPlan}
-              </span>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">
+                {subscription.organizationName}
+              </h2>
+
+              <div className="mt-3">
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClass(
+                    subscription.status
+                  )}`}
+                >
+                  <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current" />
+                  {subscription.status}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Subscription Summary */}
+          <div className="px-6 py-5">
+            {/* Plan & Amount */}
+            <div className="mb-5 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+                <p className="text-xs font-medium text-gray-400 dark:text-slate-400">
+                  Current Plan
+                </p>
+                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-slate-100">
+                  {subscription.currentPlan}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+                <p className="text-xs font-medium text-gray-400 dark:text-slate-400">Amount</p>
+                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-slate-100">
+                  {subscription.planPrice}
+                </p>
+              </div>
             </div>
 
-            {/* Status */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Status</span>
-              <span
-                className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusClass(subscription.status)}`}
-              >
-                {subscription.status}
-              </span>
-            </div>
+            {/* Details */}
+            <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
+              {/* Start Date */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3.5 dark:border-slate-800">
+                <span className="text-sm text-gray-500 dark:text-slate-400">Start Date</span>
 
-            {/* Amount */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Amount</span>
-              <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
-                {subscription.planPrice}
-              </span>
-            </div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                  {subscription.startDate}
+                </span>
+              </div>
 
-            {/* Start Date */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Start Date</span>
-              <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
-                {subscription.startDate}
-              </span>
-            </div>
+              {/* Next Billing */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3.5 dark:border-slate-800">
+                <span className="text-sm text-gray-500 dark:text-slate-400">Next Billing</span>
 
-            {/* Next Billing */}
-            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-slate-800">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Next Billing</span>
-              <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
-                {subscription.nextBilling}
-              </span>
-            </div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                  {subscription.nextBilling}
+                </span>
+              </div>
 
-            {/* Members */}
-            <div className="flex justify-between items-center py-3">
-              <span className="text-sm text-gray-500 dark:text-slate-200">Members</span>
-              <span className="text-base font-semibold text-gray-900 dark:text-slate-100">
-                {subscription.members}
-              </span>
+              {/* Members */}
+              <div className="flex items-center justify-between px-4 py-3.5">
+                <span className="text-sm text-gray-500 dark:text-slate-400">Members</span>
+
+                <span className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                  {subscription.members}
+                </span>
+              </div>
             </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-gray-100 bg-gray-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+            <button
+              onClick={onClose}
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -263,7 +290,9 @@ export const SubscriptionsTemplate = () => {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">Subscriptions</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
+          Subscriptions
+        </h1>
         <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           All organization subscription plans across the platform
         </p>

@@ -176,122 +176,165 @@ export default function Profile() {
       </h1>
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {/* Left Column */}
-        <div className="w-full md:w-[320px] shrink-0 space-y-6">
+        <div className="w-full md:w-[320px] shrink-0">
           {/* Profile Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
-            <div className="relative mb-4 group">
-              <WpInput
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-              {avatarPreview || user?.avatar_url ? (
-                <Image
-                  src={avatarPreview || user?.avatar_url || ''}
-                  alt="Profile"
-                  width={96}
-                  height={96}
-                  className="h-24 w-24 rounded-2xl object-cover shadow-sm"
-                  unoptimized
-                />
-              ) : (
-                <div
-                  className="flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-sm"
-                  style={{ backgroundColor: user?.color }}
-                >
-                  {getInitials(displayName)}
-                </div>
-              )}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
-            </div>
-            <div className="mb-1 flex items-center justify-center gap-2">
-              {isEditing ? (
-                <>
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            {/* Profile Header */}
+            <div className="px-5 pt-6 pb-5">
+              <div className="flex flex-col items-center">
+                {/* Avatar */}
+                <div className="relative mb-3 group">
                   <WpInput
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-52 text-center font-bold"
-                    autoFocus
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
                   />
 
-                  <WpButton
-                    type="button"
-                    onClick={handleSave}
-                    disabled={isUpdating || !isEditing}
-                    className="!min-w-0 !w-8 !h-8 !p-0 !bg-transparent !shadow-none !text-green-600 hover:!bg-green-50"
-                  >
-                    <Check size={18} />
-                  </WpButton>
+                  {avatarPreview || user?.avatar_url ? (
+                    <Image
+                      src={avatarPreview || user?.avatar_url || ''}
+                      alt="Profile"
+                      width={88}
+                      height={88}
+                      className="h-[88px] w-[88px] rounded-2xl object-cover shadow-sm ring-1 ring-gray-200 dark:ring-gray-600"
+                      unoptimized
+                    />
+                  ) : (
+                    <div
+                      className="flex h-[88px] w-[88px] items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-sm"
+                      style={{ backgroundColor: user?.color }}
+                    >
+                      {getInitials(displayName)}
+                    </div>
+                  )}
 
-                  <WpButton
-                    type="button"
-                    onClick={handleCancel}
-                    className="!min-w-0 !w-8 !h-8 !p-0 !bg-transparent !shadow-none !text-red-600 hover:!bg-red-50"
-                  >
-                    <X size={18} />
-                  </WpButton>
-                </>
-              ) : (
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{displayName}</h2>
-              )}
-            </div>
+                  {/* Online Status */}
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
 
-            <div className="mt-2 mb-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-medium">
-              <Briefcase size={14} />
-              {user?.role ? ROLE_LABELS[user.role as ROLE_TYPE] : '-'}
-            </div>
+                {/* Name */}
+                <div className="flex w-full items-center justify-center">
+                  {isEditing ? (
+                    <div className="flex items-center gap-1.5">
+                      <WpInput
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-48 text-center font-bold"
+                        autoFocus
+                      />
 
-            <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
-              <p className="mb-1 dark:text-slate-100">{user?.email || '-'}</p>
-              <p className="dark:text-slate-100">{user?.username}</p>
-            </div>
+                      <WpButton
+                        type="button"
+                        onClick={handleSave}
+                        disabled={isUpdating || !isEditing}
+                        className="!min-w-0 !h-8 !w-8 !p-0 !bg-transparent !shadow-none !text-green-600 hover:!bg-green-50 dark:hover:!bg-green-900/20"
+                      >
+                        <Check size={18} />
+                      </WpButton>
 
-            <div className="w-full space-y-3 text-sm text-gray-600 dark:text-gray-300 mb-6 border-t border-gray-100 dark:border-gray-700 pt-6">
-              <div className="flex justify-between">
-                <span className="text-gray-400 dark:text-slate-100">Timezone</span>
-                <span className="font-medium dark:text-slate-100">{user?.timezone || '-'}</span>
+                      <WpButton
+                        type="button"
+                        onClick={handleCancel}
+                        className="!min-w-0 !h-8 !w-8 !p-0 !bg-transparent !shadow-none !text-red-600 hover:!bg-red-50 dark:hover:!bg-red-900/20"
+                      >
+                        <X size={18} />
+                      </WpButton>
+                    </div>
+                  ) : (
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                      {displayName}
+                    </h2>
+                  )}
+                </div>
+
+                {/* Role */}
+                <div className="mt-2 flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                  <Briefcase size={13} />
+                  <span>{user?.role ? ROLE_LABELS[user.role as ROLE_TYPE] : '-'}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400 dark:text-slate-100">Member since</span>
-                <span className="font-medium dark:text-slate-100">{createdAt}</span>
+            </div>
+
+            {/* Contact Information */}
+            <div className="border-t border-gray-100 px-5 py-4 dark:border-gray-700">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-gray-400 dark:text-slate-400">Email</span>
+                  <span className="truncate text-right text-sm font-medium text-gray-700 dark:text-slate-100">
+                    {user?.email || '-'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-gray-400 dark:text-slate-400">Username</span>
+                  <span className="truncate text-right text-sm font-medium text-gray-700 dark:text-slate-100">
+                    {user?.username || '-'}
+                  </span>
+                </div>
               </div>
             </div>
-            <WpButton
-              type="button"
-              disabled={isEditing || requirePasswordChange}
-              onClick={() => {
-                setFullName(user?.name || '');
-                setAvatarPreview(user?.avatar_url || '');
-                setSelectedAvatar(null);
-                setIsEditing(true);
-              }}
-              className="mt-2 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
-            >
-              Edit Profile
-            </WpButton>
-            <WpButton
-              type="button"
-              disabled={requirePasswordChange}
-              onClick={() => {
-                const nextState = !isChangingPwd;
 
-                setIsChangingPwd(nextState);
+            {/* Account Information */}
+            <div className="border-t border-gray-100 px-5 py-4 dark:border-gray-700">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-gray-400 dark:text-slate-400">Timezone</span>
+                  <span className="text-right text-sm font-medium text-gray-700 dark:text-slate-100">
+                    {user?.timezone || '-'}
+                  </span>
+                </div>
 
-                if (nextState) {
-                  setTimeout(() => {
-                    changePasswordRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    });
-                  }, 100);
-                }
-              }}
-              className="mt-2 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
-            >
-              {isChangingPwd ? 'Cancel' : 'Change password'}
-            </WpButton>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs text-gray-400 dark:text-slate-400">Member since</span>
+                  <span className="text-right text-sm font-medium text-gray-700 dark:text-slate-100">
+                    {createdAt}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="border-t border-gray-100 px-5 py-4 dark:border-gray-700">
+              <div className="space-y-2">
+                <WpButton
+                  type="button"
+                  disabled={isEditing || requirePasswordChange}
+                  onClick={() => {
+                    setFullName(user?.name || '');
+                    setAvatarPreview(user?.avatar_url || '');
+                    setSelectedAvatar(null);
+                    setIsEditing(true);
+                  }}
+                  className="!mt-0 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
+                >
+                  Edit Profile
+                </WpButton>
+
+                <WpButton
+                  type="button"
+                  disabled={requirePasswordChange}
+                  onClick={() => {
+                    const nextState = !isChangingPwd;
+
+                    setIsChangingPwd(nextState);
+
+                    if (nextState) {
+                      setTimeout(() => {
+                        changePasswordRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
+                      }, 100);
+                    }
+                  }}
+                  className="!mt-0 w-full !bg-white dark:!bg-slate-700 border border-gray-200 dark:border-slate-600 !text-gray-700 dark:!text-slate-100 hover:!bg-gray-50 dark:hover:!bg-slate-600"
+                >
+                  {isChangingPwd ? 'Cancel' : 'Change password'}
+                </WpButton>
+              </div>
+            </div>
           </div>
         </div>
 

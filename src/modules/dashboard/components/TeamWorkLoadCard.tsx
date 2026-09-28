@@ -65,7 +65,7 @@ export default function TeamWorkloadCard({
           disabled={!canPrev}
           className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          <ChevronLeft size={14} className='dark:text-slate-100'/>
+          <ChevronLeft size={14} className="dark:text-slate-100" />
         </button>
         <span className="text-xs text-gray-400 dark:text-slate-200 min-w-[40px] text-center">
           {safePage + 1} / {totalPages}
@@ -230,8 +230,15 @@ export default function TeamWorkloadCard({
         margin: 12,
         formatter: (value: string) => {
           const index = pageLabels.indexOf(value);
-          const initial = value.charAt(0).toUpperCase();
-          return `{avatar${index}|${initial}}`;
+          const initials = value
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((word) => word.charAt(0).toUpperCase())
+            .join('');
+
+          return `{avatar${index}|${initials}}`;
         },
         rich: avatarRichStyles,
       },

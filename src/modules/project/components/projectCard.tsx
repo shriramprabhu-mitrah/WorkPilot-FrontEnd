@@ -66,65 +66,84 @@ const ProjectCard = ({ project, onClick, view = 'grid' }: ProjectCardProps) => {
   return (
     <div
       onClick={onClick}
-      className="w-full cursor-pointer rounded-2xl border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-800 p-5 shadow-sm hover:shadow-md"
+      className="group w-full cursor-pointer rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
     >
-      <div className="flex min-w-0 justify-between">
-        <div className="flex min-w-0 flex-1 gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
             {project.initials}
           </div>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <h3
-              className="truncate text-xl font-semibold text-gray-700 transition-colors hover:text-blue-700 dark:text-slate-200"
+              className="truncate text-base font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400"
               title={project.name}
             >
               {project.name}
             </h3>
-            <p className="text-xs text-gray-400 dark:text-slate-200">{project.code}</p>
+
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-400">{project.code}</p>
           </div>
         </div>
+
+        {/* Status */}
         <span
-          className={`inline-flex h-6 flex-shrink-0 items-center rounded-full px-3 text-xs font-medium ${
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
             project.status === 'Active'
-              ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-              : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+              ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
           }`}
         >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              project.status === 'Active' ? 'bg-green-500' : 'bg-blue-500'
+            }`}
+          />
           {project.status}
         </span>
       </div>
 
-      <p className="mb-4 line-clamp-2 mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-200">
-        {project.description}
+      {/* Description */}
+      <p className="mt-3 line-clamp-2 text-sm leading-5 text-gray-500 dark:text-slate-300">
+        {project.description || 'No description available.'}
       </p>
 
-      <div className="mt-4 flex items-center justify-between">
+      {/* Members */}
+      <div className="mt-4 flex items-center">
         <div className="flex -space-x-2">
           {project.members.slice(0, 3).map((member, index) => (
             <AssigneeAvatar key={index} initials={member.name} color={member.color} size="sm" />
           ))}
 
           {project.members.length > 3 && (
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-700 text-[11px] font-medium text-gray-600 dark:text-slate-200">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-[10px] font-semibold text-gray-600 dark:border-gray-800 dark:bg-gray-700 dark:text-slate-200">
               +{project.members.length - 3}
             </div>
           )}
         </div>
-        <div className="flex items-center justify-between pt-4 border-gray-100 dark:border-gray-700">
-          <div className="flex-1 text-center">
-            <p className="text-xs text-gray-500 dark:text-slate-200 mr-2">Sprints</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-200 mr-2">
-              {project.sprint_count}
-            </p>
-          </div>
 
-          <div className="" />
+        {project.members.length > 0 && (
+          <span className="ml-2 text-xs text-gray-400 dark:text-slate-400">
+            {project.members.length} {project.members.length === 1 ? 'member' : 'members'}
+          </span>
+        )}
+      </div>
 
-          <div className="flex-2 text-center">
-            <p className="text-xs text-gray-500 dark:text-slate-200">Created</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-200">{project.date}</p>
-          </div>
+      {/* Footer */}
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-[11px] text-gray-400 dark:text-slate-500">Sprints</p>
+          <p className="mt-0.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+            {project.sprint_count}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[11px] text-gray-400 dark:text-slate-500">Created</p>
+          <p className="mt-0.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+            {project.date}
+          </p>
         </div>
       </div>
     </div>
