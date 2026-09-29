@@ -1,34 +1,49 @@
-'use client';
-
 import Skeleton from '@/src/app/components/common/skeleton';
 
-function TeamMemberRowSkeleton() {
-  return (
-    <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-black">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-9 w-9 rounded-lg" />
+function TeamMemberRowSkeleton({ index = 0 }: { index?: number }) {
+  const nameWidths = ['w-32', 'w-40', 'w-28', 'w-36'];
+  const roleWidths = ['w-16', 'w-20', 'w-14', 'w-18'];
 
-        <div className="flex flex-col gap-1.5">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-3 w-16" />
+  return (
+    <div className="grid grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px] items-center gap-4 border-b border-gray-100 bg-white px-5 py-4 last:border-b-0 dark:border-slate-700 dark:bg-slate-800">
+      {/* Member */}
+      <div className="flex min-w-0 items-center gap-3">
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Skeleton className={`h-4 ${nameWidths[index % nameWidths.length]}`} />
+          <Skeleton className={`h-3 ${roleWidths[index % roleWidths.length]}`} />
         </div>
       </div>
 
-      <div className="pr-6">
-        <Skeleton className="mb-2 h-3 w-16" />
-        <Skeleton className="h-2 w-full rounded-full" />
+      {/* Progress */}
+      <div className="pr-4">
+        <div className="mb-2 flex items-center justify-between">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-8" />
+        </div>
+
+        <Skeleton className="h-2.5 w-full rounded-full" />
       </div>
 
+      {/* Tasks */}
       <div className="flex justify-center">
-        <Skeleton className="h-4 w-6" />
+        <Skeleton className="h-7 w-9 rounded-md" />
       </div>
 
+      {/* Done */}
       <div className="flex justify-center">
-        <Skeleton className="h-4 w-6" />
+        <Skeleton className="h-7 w-9 rounded-md" />
       </div>
 
+      {/* Open */}
       <div className="flex justify-center">
-        <Skeleton className="h-4 w-6" />
+        <Skeleton className="h-7 w-9 rounded-md" />
+      </div>
+
+      {/* Action */}
+      <div className="flex justify-center">
+        <Skeleton className="h-8 w-8 rounded-lg" />
       </div>
     </div>
   );
@@ -36,21 +51,24 @@ function TeamMemberRowSkeleton() {
 
 export default function TeamMemberCardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <Skeleton className="mb-2 h-8 w-24" />
-          <Skeleton className="h-4 w-20" />
+    <div className="space-y-5">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-28" />
+          <Skeleton className="h-4 w-40" />
         </div>
 
         <Skeleton className="h-10 w-36 rounded-lg" />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(300px,2fr)_80px_80px_80px] items-center gap-4 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-black">
+      {/* Table */}
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        {/* Table Header */}
+        <div className="grid grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_80px_80px_80px_50px] items-center gap-4 border-b border-gray-100 bg-gray-50/70 px-5 py-3.5 dark:border-slate-700 dark:bg-slate-800">
           <Skeleton className="h-3 w-16" />
 
-          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-20" />
 
           <div className="flex justify-center">
             <Skeleton className="h-3 w-12" />
@@ -63,10 +81,15 @@ export default function TeamMemberCardSkeleton() {
           <div className="flex justify-center">
             <Skeleton className="h-3 w-10" />
           </div>
+
+          <div className="flex justify-center">
+            <Skeleton className="h-3 w-8" />
+          </div>
         </div>
 
-        {Array.from({ length: 4 }).map((_, index) => (
-          <TeamMemberRowSkeleton key={index} />
+        {/* Rows */}
+        {Array.from({ length: 5 }).map((_, index) => (
+          <TeamMemberRowSkeleton key={index} index={index} />
         ))}
       </div>
     </div>

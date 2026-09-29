@@ -364,7 +364,7 @@ export const FilterPanel = ({
                         className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
                         style={{ backgroundColor: label.color }}
                       />
-                      <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+                      <span className="text-xs sm:text-sm text-gray-700 dark:text-slate-200">
                         {label.name}
                       </span>
                     </div>
