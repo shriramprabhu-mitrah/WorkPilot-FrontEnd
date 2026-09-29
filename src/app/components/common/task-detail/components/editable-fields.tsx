@@ -342,7 +342,6 @@ export const EditableLabels = ({
 
   const createLabel = useCreateLabel();
   const updateLabel = useUpdateLabel();
-  const deleteLabel = useDeleteLabel();
   const attachLabel = useAttachLabel();
   const removeLabel = useRemoveLabel();
 
@@ -458,12 +457,6 @@ export const EditableLabels = ({
     );
   };
 
-  const startEditingLabel = (label: LabelListItem, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingLabelId(label.id);
-    setEditingLabelName(label.name);
-  };
-
   const cancelEditingLabel = () => {
     setEditingLabelId(null);
     setEditingLabelName('');
@@ -494,30 +487,6 @@ export const EditableLabels = ({
       {
         onSuccess: () => {
           cancelEditingLabel();
-        },
-      }
-    );
-  };
-
-  const handleDeleteLabel = (labelId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    // Delete the global/project-level label
-    deleteLabel.mutate(
-      {
-        projectId,
-        labelId,
-      },
-      {
-        onSuccess: () => {
-          if (editingLabelId === labelId) {
-            cancelEditingLabel();
-          }
-
-          // If the label was attached to this task, update local state
-          if (value.includes(labelId)) {
-            onChange(value.filter((id) => id !== labelId));
-          }
         },
       }
     );

@@ -193,27 +193,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const getColorFromId = (userId: string) => {
-    const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-orange-500',
-      'bg-teal-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-cyan-500',
-    ];
-    const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  };
-
-  const getAvatarColor = (member: ProjectDetailMember) => {
-    return member.color || getColorFromId(member.user_id);
-  };
-
   const updateMember = async (member: ProjectDetailMember) => {
     if (!canManageProjects()) {
       showToast.error('You do not have permission to update member roles');

@@ -129,6 +129,7 @@ export interface GetTasksQueryParams {
   type?: string;
   fields?: string;
   unassigned_task?: boolean;
+  storyless_task?:boolean;
   user_story_id?: string | null;
 }
 

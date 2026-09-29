@@ -174,22 +174,39 @@ export const DraggableUserStory = ({
         <GripVertical size={15} />
       </span>
 
-      {/* Story Title */}
+      {/* Story Key + Title */}
       <div onClick={handleClick} className="flex-1 min-w-0 cursor-pointer">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="min-w-0 flex-1">
+          {/* Story Key */}
+          <span
+            className="shrink-0 text-xs font-semibold"
+            style={{ color: colors.primary }}
+          >
+            {story.key || '-'}
+          </span>
+
+          {/* Story Title */}
+          <div className="min-w-0 flex-1 ml-7">
             <span
               title={story.title}
-              className={`block truncate text-sm font-semibold text-[#155dfc] ${
-                story.is_closed ? 'line-through text-gray-500 opacity-60' : 'dark:text-slate-100'
-              }`}
+              className={`block truncate text-sm font-semibold ${story.is_closed
+                  ? 'line-through text-gray-500 opacity-60'
+                  : 'text-gray-800 dark:text-slate-100'
+                }`}
               style={{
-                color: story.is_closed ? undefined : isDragging ? colors.primary : undefined,
+                color: story.is_closed
+                  ? undefined
+                  : isDragging
+                    ? colors.primary
+                    : undefined,
               }}
             >
-              {story.title.length > 40 ? `${story.title.slice(0, 40)}...` : story.title}
+              {story.title.length > 40
+                ? `${story.title.slice(0, 40)}...`
+                : story.title}
             </span>
           </div>
+
           {isOver && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 px-2 py-0.5 rounded-full animate-pulse">
               <PlusCircle size={12} />
