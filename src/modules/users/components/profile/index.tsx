@@ -150,7 +150,7 @@ export default function Profile() {
       setSelectedAvatar(null);
       setAvatarPreview('');
       setIsEditing(false);
-    } catch { }
+    } catch {}
   };
 
   const handleCancel = () => {
@@ -370,16 +370,14 @@ export default function Profile() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   <span className="font-semibold text-gray-700 dark:text-gray-200">
                     {insights?.completed ?? 0}
-                  </span>{" "}
+                  </span>{' '}
                   of {insights?.total_assigned ?? 0} tasks completed
                 </p>
 
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {insights?.total_assigned
-                    ? `${Math.round(
-                      ((insights?.completed ?? 0) / insights.total_assigned) * 100
-                    )}%`
-                    : "0%"}
+                    ? `${Math.round(((insights?.completed ?? 0) / insights.total_assigned) * 100)}%`
+                    : '0%'}
                 </span>
               </div>
             </div>

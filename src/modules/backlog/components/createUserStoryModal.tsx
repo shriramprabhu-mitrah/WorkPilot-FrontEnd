@@ -81,8 +81,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       for (const file of filesToUpload) {
         try {
           await uploadUserStoryAttachmentAsync({ userStoryId, file });
-        } catch (error) {
-        }
+        } catch (error) {}
       }
       if (imagesToUpload.length > 0) {
         let finalDescription = originalDescription;
@@ -109,8 +108,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       }
 
       await queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {

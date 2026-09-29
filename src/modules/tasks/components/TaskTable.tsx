@@ -228,8 +228,7 @@ export const TaskTable = ({
 
                   <td className="p-3">
                     <div className="flex flex-wrap gap-2">
-                        <span className="rounded bg-gray-200 px-2 py-1 text-xs">
-                        </span>
+                      <span className="rounded bg-gray-200 px-2 py-1 text-xs"></span>
                     </div>
                   </td>
 

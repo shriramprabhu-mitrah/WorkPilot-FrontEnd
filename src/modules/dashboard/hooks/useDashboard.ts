@@ -27,20 +27,8 @@ export const useGetRecentActivities = (
   enabled = true
 ) => {
   const query = useQuery({
-    queryKey: [
-      'recentActivities',
-      page,
-      pageSize,
-      projectId,
-      sprintId,
-    ],
-    queryFn: () =>
-      dashboardService.getRecentActivities(
-        page,
-        pageSize,
-        projectId,
-        sprintId
-      ),
+    queryKey: ['recentActivities', page, pageSize, projectId, sprintId],
+    queryFn: () => dashboardService.getRecentActivities(page, pageSize, projectId, sprintId),
     enabled: enabled && !!projectId,
     staleTime: 30 * 1000,
   });
@@ -56,15 +44,10 @@ export const useGetRecentActivities = (
   };
 };
 
-export const useGetUpcomingDeadlines = (
-  projectId: string,
-  sprintId?: string,
-  enabled = true
-) => {
+export const useGetUpcomingDeadlines = (projectId: string, sprintId?: string, enabled = true) => {
   const query = useQuery({
     queryKey: ['upcomingDeadlines', projectId, sprintId],
-    queryFn: () =>
-      dashboardService.getUpcomingDeadlines(projectId, sprintId),
+    queryFn: () => dashboardService.getUpcomingDeadlines(projectId, sprintId),
     enabled: enabled && !!projectId,
     staleTime: 30 * 1000,
   });

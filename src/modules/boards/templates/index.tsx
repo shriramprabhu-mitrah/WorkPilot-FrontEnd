@@ -631,7 +631,7 @@ export const KanbanBoardTemplate = () => {
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
 
   // Fetch labels for filtering
-  const { data: labelsResponse} = useGetLabels(selectedProject);
+  const { data: labelsResponse } = useGetLabels(selectedProject);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -712,13 +712,11 @@ export const KanbanBoardTemplate = () => {
 
       // Label filter
       if (filters.labels.length > 0) {
-        const taskLabelIds = (task.labels || []).map((label) => 
+        const taskLabelIds = (task.labels || []).map((label) =>
           typeof label === 'string' ? label : label.id
         );
         // Check if task has at least one of the selected labels
-        const hasMatchingLabel = filters.labels.some((labelId) =>
-          taskLabelIds.includes(labelId)
-        );
+        const hasMatchingLabel = filters.labels.some((labelId) => taskLabelIds.includes(labelId));
         if (!hasMatchingLabel) {
           return false;
         }

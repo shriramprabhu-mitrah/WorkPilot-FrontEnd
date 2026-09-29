@@ -98,7 +98,9 @@ export const MembersTemplate = () => {
     <div className="space-y-4 sm:space-y-6 w-full max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">All Members</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
+          All Members
+        </h1>
         <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || members.length} members across all organizations
         </p>

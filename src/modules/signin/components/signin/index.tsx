@@ -135,16 +135,16 @@ export const SignIn = () => {
   };
 
   useEffect(() => {
-  if (showForgotSidebar) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = '';
-  }
+    if (showForgotSidebar) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
 
-  return () => {
-    document.body.style.overflow = '';
-  };
-}, [showForgotSidebar]);
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showForgotSidebar]);
 
   const resetForgotPasswordFlow = () => {
     setForgotStep(1);

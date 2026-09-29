@@ -39,14 +39,11 @@ const getDeadlineStatus = (status: string) => {
   }
 };
 
-export default function UpcomingDeadlines({
-  projectId,
-  sprintId,
-}: UpcomingDeadlinesProps) {
-  const {
-    upcomingDeadlines,
-    isLoadingUpcomingDeadlines,
-  } = useGetUpcomingDeadlines(projectId, sprintId);
+export default function UpcomingDeadlines({ projectId, sprintId }: UpcomingDeadlinesProps) {
+  const { upcomingDeadlines, isLoadingUpcomingDeadlines } = useGetUpcomingDeadlines(
+    projectId,
+    sprintId
+  );
 
   return (
     <Panel title="Upcoming Deadlines">
@@ -106,9 +103,7 @@ export default function UpcomingDeadlines({
                     {/* Sprint */}
                     {task.sprint_name && (
                       <>
-                        <span className="text-gray-300 dark:text-slate-600">
-                          •
-                        </span>
+                        <span className="text-gray-300 dark:text-slate-600">•</span>
 
                         <span className="truncate text-gray-400 dark:text-slate-400">
                           {task.sprint_name}
@@ -118,13 +113,9 @@ export default function UpcomingDeadlines({
 
                     {!task.sprint_name && (
                       <>
-                        <span className="text-gray-300 dark:text-slate-600">
-                          •
-                        </span>
+                        <span className="text-gray-300 dark:text-slate-600">•</span>
 
-                        <span className="text-gray-400 dark:text-slate-400">
-                          No Sprint
-                        </span>
+                        <span className="text-gray-400 dark:text-slate-400">No Sprint</span>
                       </>
                     )}
                   </div>
@@ -135,9 +126,7 @@ export default function UpcomingDeadlines({
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold whitespace-nowrap ${deadline.className}`}
                   >
-                    <span className="text-xs">
-                      {deadline.icon}
-                    </span>
+                    <span className="text-xs">{deadline.icon}</span>
 
                     {deadline.label}
                   </span>

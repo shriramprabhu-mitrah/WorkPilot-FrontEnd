@@ -187,7 +187,9 @@ export const OrganizationsTemplate = () => {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">Organizations</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">
+          Organizations
+        </h1>
         <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-200 mt-1">
           {meta?.total_items || organizations.length} organizations on the platform
         </p>

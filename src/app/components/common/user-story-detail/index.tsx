@@ -473,8 +473,10 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
-  const { mutateAsync: uploadCommentAttachmentAsync } =
-    useUploadUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
+  const { mutateAsync: uploadCommentAttachmentAsync } = useUploadUserStoryCommentAttachment(
+    currentUserStory.project_id ?? '',
+    currentUserStory.id
+  );
 
   const {
     members: reporterMembers,
@@ -689,24 +691,24 @@ export const UserStoryDetailDrawer = ({
           currentUserStory.id,
           payload
         );
-        
+
         // Invalidate specific user story query
         await queryClient.invalidateQueries({
           queryKey: ['user-story', currentUserStory.project_id, currentUserStory.id],
         });
-        
+
         // Invalidate user story by key if it exists
         if (currentUserStory.key) {
           await queryClient.invalidateQueries({
             queryKey: ['user-story', currentUserStory.project_id, currentUserStory.key],
           });
         }
-        
+
         // Invalidate user stories list to update backlog UI
         await queryClient.invalidateQueries({
           queryKey: ['user-stories', currentUserStory.project_id],
         });
-        
+
         // If user story is assigned to a sprint, invalidate sprint-related queries
         const userStorySprintId = currentUserStory.sprint_id || editableFields.sprintId;
         if (userStorySprintId) {
@@ -723,7 +725,15 @@ export const UserStoryDetailDrawer = ({
         setIsSaving(false);
       }
     },
-    [currentUserStory.project_id, currentUserStory.id, currentUserStory.key, currentUserStory.sprint_id, editableFields, queryClient, refetchUserStory]
+    [
+      currentUserStory.project_id,
+      currentUserStory.id,
+      currentUserStory.key,
+      currentUserStory.sprint_id,
+      editableFields,
+      queryClient,
+      refetchUserStory,
+    ]
   );
 
   const isAlreadyInBacklog = !editableFields.sprintId && !currentUserStory.sprint_id;
@@ -2084,35 +2094,74 @@ export const UserStoryDetailDrawer = ({
                               let changeText: React.ReactNode = null;
                               let activityIcon: React.ReactNode = null;
                               let activityBadge: React.ReactNode = null;
-                              let badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                              let badgeColor =
+                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
 
                               // Determine activity type and icon
                               const resourceType = activity.resource_type;
                               const action = activity.action.toLowerCase();
 
                               if (action === 'created') {
-                                activityIcon = <Plus size={12} className="text-green-600 dark:text-green-400" />;
-                                badgeColor = 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-                                activityBadge = <span className="text-green-600 dark:text-green-400">●</span>;
+                                activityIcon = (
+                                  <Plus size={12} className="text-green-600 dark:text-green-400" />
+                                );
+                                badgeColor =
+                                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+                                activityBadge = (
+                                  <span className="text-green-600 dark:text-green-400">●</span>
+                                );
                               } else if (action === 'updated' || action === 'changed') {
-                                activityIcon = <Pencil size={12} className="text-blue-600 dark:text-blue-400" />;
-                                badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
-                                activityBadge = <span className="text-blue-600 dark:text-blue-400">●</span>;
+                                activityIcon = (
+                                  <Pencil size={12} className="text-blue-600 dark:text-blue-400" />
+                                );
+                                badgeColor =
+                                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                                activityBadge = (
+                                  <span className="text-blue-600 dark:text-blue-400">●</span>
+                                );
                               } else if (action === 'deleted') {
-                                activityIcon = <Trash2 size={12} className="text-red-600 dark:text-red-400" />;
-                                badgeColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
-                                activityBadge = <span className="text-red-600 dark:text-red-400">●</span>;
+                                activityIcon = (
+                                  <Trash2 size={12} className="text-red-600 dark:text-red-400" />
+                                );
+                                badgeColor =
+                                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+                                activityBadge = (
+                                  <span className="text-red-600 dark:text-red-400">●</span>
+                                );
                               } else if (resourceType === 'comment') {
-                                activityIcon = <FileText size={12} className="text-purple-600 dark:text-purple-400" />;
-                                badgeColor = 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
-                                activityBadge = <span className="text-purple-600 dark:text-purple-400">●</span>;
-                              } else if (resourceType === 'user_story_attachment' || resourceType === 'task_attachment') {
-                                activityIcon = <FileText size={12} className="text-amber-600 dark:text-amber-400" />;
-                                badgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
-                                activityBadge = <span className="text-amber-600 dark:text-amber-400">●</span>;
+                                activityIcon = (
+                                  <FileText
+                                    size={12}
+                                    className="text-purple-600 dark:text-purple-400"
+                                  />
+                                );
+                                badgeColor =
+                                  'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
+                                activityBadge = (
+                                  <span className="text-purple-600 dark:text-purple-400">●</span>
+                                );
+                              } else if (
+                                resourceType === 'user_story_attachment' ||
+                                resourceType === 'task_attachment'
+                              ) {
+                                activityIcon = (
+                                  <FileText
+                                    size={12}
+                                    className="text-amber-600 dark:text-amber-400"
+                                  />
+                                );
+                                badgeColor =
+                                  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+                                activityBadge = (
+                                  <span className="text-amber-600 dark:text-amber-400">●</span>
+                                );
                               } else {
-                                activityIcon = <User size={12} className="text-gray-600 dark:text-gray-400" />;
-                                activityBadge = <span className="text-gray-600 dark:text-gray-400">●</span>;
+                                activityIcon = (
+                                  <User size={12} className="text-gray-600 dark:text-gray-400" />
+                                );
+                                activityBadge = (
+                                  <span className="text-gray-600 dark:text-gray-400">●</span>
+                                );
                               }
 
                               if (activity.details) {
@@ -2164,7 +2213,10 @@ export const UserStoryDetailDrawer = ({
                                   titleAction = `uploaded an attachment`;
                                   changeText = (
                                     <div className="mt-2.5 p-2.5 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-900/30 text-sm text-gray-700 dark:text-slate-300 flex items-center gap-2">
-                                      <FileText size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                                      <FileText
+                                        size={14}
+                                        className="text-amber-600 dark:text-amber-400 shrink-0"
+                                      />
                                       <span className="truncate">{activity.details}</span>
                                     </div>
                                   );
@@ -2178,10 +2230,7 @@ export const UserStoryDetailDrawer = ({
                               }
 
                               return (
-                                <div 
-                                  key={activity.id} 
-                                  className="relative flex gap-4 pb-6 group"
-                                >
+                                <div key={activity.id} className="relative flex gap-4 pb-6 group">
                                   {/* Timeline Node */}
                                   <div className="relative z-10 flex items-center justify-center">
                                     <div
@@ -2212,7 +2261,9 @@ export const UserStoryDetailDrawer = ({
                                           </span>
                                         </div>
                                         {/* Activity Type Badge */}
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide shrink-0 ${badgeColor}`}>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide shrink-0 ${badgeColor}`}
+                                        >
                                           {action}
                                         </span>
                                       </div>
@@ -2237,7 +2288,9 @@ export const UserStoryDetailDrawer = ({
                             <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                               <FileText size={28} className="text-gray-400 dark:text-slate-500" />
                             </div>
-                            <p className="text-sm font-medium text-gray-600 dark:text-slate-300">No history yet</p>
+                            <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
+                              No history yet
+                            </p>
                             <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
                               Changes will appear here
                             </p>

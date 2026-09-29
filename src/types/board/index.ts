@@ -1,4 +1,4 @@
-import { TaskLabel } from "../task";
+import { TaskLabel } from '../task';
 
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 

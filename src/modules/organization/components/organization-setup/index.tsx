@@ -198,7 +198,7 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
       removeTokens();
       const cookiesToRemove = ['access_token', 'refresh_token', 'org_slug'];
       const domain = typeof window !== 'undefined' ? window.location.hostname : '';
-      
+
       cookiesToRemove.forEach((cookieName) => {
         Cookies.remove(cookieName);
         Cookies.remove(cookieName, { path: '/' });
@@ -216,18 +216,16 @@ export const OrganizationSetupModal = ({ onBack }: OrgSetupModalProps) => {
 
       try {
         await persistor.purge();
-      } catch {
-      }
+      } catch {}
       if (typeof window !== 'undefined') {
         try {
           localStorage.clear();
           sessionStorage.clear();
-        } catch {
-        }
+        } catch {}
       }
       queryClient.cancelQueries();
       queryClient.clear();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       window.location.replace('/signin?from=setup');
     } catch (error) {
       logger.log('Error during cleanup:', error);

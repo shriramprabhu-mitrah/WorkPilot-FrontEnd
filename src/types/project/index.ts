@@ -120,7 +120,7 @@ export interface ProjectDetailMember {
   full_name: string;
   role: string;
   email?: string;
-  color?:string
+  color?: string;
 }
 
 // Project Detail Response (includes sprints and members)
@@ -160,7 +160,7 @@ export interface ActivityUser {
   id: string;
   name: string;
   role: string;
-  color?:string;
+  color?: string;
 }
 
 export interface Activity {

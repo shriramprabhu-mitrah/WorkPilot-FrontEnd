@@ -300,8 +300,9 @@ const SprintDetail = () => {
                 {/* Story key */}
                 {story.key && (
                   <span
-                  onClick={() => setSelectedUserStory(story)}
-                  className="cursor-pointer rounded bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0">
+                    onClick={() => setSelectedUserStory(story)}
+                    className="cursor-pointer rounded bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 shrink-0"
+                  >
                     {story.key}
                   </span>
                 )}

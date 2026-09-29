@@ -79,11 +79,7 @@ export const DashBoardTemplate = () => {
     }
   }, [projectSlug, storeProject?.slug, orgSlug, router]);
 
-  const {
-    activities,
-    activityUser,
-    isLoadingActivities,
-  } = useGetRecentActivities(
+  const { activities, activityUser, isLoadingActivities } = useGetRecentActivities(
     1,
     7,
     effectiveProject?.id,

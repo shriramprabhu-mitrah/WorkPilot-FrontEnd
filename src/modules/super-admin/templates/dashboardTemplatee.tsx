@@ -201,7 +201,9 @@ export const DashboardTemplate = () => {
                           <p className="font-medium text-xs sm:text-sm text-gray-900 dark:text-slate-100 truncate">
                             {org.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-200 truncate">{org.country}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-200 truncate">
+                            {org.country}
+                          </p>
                         </div>
                       </div>
                     </td>

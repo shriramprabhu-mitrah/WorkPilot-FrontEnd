@@ -178,10 +178,7 @@ export const DraggableUserStory = ({
       <div onClick={handleClick} className="flex-1 min-w-0 cursor-pointer">
         <div className="flex items-center gap-2 min-w-0">
           {/* Story Key */}
-          <span
-            className="shrink-0 text-xs font-semibold"
-            style={{ color: colors.primary }}
-          >
+          <span className="shrink-0 text-xs font-semibold" style={{ color: colors.primary }}>
             {story.key || '-'}
           </span>
 
@@ -189,21 +186,16 @@ export const DraggableUserStory = ({
           <div className="min-w-0 flex-1 ml-7">
             <span
               title={story.title}
-              className={`block truncate text-sm font-semibold ${story.is_closed
+              className={`block truncate text-sm font-semibold ${
+                story.is_closed
                   ? 'line-through text-gray-500 opacity-60'
                   : 'text-gray-800 dark:text-slate-100'
-                }`}
+              }`}
               style={{
-                color: story.is_closed
-                  ? undefined
-                  : isDragging
-                    ? colors.primary
-                    : undefined,
+                color: story.is_closed ? undefined : isDragging ? colors.primary : undefined,
               }}
             >
-              {story.title.length > 40
-                ? `${story.title.slice(0, 40)}...`
-                : story.title}
+              {story.title.length > 40 ? `${story.title.slice(0, 40)}...` : story.title}
             </span>
           </div>
 

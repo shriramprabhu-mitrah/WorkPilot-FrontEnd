@@ -40,7 +40,7 @@ export interface TaskPayload {
   estimated_hours?: number;
   actual_hours?: number;
   type?: string;
-  id?:string;
+  id?: string;
 }
 
 export interface TaskResponse {
@@ -129,7 +129,7 @@ export interface GetTasksQueryParams {
   type?: string;
   fields?: string;
   unassigned_task?: boolean;
-  storyless_task?:boolean;
+  storyless_task?: boolean;
   user_story_id?: string | null;
 }
 

@@ -78,13 +78,13 @@ export const TeamTemplate = () => {
   );
   const visibleMembers = teamMembers?.data ?? [];
 
-const [prevIsLoading, setPrevIsLoading] = useState(isTeamMembersLoading);
-if (isTeamMembersLoading !== prevIsLoading) {
-  setPrevIsLoading(isTeamMembersLoading);
-  if (!isTeamMembersLoading) {
-    setIsInitialLoad(false);
+  const [prevIsLoading, setPrevIsLoading] = useState(isTeamMembersLoading);
+  if (isTeamMembersLoading !== prevIsLoading) {
+    setPrevIsLoading(isTeamMembersLoading);
+    if (!isTeamMembersLoading) {
+      setIsInitialLoad(false);
+    }
   }
-}
   const { user, isUserLoading } = useGetUserById(selectedUserId);
   const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
   const projects = userProjects?.data?.project ?? [];

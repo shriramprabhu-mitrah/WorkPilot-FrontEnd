@@ -198,14 +198,14 @@ export const TaskDetailDrawer = ({
 
   const apiErrorData = (
     error as
-    | {
-      status?: number;
-      data?: {
-        error?: { code?: string; status_code?: number; message?: string };
-        message?: string;
-      };
-    }
-    | undefined
+      | {
+          status?: number;
+          data?: {
+            error?: { code?: string; status_code?: number; message?: string };
+            message?: string;
+          };
+        }
+      | undefined
   )?.data;
 
   const isNotFound =
@@ -289,7 +289,7 @@ export const TaskDetailDrawer = ({
         description: apiDescription,
         priority: fetchedTask.priority
           ? ((fetchedTask.priority.charAt(0).toUpperCase() +
-            fetchedTask.priority.slice(1).toLowerCase()) as Priority)
+              fetchedTask.priority.slice(1).toLowerCase()) as Priority)
           : 'Medium',
         labels: fetchedTask.labels ?? task.labels ?? [],
         dueDate: fetchedTask.due_date ? fetchedTask.due_date.split('T')[0] : '',
@@ -629,9 +629,7 @@ export const TaskDetailDrawer = ({
 
         if (patch.labels !== undefined) {
           payload.label_ids = Array.isArray(patch.labels)
-            ? patch.labels.map((label) =>
-              typeof label === 'string' ? label : label.id
-            )
+            ? patch.labels.map((label) => (typeof label === 'string' ? label : label.id))
             : [];
         }
 
@@ -660,7 +658,8 @@ export const TaskDetailDrawer = ({
         }
 
         // If task is assigned to a sprint, invalidate sprint-related queries
-        const taskSprintId = fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
+        const taskSprintId =
+          fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
         if (taskSprintId) {
           // Invalidate sprint orphan tasks (tasks without user story in a sprint)
           await queryClient.invalidateQueries({
@@ -686,7 +685,19 @@ export const TaskDetailDrawer = ({
         setIsSaving(false);
       }
     },
-    [resolvedProjectId, resolvedTaskId, taskData, onUpdate, refetchTask, queryClient, task.key, task.sprintId, task.sprint_id, task.user_story_id, fetchedTask]
+    [
+      resolvedProjectId,
+      resolvedTaskId,
+      taskData,
+      onUpdate,
+      refetchTask,
+      queryClient,
+      task.key,
+      task.sprintId,
+      task.sprint_id,
+      task.user_story_id,
+      fetchedTask,
+    ]
   );
 
   const currentSprintId =
@@ -856,7 +867,7 @@ export const TaskDetailDrawer = ({
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch { }
+    } catch {}
   };
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -943,14 +954,16 @@ export const TaskDetailDrawer = ({
             {/* Current Task Identifier */}
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className={`w-6 h-6 rounded-lg ${isError ? 'bg-red-500' : 'bg-blue-600'
-                  } flex items-center justify-center shrink-0`}
+                className={`w-6 h-6 rounded-lg ${
+                  isError ? 'bg-red-500' : 'bg-blue-600'
+                } flex items-center justify-center shrink-0`}
               >
                 <FileText size={13} className="text-white" />
               </span>
               <span
-                className={`text-base font-bold truncate ${isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
-                  }`}
+                className={`text-base font-bold truncate ${
+                  isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
+                }`}
               >
                 {effectiveTaskId || task.id}
               </span>
@@ -991,10 +1004,11 @@ export const TaskDetailDrawer = ({
                 type="button"
                 onClick={handleMoveToBacklog}
                 disabled={isMovingToBacklog || isAlreadyInBacklog}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${isAlreadyInBacklog
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
+                  isAlreadyInBacklog
                     ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 cursor-not-allowed'
                     : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 shadow-sm cursor-pointer active:scale-95'
-                  }`}
+                }`}
                 title={
                   isAlreadyInBacklog ? 'Task is already in the backlog' : 'Move task to backlog'
                 }
@@ -1164,19 +1178,21 @@ export const TaskDetailDrawer = ({
             <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
               <button
                 onClick={() => setMobileTab('content')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === 'content'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-500 dark:text-slate-400'
-                  }`}
+                }`}
               >
                 Content
               </button>
               <button
                 onClick={() => setMobileTab('details')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === 'details'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-500 dark:text-slate-400'
-                  }`}
+                }`}
               >
                 Details
               </button>
@@ -1192,8 +1208,9 @@ export const TaskDetailDrawer = ({
                 </div>
               )}
               <div
-                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
-                  }`}
+                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
+                  mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                }`}
               >
                 <div className="mb-5">
                   <EditableText
@@ -1503,10 +1520,11 @@ export const TaskDetailDrawer = ({
               </div>
 
               <div
-                className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content'
+                className={`overflow-y-auto bg-gray-50/60 ${
+                  mobileTab === 'content'
                     ? 'hidden sm:block sm:shrink-0'
                     : 'block w-full sm:shrink-0'
-                  }`}
+                }`}
                 style={{ width: isMobile ? undefined : rightWidth }}
               >
                 <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
@@ -1528,8 +1546,9 @@ export const TaskDetailDrawer = ({
                           showStatusMenu: !prev.showStatusMenu,
                         }));
                       }}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
-                        }`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
+                        !canEditTask ? 'cursor-default' : ''
+                      }`}
                       style={{
                         color: selectedStatus?.color,
                         borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
@@ -1610,10 +1629,11 @@ export const TaskDetailDrawer = ({
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowAssigneeMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          canEditTask
                             ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
                             : 'cursor-default'
-                          }`}
+                        }`}
                       >
                         {taskData.assigneeId ? (
                           <AssigneeAvatar
@@ -1772,15 +1792,15 @@ export const TaskDetailDrawer = ({
                     </div>
                     {taskData.assigneeName !==
                       (currentUser?.name || currentUser?.username || currentUser?.email) && (
-                        <WpButton
-                          variant="ghost"
-                          onClick={handleAssignToMe}
-                          disabled={isAssigning}
-                          className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
-                        >
-                          {isAssigning ? 'Assigning...' : 'Assign to me'}
-                        </WpButton>
-                      )}
+                      <WpButton
+                        variant="ghost"
+                        onClick={handleAssignToMe}
+                        disabled={isAssigning}
+                        className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                      >
+                        {isAssigning ? 'Assigning...' : 'Assign to me'}
+                      </WpButton>
+                    )}
                   </DetailRow>
 
                   <DetailRow label="Reporter">
@@ -1788,10 +1808,11 @@ export const TaskDetailDrawer = ({
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowReporterMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          canEditTask
                             ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
                             : 'cursor-default'
-                          }`}
+                        }`}
                       >
                         {taskData.reporterId ? (
                           <AssigneeAvatar
@@ -1980,12 +2001,13 @@ export const TaskDetailDrawer = ({
                           if (isUpdatingSprint || !canEditTask) return;
                           setShowSprintMenu((v) => !v);
                         }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${!canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
+                          !canEditTask
                             ? 'cursor-default'
                             : isUpdatingSprint
                               ? 'opacity-60 cursor-not-allowed'
                               : 'hover:bg-gray-100 dark:hover:bg-slate-700'
-                          }`}
+                        }`}
                       >
                         <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                           {taskData.sprint || 'No sprint'}
@@ -2028,10 +2050,11 @@ export const TaskDetailDrawer = ({
                                 setIsUpdatingSprint(false);
                               }
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left border-b border-gray-100 dark:border-slate-700 ${!taskData.sprint_id
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left border-b border-gray-100 dark:border-slate-700 ${
+                              !taskData.sprint_id
                                 ? 'text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-900/20'
                                 : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                              }`}
+                            }`}
                           >
                             <Archive size={13} className="text-gray-400 shrink-0" />
                             <span className="truncate">No sprint (Backlog)</span>
@@ -2041,7 +2064,9 @@ export const TaskDetailDrawer = ({
                           </button>
 
                           {(isLoadingSprints || isFetchingSprints) && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                              Searching...
+                            </div>
                           )}
 
                           {!isLoadingSprints &&
@@ -2065,7 +2090,10 @@ export const TaskDetailDrawer = ({
                                       setShowSprintMenu(false);
                                       setSprintSearch('');
                                       // handleUpdate does the optimistic update + rollback on error
-                                      await handleUpdate({ sprint_id: sprint.id, sprint: sprint.name });
+                                      await handleUpdate({
+                                        sprint_id: sprint.id,
+                                        sprint: sprint.name,
+                                      });
                                       toast.success('Sprint updated');
                                     } catch {
                                       toast.error('Failed to update sprint');
@@ -2073,10 +2101,11 @@ export const TaskDetailDrawer = ({
                                       setIsUpdatingSprint(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 text-left ${isUpdatingSprint
+                                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 text-left ${
+                                    isUpdatingSprint
                                       ? 'opacity-50 cursor-not-allowed'
                                       : 'hover:bg-gray-50 dark:hover:bg-slate-700'
-                                    }`}
+                                  }`}
                                 >
                                   <span className="truncate">{sprint.name}</span>
                                   {isSelected && (
@@ -2087,7 +2116,9 @@ export const TaskDetailDrawer = ({
                             })}
 
                           {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">No sprints found</div>
+                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                              No sprints found
+                            </div>
                           )}
                         </div>
                       )}
@@ -2104,10 +2135,11 @@ export const TaskDetailDrawer = ({
 
                           setShowUserStoryMenu((v) => !v);
                         }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${isUpdatingUserStory || !canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
+                          isUpdatingUserStory || !canEditTask
                             ? 'opacity-60 cursor-not-allowed'
                             : 'hover:bg-gray-100'
-                          }`}
+                        }`}
                       >
                         <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                           {taskData.user_story_title || 'No user story'}
@@ -2184,10 +2216,11 @@ export const TaskDetailDrawer = ({
                                       setIsUpdatingUserStory(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${isUpdatingUserStory
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                                    isUpdatingUserStory
                                       ? 'opacity-50 cursor-not-allowed'
                                       : 'hover:bg-gray-50'
-                                    }`}
+                                  }`}
                                 >
                                   <span className="truncate">{story.title}</span>
 
@@ -2218,11 +2251,13 @@ export const TaskDetailDrawer = ({
                       value={
                         Array.isArray(taskData.labels)
                           ? taskData.labels.map((label) =>
-                            typeof label === 'string' ? label : label.id
-                          )
+                              typeof label === 'string' ? label : label.id
+                            )
                           : []
                       }
-                      onChange={(labelIds) => handleUpdate({ labels: labelIds as unknown as TaskLabel[] })}
+                      onChange={(labelIds) =>
+                        handleUpdate({ labels: labelIds as unknown as TaskLabel[] })
+                      }
                       disabled={!canEditTask}
                     />
                   </DetailRow>

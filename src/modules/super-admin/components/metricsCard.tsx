@@ -27,8 +27,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <p className="text-xs font-medium text-gray-500 dark:text-slate-100 uppercase tracking-wide mb-1">
             {label}
           </p>
-          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 truncate">{value}</h3>
-          {subtext && <p className={`text-xs font-medium mt-1 ${subtextColor} truncate`}>{subtext}</p>}
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 truncate">
+            {value}
+          </h3>
+          {subtext && (
+            <p className={`text-xs font-medium mt-1 ${subtextColor} truncate`}>{subtext}</p>
+          )}
         </div>
         <div
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ml-2"

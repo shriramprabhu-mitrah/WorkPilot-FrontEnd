@@ -12,49 +12,49 @@ import { apiService } from '../axios';
 import { AddProjectMembersPayload } from '@/src/types/project';
 class TeamService {
   async getTeamMembers(
-  page: number,
-  pageSize: number,
-  status?: string,
-  name?: string
-): Promise<ApiResponse<TeamMember[]>> {
-  const params = new URLSearchParams({
-    page: String(page),
-    page_size: String(pageSize),
-  });
-  if (status) {
-    params.set('status', status);
+    page: number,
+    pageSize: number,
+    status?: string,
+    name?: string
+  ): Promise<ApiResponse<TeamMember[]>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: String(pageSize),
+    });
+    if (status) {
+      params.set('status', status);
+    }
+    if (name) {
+      params.set('username', name);
+    }
+    const url = `${ApiEndpoints.Team.getUsers.url}?${params.toString()}`;
+    return apiService.get<TeamMember[]>(url, {
+      showErrorToast: true,
+    });
   }
-  if (name) {
-    params.set('username', name);
-  }
-  const url = `${ApiEndpoints.Team.getUsers.url}?${params.toString()}`;
-  return apiService.get<TeamMember[]>(url, {
-    showErrorToast: true,
-  });
-}
 
   async getProjectMembers(
-  projectId: string,
-  page: number,
-  pageSize: number,
-  name?: string
-): Promise<ApiResponse<ProjectMember[]>> {
-  const params = new URLSearchParams({
-    page: String(page),
-    page_size: String(pageSize),
-  });
-  if (name) {
-    params.set('name', name);
+    projectId: string,
+    page: number,
+    pageSize: number,
+    name?: string
+  ): Promise<ApiResponse<ProjectMember[]>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: String(pageSize),
+    });
+    if (name) {
+      params.set('name', name);
+    }
+
+    const url = `${ApiEndpoints.Project.getProjectMembers.withParams({
+      projectId,
+    })}?${params.toString()}`;
+
+    return apiService.get<ProjectMember[]>(url, {
+      showErrorToast: true,
+    });
   }
-
-  const url = `${ApiEndpoints.Project.getProjectMembers.withParams({
-    projectId,
-  })}?${params.toString()}`;
-
-  return apiService.get<ProjectMember[]>(url, {
-    showErrorToast: true,
-  });
-}
 
   async addProjectMembers(payload: AddProjectMembersPayload) {
     return apiService.post(ApiEndpoints.Project.addMembers.url, payload, {

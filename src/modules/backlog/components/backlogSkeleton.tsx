@@ -19,7 +19,7 @@ function TaskRowSkeleton() {
         <Skeleton className="h-4 w-10 xl:w-12" />
         <Skeleton className="h-8 w-8 rounded-full" />
       </div>
-      
+
       <div className="flex lg:hidden items-center gap-2 shrink-0 ml-2">
         <Skeleton className="h-8 w-8 rounded-full" />
         <Skeleton className="h-6 w-16 rounded-full" />
