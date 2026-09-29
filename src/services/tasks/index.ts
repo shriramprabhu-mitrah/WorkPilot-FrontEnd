@@ -49,6 +49,9 @@ class TaskService {
     if (params?.unassigned_task !== undefined) {
       searchParams.append('unassigned_task', String(params.unassigned_task));
     }
+    if (params?.storyless_task !== undefined) {
+      searchParams.append('storyless_task', String(params.storyless_task));
+    }
     if (params?.user_story_id !== undefined) {
       searchParams.append(
         'user_story_id',

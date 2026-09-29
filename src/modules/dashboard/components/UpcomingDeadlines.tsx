@@ -4,6 +4,7 @@ import { useGetUpcomingDeadlines } from '../hooks/useDashboard';
 
 interface UpcomingDeadlinesProps {
   projectId: string;
+  sprintId?: string;
 }
 
 const getDeadlineStatus = (status: string) => {
@@ -38,18 +39,24 @@ const getDeadlineStatus = (status: string) => {
   }
 };
 
-export default function UpcomingDeadlines({ projectId }: UpcomingDeadlinesProps) {
-  const { upcomingDeadlines, isLoadingUpcomingDeadlines } = useGetUpcomingDeadlines(projectId);
+export default function UpcomingDeadlines({
+  projectId,
+  sprintId,
+}: UpcomingDeadlinesProps) {
+  const {
+    upcomingDeadlines,
+    isLoadingUpcomingDeadlines,
+  } = useGetUpcomingDeadlines(projectId, sprintId);
 
   return (
     <Panel title="Upcoming Deadlines">
-      <div className="space-y-4">
+      <div className="space-y-3">
         {isLoadingUpcomingDeadlines ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="grid grid-cols-[70px_minmax(0,1fr)_100px] items-center gap-4"
+                className="grid grid-cols-[70px_minmax(0,1fr)_auto] items-center gap-2"
               >
                 <div className="h-5 w-14 animate-pulse rounded bg-gray-200 dark:bg-slate-700" />
 
@@ -71,12 +78,14 @@ export default function UpcomingDeadlines({ projectId }: UpcomingDeadlinesProps)
             return (
               <div
                 key={task.id}
-                className="grid grid-cols-[70px_minmax(0,1fr)_100px] items-center gap-4"
+                className="grid grid-cols-[70px_minmax(0,1fr)_auto] items-center gap-2"
               >
+                {/* Priority */}
                 <div className="flex w-[70px] shrink-0 justify-start">
                   <PriorityBadge priority={task.priority} />
                 </div>
 
+                {/* Task Details */}
                 <div className="min-w-0">
                   <p
                     title={task.title}
@@ -85,20 +94,51 @@ export default function UpcomingDeadlines({ projectId }: UpcomingDeadlinesProps)
                     {task.title}
                   </p>
 
-                  <p
+                  <div
                     title={`${task.key} - ${task.sprint_name || 'No Sprint'}`}
-                    className="mt-1 truncate text-xs text-gray-400 dark:text-slate-400"
+                    className="mt-0.5 flex min-w-0 items-center gap-1 text-xs"
                   >
-                    {task.key}
-                    {task.sprint_name ? ` - ${task.sprint_name}` : ' - No Sprint'}
-                  </p>
+                    {/* Task Key */}
+                    <span className="shrink-0 font-semibold text-blue-600 dark:text-blue-400">
+                      {task.key}
+                    </span>
+
+                    {/* Sprint */}
+                    {task.sprint_name && (
+                      <>
+                        <span className="text-gray-300 dark:text-slate-600">
+                          •
+                        </span>
+
+                        <span className="truncate text-gray-400 dark:text-slate-400">
+                          {task.sprint_name}
+                        </span>
+                      </>
+                    )}
+
+                    {!task.sprint_name && (
+                      <>
+                        <span className="text-gray-300 dark:text-slate-600">
+                          •
+                        </span>
+
+                        <span className="text-gray-400 dark:text-slate-400">
+                          No Sprint
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
+                {/* Deadline */}
                 <div className="flex justify-end">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${deadline.className}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold whitespace-nowrap ${deadline.className}`}
                   >
-                    <span className="text-xs">{deadline.icon}</span>
+                    <span className="text-xs">
+                      {deadline.icon}
+                    </span>
+
                     {deadline.label}
                   </span>
                 </div>

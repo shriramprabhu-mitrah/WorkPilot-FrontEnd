@@ -13,17 +13,19 @@ class DashboardService {
   async getRecentActivities(
     page = 1,
     pageSize = 10,
-    projectId?: string
+    projectId?: string,
+    sprintId?: string
   ): Promise<PaginatedApiResponse<DashboardActivitiesResponse>> {
     const queryParams: Record<string, string> = {
       page: String(page),
       page_size: String(pageSize),
     };
-    
     if (projectId) {
       queryParams.project_id = projectId;
     }
-    
+    if (sprintId) {
+      queryParams.sprint_id = sprintId;
+    }
     const url = ApiEndpoints.Audit.getActivities.withQuery(queryParams);
     return apiService.getPaginated<DashboardActivitiesResponse>(url);
   }
@@ -40,12 +42,16 @@ class DashboardService {
     });
   }
 
-    async getUpcomingDeadlines(
-    projectId: string
+  async getUpcomingDeadlines(
+    projectId: string,
+    sprintId?: string
   ): Promise<ApiResponse<UpcomingDeadline[]>> {
     const endpoint =
       ApiEndpoints.Dashboard.getUpcomingDeadlines.withParams(projectId);
-    return apiService.get<UpcomingDeadline[]>(endpoint.url);
+    const url = sprintId
+      ? `${endpoint.url}?sprint_id=${encodeURIComponent(sprintId)}`
+      : endpoint.url;
+    return apiService.get<UpcomingDeadline[]>(url);
   }
 }
 

@@ -146,7 +146,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const PROJECTS_PER_PAGE = 5;
   const [projectPage, setProjectPage] = useState(1);
 
-  const { data: modalProjectsData, isLoading: isLoadingModalProjects } = useQuery({
+  const { data: modalProjectsData} = useQuery({
     queryKey: ['sidebar-modal-projects', debouncedProjectSearch, projectPage],
     queryFn: () =>
       projectService.getProject({

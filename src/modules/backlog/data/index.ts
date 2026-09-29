@@ -1,6 +1,5 @@
 import { colors } from '@/src/styles/colors';
 import { Priority } from '@/src/types/board';
-import { TaskLabel } from '@/src/types/task';
 
 export interface BacklogTask {
   id: string;

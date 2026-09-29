@@ -11,7 +11,6 @@ import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { WpDatePicker } from '@/src/app/components/common/datepicker';
 import { TaskPayload } from '@/src/types/task';
 import { formatISODateTime } from '@/src/app/components/common/format';
-import { useCreateTask } from '../../tasks/hooks/useTask';
 import { priorityOptions, taskTypeOptions } from '@/src/app/components/common/enum';
 import { useGetStatus } from '../hooks/useLabels';
 import WpRichTextEditor from '@/src/app/components/common/htmlEditor';
@@ -83,14 +82,12 @@ const extractUploadedUrl = (result: unknown): string | undefined => {
 
 const AddTaskModal = ({
   projectId,
-  sprintId,
   userStoryId,
   assigneeOptions,
   memberSearch,
   onMemberSearchChange,
   isLoadingMembers,
   onClose,
-  onCreate,
 }: AddTaskModalProps) => {
   const queryClient = useQueryClient();
   // const { createTaskAsync, isCreatingTask } = useCreateTask(projectId);

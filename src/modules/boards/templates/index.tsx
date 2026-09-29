@@ -582,7 +582,7 @@ export const KanbanBoardTemplate = () => {
   // 1. Direct Sprint Tasks query params (tasks with no user story, in current sprint)
   const directSprintQueryParams = useMemo((): GetTasksQueryParams => {
     const params: GetTasksQueryParams = {
-      user_story_id: null,
+      storyless_task: true,
       page_size: 100,
     };
 
@@ -631,7 +631,7 @@ export const KanbanBoardTemplate = () => {
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
 
   // Fetch labels for filtering
-  const { data: labelsResponse, isLoading: isLoadingLabels } = useGetLabels(selectedProject);
+  const { data: labelsResponse} = useGetLabels(selectedProject);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

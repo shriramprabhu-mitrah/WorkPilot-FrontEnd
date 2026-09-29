@@ -17,6 +17,23 @@ interface CreateUserStoryModalProps {
   onClose: () => void;
 }
 
+type AttachmentInfo = {
+  url?: string;
+  file_url?: string;
+  file_path?: string;
+  path?: string;
+};
+
+// Handles several upload response shapes (same helper as the task modal)
+const extractUploadedUrl = (result: unknown): string | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const r = result as any;
+  const body = r?.data ?? r;
+  const payload = body?.data ?? body;
+  const first: AttachmentInfo | undefined = Array.isArray(payload) ? payload[0] : payload;
+  return first?.url ?? first?.file_url ?? first?.file_path ?? first?.path;
+};
+
 const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -32,6 +49,8 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
 
+  // The story doesn't exist yet, so keep the file and show a temporary blob URL.
+  // It is swapped for the real URL after the story is created.
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     const blobUrl = URL.createObjectURL(file);
     setPendingImages((prev) => new Map(prev).set(blobUrl, file));
@@ -42,6 +61,12 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
     if (!title.trim() || !projectId) return;
 
     try {
+      // Snapshot before the modal closes
+      const imagesToUpload = Array.from(pendingImages.entries());
+      const filesToUpload = [...attachments];
+      const originalDescription = description;
+
+      // 1) Create the story
       const response = await createUserStoryAsync({
         title: title.trim(),
         description: description.trim() || undefined,
@@ -50,54 +75,48 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
       });
 
       const userStoryId = response?.data?.id;
-      if (!userStoryId) {
-        return;
-      }
+      if (!userStoryId) return;
+
       onClose();
-      for (const file of attachments) {
-        await uploadUserStoryAttachmentAsync({
-          userStoryId,
-          file,
-        });
+      for (const file of filesToUpload) {
+        try {
+          await uploadUserStoryAttachmentAsync({ userStoryId, file });
+        } catch (error) {
+        }
       }
-      if (pendingImages.size > 0) {
-        let finalDescription = description;
-        for (const [blobUrl, file] of pendingImages.entries()) {
+      if (imagesToUpload.length > 0) {
+        let finalDescription = originalDescription;
+
+        for (const [blobUrl, file] of imagesToUpload) {
           try {
-            const result = await uploadUserStoryAttachmentAsync({
-              userStoryId,
-              file,
-            });
-            const uploaded = result?.data?.data?.[0] as
-              { url?: string; file_url?: string; file_path?: string; path?: string } | undefined;
-            const realUrl =
-              uploaded?.url ?? uploaded?.file_url ?? uploaded?.file_path ?? uploaded?.path;
+            const result = await uploadUserStoryAttachmentAsync({ userStoryId, file });
+            const realUrl = extractUploadedUrl(result);
             if (realUrl) {
               finalDescription = finalDescription.split(blobUrl).join(realUrl);
+            } else {
             }
+          } catch (error) {
           } finally {
             URL.revokeObjectURL(blobUrl);
           }
         }
-        if (finalDescription !== description) {
+
+        if (finalDescription !== originalDescription) {
           await userStoryService.updateUserStory(projectId, userStoryId, {
             description: finalDescription,
           });
         }
       }
 
-      await queryClient.invalidateQueries({
-        queryKey: ['user-stories', projectId],
-      });
-    } catch {}
+      await queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+    } catch (error) {
+    }
   };
+
   const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
-
     if (!files.length) return;
-
     setAttachments((prev) => [...prev, ...files]);
-
     event.target.value = '';
   };
 
@@ -150,6 +169,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
               minHeight="120px"
             />
           </div>
+
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
@@ -246,6 +266,7 @@ const CreateUserStoryModal = ({ onClose }: CreateUserStoryModalProps) => {
             />
           </div>
         </div>
+
         <div className="flex justify-end gap-2 border-t border-gray-200 dark:border-slate-700 px-5 py-4">
           <WpButton type="button" variant="secondary" onClick={onClose}>
             Cancel

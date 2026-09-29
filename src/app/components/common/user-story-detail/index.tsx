@@ -473,7 +473,7 @@ export const UserStoryDetailDrawer = ({
     showAssigneeMenu
   );
 
-  const { mutateAsync: uploadCommentAttachmentAsync, isPending: isUploadingCommentAttachment } =
+  const { mutateAsync: uploadCommentAttachmentAsync } =
     useUploadUserStoryCommentAttachment(currentUserStory.project_id ?? '', currentUserStory.id);
 
   const {
@@ -2063,7 +2063,7 @@ export const UserStoryDetailDrawer = ({
                             {/* Timeline Line */}
                             <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-gray-200 dark:from-blue-800 dark:via-purple-800 dark:to-slate-700" />
 
-                            {activities.map((activity, index) => {
+                            {activities.map((activity) => {
                               const activityDate = new Date(activity.timestamp);
                               const formattedDate = activityDate.toLocaleDateString('en-US', {
                                 month: 'long',

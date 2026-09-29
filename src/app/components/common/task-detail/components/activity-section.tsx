@@ -39,16 +39,6 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2) || '?';
 
-const AVATAR_COLORS = [
-  colors.avatarBlue,
-  colors.avatarGreen,
-  colors.avatarPink,
-  colors.avatarAmber,
-  colors.avatarIndigo,
-];
-const getMemberColor = (userId: string) =>
-  userId ? AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length] : colors.avatarBlue;
-
 const formatTime = (iso: string) => {
   const d = new Date(iso);
   return isNaN(d.getTime()) ? iso : d.toLocaleString();
@@ -588,7 +578,7 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                 {/* Timeline Line */}
                 <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-gray-200 dark:from-blue-800 dark:via-purple-800 dark:to-slate-700" />
 
-                {activities.map((activity, index) => {
+                {activities.map((activity) => {
                   const activityDate = new Date(activity.timestamp);
                   const formattedDate = activityDate.toLocaleDateString('en-US', {
                     month: 'long',

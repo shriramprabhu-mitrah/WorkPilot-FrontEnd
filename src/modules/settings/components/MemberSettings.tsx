@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { UserPlus, Search } from 'lucide-react';
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpInput } from '@/src/app/components/common/input';
 import InviteTeamModal from '@/src/modules/teams/components/invitePopup';
 import {
   useGetTeamMembers,

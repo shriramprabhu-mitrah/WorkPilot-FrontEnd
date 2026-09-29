@@ -60,6 +60,7 @@ import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector } from '@/src/store';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskLabel } from '@/src/types/task';
+import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 
 const UserStoryDetailDrawer = dynamic(
   () => import('../user-story-detail').then((mod) => mod.UserStoryDetailDrawer),
@@ -227,6 +228,7 @@ export const TaskDetailDrawer = ({
   const [actualHoursInput, setActualHoursInput] = useState('');
   const [actualMinutesInput, setActualMinutesInput] = useState('');
   const [showTypeMenu, setShowTypeMenu] = useState(false);
+
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
     subtasks: task.subtasks ?? [],
@@ -348,6 +350,18 @@ export const TaskDetailDrawer = ({
       name: debouncedAssigneeSearch,
     },
     showAssigneeMenu
+  );
+
+  const [showSprintMenu, setShowSprintMenu] = useState(false);
+  const [sprintSearch, setSprintSearch] = useState('');
+  const debouncedSprintSearch = useDebounce(sprintSearch, 500);
+  const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);
+  const sprintMenuRef = useRef<HTMLDivElement>(null);
+
+  const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
+    taskData.project_id,
+    { page: 1, page_size: 10, search: debouncedSprintSearch },
+    !!taskData.project_id && showSprintMenu
   );
 
   const {
@@ -496,7 +510,7 @@ export const TaskDetailDrawer = ({
           queryClient.invalidateQueries({
             queryKey: ['tasks', task.projectId],
           });
-          
+
           onUpdate?.({
             assigneeInitials: initials,
             assigneeColor: color,
@@ -609,39 +623,42 @@ export const TaskDetailDrawer = ({
         if (patch.reporterId !== undefined) {
           payload.reporter_id = patch.reporterId || null;
         }
+        if (patch.sprint_id !== undefined) {
+          payload.sprint_id = patch.sprint_id || null;
+        }
 
         if (patch.labels !== undefined) {
           payload.label_ids = Array.isArray(patch.labels)
             ? patch.labels.map((label) =>
-                typeof label === 'string' ? label : label.id
-              )
+              typeof label === 'string' ? label : label.id
+            )
             : [];
         }
 
         setIsSaving(true);
 
         await taskService.updateTask(resolvedProjectId, resolvedTaskId, payload);
-        
+
         // Invalidate and refetch queries
         await refetchTask();
-        
+
         // Invalidate the tasks list to update unassigned tasks in backlog
         await queryClient.invalidateQueries({
           queryKey: ['tasks', resolvedProjectId],
         });
-        
+
         // Invalidate specific task query
         await queryClient.invalidateQueries({
           queryKey: ['task', resolvedProjectId, resolvedTaskId],
         });
-        
+
         // If task has a key, invalidate that too
         if (task.key) {
           await queryClient.invalidateQueries({
             queryKey: ['task', resolvedProjectId, task.key],
           });
         }
-        
+
         // If task is assigned to a sprint, invalidate sprint-related queries
         const taskSprintId = fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
         if (taskSprintId) {
@@ -649,6 +666,11 @@ export const TaskDetailDrawer = ({
           await queryClient.invalidateQueries({
             queryKey: ['sprint-orphan-tasks', resolvedProjectId, taskSprintId],
           });
+        }
+        if (patch.sprint_id !== undefined) {
+          await queryClient.invalidateQueries({ queryKey: ['sprint-orphan-tasks'] });
+          await queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
+          await queryClient.invalidateQueries({ queryKey: ['sprints'] });
         }
         onUpdate?.(patch as Partial<KanbanTask>);
 
@@ -801,6 +823,10 @@ export const TaskDetailDrawer = ({
       if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
         setShowActionMenu(false);
       }
+
+      if (sprintMenuRef.current && !sprintMenuRef.current.contains(event.target as Node)) {
+        setShowSprintMenu(false);
+      }
     };
 
     document.addEventListener('mousedown', handler);
@@ -917,16 +943,14 @@ export const TaskDetailDrawer = ({
             {/* Current Task Identifier */}
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className={`w-6 h-6 rounded-lg ${
-                  isError ? 'bg-red-500' : 'bg-blue-600'
-                } flex items-center justify-center shrink-0`}
+                className={`w-6 h-6 rounded-lg ${isError ? 'bg-red-500' : 'bg-blue-600'
+                  } flex items-center justify-center shrink-0`}
               >
                 <FileText size={13} className="text-white" />
               </span>
               <span
-                className={`text-base font-bold truncate ${
-                  isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
-                }`}
+                className={`text-base font-bold truncate ${isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
+                  }`}
               >
                 {effectiveTaskId || task.id}
               </span>
@@ -967,11 +991,10 @@ export const TaskDetailDrawer = ({
                 type="button"
                 onClick={handleMoveToBacklog}
                 disabled={isMovingToBacklog || isAlreadyInBacklog}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
-                  isAlreadyInBacklog
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${isAlreadyInBacklog
                     ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 cursor-not-allowed'
                     : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 shadow-sm cursor-pointer active:scale-95'
-                }`}
+                  }`}
                 title={
                   isAlreadyInBacklog ? 'Task is already in the backlog' : 'Move task to backlog'
                 }
@@ -1141,21 +1164,19 @@ export const TaskDetailDrawer = ({
             <div className="flex sm:hidden border-b border-gray-200 dark:border-slate-700 shrink-0">
               <button
                 onClick={() => setMobileTab('content')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                  mobileTab === 'content'
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'content'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-500 dark:text-slate-400'
-                }`}
+                  }`}
               >
                 Content
               </button>
               <button
                 onClick={() => setMobileTab('details')}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                  mobileTab === 'details'
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === 'details'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-500 dark:text-slate-400'
-                }`}
+                  }`}
               >
                 Details
               </button>
@@ -1171,9 +1192,8 @@ export const TaskDetailDrawer = ({
                 </div>
               )}
               <div
-                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${
-                  mobileTab === 'details' ? 'hidden sm:block' : 'block'
-                }`}
+                className={`flex-1 overflow-y-auto px-4 sm:px-8 py-6 border-r border-gray-200 ${mobileTab === 'details' ? 'hidden sm:block' : 'block'
+                  }`}
               >
                 <div className="mb-5">
                   <EditableText
@@ -1483,11 +1503,10 @@ export const TaskDetailDrawer = ({
               </div>
 
               <div
-                className={`overflow-y-auto bg-gray-50/60 ${
-                  mobileTab === 'content'
+                className={`overflow-y-auto bg-gray-50/60 ${mobileTab === 'content'
                     ? 'hidden sm:block sm:shrink-0'
                     : 'block w-full sm:shrink-0'
-                }`}
+                  }`}
                 style={{ width: isMobile ? undefined : rightWidth }}
               >
                 <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
@@ -1509,9 +1528,8 @@ export const TaskDetailDrawer = ({
                           showStatusMenu: !prev.showStatusMenu,
                         }));
                       }}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
-                        !canEditTask ? 'cursor-default' : ''
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${!canEditTask ? 'cursor-default' : ''
+                        }`}
                       style={{
                         color: selectedStatus?.color,
                         borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
@@ -1592,11 +1610,10 @@ export const TaskDetailDrawer = ({
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowAssigneeMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask
                             ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
                             : 'cursor-default'
-                        }`}
+                          }`}
                       >
                         {taskData.assigneeId ? (
                           <AssigneeAvatar
@@ -1755,15 +1772,15 @@ export const TaskDetailDrawer = ({
                     </div>
                     {taskData.assigneeName !==
                       (currentUser?.name || currentUser?.username || currentUser?.email) && (
-                      <WpButton
-                        variant="ghost"
-                        onClick={handleAssignToMe}
-                        disabled={isAssigning}
-                        className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
-                      >
-                        {isAssigning ? 'Assigning...' : 'Assign to me'}
-                      </WpButton>
-                    )}
+                        <WpButton
+                          variant="ghost"
+                          onClick={handleAssignToMe}
+                          disabled={isAssigning}
+                          className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
+                        >
+                          {isAssigning ? 'Assigning...' : 'Assign to me'}
+                        </WpButton>
+                      )}
                   </DetailRow>
 
                   <DetailRow label="Reporter">
@@ -1771,11 +1788,10 @@ export const TaskDetailDrawer = ({
                       <button
                         disabled={!canEditTask}
                         onClick={() => setShowReporterMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${canEditTask
                             ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
                             : 'cursor-default'
-                        }`}
+                          }`}
                       >
                         {taskData.reporterId ? (
                           <AssigneeAvatar
@@ -1956,12 +1972,126 @@ export const TaskDetailDrawer = ({
                   </DetailRow>
 
                   <DetailRow label="Sprint">
-                    <EditableText
-                      value={taskData.sprint}
-                      onChange={(sprint) => setTaskData((prev) => ({ ...prev, sprint }))}
-                      placeholder="No sprint"
-                      disabled={!canEditTask}
-                    />
+                    <div className="relative" ref={sprintMenuRef}>
+                      <button
+                        type="button"
+                        disabled={isUpdatingSprint || !canEditTask}
+                        onClick={() => {
+                          if (isUpdatingSprint || !canEditTask) return;
+                          setShowSprintMenu((v) => !v);
+                        }}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${!canEditTask
+                            ? 'cursor-default'
+                            : isUpdatingSprint
+                              ? 'opacity-60 cursor-not-allowed'
+                              : 'hover:bg-gray-100 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
+                          {taskData.sprint || 'No sprint'}
+                        </span>
+                        {canEditTask && (
+                          <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
+                        )}
+                      </button>
+
+                      {showSprintMenu && !isUpdatingSprint && canEditTask && (
+                        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+                            <WpInput
+                              value={sprintSearch}
+                              onChange={(e) => setSprintSearch(e.target.value)}
+                              placeholder="Search sprint..."
+                            />
+                          </div>
+
+                          {/* No sprint */}
+                          <button
+                            type="button"
+                            disabled={isUpdatingSprint}
+                            onClick={async () => {
+                              if (isUpdatingSprint) return;
+                              if (!taskData.sprint_id) {
+                                setShowSprintMenu(false);
+                                setSprintSearch('');
+                                return;
+                              }
+                              try {
+                                setIsUpdatingSprint(true);
+                                setShowSprintMenu(false);
+                                setSprintSearch('');
+                                await handleUpdate({ sprint_id: '', sprint: '' });
+                                toast.success('Sprint removed');
+                              } catch {
+                                toast.error('Failed to update sprint');
+                              } finally {
+                                setIsUpdatingSprint(false);
+                              }
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left border-b border-gray-100 dark:border-slate-700 ${!taskData.sprint_id
+                                ? 'text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-900/20'
+                                : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                              }`}
+                          >
+                            <Archive size={13} className="text-gray-400 shrink-0" />
+                            <span className="truncate">No sprint (Backlog)</span>
+                            {!taskData.sprint_id && (
+                              <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                            )}
+                          </button>
+
+                          {(isLoadingSprints || isFetchingSprints) && (
+                            <div className="px-3 py-3 text-sm text-gray-500 text-center">Searching...</div>
+                          )}
+
+                          {!isLoadingSprints &&
+                            !isFetchingSprints &&
+                            sprints?.map((sprint) => {
+                              const isSelected = sprint.id === taskData.sprint_id;
+                              return (
+                                <button
+                                  key={sprint.id}
+                                  type="button"
+                                  disabled={isUpdatingSprint}
+                                  onClick={async () => {
+                                    if (isUpdatingSprint) return;
+                                    if (isSelected) {
+                                      setShowSprintMenu(false);
+                                      setSprintSearch('');
+                                      return;
+                                    }
+                                    try {
+                                      setIsUpdatingSprint(true);
+                                      setShowSprintMenu(false);
+                                      setSprintSearch('');
+                                      // handleUpdate does the optimistic update + rollback on error
+                                      await handleUpdate({ sprint_id: sprint.id, sprint: sprint.name });
+                                      toast.success('Sprint updated');
+                                    } catch {
+                                      toast.error('Failed to update sprint');
+                                    } finally {
+                                      setIsUpdatingSprint(false);
+                                    }
+                                  }}
+                                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 text-left ${isUpdatingSprint
+                                      ? 'opacity-50 cursor-not-allowed'
+                                      : 'hover:bg-gray-50 dark:hover:bg-slate-700'
+                                    }`}
+                                >
+                                  <span className="truncate">{sprint.name}</span>
+                                  {isSelected && (
+                                    <Check size={13} className="ml-auto text-blue-600 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+
+                          {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
+                            <div className="px-3 py-3 text-sm text-gray-500 text-center">No sprints found</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </DetailRow>
 
                   <DetailRow label="User Story">
@@ -1974,11 +2104,10 @@ export const TaskDetailDrawer = ({
 
                           setShowUserStoryMenu((v) => !v);
                         }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          isUpdatingUserStory || !canEditTask
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${isUpdatingUserStory || !canEditTask
                             ? 'opacity-60 cursor-not-allowed'
                             : 'hover:bg-gray-100'
-                        }`}
+                          }`}
                       >
                         <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
                           {taskData.user_story_title || 'No user story'}
@@ -2055,11 +2184,10 @@ export const TaskDetailDrawer = ({
                                       setIsUpdatingUserStory(false);
                                     }
                                   }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
-                                    isUpdatingUserStory
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${isUpdatingUserStory
                                       ? 'opacity-50 cursor-not-allowed'
                                       : 'hover:bg-gray-50'
-                                  }`}
+                                    }`}
                                 >
                                   <span className="truncate">{story.title}</span>
 
@@ -2090,8 +2218,8 @@ export const TaskDetailDrawer = ({
                       value={
                         Array.isArray(taskData.labels)
                           ? taskData.labels.map((label) =>
-                              typeof label === 'string' ? label : label.id
-                            )
+                            typeof label === 'string' ? label : label.id
+                          )
                           : []
                       }
                       onChange={(labelIds) => handleUpdate({ labels: labelIds as unknown as TaskLabel[] })}

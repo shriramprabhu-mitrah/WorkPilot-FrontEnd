@@ -14,7 +14,6 @@ import ProfileSkeleton from './profileSkeleton';
 import { PasswordStrength } from '@/src/app/components/common/password-strength/password-strength';
 import { useSearchParams } from 'next/navigation';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
-import Image from 'next/image';
 import { useSignin } from '@/src/modules/signin/hooks/useSignin';
 export default function Profile() {
   const { user, isLoading, error, updateUser, isUpdating, changePassword, isChangingPassword } =
@@ -151,7 +150,7 @@ export default function Profile() {
       setSelectedAvatar(null);
       setAvatarPreview('');
       setIsEditing(false);
-    } catch {}
+    } catch { }
   };
 
   const handleCancel = () => {
@@ -192,24 +191,12 @@ export default function Profile() {
                     onChange={handleAvatarChange}
                   />
 
-                  {avatarPreview || user?.avatar_url ? (
-                    <Image
-                      src={avatarPreview || user?.avatar_url || ''}
-                      alt="Profile"
-                      width={88}
-                      height={88}
-                      className="h-[88px] w-[88px] rounded-2xl object-cover shadow-sm ring-1 ring-gray-200 dark:ring-gray-600"
-                      unoptimized
-                    />
-                  ) : (
-                    <div
-                      className="flex h-[88px] w-[88px] items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-sm"
-                      style={{ backgroundColor: user?.color }}
-                    >
-                      {getInitials(displayName)}
-                    </div>
-                  )}
-
+                  <div
+                    className="flex h-[88px] w-[88px] items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-sm"
+                    style={{ backgroundColor: user?.color || '#3B82F6' }}
+                  >
+                    {getInitials(displayName)}
+                  </div>
                   {/* Online Status */}
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
@@ -352,27 +339,49 @@ export default function Profile() {
             </div>
 
             {/* Overall Completion */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-medium text-gray-900 dark:text-white">Overall Completion</h3>
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-5 flex items-start justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    Overall Completion
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Progress across assigned tasks
+                  </p>
+                </div>
 
-                <span className="font-bold text-blue-600 dark:text-slate-100">
-                  {insights?.completion_percentage ?? 0}%
-                </span>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-500/10">
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    {insights?.completion_percentage ?? 0}%
+                  </span>
+                </div>
               </div>
 
-              <div className="mb-3 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
+              <div className="mb-3 h-2.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
                 <div
-                  className="h-full rounded-full bg-blue-600 transition-all duration-300 "
+                  className="h-full rounded-full bg-blue-600 transition-all duration-500 ease-out dark:bg-blue-500"
                   style={{
-                    width: `${insights?.completion_percentage ?? 0}%`,
+                    width: `${Math.min(insights?.completion_percentage ?? 0, 100)}%`,
                   }}
                 />
               </div>
 
-              <p className="text-xs text-gray-500  dark:text-slate-100">
-                {insights?.completed ?? 0} of {insights?.total_assigned ?? 0} tasks completed
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="font-semibold text-gray-700 dark:text-gray-200">
+                    {insights?.completed ?? 0}
+                  </span>{" "}
+                  of {insights?.total_assigned ?? 0} tasks completed
+                </p>
+
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {insights?.total_assigned
+                    ? `${Math.round(
+                      ((insights?.completed ?? 0) / insights.total_assigned) * 100
+                    )}%`
+                    : "0%"}
+                </span>
+              </div>
             </div>
           </div>
 
