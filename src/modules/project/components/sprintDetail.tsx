@@ -61,10 +61,10 @@ const SprintDetail = () => {
   const formatDate = (dateStr: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '-';
 
   const handleUserStorySelection = (userStoryId: string) => {
@@ -92,7 +92,7 @@ const SprintDetail = () => {
       queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
       setSelectedUserStoryIds([]);
       setShowDeleteUserStoryConfirm(false);
-    } catch {}
+    } catch { }
   };
 
   const handleSprintSuccess = async () => {
@@ -213,9 +213,11 @@ const SprintDetail = () => {
       {/* User Stories list */}
       {!canViewUserStories ? (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-          <img
+          <Image
             src="/images/kanban method-pana.svg"
             alt="Access Restricted"
+            width={128}
+            height={128}
             className="h-32 w-32 opacity-60 mb-2"
           />
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -394,23 +396,23 @@ const SprintDetail = () => {
           onCreateTask={
             canCreateTask
               ? () => {
-                  setTaskUserStoryId(selectedUserStory.id);
-                  setShowAddTaskModal(true);
-                }
+                setTaskUserStoryId(selectedUserStory.id);
+                setShowAddTaskModal(true);
+              }
               : undefined
           }
           onDelete={
             canDeleteUserStory
               ? async () => {
-                  try {
-                    await deleteUserStoryMutation.mutateAsync({
-                      projectId,
-                      userStoryId: selectedUserStory.id,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
-                    setSelectedUserStory(null);
-                  } catch {}
-                }
+                try {
+                  await deleteUserStoryMutation.mutateAsync({
+                    projectId,
+                    userStoryId: selectedUserStory.id,
+                  });
+                  queryClient.invalidateQueries({ queryKey: ['user-stories', projectId] });
+                  setSelectedUserStory(null);
+                } catch { }
+              }
               : undefined
           }
         />

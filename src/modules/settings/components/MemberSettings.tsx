@@ -264,7 +264,7 @@ export const MemberSettings = () => {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                   Team Member Details
                 </h2>
-                <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-200">
                   Member information and assigned projects
                 </p>
               </div>
@@ -316,7 +316,7 @@ export const MemberSettings = () => {
                           {user?.data?.name || '—'}
                         </h3>
 
-                        <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-slate-400">
+                        <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-slate-200">
                           {user?.data?.email || '—'}
                         </p>
                       </div>

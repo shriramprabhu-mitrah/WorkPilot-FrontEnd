@@ -24,12 +24,7 @@ const roleIcons = {
 
 export default function RolePermission() {
   const [selectedRole, setSelectedRole] = useState(rolesData[0]);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredRoles = rolesData.filter((role) =>
-    role.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const filteredRoles = rolesData
   const RoleIcon = roleIcons[selectedRole.name as keyof typeof roleIcons] || Eye;
 
   return (

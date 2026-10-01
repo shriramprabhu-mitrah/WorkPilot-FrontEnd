@@ -33,7 +33,17 @@ const MembersSettings = () => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>({});
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
-  const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
+  const [memberSearch, setMemberSearch] = useState('');
+  const debouncedMemberSearch = useDebounce(memberSearch, 500);
+
+  const { users, isUsersLoading, isUsersFetching } = useGetOrganizationUsers(
+    1,
+    50,
+    true,
+    debouncedMemberSearch || undefined,
+    showAddMemberModal
+  );
+  const [selectedLabels, setSelectedLabels] = useState<Record<string, string>>({});
   const { mutate: removeProjectMember, isPending: isRemovingMember } = useRemoveProjectMember();
   const [nameSearch, setNameSearch] = useState('');
   const debouncedNameSearch = useDebounce(nameSearch, 500);
@@ -145,12 +155,18 @@ const MembersSettings = () => {
   };
 
   const memberOptions = useMemo(() => {
-    if (!users || users.length === 0) return [];
-    return users.map((user) => ({
+    const fetched = users.map((user) => ({
       label: user.name || user.email,
       value: user.id,
     }));
-  }, [users]);
+  
+    const fetchedIds = new Set(fetched.map((o) => o.value));
+    const selectedMissing = selectedMembers
+      .filter((id) => !fetchedIds.has(id))
+      .map((id) => ({ label: selectedLabels[id] ?? id, value: id }));
+  
+    return [...selectedMissing, ...fetched];
+  }, [users, selectedMembers, selectedLabels]);
 
   const roleOptions = useMemo(() => {
     return roles.map((role) => ({
@@ -159,25 +175,26 @@ const MembersSettings = () => {
     }));
   }, [roles]);
 
-  const handleMemberChange = (members: string[]) => {
-    setSelectedMembers(members);
+  const handleMemberChange = (selected: string[]) => {
+    setSelectedMembers(selected);
+  
+    setSelectedLabels((prev) => {
+      const next: Record<string, string> = {};
+      selected.forEach((id) => {
+        const user = users.find((u) => u.id === id);
+        next[id] = user ? user.name || user.email : (prev[id] ?? id);
+      });
+      return next;
+    });
+  
     setMemberRoles((prev) => {
       const updated = { ...prev };
-
-      members.forEach((id) => {
-        if (!updated[id]) {
-          // Set default role to the first available role from API
-          const defaultRole = roles.length > 0 ? roles[0].id : '';
-          updated[id] = defaultRole;
-        }
+      selected.forEach((id) => {
+        if (!updated[id]) updated[id] = roles.length > 0 ? roles[0].id : '';
       });
-
       Object.keys(updated).forEach((id) => {
-        if (!members.includes(id)) {
-          delete updated[id];
-        }
+        if (!selected.includes(id)) delete updated[id];
       });
-
       return updated;
     });
   };
@@ -187,7 +204,6 @@ const MembersSettings = () => {
       showToast.error('Please select at least one member');
       return;
     }
-
     if (!projectId) {
       showToast.error('Project ID is missing');
       return;
@@ -593,9 +609,12 @@ const MembersSettings = () => {
                 options={memberOptions}
                 value={selectedMembers}
                 onChange={handleMemberChange}
+                onSearchChange={setMemberSearch}   
+                isSearching={isUsersFetching}     
+                serverSideSearch               
                 placeholder={isUsersLoading ? 'Loading members...' : 'Select members'}
-                disabled={isUsersLoading || isRolesLoading || roles.length === 0}
-                hint="You can select multiple members to add to this project"
+                disabled={isRolesLoading || roles.length === 0} 
+                hint="Type to search, or pick from the dropdown"
               />
 
               <div className="mt-5">

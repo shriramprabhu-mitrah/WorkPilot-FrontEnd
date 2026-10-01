@@ -292,7 +292,7 @@ const AddTaskModal = ({
             if (realUrl) {
               finalDescription = finalDescription.split(blobUrl).join(realUrl);
             }
-          } catch (error) {
+          } catch {
           } finally {
             URL.revokeObjectURL(blobUrl);
           }
@@ -307,7 +307,7 @@ const AddTaskModal = ({
 
       // 4) ONE refetch of the tasks list, after everything is done
       await queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
-    } catch (error) {
+    } catch {
     } finally {
       setIsCreatingTask(false);
     }

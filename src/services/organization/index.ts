@@ -20,6 +20,7 @@ export interface GetUsersParams {
   page?: number;
   page_size?: number;
   is_active?: boolean;
+  full_name?:string;
 }
 
 class OrganizationService {
@@ -82,7 +83,7 @@ class OrganizationService {
   }
 
   async getUsers(params: GetUsersParams = {}): Promise<PaginatedApiResponse<OrganizationUser[]>> {
-    const { page = 1, page_size = 10, is_active } = params;
+    const { page = 1, page_size = 10, is_active , full_name} = params;
 
     const queryParams: Record<string, string | number | boolean> = {
       page,
@@ -92,6 +93,8 @@ class OrganizationService {
     if (is_active !== undefined) {
       queryParams.is_active = is_active;
     }
+
+    if (full_name?.trim()) queryParams.full_name = full_name.trim();
 
     const url = ApiEndpoints.Organization.getUsers.withQuery(queryParams);
 

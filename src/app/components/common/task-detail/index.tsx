@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
   Check,
@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Link2,
   BookOpenText,
+  AlertTriangle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
@@ -115,17 +116,6 @@ const getInitials = (name: string) =>
     .join('')
     .toUpperCase()
     .slice(0, 2);
-
-const AVATAR_COLORS = [
-  colors.avatarBlue,
-  colors.avatarGreen,
-  colors.avatarPink,
-  colors.avatarAmber,
-  colors.avatarIndigo,
-];
-
-const getMemberColor = (userId: string) =>
-  AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
 export const TaskDetailDrawer = ({
   task,
@@ -343,7 +333,7 @@ export const TaskDetailDrawer = ({
 
   const { mutate: assignTaskToMe, isPending: isAssigning } = useAssignTaskToMe();
   const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
-    task.projectId ?? '',
+    resolvedProjectId || '',
     {
       page: 1,
       page_size: 10,
@@ -369,7 +359,7 @@ export const TaskDetailDrawer = ({
     isLoadingMembers: isLoadingReporterMembers,
     isFetchingMembers: isFetchingReporterMembers,
   } = useGetProjectMembers(
-    task.projectId ?? '',
+    resolvedProjectId ?? '',
     {
       page: 1,
       page_size: 10,
@@ -912,6 +902,16 @@ export const TaskDetailDrawer = ({
     }
   };
   const hasHours = Number(taskData.estimatedHours) > 0 && Number(taskData.actualHours) > 0;
+
+  const isDueDateExpired = useMemo(() => {
+    if (!taskData.dueDate) return false;
+    const dueDate = new Date(taskData.dueDate);
+    const today = new Date();
+    dueDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return dueDate < today;
+  }, [taskData.dueDate]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -1507,8 +1507,8 @@ export const TaskDetailDrawer = ({
                 </div>
                 <ActivitySection
                   items={task.activity ?? []}
-                  taskId={task.taskId ?? task.id}
-                  projectId={task.projectId ?? ''}
+                  taskId={resolvedTaskId ?? ''}
+                  projectId={resolvedProjectId ?? ''}
                 />
               </div>
               <div
@@ -1684,7 +1684,8 @@ export const TaskDetailDrawer = ({
                               const initials = getInitials(
                                 name || m.user?.email?.split('@')[0] || 'U'
                               );
-                              const color = getMemberColor(m.user_id);
+                              const color = m.color || '';
+                              
                               const isSelected = m.user_id === taskData.assigneeId;
 
                               return (
@@ -1872,7 +1873,7 @@ export const TaskDetailDrawer = ({
                               const initials = getInitials(
                                 name || m.user?.email?.split('@')[0] || 'U'
                               );
-                              const color = getMemberColor(m.user_id);
+                              const color = m.color || ''
                               const isSelected = m.user_id === taskData.reporterId;
                               return (
                                 <WpButton
@@ -2261,17 +2262,28 @@ export const TaskDetailDrawer = ({
                       disabled={!canEditTask}
                     />
                   </DetailRow>
-
                   <DetailRow label="Due date">
-                    <EditableDate
-                      value={taskData.dueDate}
-                      onChange={(dueDate) => handleUpdate({ dueDate })}
-                      placeholder="Set due date"
-                      includeTime={false}
-                      disabled={!canEditTask}
-                    />
+                    {isDueDateExpired ? (
+                        <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600 dark:bg-gray-100">
+                          <AlertTriangle size={14} />
+                          <EditableDate
+                            value={taskData.dueDate}
+                            onChange={(dueDate) => handleUpdate({ dueDate })}
+                            placeholder="Set due date"
+                            includeTime={false}
+                            disabled={!canEditTask}
+                          />
+                        </div>
+                      ) : (
+                        <EditableDate
+                          value={taskData.dueDate}
+                          onChange={(dueDate) => handleUpdate({ dueDate })}
+                          placeholder="Set due date"
+                          includeTime={false}
+                          disabled={!canEditTask}
+                        />
+                      )}
                   </DetailRow>
-
                   {/* future purpose 
               <DetailRow label="Start date">
                 <EditableDate

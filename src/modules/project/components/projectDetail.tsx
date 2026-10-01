@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo} from 'react';
 import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
@@ -30,6 +30,7 @@ import StartSprintModal from '../../backlog/components/startSprintModal';
 import CompleteSprintModal from '../../backlog/components/CompleteSprint';
 import { sprintService } from '@/src/services/sprint';
 import { logger } from '@/src/lib/utils/logger';
+import { useDebounce } from '@/src/hooks/useDebounce';
 interface ProjectDetailProps {
   project: Project & { id?: string };
 }
@@ -61,7 +62,17 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const [isCompletingSprint, setIsCompletingSprint] = useState(false);
   const { data: rolesResponse, isLoading: isRolesLoading } = useGetRoles();
   const { addMembersAsync, isAddingMembers } = useAddProjectMembers();
-  const { users, isUsersLoading } = useGetOrganizationUsers(1, 50, true);
+  const [memberSearch, setMemberSearch] = useState('');
+  const debouncedMemberSearch = useDebounce(memberSearch, 500);
+  const [selectedLabels, setSelectedLabels] = useState<Record<string, string>>({});
+
+  const { users, isUsersLoading, isUsersFetching } = useGetOrganizationUsers(
+    1,
+    50,
+    true,
+    debouncedMemberSearch || undefined,
+    showAddMemberModal
+  );
   const { deleteProjectAsync, isDeletingProject } = useDeleteProject();
   const { removeMemberAsync, isRemovingMember } = useRemoveProjectMember();
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
@@ -111,12 +122,18 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   }, [apiSprints, selectedApiProject?.sprints]);
 
   const memberOptions = useMemo(() => {
-    if (!users || users.length === 0) return [];
-    return users.map((user) => ({
+    const fetched = users.map((user) => ({
       label: user.name || user.email,
       value: user.id,
     }));
-  }, [users]);
+  
+    const fetchedIds = new Set(fetched.map((o) => o.value));
+    const selectedMissing = selectedMembers
+      .filter((id) => !fetchedIds.has(id))
+      .map((id) => ({ label: selectedLabels[id] ?? id, value: id }));
+  
+    return [...selectedMissing, ...fetched];
+  }, [users, selectedMembers, selectedLabels]);
 
   const handleAddMember = async () => {
     if (!selectedMembers || selectedMembers.length === 0) {
@@ -183,7 +200,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch {}
+    } catch { }
   };
 
   const getInitials = (name: string) => {
@@ -229,21 +246,30 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
     }));
   }, [rolesResponse?.data]);
 
-  const handleMemberChange = (members: string[]) => {
-    setSelectedMembers(members);
+  const handleMemberChange = (selected: string[]) => {
+    setSelectedMembers(selected);
+  
+    setSelectedLabels((prev) => {
+      const next: Record<string, string> = {};
+      selected.forEach((id) => {
+        const user = users.find((u) => u.id === id);
+        next[id] = user ? user.name || user.email : (prev[id] ?? id);
+      });
+      return next;
+    });
+  
     setMemberRoles((prev) => {
       const updated = { ...prev };
       const defaultRole = roleOptions[0]?.value || '';
-      members.forEach((id) => {
+      selected.forEach((id) => {
         if (!updated[id]) updated[id] = defaultRole;
       });
       Object.keys(updated).forEach((id) => {
-        if (!members.includes(id)) delete updated[id];
+        if (!selected.includes(id)) delete updated[id];
       });
       return updated;
     });
   };
-
   const handleSprintSuccess = async () => {
     try {
       setIsRefreshingSprints(true);
@@ -315,9 +341,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       </div>
 
       {/* Project info card */}
-      <div className="relative rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
         {isUpdatingProject && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 dark:bg-slate-900/70">
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm dark:bg-slate-900/70">
             <div className="flex flex-col items-center gap-2">
               <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
               <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
@@ -327,41 +353,49 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           </div>
         )}
 
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white">
+        <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white shadow-sm">
               {project?.initials}
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">
-                {project?.name}
-              </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
-                {project?.description}
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="truncate text-xl font-bold text-gray-900 dark:text-slate-100">
+                  {project?.name}
+                </h1>
+
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  {project?.status}
+                </span>
+              </div>
+
+              <p className="mt-1 line-clamp-2 max-w-2xl text-sm text-gray-500 dark:text-slate-400">
+                {project?.description || 'No project description available'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-green-50 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-600 dark:text-green-400">
-              {project?.status}
-            </span>
+
+          <div className="flex shrink-0 items-center gap-2">
             {canEditProject && (
               <WpButton
                 variant="secondary"
                 size="sm"
                 onClick={() => setShowEditModal(true)}
-                className="!p-2"
+                className="!h-9 !w-9 !p-0"
                 aria-label="Edit project"
               >
                 <Pencil size={16} />
               </WpButton>
             )}
+
             {canDeleteProject && (
               <WpButton
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="!h-9 !w-9 !p-0 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                 aria-label="Delete project"
               >
                 <Trash2 size={16} />
@@ -370,82 +404,101 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           </div>
         </div>
 
-        <div className="my-5 border-t border-gray-100 dark:border-slate-700" />
+        <div className="border-t border-gray-100 dark:border-slate-800" />
 
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">CREATED</p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
-              {project?.date}
+        <div className="grid grid-cols-2 divide-x divide-y divide-gray-100 dark:divide-slate-800 sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
+
+          <div className="p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
+              Created
+            </p>
+            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
+              {project?.date || '—'}
             </p>
           </div>
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">
-              TOTAL SPRINTS
+
+          <div className="p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
+              Total Sprints
             </p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
-              {sprints?.length}
+            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
+              {sprints?.length ?? 0}
             </p>
           </div>
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">
-              PROJECT OWNER
+
+          <div className="p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
+              Project Owner
             </p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
+            <p className="mt-2 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
               {selectedApiProject?.owner || project?.owner || 'Not assigned'}
             </p>
           </div>
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200">TEAM SIZE</p>
-            <p className="mt-2 text-sm font-medium text-gray-900 dark:text-slate-100">
-              {selectedApiProject?.members?.length || project.members.length} members
+
+          <div className="p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
+              Team Size
+            </p>
+            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
+              {selectedApiProject?.members?.length || project?.members?.length || 0}
+              <span className="ml-1 font-normal text-gray-500 dark:text-slate-400">
+                members
+              </span>
             </p>
           </div>
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 dark:text-slate-200 mb-2">
-              TEAM MEMBERS
+
+          <div className="col-span-2 p-5 sm:col-span-1">
+            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
+              Team Members
             </p>
+
             {isRefreshingMembers ? (
-              <div className="flex items-center gap-2">
+              <div className="flex h-8 items-center gap-2">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
                 <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                  updating...
+                  Updating...
                 </span>
               </div>
-            ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
-              <div className="flex items-center gap-2">
+            ) : selectedApiProject?.members &&
+              selectedApiProject.members.length > 0 ? (
+              <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {selectedApiProject.members.slice(0, 5).map((member, index) => (
                     <div
                       key={member.user_id}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 text-xs font-semibold text-white`}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm dark:border-slate-900"
                       style={{
                         zIndex: 5 - index,
-                        backgroundColor: member.color,
+                        backgroundColor: member.color || '#64748b',
                       }}
                       title={member.full_name || member.username}
                     >
                       {getInitials(member.full_name || member.username)}
                     </div>
                   ))}
+
                   {selectedApiProject.members.length > 5 && (
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-slate-900 bg-gray-300 dark:bg-slate-600 text-xs font-semibold text-gray-700 dark:text-slate-100"
-                      style={{ zIndex: 0 }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 shadow-sm dark:border-slate-900 dark:bg-slate-700 dark:text-slate-200"
+                      title={`${selectedApiProject.members.length - 5} more members`}
                     >
                       +{selectedApiProject.members.length - 5}
                     </div>
                   )}
                 </div>
+
                 <button
+                  type="button"
                   onClick={() => setShowViewMembersModal(true)}
-                  className="whitespace-nowrap text-xs font-medium text-blue-600 dark:text-blue-400 transition-colors hover:text-blue-700 dark:hover:text-blue-300"
+                  className="text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   View
                 </button>
               </div>
             ) : (
-              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">No members</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">
+                No members
+              </p>
             )}
           </div>
         </div>
@@ -535,11 +588,10 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             overflow-hidden rounded-xl border bg-white
             shadow-sm transition-all duration-200
             dark:bg-slate-900
-            ${
-              isExpanded
-                ? 'border-blue-200 shadow-md dark:border-blue-900/60'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md dark:border-slate-700 dark:hover:border-slate-600'
-            }
+            ${isExpanded
+                    ? 'border-blue-200 shadow-md dark:border-blue-900/60'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md dark:border-slate-700 dark:hover:border-slate-600'
+                  }
           `}
               >
                 {/* Sprint header */}
@@ -561,13 +613,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         <span
                           className={`
                       shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold
-                      ${
-                        sprint.status === 'Active'
-                          ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                          : sprint.status === 'Completed'
-                            ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
-                            : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                      }
+                      ${sprint.status === 'Active'
+                              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                              : sprint.status === 'Completed'
+                                ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
+                                : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                            }
                     `}
                         >
                           {sprint.status}
@@ -626,9 +677,8 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     >
                       <ChevronDown
                         size={18}
-                        className={`transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
+                        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </button>
                   </div>
@@ -749,14 +799,16 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
-              <WpMultiSelect
-                label="Members"
-                options={memberOptions}
-                value={selectedMembers}
-                onChange={handleMemberChange}
-                placeholder={isUsersLoading ? 'Loading members...' : 'Select members'}
-                disabled={isUsersLoading}
-                hint="You can select multiple members to add to this project"
+            <WpMultiSelect
+                  label="Members"
+                  options={memberOptions}
+                  value={selectedMembers}
+                  onChange={handleMemberChange}
+                  onSearchChange={setMemberSearch}
+                  isSearching={isUsersFetching}
+                  serverSideSearch
+                  placeholder={isUsersLoading ? 'Loading members...' : 'Search or select members'}
+                  hint="Type to search, or pick from the dropdown"
               />
               <div className="mt-5 flex-1">
                 {selectedMembers.length > 0 ? (

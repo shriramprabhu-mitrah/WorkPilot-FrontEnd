@@ -52,6 +52,9 @@ class UserStoryService {
     if (params?.search) {
       searchParams.append('search', params.search);
     }
+    if (params?.is_unassigned_story) {
+      searchParams.append('is_unassigned_story', String(params.is_unassigned_story));
+    }
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.UserStory.getUserStories.withNamedParams({
       projectId,
