@@ -163,12 +163,7 @@ export const DashBoardTemplate = () => {
     return <ProjectNotFound slug={projectSlug} />;
   }
 
-  if (
-    isOrganizationLoading ||
-    isLoadingProjectsWithSprints ||
-    isLoadingDashboard ||
-    isLoadingActivities
-  ) {
+  if (isOrganizationLoading || isLoadingProjectsWithSprints) {
     return <DashboardSkeleton />;
   }
   return (

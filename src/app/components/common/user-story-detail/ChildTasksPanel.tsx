@@ -34,17 +34,6 @@ interface ChildTasksPanelProps {
   onUpdate?: () => void;
 }
 
-const AVATAR_COLORS = [
-  '#6366f1',
-  '#3b82f6',
-  '#ec4899',
-  '#10b981',
-  '#f59e0b',
-  '#8b5cf6',
-  '#06b6d4',
-  '#f97316',
-];
-
 const getInitials = (name: string) =>
   name
     .split(' ')
@@ -52,9 +41,6 @@ const getInitials = (name: string) =>
     .join('')
     .toUpperCase()
     .slice(0, 2);
-
-const getMemberColor = (userId: string) =>
-  AVATAR_COLORS[userId.charCodeAt(0) % AVATAR_COLORS.length];
 
 const mapToDrawerTask = (
   task: TaskResponse,
@@ -459,7 +445,7 @@ export const ChildTasksPanel = ({
                         {task.assignee_id ? (
                           <AssigneeAvatar
                             initials={getInitials(task.assignee_name ?? '')}
-                            color={task.assignee?.color || ''}
+                            color={task.reporter?.color || ''}
                             size="sm"
                           />
                         ) : (
@@ -512,7 +498,7 @@ export const ChildTasksPanel = ({
                                 const initials = getInitials(
                                   name || m.user?.email?.split('@')[0] || 'U'
                                 );
-                                const color = getMemberColor(m.user_id);
+                                const color = m.color || '';
 
                                 return (
                                   <WpButton

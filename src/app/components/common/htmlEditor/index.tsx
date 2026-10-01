@@ -65,6 +65,7 @@ import {
   X,
 } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
+import Image from 'next/image';
 
 interface WpRichTextEditorProps {
   value?: string;
@@ -249,26 +250,29 @@ function ImageComponent({
         </div>
       ) : (
         <div className="relative inline-block">
-          <img
+          <Image
             ref={imageRef}
             src={src}
             alt={altText}
+            width={naturalDimensions?.width ?? displayWidth ?? 800}
+            height={naturalDimensions?.height ?? displayHeight ?? 600}
             draggable={false}
+            unoptimized        
+            loading="eager"     
             onLoad={(e) => {
+              const img = e.currentTarget;
               setLoaded(true);
               setHasError(false);
-              const img = e.target as HTMLImageElement;
               setNaturalDimensions({ width: img.naturalWidth, height: img.naturalHeight });
             }}
             onError={() => {
               setLoaded(false);
               setHasError(true);
             }}
-            className={`max-w-full rounded-md border ${
-              hovered || isResizing
+            className={`max-w-full rounded-md border ${hovered || isResizing
                 ? 'border-blue-400 dark:border-blue-500 border-2'
                 : 'border-gray-200 dark:border-slate-700'
-            } ${loaded ? 'block' : 'hidden'}`}
+              } ${loaded ? 'block' : 'hidden'}`}
             style={{
               width: displayWidth ? `${displayWidth}px` : 'auto',
               height: displayHeight ? `${displayHeight}px` : 'auto',
@@ -565,10 +569,9 @@ function ToolbarButton({
         transition-colors
         disabled:cursor-not-allowed
         disabled:opacity-40
-        ${
-          active
-            ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
-            : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
+        ${active
+          ? 'bg-gray-200 dark:bg-slate-600 text-gray-900 dark:text-slate-100'
+          : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-slate-100'
         }
       `}
     >
@@ -898,7 +901,7 @@ function EditorToolbar({ onImageUpload }: { onImageUpload?: (file: File) => Prom
         px-3 py-2
       "
     >
-      <ToolbarButton title="Text style" onClick={() => {}}>
+      <ToolbarButton title="Text style" onClick={() => { }}>
         <span className="text-sm font-medium">T</span>
         <ChevronDown size={12} className="ml-0.5" />
       </ToolbarButton>
@@ -1231,10 +1234,9 @@ export default function WpRichTextEditor({
         rounded-lg border border-gray-300 dark:border-slate-600
         bg-white dark:bg-slate-800
         transition-colors
-        ${
-          disabled
-            ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
-            : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
+        ${disabled
+          ? 'pointer-events-none bg-gray-50 dark:bg-slate-700 opacity-60'
+          : 'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500'
         }
         ${className}
       `}

@@ -367,8 +367,8 @@ export default function Profile() {
               </div>
 
               <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold text-gray-700 dark:text-gray-200">
+                <p className="text-xs text-gray-500 dark:text-slate-200">
+                  <span className="font-semibold text-gray-700 dark:text-slate-200">
                     {insights?.completed ?? 0}
                   </span>{' '}
                   of {insights?.total_assigned ?? 0} tasks completed

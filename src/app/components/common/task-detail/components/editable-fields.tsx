@@ -7,7 +7,6 @@ import type { LabelListItem } from '@/src/types/label';
 import {
   useAttachLabel,
   useCreateLabel,
-  useDeleteLabel,
   useGetLabels,
   useRemoveLabel,
   useUpdateLabel,
@@ -350,15 +349,6 @@ export const EditableLabels = ({
   const selectedLabels = useMemo(
     () => allLabels.filter((label) => value.includes(label.id)),
     [allLabels, value]
-  );
-
-  const availableLabels = useMemo(
-    () =>
-      allLabels.filter(
-        (label) =>
-          !value.includes(label.id) && label.name.toLowerCase().includes(search.toLowerCase())
-      ),
-    [allLabels, value, search]
   );
 
   const exactMatchExists = useMemo(

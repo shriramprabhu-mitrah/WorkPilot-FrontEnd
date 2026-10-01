@@ -11,6 +11,7 @@ export interface GetUserStoriesQueryParams {
   sprint_id?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
   search?: string;
+  is_unassigned_story?: boolean;
 }
 
 export interface UserStoryResponse {

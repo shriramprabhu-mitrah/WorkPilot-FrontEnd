@@ -20,6 +20,7 @@ import CalendarSkeleton from './calendarSkeleton';
 import type { SprintDetail } from '@/src/types/project';
 import type { CalendarEvent } from '../types';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
+import Image from 'next/image';
 
 const CalendarPage = () => {
   const { push } = useOrgNavigation();
@@ -121,9 +122,11 @@ const CalendarPage = () => {
       {!canViewSprints ? (
         <div className="flex flex-1 items-center justify-center py-20 px-3 sm:px-0">
           <div className="flex flex-col items-center justify-center text-center">
-            <img
+            <Image
               src="/images/kanban method-pana.svg"
               alt="Access Restricted"
+              width={320}
+              height={320}
               className="h-80 w-80 opacity-60 mb-2"
             />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">

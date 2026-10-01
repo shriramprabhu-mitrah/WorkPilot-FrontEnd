@@ -10,6 +10,7 @@ import StatusSettings from '../components/statusSettings';
 import { BillingSettings } from '../components/billingSettings';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { MemberSettings } from '../components/MemberSettings';
+import Image from 'next/image';
 
 export const SettingPageTemplate = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('General');
@@ -20,9 +21,11 @@ export const SettingPageTemplate = () => {
     return (
       <div className="flex flex-1 items-center justify-center py-20 px-3 sm:px-0">
         <div className="flex flex-col items-center justify-center text-center">
-          <img
+          <Image
             src="/images/kanban method-pana.svg"
             alt="Access Restricted"
+            width={320}
+            height={320}
             className="h-80 w-80 opacity-60 mb-2"
           />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Restricted</h2>

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { organizationService } from '@/src/services/organization';
 import { useAppDispatch } from '@/src/store';
 import { setOrganization } from '@/src/store/slices/organization';
@@ -129,21 +129,37 @@ export const useGetCountries = (search?: string) => {
 };
 
 // Hook for fetching organization users with pagination
-export const useGetOrganizationUsers = (page = 1, pageSize = 10, isActive = true) => {
+export const useGetOrganizationUsers = (
+  page = 1,
+  pageSize = 10,
+  isActive = true,
+  fullName?: string,
+  enabled = true
+) => {
   const {
     data: users,
     isLoading: isUsersLoading,
+    isFetching: isUsersFetching,
     refetch: refetchUsers,
     error,
   } = useQuery({
-    queryKey: ['organizationUsers', page, pageSize, isActive],
-    queryFn: () => organizationService.getUsers({ page, page_size: pageSize, is_active: isActive }),
+    queryKey: ['organizationUsers', page, pageSize, isActive, fullName ?? ''],
+    queryFn: () =>
+      organizationService.getUsers({
+        page,
+        page_size: pageSize,
+        is_active: isActive,
+        full_name: fullName,
+      }),
+    enabled,
+    placeholderData: keepPreviousData,
   });
 
   return {
     users: users?.data ?? [],
     meta: users?.meta,
     isUsersLoading,
+    isUsersFetching,
     refetchUsers,
     error,
   };
