@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, ChevronDown, ChevronRight, GitBranch } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronRight, GitBranch, UserRound } from 'lucide-react';
 import { KanbanTask } from '@/src/types/board';
 import { PriorityBadge, AssigneeAvatar, SubStatusBadge } from '@/src/app/components/common/task';
 
@@ -58,12 +58,21 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
         </div>
         <div className="flex items-center gap-2">
           <PriorityBadge priority={task.priority} />
-          <AssigneeAvatar
-            initials={task.assigneeInitials || '?'}
-            color={task.assigneeColor || 'gray'}
-            size="sm"
-            assigneeName={String(task?.assignee)}
-          />
+          {task.assignee ? (
+            <AssigneeAvatar
+              initials={task.assigneeInitials || '?'}
+              color={task.assigneeColor || 'gray'}
+              size="sm"
+              assigneeName={String(task.assignee)}
+            />
+          ) : (
+            <div
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-500 dark:bg-blue-900/40 dark:text-blue-300"
+              title="Unassigned"
+            >
+              <UserRound size={15} strokeWidth={1.8} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -95,11 +104,10 @@ export const KanbanCardContent = ({ task }: { task: KanbanTask }) => {
                   className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 dark:bg-gray-700 px-2 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
                 >
                   <span
-                    className={`text-xs flex-1 truncate ${
-                      sub.status === 'done'
+                    className={`text-xs flex-1 truncate ${sub.status === 'done'
                         ? 'line-through text-gray-400 dark:text-gray-500'
                         : 'text-gray-700 dark:text-gray-200'
-                    }`}
+                      }`}
                   >
                     {sub.title}
                   </span>

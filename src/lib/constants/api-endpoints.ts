@@ -198,6 +198,10 @@ export const ApiEndpoints = {
     getUpcomingDeadlines: createQueryEndpoint('/{projectId}/upcoming-deadlines'),
   },
 
+  Board: {
+    getBoard: createQueryEndpoint('/projects/{projectId}/board'),
+  },
+
   Search: {
     globalSearch: createQueryEndpoint('/search'),
   },

@@ -1,4 +1,5 @@
-import { TaskLabel } from '../task';
+import { TaskLabel, TaskResponse } from '../task';
+import { UserStoryResponse } from '../userstories';
 
 export type Priority = 'Critical' | 'High' | 'Medium' | 'Low';
 
@@ -72,4 +73,47 @@ export interface KanbanColumn {
   label: string;
   color: string;
   tasks: KanbanTask[];
+}
+
+
+export interface PageMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  has_next: boolean;
+}
+
+export interface BoardStatusColumn {
+  status_id: string;
+  status_name: string;
+  color: string;
+  display_order: number;
+  task_count: number;
+  tasks: TaskResponse[];
+  meta: PageMeta;
+}
+
+export type BoardStory = Omit<UserStoryResponse, 'tasks'> & {
+  statuses: BoardStatusColumn[];
+};
+
+export interface BoardResponse {
+  success: boolean;
+  status_code: number;
+  message: string;
+  data: BoardStory[];
+  meta: PageMeta;
+}
+
+export interface BoardQueryParams {
+  page?: number;
+  page_size?: number;
+  tasks_per_status?: number;
+  sprint_id?: string;
+  user_story_id?: string;
+  priority?: string;
+  assignee_id?: string;
+  type?: string;
+  status_id?: string;
+  task_status_id?: string;
 }
