@@ -6,8 +6,8 @@ import { Filter, Layers } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
+import { useGetBoard, useGetBoardStatusTasks } from '@/src/modules/boards/hooks/useBoards';
 import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
-import { useGetUserStories } from '@/src/modules/tasks/hooks/useUserStory';
 import { useGetStatus, useGetLabels } from '@/src/modules/project/hooks/useLabels';
 import {
   useGetProjectMembers,
@@ -15,7 +15,7 @@ import {
 } from '@/src/modules/project/hooks/useProject';
 import { taskService } from '@/src/services/tasks';
 import { useQueryClient } from '@tanstack/react-query';
-import { GetTasksQueryParams, Task, TaskResponse } from '@/src/types/task';
+import { TaskResponse, GetTasksQueryParams } from '@/src/types/task';
 import { taskTypeOptions } from '@/src/app/components/common/enum';
 import { createPortal } from 'react-dom';
 import {
@@ -109,10 +109,15 @@ const TaskCard = ({
 const StatusCell = ({
   storyId,
   statusId,
-  tasks,
+  tasks: initialTasks,
   isOver,
   onTaskClick,
   onRefetch,
+  hasMore,
+  projectId,
+  mapTask,
+  allTasksRef,
+  optimisticUpdates,
 }: {
   storyId: string;
   statusId: string;
@@ -120,50 +125,170 @@ const StatusCell = ({
   isOver: boolean;
   onTaskClick?: (task: KanbanTask) => void;
   onRefetch: () => void;
+  hasMore: boolean;
+  projectId: string;
+  mapTask: (
+    task: import('@/src/types/task').TaskResponse,
+    storyId: string,
+    statusId: string
+  ) => KanbanTask;
+  allTasksRef: React.MutableRefObject<Map<string, KanbanTask>>;
+  optimisticUpdates: Map<string, OptimisticUpdate>;
 }) => {
   const { setNodeRef } = useDroppable({
     id: `${storyId}-${statusId}`,
     data: { type: 'cell', storyId, statusId },
   });
 
-  const taskIds = tasks.map((task) => task.id);
-  const needsScroll = tasks.length > 3;
+  const isRealStory = storyId !== 'direct-sprint-tasks' && storyId !== 'no-story';
+  const canLoadMore = hasMore && isRealStory;
 
-  // Prevent outer scroll when scrolling inside the column
+  const [scrollActivated, setScrollActivated] = useState(false);
+
+  const {
+    tasks: extraRawTasks,
+    isFetchingNextTasks,
+    isLoadingTasks,
+    fetchNextTasks,
+    hasNextTasks,
+  } = useGetBoardStatusTasks(projectId, storyId, statusId, scrollActivated && canLoadMore);
+
+  // Merge extra tasks (pages 2+) with the initial page-1 tasks, deduplicating by key and applying optimistic updates
+  const tasks = useMemo(() => {
+    let allTasks = initialTasks;
+    
+    if (canLoadMore && extraRawTasks.length > 0) {
+      const seen = new Set(initialTasks.map((t) => t.id));
+      const unique = extraRawTasks
+        .filter((t) => {
+          const key = t.key ?? t.id ?? '';
+          return key !== '' && !seen.has(key);
+        })
+        .map((t) => mapTask(t, storyId, statusId));
+      allTasks = [...initialTasks, ...unique];
+    }
+
+    const filteredTasks = allTasks.filter((task) => {
+      const optimistic = optimisticUpdates.get(task.id);
+      if (!optimistic) return true; 
+      
+      const movedAway = optimistic.statusId !== statusId || 
+                        (optimistic.storyId !== undefined && optimistic.storyId !== storyId);
+      return !movedAway;
+    });
+
+    return filteredTasks;
+  }, [initialTasks, extraRawTasks, canLoadMore, mapTask, storyId, statusId, optimisticUpdates]);
+
+  const allDisplayedTasks = useMemo(() => {
+    const movedInTasks: KanbanTask[] = [];
+    
+    optimisticUpdates.forEach((update, taskId) => {
+      const belongsHere = update.statusId === statusId && 
+                         (update.storyId === undefined || update.storyId === storyId);
+      
+      if (belongsHere) {
+        const alreadyHere = tasks.some((t) => t.id === taskId);
+        if (!alreadyHere && update.task) {
+          movedInTasks.push({
+            ...update.task,
+            columnId: statusId,
+            parent: update.storyId ?? update.task.parent,
+          });
+        }
+      }
+    });
+
+    return [...tasks, ...movedInTasks];
+  }, [tasks, optimisticUpdates, statusId, storyId]);
+
+  useEffect(() => {
+    const tasksRegistry = allTasksRef.current;
+    allDisplayedTasks.forEach((task) => {
+      if (task.id) {
+        tasksRegistry.set(task.id, task);
+      }
+    });
+    // Cleanup: remove tasks that are no longer in this cell
+    return () => {
+      allDisplayedTasks.forEach((task) => {
+        if (task.id) {
+          tasksRegistry.delete(task.id);
+        }
+      });
+    };
+  }, [allDisplayedTasks, allTasksRef]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!scrollActivated || !canLoadMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextTasks && !isFetchingNextTasks) {
+          fetchNextTasks();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [scrollActivated, canLoadMore, hasNextTasks, isFetchingNextTasks, fetchNextTasks]);
+
+  const needsScroll = allDisplayedTasks.length >= 3 || canLoadMore;
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!canLoadMore || scrollActivated) return;
+    const el = e.currentTarget;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    if (nearBottom) {
+      setScrollActivated(true);
+    }
+  };
+
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (!needsScroll) return;
-
-    const element = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = element;
-    const isScrollingDown = e.deltaY > 0;
-    const isScrollingUp = e.deltaY < 0;
-
-    // Check if we're at the boundaries
+    const el = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = el;
     const isAtTop = scrollTop === 0;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-    // Prevent outer scroll only if we're not at the boundaries
-    if ((isScrollingDown && !isAtBottom) || (isScrollingUp && !isAtTop)) {
+    if ((e.deltaY > 0 && !isAtBottom) || (e.deltaY < 0 && !isAtTop)) {
       e.stopPropagation();
     }
   };
 
+  const taskIds = allDisplayedTasks.map((task) => task.id).filter((id): id is string => !!id);
+
   return (
     <div
       ref={setNodeRef}
+      onScroll={handleScroll}
       onWheel={handleWheel}
       style={{
         ...(isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}),
-        ...(needsScroll ? { maxHeight: '400px', overflowY: 'scroll' } : {}),
+        ...(needsScroll ? { maxHeight: '300px', overflowY: 'scroll' } : {}),
       }}
-      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
-        }`}
+      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${
+        isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
+      }`}
     >
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2">
-          {tasks.map((task) => (
+          {allDisplayedTasks.map((task) => (
             <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} onRefetch={onRefetch} />
           ))}
+          {/* Sentinel — sits at the bottom; IntersectionObserver fires fetchNextTasks */}
+          {canLoadMore && !isFetchingNextTasks && <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />}
+          {/* Spinner while loading next page */}
+          {(isFetchingNextTasks || isLoadingTasks) && canLoadMore && (
+            <div className="flex justify-center py-3">
+              <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-blue-500 animate-spin" />
+            </div>
+          )}
         </div>
       </SortableContext>
     </div>
@@ -179,6 +304,11 @@ const UserStoryRow = ({
   onTaskClick,
   onRefetch,
   collapsedStatuses,
+  hasMoreByStatus,
+  projectId,
+  mapTask,
+  allTasksRef,
+  optimisticUpdates,
 }: {
   story: UserStoryResponse & { tasksByStatus: Map<string, KanbanTask[]> };
   statuses: CustomStatus[];
@@ -187,6 +317,15 @@ const UserStoryRow = ({
   onTaskClick?: (task: KanbanTask) => void;
   onRefetch: () => void;
   collapsedStatuses: Set<string>;
+  hasMoreByStatus: Map<string, boolean>;
+  projectId: string;
+  mapTask: (
+    task: import('@/src/types/task').TaskResponse,
+    storyId: string,
+    statusId: string
+  ) => KanbanTask;
+  allTasksRef: React.MutableRefObject<Map<string, KanbanTask>>;
+  optimisticUpdates: Map<string, OptimisticUpdate>;
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showStoryPopup, setShowStoryPopup] = useState(false);
@@ -201,10 +340,11 @@ const UserStoryRow = ({
       <div className="flex items-stretch">
         {/* Sticky User Story Column on the left */}
         <div
-          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${isSpecialStory
-            ? 'bg-indigo-50 border-indigo-200/80 dark:bg-slate-900/90 dark:border-indigo-900/50'
-            : 'bg-gray-50 border-gray-200 dark:bg-gray-800/90 dark:border-gray-700'
-            }`}
+          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${
+            isSpecialStory
+              ? 'bg-indigo-50 border-indigo-200/80 dark:bg-slate-900/90 dark:border-indigo-900/50'
+              : 'bg-gray-50 border-gray-200 dark:bg-gray-800/90 dark:border-gray-700'
+          }`}
         >
           <div className="flex items-start gap-2">
             <button
@@ -213,8 +353,9 @@ const UserStoryRow = ({
               aria-label={isExpanded ? 'Collapse story tasks' : 'Expand story tasks'}
             >
               <svg
-                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-90' : ''
-                  }`}
+                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${
+                  isExpanded ? 'rotate-90' : ''
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -249,8 +390,9 @@ const UserStoryRow = ({
                 });
               }}
               onMouseLeave={() => setShowStoryPopup(false)}
-              className={`relative flex items-start gap-2 flex-1 min-w-0 ${!isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
-                }`}
+              className={`relative flex items-start gap-2 flex-1 min-w-0 ${
+                !isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
+              }`}
             >
               {isSpecialStory ? (
                 <div className="flex-1 min-w-0">
@@ -279,8 +421,9 @@ const UserStoryRow = ({
                   />
                   <div className="flex-1 min-w-0">
                     <h3
-                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${!isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
-                        } ${story.is_closed ? 'line-through' : ''}`}
+                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${
+                        !isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
+                      } ${story.is_closed ? 'line-through' : ''}`}
                     >
                       {story.title}
                     </h3>
@@ -364,8 +507,9 @@ const UserStoryRow = ({
             return (
               <div
                 key={status.id}
-                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                  }`}
+                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+                  isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                }`}
               />
             );
           })}
@@ -379,15 +523,17 @@ const UserStoryRow = ({
           return (
             <div
               key={status.id}
-              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                }`}
+              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
+                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+              }`}
             >
               {/* Expanded Tasks with smooth CSS Grid animation */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${isExpanded && !isCollapsed
-                  ? 'grid-rows-[1fr] opacity-100'
-                  : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                  }`}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                  isExpanded && !isCollapsed
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <StatusCell
@@ -397,16 +543,22 @@ const UserStoryRow = ({
                     isOver={isOver}
                     onTaskClick={onTaskClick}
                     onRefetch={onRefetch}
+                    hasMore={hasMoreByStatus.get(status.id) ?? false}
+                    projectId={projectId}
+                    mapTask={mapTask}
+                    allTasksRef={allTasksRef}
+                    optimisticUpdates={optimisticUpdates}
                   />
                 </div>
               </div>
 
               {/* Collapsed summary with smooth transition */}
               <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${!isExpanded || isCollapsed
-                  ? 'grid-rows-[1fr] opacity-100'
-                  : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                  }`}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                  !isExpanded || isCollapsed
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                }`}
               >
                 <div className="overflow-hidden min-h-0">
                   <div className="h-[52px] p-2 flex items-center justify-center">
@@ -434,12 +586,18 @@ const UserStoryRow = ({
   );
 };
 
+type OptimisticUpdate = {
+  statusId: string;
+  storyId?: string;
+  task?: KanbanTask;
+};
+
 export const KanbanBoardTemplate = () => {
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
   const [overCell, setOverCell] = useState<{ storyId: string; statusId: string } | null>(null);
-  const [optimisticUpdates, setOptimisticUpdates] = useState<
-    Map<string, { statusId: string; storyId?: string }>
-  >(new Map());
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string, OptimisticUpdate>>(
+    new Map()
+  );
   const [selectedUserStory, setSelectedUserStory] = useState<UserStoryResponse | null>(null);
   const [selectedTask, setSelectedTask] = useState<KanbanTask | null>(null);
   const [collapsedStatuses, setCollapsedStatuses] = useState<Set<string>>(new Set());
@@ -457,6 +615,7 @@ export const KanbanBoardTemplate = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
   const closedTaskKeyRef = useRef<string | null>(null);
+  const allTasksRef = useRef<Map<string, KanbanTask>>(new Map());
   const [memberSearch, setMemberSearch] = useState('');
   const [filterMemberSearch, setFilterMemberSearch] = useState('');
   const debouncedMemberSearch = useDebounce(memberSearch, 500);
@@ -571,53 +730,47 @@ export const KanbanBoardTemplate = () => {
 
   useOutsideClick(filterRef, () => setShowFilter(false));
 
-  // 1. Direct Sprint Tasks query params (tasks with no user story, in current sprint)
-  const directSprintQueryParams = useMemo((): GetTasksQueryParams => {
-    const params: GetTasksQueryParams = {
-      storyless_task: true,
-      page_size: 100,
-    };
-
-    if (selectedSprint) {
-      params.sprint_id = selectedSprint;
-    }
-
-    if (filters.priorities.length > 0) {
-      params.priority = filters.priorities.map((p) => p.toLowerCase()).join(',');
-    }
-    if (assigneeIdFilter.length > 0) {
-      params.assignee_id = assigneeIdFilter.join(',');
-    }
-    if (filters.types.length > 0) {
-      params.type = filters.types.map((t) => t.toLowerCase()).join(',');
-    }
-    if (filters.statuses.length > 0) {
-      params.status_id = filters.statuses.join(',');
-    }
-
-    return params;
-  }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
-
   const canViewBoard = canViewTasks && canViewUserStories && canViewSprints;
 
-  // Fetch Direct Sprint Tasks
+  // Board API query params — user stories with their statuses+tasks
+  const boardQueryParams = useMemo(() => {
+    const p: import('@/src/types/board').BoardQueryParams = { page_size: 50, tasks_per_status: 3 };
+    if (selectedSprint) p.sprint_id = selectedSprint;
+    if (filters.priorities.length > 0)
+      p.priority = filters.priorities.map((v) => v.toLowerCase()).join(',');
+    if (assigneeIdFilter.length > 0) p.assignee_id = assigneeIdFilter.join(',');
+    if (filters.types.length > 0) p.type = filters.types.map((v) => v.toLowerCase()).join(',');
+    if (filters.statuses.length > 0) p.task_status_id = filters.statuses.join(',');
+    return p;
+  }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
+
+  const { boardStories, isLoadingBoard, refetchBoard } = useGetBoard(
+    selectedProject,
+    boardQueryParams,
+    !!selectedProject && canViewBoard
+  );
+
+  const directSprintQueryParams = useMemo((): GetTasksQueryParams => {
+    const p: GetTasksQueryParams = { storyless_task: true, page_size: 100 };
+    if (selectedSprint) p.sprint_id = selectedSprint;
+    if (filters.priorities.length > 0)
+      p.priority = filters.priorities.map((v) => v.toLowerCase()).join(',');
+    if (assigneeIdFilter.length > 0) p.assignee_id = assigneeIdFilter.join(',');
+    if (filters.types.length > 0) p.type = filters.types.map((v) => v.toLowerCase()).join(',');
+    if (filters.statuses.length > 0) p.status_id = filters.statuses.join(',');
+    return p;
+  }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
+
   const {
     tasksList: directSprintTasksList,
     isLoadingTasks: isLoadingDirectSprintTasks,
     refetchTasks: refetchDirectSprintTasks,
   } = useGetTasks(selectedProject, directSprintQueryParams, !!selectedProject && canViewBoard);
 
-  // Also fetch user stories for grouping (without filters)
-  const { userStories, isLoadingUserStories, refetchUserStories } = useGetUserStories(
-    selectedProject,
-    selectedSprint ? { sprint_id: selectedSprint, page_size: 100 } : { page_size: 100 },
-    !!selectedProject && canViewBoard
-  );
-
   const handleRefetch = useCallback(() => {
-    refetchUserStories();
+    refetchBoard();
     refetchDirectSprintTasks();
-  }, [refetchUserStories, refetchDirectSprintTasks]);
+  }, [refetchBoard, refetchDirectSprintTasks]);
 
   // Fetch status columns
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
@@ -633,7 +786,7 @@ export const KanbanBoardTemplate = () => {
   const boardLoading =
     !!selectedProject &&
     canViewBoard &&
-    (isLoadingDirectSprintTasks || isLoadingUserStories || isLoadingStatus);
+    (isLoadingBoard || isLoadingDirectSprintTasks || isLoadingStatus);
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
@@ -758,16 +911,16 @@ export const KanbanBoardTemplate = () => {
         title: task.title ?? '',
         priority: task.priority
           ? ((task.priority.charAt(0).toUpperCase() +
-            task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
+              task.priority.slice(1).toLowerCase()) as KanbanTask['priority'])
           : 'Medium',
         labels: [],
         assigneeInitials: task.assignee_name
           ? task.assignee_name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2)
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
           : '',
         assigneeColor: task?.assignee?.color ?? '',
         storyPoints: task.story_points ?? 0,
@@ -784,115 +937,100 @@ export const KanbanBoardTemplate = () => {
     [selectedProject]
   );
 
-  // Process tasks and organize by user story and status
+  // Process tasks from the board API — user stories with statuses[].tasks already grouped.
   const processedStories = useMemo(() => {
-    // Collect all unique tasks mapped by task key/id
-    const taskMap = new Map<string, { task: TaskResponse; defaultStoryId: string }>();
-
-    // 1. Add all tasks from user stories (from userStory API)
-    userStories?.forEach((story) => {
-      if (Array.isArray(story.tasks)) {
-        story.tasks.forEach((task) => {
-          const key = task.key || task.id;
-          if (key) {
-            taskMap.set(key, { task, defaultStoryId: story.id });
-          }
-        });
-      }
-    });
-
-    // 2. Add Direct Sprint Tasks (from directSprintTasksList)
-    directSprintTasksList?.forEach((task) => {
-      const key = task.key || task.id;
-      if (key) {
-        const existing = taskMap.get(key);
-        if (existing) {
-          taskMap.set(key, {
-            task: { ...existing.task, ...task },
-            defaultStoryId: task.user_story_id || existing.defaultStoryId || 'direct-sprint-tasks',
-          });
-        } else {
-          taskMap.set(key, {
-            task,
-            defaultStoryId: task.user_story_id || 'direct-sprint-tasks',
-          });
-        }
-      }
-    });
-
-    // 3. Group filtered tasks by user story and status
-    const tasksByStory = new Map<string, Map<string, KanbanTask[]>>();
-
-    taskMap.forEach(({ task, defaultStoryId }) => {
-      // Check filters if active
-      if (hasActiveFilter && !taskMatchesFilters(task)) {
-        return;
-      }
-
-      // If a specific sprint is selected, filter out direct sprint tasks that belong to OTHER sprints
-      if (selectedSprint && !task.user_story_id) {
-        if (task.sprint_id && task.sprint_id !== selectedSprint) {
-          return;
-        }
-      }
-
-      const taskKey = task.key ?? task.id ?? '';
-      const optimisticUpdate = optimisticUpdates.get(taskKey);
-
-      let effectiveStoryId = optimisticUpdate?.storyId;
-      if (!effectiveStoryId) {
-        if (task.user_story_id) {
-          effectiveStoryId = task.user_story_id;
-        } else if (
-          defaultStoryId &&
-          defaultStoryId !== 'direct-sprint-tasks' &&
-          defaultStoryId !== 'no-story'
-        ) {
-          effectiveStoryId = defaultStoryId;
-        } else {
-          effectiveStoryId = 'direct-sprint-tasks';
-        }
-      }
-
-      const resolvedStatus = resolveStatusId(task);
-      const statusId = optimisticUpdate?.statusId ?? resolvedStatus;
-
-      if (!tasksByStory.has(effectiveStoryId)) {
-        tasksByStory.set(effectiveStoryId, new Map());
-      }
-
-      const storyTasks = tasksByStory.get(effectiveStoryId)!;
-      if (!storyTasks.has(statusId)) {
-        storyTasks.set(statusId, []);
-      }
-
-      const matchedStory = userStories?.find(
-        (s) => s.id === effectiveStoryId || s.key === effectiveStoryId
+    const mappedStories = boardStories.map((story) => {
+      const allStoryTasks = story.statuses.flatMap((col) => col.tasks);
+      const taskLookup = new Map(allStoryTasks.map((t) => [t.key ?? t.id, t]));
+      // Track which status cells have more tasks beyond the initial page
+      const hasMoreByStatus = new Map<string, boolean>(
+        story.statuses.map((col) => [col.status_id, col.meta?.has_next ?? false])
       );
-      storyTasks
-        .get(statusId)!
-        .push(
-          mapToKanbanTask(task, effectiveStoryId, statusId, matchedStory?.key, matchedStory?.title)
-        );
+      const tasksByStatus = story.statuses.reduce<Map<string, KanbanTask[]>>((acc, statusCol) => {
+        const tasks = allStoryTasks
+          .filter((task) => {
+            const taskKey = task.key ?? task.id ?? '';
+            const optimistic = optimisticUpdates.get(taskKey);
+            if (optimistic) {
+              return optimistic.statusId === statusCol.status_id && optimistic.storyId === story.id;
+            }
+            return (
+              task.status_id === statusCol.status_id ||
+              resolveStatusId(task) === statusCol.status_id
+            );
+          })
+          .filter((task) => !hasActiveFilter || taskMatchesFilters(task))
+          .map((task) => {
+            const taskKey = task.key ?? task.id ?? '';
+            const optimistic = optimisticUpdates.get(taskKey);
+            const effectiveStatusId = optimistic?.statusId ?? statusCol.status_id;
+            const effectiveStoryId = optimistic?.storyId ?? story.id;
+            return mapToKanbanTask(
+              task,
+              effectiveStoryId,
+              effectiveStatusId,
+              story.key,
+              story.title
+            );
+          });
+        const movedInFromOtherStory = Array.from(optimisticUpdates.entries())
+          .filter(([, upd]) => upd.storyId === story.id && upd.statusId === statusCol.status_id)
+          .flatMap(([taskKey]) => {
+            const rawTask = (() => {
+              for (const s of boardStories) {
+                const found = s.statuses
+                  .flatMap((c) => c.tasks)
+                  .find((t) => (t.key ?? t.id) === taskKey);
+                if (found) return found;
+              }
+              return undefined;
+            })();
+            if (!rawTask) return [];
+            const alreadyIn = taskLookup.has(taskKey);
+            if (alreadyIn) return [];
+            return [
+              mapToKanbanTask(rawTask, story.id, statusCol.status_id, story.key, story.title),
+            ];
+          })
+          .filter((t) => !tasks.some((kt) => kt.id === t.id));
+
+        const allTasks = [...tasks, ...movedInFromOtherStory];
+        if (allTasks.length > 0) acc.set(statusCol.status_id, allTasks);
+        return acc;
+      }, new Map());
+
+      const total_tasks = Array.from(tasksByStatus.values()).reduce(
+        (sum, arr) => sum + arr.length,
+        0
+      );
+
+      return { ...story, tasksByStatus, hasMoreByStatus, total_tasks };
     });
 
-    // 4. Map user stories with their tasks
-    const mappedStories = userStories.map((story) => {
-      const tasksByStatus = tasksByStory.get(story.id ?? '') || new Map();
-      return {
-        ...story,
-        tasksByStatus,
-        total_tasks: Array.from(tasksByStatus.values()).reduce(
-          (sum, tasks) => sum + tasks.length,
-          0
-        ),
-      };
-    });
+    const directSprintTasks = (directSprintTasksList ?? []).filter(
+      (task) => !hasActiveFilter || taskMatchesFilters(task)
+    );
 
-    // 5. Add "Storyless Tasks" row (assigned to sprint, no user story)
-    const directSprintTasks = tasksByStory.get('direct-sprint-tasks') || new Map();
-    const directSprintTotal = Array.from(directSprintTasks.values()).reduce(
-      (sum, tasks) => sum + tasks.length,
+    // Group storyless tasks by their effective status, respecting optimistic moves
+    const storylessTasksByStatus = directSprintTasks.reduce<Map<string, KanbanTask[]>>(
+      (acc, task) => {
+        const taskKey = task.key ?? task.id ?? '';
+        const optimistic = optimisticUpdates.get(taskKey);
+        const effectiveStoryId = optimistic?.storyId ?? 'direct-sprint-tasks';
+        // If optimistically moved to a real story, skip from storyless row
+        if (effectiveStoryId !== 'direct-sprint-tasks') return acc;
+        const resolvedStatus = resolveStatusId(task);
+        const effectiveStatusId = optimistic?.statusId ?? resolvedStatus;
+        const kt = mapToKanbanTask(task, 'direct-sprint-tasks', effectiveStatusId);
+        const bucket = acc.get(effectiveStatusId) ?? [];
+        acc.set(effectiveStatusId, [...bucket, kt]);
+        return acc;
+      },
+      new Map()
+    );
+
+    const directSprintTotal = Array.from(storylessTasksByStatus.values()).reduce(
+      (sum, arr) => sum + arr.length,
       0
     );
 
@@ -905,17 +1043,16 @@ export const KanbanBoardTemplate = () => {
           : 'Tasks assigned to sprints without a user story',
         priority: 'medium',
         status: 'in_progress',
-        tasksByStatus: directSprintTasks,
+        statuses: [],
+        tasksByStatus: storylessTasksByStatus,
+        hasMoreByStatus: new Map<string, boolean>(),
         total_tasks: directSprintTotal,
-      } as unknown as UserStoryResponse & {
-        tasksByStatus: Map<string, KanbanTask[]>;
-        total_tasks: number;
-      });
+      } as unknown as (typeof mappedStories)[0]);
     }
 
     return mappedStories.filter((story) => story.total_tasks > 0 || !hasActiveFilter);
   }, [
-    userStories,
+    boardStories,
     directSprintTasksList,
     selectedSprint,
     hasActiveFilter,
@@ -939,7 +1076,7 @@ export const KanbanBoardTemplate = () => {
       return;
     }
 
-    const matchedStory = userStories?.find(
+    const matchedStory = boardStories?.find(
       (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
     );
     const isStory =
@@ -1013,7 +1150,7 @@ export const KanbanBoardTemplate = () => {
   const handleUserStoryClick = useCallback(
     (story: UserStoryResponse) => {
       closedTaskKeyRef.current = null;
-      const matched = userStories?.find(
+      const matched = boardStories?.find(
         (s) => s.id === story.id || s.key === story.id || s.id === story.key
       );
       const fullStory: UserStoryResponse = matched
@@ -1027,7 +1164,7 @@ export const KanbanBoardTemplate = () => {
         window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards/${key}`);
       }
     },
-    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, userStories]
+    [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, boardStories]
   );
 
   const handleCloseDrawer = useCallback(() => {
@@ -1135,20 +1272,26 @@ export const KanbanBoardTemplate = () => {
 
   // Count tasks per status across all stories
   const taskCountsByStatus = useMemo(() => {
-    const counts = new Map<string, number>();
-    processedStories.forEach((story) => {
-      story.tasksByStatus.forEach((tasks, statusId) => {
-        counts.set(statusId, (counts.get(statusId) || 0) + tasks.length);
-      });
-    });
-    return counts;
+    return processedStories.reduce<Map<string, number>>((counts, story) => {
+      return Array.from(story.tasksByStatus.entries()).reduce((acc, [statusId, tasks]) => {
+        acc.set(statusId, (acc.get(statusId) ?? 0) + tasks.length);
+        return acc;
+      }, counts);
+    }, new Map());
   }, [processedStories]);
 
   const onDragStart = ({ active }: DragStartEvent) => {
-    // Find the task across all stories
+    // First try to find in the global tasks ref (includes lazy-loaded tasks)
+    const taskFromRef = allTasksRef.current.get(active.id as string);
+    if (taskFromRef) {
+      setActiveTask(taskFromRef);
+      return;
+    }
+
+    // Fallback: search in processedStories
     for (const story of processedStories) {
       for (const tasks of story.tasksByStatus.values()) {
-        const task = tasks.find((t: Task) => t.id === active.id);
+        const task = tasks.find((t) => t.id === active.id);
         if (task) {
           setActiveTask(task);
           return;
@@ -1216,7 +1359,6 @@ export const KanbanBoardTemplate = () => {
       }
 
       if (!targetStatusId || !targetStoryId) return;
-
       const activeId = active.id as string;
 
       // Find the source story and task
@@ -1224,17 +1366,42 @@ export const KanbanBoardTemplate = () => {
       let sourceStatusId: string | null = null;
       let task: KanbanTask | null = null;
 
-      for (const story of processedStories) {
-        for (const [statusId, tasks] of story.tasksByStatus.entries()) {
-          const foundTask = tasks.find((t: Task) => t.id === activeId);
-          if (foundTask) {
-            sourceStory = story;
-            sourceStatusId = statusId;
-            task = foundTask;
-            break;
+      // First try to find in the global tasks ref (includes lazy-loaded tasks)
+      const taskFromRef = allTasksRef.current.get(activeId);
+      if (taskFromRef) {
+        task = taskFromRef;
+        // Find the story containing this task
+        for (const story of processedStories) {
+          for (const [statusId, tasks] of story.tasksByStatus.entries()) {
+            if (tasks.some((t) => t.id === activeId)) {
+              sourceStory = story;
+              sourceStatusId = statusId;
+              break;
+            }
           }
+          if (sourceStory) break;
         }
-        if (task) break;
+       
+        if (!sourceStory && taskFromRef.parent && taskFromRef.columnId) {
+          sourceStatusId = taskFromRef.columnId;
+          // Find the story by ID
+          sourceStory = processedStories.find((s) => s.id === taskFromRef.parent) || null;
+        }
+      } else {
+        // Fallback: search in processedStories
+        for (const story of processedStories) {
+          for (const [statusId, tasks] of story.tasksByStatus.entries()) {
+            const foundTask = tasks.find((t) => t.id === activeId);
+
+            if (foundTask) {
+              sourceStory = story;
+              sourceStatusId = statusId;
+              task = foundTask;
+              break;
+            }
+          }
+          if (task) break;
+        }
       }
 
       if (!task || !sourceStory || !sourceStatusId) return;
@@ -1246,7 +1413,6 @@ export const KanbanBoardTemplate = () => {
       const storyChanged = sourceStoryId !== targetStoryId;
 
       if (!statusChanged && !storyChanged) return;
-
       // Build the update payload
       const updatePayload: {
         status_id: string;
@@ -1268,121 +1434,323 @@ export const KanbanBoardTemplate = () => {
         }
       }
 
-      // Optimistically update the UI
+      // Optimistically update the UI — save task snapshot for moved-in cells
       setOptimisticUpdates((prev) => {
-        const newMap = new Map(prev);
-
-        newMap.set(task.id, {
+        const next = new Map(prev);
+        next.set(task.id, {
           statusId: targetStatusId,
           storyId: storyChanged ? targetStoryId : sourceStoryId,
+          task: task, // Save the task snapshot
         });
-        return newMap;
+        return next;
       });
+
       // Call the API
       if (task.taskId) {
         taskService
           .updateTask(task.projectId ?? '', task.taskId, updatePayload)
-          .then(() => {
+          .then(async () => {
             const projectId = task.projectId ?? '';
-          
+
+            // Reconcile the board cache — move the task across status columns / stories
             queryClient.setQueriesData<{
-              data: TaskResponse[];
+              pages: Array<{
+                data: import('@/src/types/board').BoardStory[];
+                [key: string]: unknown;
+              }>;
               [key: string]: unknown;
-            }>(
-              {
-                queryKey: ['tasks', projectId],
-              },
-              (oldData) => {
-                if (!oldData?.data) return oldData;
-                return {
-                  ...oldData,
-                  data: oldData.data.map((item) =>
-                    item.id === task.taskId
-                      ? {
-                          ...item,
+            }>({ queryKey: ['board', projectId] }, (oldData) => {
+              if (!oldData?.pages) return oldData;
+
+              // Find the raw TaskResponse we need to relocate
+              let rawTask: import('@/src/types/task').TaskResponse | undefined;
+              for (const page of oldData.pages) {
+                for (const s of page.data) {
+                  for (const col of s.statuses) {
+                    const found = col.tasks.find((t) => t.id === task.taskId);
+                    if (found) {
+                      rawTask = found;
+                      break;
+                    }
+                  }
+                  if (rawTask) break;
+                }
+                if (rawTask) break;
+              }
+
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page) => ({
+                  ...page,
+                  data: page.data.map((boardStory) => {
+                    const isSource = boardStory.id === sourceStoryId;
+                    const isTarget = boardStory.id === targetStoryId;
+                    if (!isSource && !isTarget) return boardStory;
+
+                    const updatedStatuses = boardStory.statuses.map((col) => {
+                      // Remove from old column in source story
+                      if (isSource && col.status_id === sourceStatusId) {
+                        return {
+                          ...col,
+                          tasks: col.tasks.filter((t) => t.id !== task.taskId),
+                          task_count: Math.max(col.task_count - 1, 0),
+                        };
+                      }
+                      // Add to new column in target story
+                      if (isTarget && col.status_id === targetStatusId) {
+                        if (col.tasks.some((t) => t.id === task.taskId)) return col;
+                        
+                        // Use rawTask if available, otherwise reconstruct from the KanbanTask
+                        const baseTask: import('@/src/types/task').TaskResponse = rawTask ?? {
+                          id: task.taskId ?? '',
+                          project_id: task.projectId ?? projectId,
+                          key: task.id,
+                          title: task.title,
+                          type: 'task',
+                          status: '',
+                          priority: task.priority?.toLowerCase() as 'low' | 'medium' | 'high' | undefined,
+                          assignee_id: undefined,
+                          assignee_name:typeof task.assignee === 'string'? task.assignee : task.assignee?.name,
+                          assignee: task.assigneeColor ? { color: task.assigneeColor,
+                                name:
+                                  typeof task.assignee === 'string'
+                                    ? task.assignee
+                                    : task.assignee?.name ?? '',
+                              }
+                            : undefined,
+                          estimated_hours: 0,
+                          reporter_id: undefined,
+                          reporter_name: undefined,
+                          story_points: task.storyPoints ?? 0,
+                          due_date: task.dueDate ? `${task.dueDate}T00:00:00Z` : '',
+                          user_story_id: task.user_story_id,
+                          sprint_id: undefined,
+                          created_at: '',
+                          updated_at: '',
+                        };
+                        
+                        const updatedRaw: import('@/src/types/task').TaskResponse = {
+                          ...baseTask,
                           status_id: targetStatusId,
+                          status: col.status_name ?? '',
+                          status_color: col.color ?? '',
                           user_story_id: storyChanged
-                            ? updatePayload.user_story_id ?? undefined
-                            : item.user_story_id,
-                          sprint_id:
-                            updatePayload.sprint_id ?? item.sprint_id,
-                        }
-                      : item
-                  ),
-                };
-              }
-            );
+                            ? (updatePayload.user_story_id ?? undefined)
+                            : task.user_story_id,
+                          sprint_id: updatePayload.sprint_id ?? task.sprint_id,
+                        };
+                        return {
+                          ...col,
+                          tasks: [...col.tasks, updatedRaw],
+                          task_count: col.task_count + 1,
+                        };
+                      }
+                      return col;
+                    });
+
+                    return { ...boardStory, statuses: updatedStatuses };
+                  }),
+                })),
+              };
+            });
+
+            // Also reconcile the tasks cache (used by storyless row)
             queryClient.setQueriesData<{
-              data: UserStoryResponse[];
+              data: import('@/src/types/task').TaskResponse[];
+              [key: string]: unknown;
+            }>({ queryKey: ['tasks', projectId] }, (oldData) => {
+              if (!oldData?.data) return oldData;
+              return {
+                ...oldData,
+                data: oldData.data.map((item) =>
+                  item.id === task.taskId
+                    ? {
+                        ...item,
+                        status_id: targetStatusId,
+                        user_story_id: storyChanged
+                          ? (updatePayload.user_story_id ?? undefined)
+                          : item.user_story_id,
+                        sprint_id: updatePayload.sprint_id ?? item.sprint_id,
+                      }
+                    : item
+                ),
+              };
+            });
+
+            // Source cell paginated cache
+            queryClient.setQueriesData<{
+              pages: Array<{
+                data: import('@/src/types/board').BoardStory | import('@/src/types/board').BoardStory[];
+                [key: string]: unknown;
+              }>;
               [key: string]: unknown;
             }>(
-              {
-                queryKey: ['user-stories', projectId],
+              { 
+                predicate: (query) => {
+                  const key = query.queryKey;
+                  return (
+                    Array.isArray(key) &&
+                    key[0] === 'board-status-tasks' &&
+                    key[1] === projectId &&
+                    key[2] === sourceStoryId &&
+                    key[3] === sourceStatusId
+                  );
+                }
               },
               (oldData) => {
-                if (!oldData?.data) return oldData;
-          
-                const stories = oldData.data.map((story) => ({
-                  ...story,
-                  tasks: story.tasks ?? [],
-                }));
-                let movedTask: TaskResponse | null = null;
-                for (const story of stories) {
-                  const taskIndex = story.tasks.findIndex(
-                    (item) => item.id === task.taskId
-                  );
-                  if (taskIndex !== -1) {
-                    const existingTask = story.tasks[taskIndex];
-                    movedTask = {
-                      ...existingTask,
-                      status_id: targetStatusId,
-                      user_story_id: storyChanged
-                        ? updatePayload.user_story_id ?? undefined
-                        : existingTask.user_story_id,
-                      sprint_id:
-                        updatePayload.sprint_id ?? existingTask.sprint_id,
-                    };
-                    story.tasks.splice(taskIndex, 1);
-                    story.total_tasks = Math.max(
-                      (story.total_tasks ?? 1) - 1,
-                      0
-                    );
-                    break;
-                  }
-                }
-                if (!movedTask) return oldData;
-                if (
-                  targetStoryId !== 'direct-sprint-tasks' &&
-                  targetStoryId !== 'no-story'
-                ) {
-                  const targetStory = stories.find(
-                    (story) => story.id === targetStoryId
-                  );
-                  if (targetStory) {
-                    targetStory.tasks.push(movedTask);
-                    targetStory.total_tasks =
-                      (targetStory.total_tasks ?? 0) + 1;
-                  }
-                }
+                if (!oldData?.pages) return oldData;
+                
                 return {
                   ...oldData,
-                  data: stories,
+                  pages: oldData.pages.map((page) => {
+                    const story = Array.isArray(page.data) ? page.data[0] : page.data;
+                    if (!story) return page;
+                    
+                    return {
+                      ...page,
+                      data: Array.isArray(page.data) ? [{
+                        ...story,
+                        statuses: story.statuses?.map((col) =>
+                          col.status_id === sourceStatusId
+                            ? {
+                                ...col,
+                                tasks: col.tasks.filter((t) => t.id !== task.taskId),
+                                task_count: Math.max((col.task_count || 0) - 1, 0),
+                              }
+                            : col
+                        ),
+                      }] : {
+                        ...story,
+                        statuses: story.statuses?.map((col) =>
+                          col.status_id === sourceStatusId
+                            ? {
+                                ...col,
+                                tasks: col.tasks.filter((t) => t.id !== task.taskId),
+                                task_count: Math.max((col.task_count || 0) - 1, 0),
+                              }
+                            : col
+                        ),
+                      },
+                    };
+                  }),
                 };
               }
             );
+
+            // Target cell paginated cache (if task exists in paginated data, update it)
+            queryClient.setQueriesData<{
+              pages: Array<{
+                data: import('@/src/types/board').BoardStory | import('@/src/types/board').BoardStory[];
+                [key: string]: unknown;
+              }>;
+              [key: string]: unknown;
+            }>(
+              { 
+                predicate: (query) => {
+                  const key = query.queryKey;
+                  return (
+                    Array.isArray(key) &&
+                    key[0] === 'board-status-tasks' &&
+                    key[1] === projectId &&
+                    key[2] === targetStoryId &&
+                    key[3] === targetStatusId
+                  );
+                }
+              },
+              (oldData) => {
+                if (!oldData?.pages) return oldData;
+                
+                // Only update if task already exists in this paginated cache
+                let taskFound = false;
+                oldData.pages.forEach((page) => {
+                  const story = Array.isArray(page.data) ? page.data[0] : page.data;
+                  if (story?.statuses) {
+                    story.statuses.forEach((col) => {
+                      if (col.tasks.some((t) => t.id === task.taskId)) {
+                        taskFound = true;
+                      }
+                    });
+                  }
+                });
+                
+                if (!taskFound) return oldData; 
+                
+                return {
+                  ...oldData,
+                  pages: oldData.pages.map((page) => {
+                    const story = Array.isArray(page.data) ? page.data[0] : page.data;
+                    if (!story) return page;
+                    
+                    return {
+                      ...page,
+                      data: Array.isArray(page.data) ? [{
+                        ...story,
+                        statuses: story.statuses?.map((col) =>
+                          col.status_id === targetStatusId
+                            ? {
+                                ...col,
+                                tasks: col.tasks.map((t) => 
+                                  t.id === task.taskId 
+                                    ? {
+                                        ...t,
+                                        status_id: targetStatusId,
+                                        user_story_id: storyChanged
+                                          ? (updatePayload.user_story_id ?? undefined)
+                                          : t.user_story_id,
+                                        sprint_id: updatePayload.sprint_id ?? t.sprint_id,
+                                      }
+                                    : t
+                                ),
+                              }
+                            : col
+                        ),
+                      }] : {
+                        ...story,
+                        statuses: story.statuses?.map((col) =>
+                          col.status_id === targetStatusId
+                            ? {
+                                ...col,
+                                tasks: col.tasks.map((t) => 
+                                  t.id === task.taskId 
+                                    ? {
+                                        ...t,
+                                        status_id: targetStatusId,
+                                        user_story_id: storyChanged
+                                          ? (updatePayload.user_story_id ?? undefined)
+                                          : t.user_story_id,
+                                        sprint_id: updatePayload.sprint_id ?? t.sprint_id,
+                                      }
+                                    : t
+                                ),
+                              }
+                            : col
+                        ),
+                      },
+                    };
+                  }),
+                };
+              }
+            );
+
+            // Clear the optimistic entry — cache is now the source of truth
+            setOptimisticUpdates((prev) => {
+              const next = new Map(prev);
+              next.delete(task.id);
+              return next;
+            });
           })
           .catch((err: Error) => {
             logger.log('Failed to update task', err);
             // Revert the optimistic update on error
             setOptimisticUpdates((prev) => {
-              const newMap = new Map(prev);
-              newMap.delete(task.id);
-              return newMap;
+              const next = new Map(prev);
+              next.delete(task.id);
+              return next;
             });
           });
       }
     },
-    [processedStories,  selectedSprint, canEditTask]
+    [processedStories, selectedSprint, canEditTask, allTasksRef, queryClient]
   );
 
   if (isProjectNotFound) {
@@ -1458,8 +1826,9 @@ export const KanbanBoardTemplate = () => {
                   <button
                     key={member.id || member.user_id || member.user?.id}
                     onClick={() => toggleAssigneeFilter(userId, memberName)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
-                      }`}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
+                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+                    }`}
                     style={{ backgroundColor: member.color }}
                     title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
                   >
@@ -1544,8 +1913,9 @@ export const KanbanBoardTemplate = () => {
                   return (
                     <div
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                        }`}
+                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
+                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
+                      }`}
                     >
                       {!isCollapsed ? (
                         <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">
@@ -1637,6 +2007,11 @@ export const KanbanBoardTemplate = () => {
                   onTaskClick={handleTaskClick}
                   onRefetch={handleRefetch}
                   collapsedStatuses={collapsedStatuses}
+                  hasMoreByStatus={story.hasMoreByStatus ?? new Map()}
+                  projectId={selectedProject}
+                  mapTask={mapToKanbanTask}
+                  allTasksRef={allTasksRef}
+                  optimisticUpdates={optimisticUpdates}
                 />
               ))}
             </div>
@@ -1662,10 +2037,12 @@ export const KanbanBoardTemplate = () => {
           onClose={handleCloseDrawer}
           onOpenUserStory={handleUserStoryClick}
           onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
             handleRefetch();
           }}
           onDelete={() => {
+            queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
             handleRefetch();
             handleCloseDrawer();
@@ -1680,7 +2057,8 @@ export const KanbanBoardTemplate = () => {
           onClose={handleCloseDrawer}
           onOpenTask={handleTaskClick}
           onUpdate={() => {
-            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+            queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
+            queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
           }}
           onCreateTask={() => {
             // Keep user story drawer open, task modal will appear on top
@@ -1693,7 +2071,7 @@ export const KanbanBoardTemplate = () => {
                 projectId: selectedProject,
                 userStoryId: selectedUserStory.id,
               });
-              queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+              queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
               handleCloseDrawer();
             } catch {
               // Error is already handled by the mutation
@@ -1719,8 +2097,7 @@ export const KanbanBoardTemplate = () => {
           }}
           onCreate={() => {
             setShowAddTaskModal(false);
-            // Invalidate both user stories list and the specific user story detail
-            queryClient.invalidateQueries({ queryKey: ['user-stories', selectedProject] });
+            queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
             if (taskUserStoryId) {
               queryClient.invalidateQueries({
@@ -1729,7 +2106,7 @@ export const KanbanBoardTemplate = () => {
             }
             handleRefetch();
             setTaskUserStoryId('');
-            setMemberSearch(''); // Clear search after creation
+            setMemberSearch('');
           }}
         />
       )}

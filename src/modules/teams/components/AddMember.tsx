@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { X, Trash2, UserPlus } from 'lucide-react';
+import { X, Trash2, UserPlus, Pencil } from 'lucide-react';
 import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { WpDropdown } from '@/src/app/components/common/dropdown';
 import {
@@ -112,46 +112,65 @@ const MembersSettings = () => {
 
   const members = projectMembers?.data ?? [];
   const visibleMembers = showAll ? members : members.slice(0, 10);
-  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
-  const [pendingRoleChange, setPendingRoleChange] = useState<{
-    userId: string;
-    userName: string;
-    roleId: string;
-    roleName: string;
-  } | null>(null);
-  const [showRoleConfirmModal, setShowRoleConfirmModal] = useState(false);
 
-  const handleRoleSelect = (userId: string, userName: string, roleId: string, roleName: string) => {
-    setPendingRoleChange({ userId, userName, roleId, roleName });
-    setShowRoleConfirmModal(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const [editingMember, setEditingMember] = useState<{
+    userId: string;
+    name: string;
+    username: string;
+    originalRoleId: string;
+  } | null>(null);
+  const [editRoleId, setEditRoleId] = useState('');
+
+  const handleOpenEdit = (member: {
+    userId: string;
+    name: string;
+    username: string;
+    roleId: string;
+  }) => {
+    setEditingMember({
+      userId: member.userId,
+      name: member.name,
+      username: member.username,
+      originalRoleId: member.roleId,
+    });
+    setEditRoleId(member.roleId);
+    setShowEditModal(true);
   };
 
-  const handleConfirmRoleChange = async () => {
-    if (!pendingRoleChange || !projectId) return;
+  const handleCloseEdit = () => {
+    if (isUpdatingRole) return;
+    setShowEditModal(false);
+    setEditingMember(null);
+    setEditRoleId('');
+  };
 
-    const { userId, roleId } = pendingRoleChange;
+  // Update button is enabled only when the role was actually changed
+  const isRoleChanged =
+    !!editingMember && !!editRoleId && editRoleId !== editingMember.originalRoleId;
 
-    setUpdatingMemberId(userId);
-    setShowRoleConfirmModal(false);
+  const handleUpdateRole = async () => {
+    if (!editingMember || !projectId || !isRoleChanged) return;
 
+    setIsUpdatingRole(true);
     try {
+      // API is called only here, when Update is clicked
       await updateProjectRoleAsync({
         project_id: projectId,
-        user_id: userId,
-        role_id: roleId,
+        user_id: editingMember.userId,
+        role_id: editRoleId,
       });
 
       await refetchProjectMembers();
+      setShowEditModal(false);
+      setEditingMember(null);
+      setEditRoleId('');
     } catch {
+      // error toast handled inside the hook
     } finally {
-      setUpdatingMemberId(null);
-      setPendingRoleChange(null);
+      setIsUpdatingRole(false);
     }
-  };
-
-  const handleCancelRoleChange = () => {
-    setShowRoleConfirmModal(false);
-    setPendingRoleChange(null);
   };
 
   const memberOptions = useMemo(() => {
@@ -159,12 +178,12 @@ const MembersSettings = () => {
       label: user.name || user.email,
       value: user.id,
     }));
-  
+
     const fetchedIds = new Set(fetched.map((o) => o.value));
     const selectedMissing = selectedMembers
       .filter((id) => !fetchedIds.has(id))
       .map((id) => ({ label: selectedLabels[id] ?? id, value: id }));
-  
+
     return [...selectedMissing, ...fetched];
   }, [users, selectedMembers, selectedLabels]);
 
@@ -311,7 +330,7 @@ const MembersSettings = () => {
         {/* Table */}
         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           {/* Desktop header */}
-          <div className="hidden md:grid grid-cols-[minmax(200px,1.5fr)_minmax(160px,1fr)_100px_44px] items-center gap-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-5 py-3">
+          <div className="hidden lg:grid grid-cols-[minmax(220px,1.5fr)_minmax(220px,1fr)_120px_88px] items-center gap-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-5 py-3">
             {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
               <div
                 key={i}
@@ -342,7 +361,7 @@ const MembersSettings = () => {
               return (
                 <div
                   key={member.user_id}
-                  className={`group flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40 sm:px-5 lg:grid lg:grid-cols-[minmax(220px,1.5fr)_minmax(220px,1fr)_120px_52px] lg:items-center lg:gap-4 ${
+                  className={`group flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40 sm:px-5 lg:grid lg:grid-cols-[minmax(220px,1.5fr)_minmax(220px,1fr)_120px_88px] lg:items-center lg:gap-4 ${
                     index !== visibleMembers.length - 1
                       ? 'border-b border-slate-200 dark:border-slate-700'
                       : ''
@@ -370,43 +389,24 @@ const MembersSettings = () => {
                     </div>
                   </div>
 
-                  {/* Role */}
+                  {/* Role (display only) */}
                   <div className="flex items-center gap-3 lg:block">
                     <span className="min-w-[60px] text-xs font-medium text-slate-400 dark:text-slate-500 lg:hidden">
                       Role
                     </span>
 
                     <div className="flex-1">
-                      {isOrgAdminRole ? (
-                        <div className="flex h-8 items-center">
+                      <div className="flex h-8 items-center">
+                        {isOrgAdminRole ? (
                           <span className="inline-flex items-center rounded-lg border border-blue-100 bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-600 dark:border-blue-900/50 dark:bg-blue-900/30 dark:text-blue-300">
                             Org Admin
                           </span>
-                        </div>
-                      ) : (
-                        <WpDropdown
-                          options={roles.map((role) => ({
-                            value: role.id,
-                            label: role.name.toUpperCase(),
-                          }))}
-                          value={currentRole?.id ?? ''}
-                          onChange={(value) => {
-                            const selectedRole = roles.find((r) => r.id === value);
-
-                            if (!selectedRole) return;
-
-                            handleRoleSelect(
-                              member.user_id,
-                              memberName,
-                              selectedRole.id,
-                              selectedRole.name
-                            );
-                          }}
-                          disabled={
-                            !isOrgAdmin || isRolesLoading || updatingMemberId === member.user_id
-                          }
-                        />
-                      )}
+                        ) : (
+                          <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase text-slate-700 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200">
+                            {currentRole?.name || member.role || '-'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -422,25 +422,45 @@ const MembersSettings = () => {
                     </span>
                   </div>
 
-                  {/* Delete */}
-                  <div className="flex justify-end lg:justify-center">
+                  {/* Actions: Edit + Delete */}
+                  <div className="flex items-center justify-end gap-1 lg:justify-center">
                     {isOrgAdmin && !isOrgAdminRole && (
-                      <WpButton
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedMember({
-                            id: member.user_id,
-                            name: memberName,
-                          });
-                          setShowDeleteModal(true);
-                        }}
-                        className="!h-8 !w-8 !p-0 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                        title="Remove member"
-                      >
-                        <Trash2 size={15} strokeWidth={1.8} />
-                      </WpButton>
+                      <>
+                        <WpButton
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            handleOpenEdit({
+                              userId: member.user_id,
+                              name: memberName,
+                              username: member.username || '',
+                              roleId: currentRole?.id ?? '',
+                            })
+                          }
+                          className="!h-8 !w-8 !p-0 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-slate-500 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                          title="Edit role"
+                        >
+                          <Pencil size={15} strokeWidth={1.8} />
+                        </WpButton>
+
+                        <WpButton
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMember({
+                              id: member.user_id,
+                              name: memberName,
+                            });
+                            setShowDeleteModal(true);
+                          }}
+                          className="!h-8 !w-8 !p-0 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-slate-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                          title="Remove member"
+                        >
+                          <Trash2 size={15} strokeWidth={1.8} />
+                        </WpButton>
+                      </>
                     )}
                   </div>
                 </div>
@@ -479,31 +499,94 @@ const MembersSettings = () => {
           </div>
         )}
       </div>
-      {showRoleConfirmModal && pendingRoleChange && (
+
+      {/* Edit member popup */}
+      {showEditModal && editingMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
-            <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-              <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
-                Change Role
-              </h2>
-
-              <p className="mt-1 text-xs sm:text-[13px] text-slate-500 dark:text-slate-400">
-                Are you sure you want to change{' '}
-                <span className="font-semibold text-slate-700 dark:text-slate-200">
-                  {pendingRoleChange.userName}
-                </span>
-                &apos;s role to{' '}
-                <span className="font-semibold text-slate-700 dark:text-slate-200">
-                  {pendingRoleChange.roleName}
-                </span>
-                ?
-              </p>
+            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
+                  Edit Member
+                </h2>
+                <p className="mt-1 text-xs sm:text-[13px] text-slate-500 dark:text-slate-400">
+                  You can only change the role of this member.
+                </p>
+              </div>
+              <WpButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCloseEdit}
+                disabled={isUpdatingRole}
+                className="!p-2 ml-2 shrink-0 text-gray-400 dark:text-slate-500"
+              >
+                <X size={17} />
+              </WpButton>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-5">
+            <div className="space-y-4 p-4 sm:p-5">
+              {/* Name (disabled) */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editingMember.name}
+                  disabled
+                  readOnly
+                  className="h-10 w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm text-gray-500 outline-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-400"
+                />
+              </div>
+
+              {/* Username (disabled) */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={editingMember.username ? `@${editingMember.username}` : 'No username'}
+                  disabled
+                  readOnly
+                  className="h-10 w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm text-gray-500 outline-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-400"
+                />
+              </div>
+
+              {/* Status (disabled) */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Status
+                </label>
+                <input
+                  type="text"
+                  value="Active"
+                  disabled
+                  readOnly
+                  className="h-10 w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm text-gray-500 outline-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-400"
+                />
+              </div>
+
+              {/* Role (editable) */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Role
+                </label>
+                <WpDropdown
+                  options={roleOptions}
+                  value={editRoleId}
+                  onChange={(value) => setEditRoleId(value)}
+                  disabled={isRolesLoading || isUpdatingRole}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <WpButton
                 variant="secondary"
-                onClick={handleCancelRoleChange}
+                onClick={handleCloseEdit}
+                disabled={isUpdatingRole}
                 className="w-full sm:w-auto"
               >
                 Cancel
@@ -511,16 +594,18 @@ const MembersSettings = () => {
 
               <WpButton
                 variant="primary"
-                onClick={handleConfirmRoleChange}
-                isLoading={updatingMemberId === pendingRoleChange.userId}
+                onClick={handleUpdateRole}
+                isLoading={isUpdatingRole}
+                disabled={!isRoleChanged || isUpdatingRole}
                 className="w-full sm:w-auto"
               >
-                OK
+                Update
               </WpButton>
             </div>
           </div>
         </div>
       )}
+
       {/* Delete confirm modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
@@ -563,6 +648,8 @@ const MembersSettings = () => {
           </div>
         </div>
       )}
+
+      {/* Add member modal */}
       {showAddMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="flex h-auto max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
@@ -609,11 +696,11 @@ const MembersSettings = () => {
                 options={memberOptions}
                 value={selectedMembers}
                 onChange={handleMemberChange}
-                onSearchChange={setMemberSearch}   
-                isSearching={isUsersFetching}     
-                serverSideSearch               
+                onSearchChange={setMemberSearch}
+                isSearching={isUsersFetching}
+                serverSideSearch
                 placeholder={isUsersLoading ? 'Loading members...' : 'Select members'}
-                disabled={isRolesLoading || roles.length === 0} 
+                disabled={isRolesLoading || roles.length === 0}
                 hint="Type to search, or pick from the dropdown"
               />
 

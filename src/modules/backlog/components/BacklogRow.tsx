@@ -1,6 +1,6 @@
 'use client';
 
-import { GripVertical, Bug } from 'lucide-react';
+import { GripVertical, Bug, UserRound } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { PriorityBadge, StatusBadge, AssigneeAvatar } from '@/src/app/components/common/task';
@@ -61,20 +61,17 @@ export const BacklogRow = ({
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      className={`group flex items-center gap-2 px-3 py-2.5 sm:px-4 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
-        onClick ? 'cursor-pointer' : ''
-      } ${
-        isDragging
+      className={`group flex items-center gap-2 px-3 py-2.5 sm:px-4 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${onClick ? 'cursor-pointer' : ''
+        } ${isDragging
           ? 'bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50'
           : ''
-      }`}
+        }`}
     >
       <span
-        className={`shrink-0 p-0.5 rounded transition-colors ${
-          isDragging
-            ? 'text-blue-500 bg-blue-100 dark:bg-blue-900/40'
-            : 'text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400'
-        }`}
+        className={`shrink-0 p-0.5 rounded transition-colors ${isDragging
+          ? 'text-blue-500 bg-blue-100 dark:bg-blue-900/40'
+          : 'text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400'
+          }`}
       >
         <GripVertical size={14} />
       </span>
@@ -102,17 +99,22 @@ export const BacklogRow = ({
 
       {/* Assignee */}
       <div className="flex w-[80px] shrink-0 items-center justify-center">
-        <div
-          className="flex h-7 w-7 items-center justify-center"
-          title={task.assignee_name || 'Unassigned'}
-        >
-          <AssigneeAvatar
-            initials={task.assigneeInitials || getInitials(task.assignee_name)}
-            color={task.assignee?.color || task.assigneeColor || colors.avatarBlue}
-          />
-        </div>
+        {task.assignee_name ? (
+          <div
+            className="flex h-7 w-7 items-center justify-center"
+            title={task.assignee_name}
+          >
+            <AssigneeAvatar
+              initials={task.assigneeInitials || getInitials(task.assignee_name)}
+              color={task.assignee?.color || task.assigneeColor || colors.avatarBlue}
+            />
+          </div>
+        ) : (
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-500 dark:bg-blue-900/40 dark:text-blue-300">
+            <UserRound size={15} strokeWidth={1.8} />
+          </div>
+        )}
       </div>
-
       {/* Priority */}
       <div className="flex w-[80px] shrink-0 items-center justify-center">
         <PriorityBadge priority={task.priority || 'Medium'} />
