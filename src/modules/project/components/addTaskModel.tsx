@@ -403,6 +403,7 @@ const AddTaskModal = ({
                       label="Assignee"
                       placeholder="Search assignee..."
                       value={memberSearch}
+                      autoComplete="off"
                       onFocus={() => setShowAssigneeDropdown(true)}
                       onChange={(e) => {
                         onMemberSearchChange?.(e.target.value);

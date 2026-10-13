@@ -19,8 +19,10 @@ class BoardService {
       searchParams.append('user_story_id', params.user_story_id);
     }
     if (params?.priority) searchParams.append('priority', params.priority);
-    if (params?.assignee_id) searchParams.append('assignee_id', params.assignee_id);
+    if (params?.task_assignee_id) searchParams.append('task_assignee_id', params.task_assignee_id);
     if (params?.type) searchParams.append('type', params.type);
+    if (params?.storyless_tasks !== undefined)
+      searchParams.append('storyless_tasks', String(params.storyless_tasks));
 
     const query = searchParams.toString();
     const endpoint = ApiEndpoints.Board.getBoard.withNamedParams({ projectId });

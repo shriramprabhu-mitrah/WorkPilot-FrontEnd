@@ -17,6 +17,7 @@ import {
   Archive,
   Link2,
   BookOpenText,
+  Download,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import type { Priority } from '@/src/types/board';
@@ -1290,17 +1291,6 @@ export const UserStoryDetailDrawer = ({
                           Move to Backlog
                         </button>
                       )} */}
-                      {canEditUserStory && (
-                        <button
-                          onClick={() => {
-                            setShowMoreMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
-                        >
-                          <Pencil size={14} />
-                          Update
-                        </button>
-                      )}
                       {canDeleteUserStory && (
                         <button
                           onClick={() => {
@@ -1603,9 +1593,10 @@ export const UserStoryDetailDrawer = ({
                                     logger.log('Failed to download attachment', error);
                                   }
                                 }}
-                                className="rounded-lg px-2 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50"
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                                title="Download"
                               >
-                                Download
+                                <Download size={15} />
                               </button>
 
                               {(canEditUserStory || canDeleteUserStory) && (
@@ -1617,8 +1608,8 @@ export const UserStoryDetailDrawer = ({
                                       await deleteAttachmentAsync(attachment.id);
                                     } catch {}
                                   }}
-                                  className="rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-                                  title="Delete attachment"
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                  title="Delete"
                                 >
                                   <Trash2 size={15} />
                                 </button>

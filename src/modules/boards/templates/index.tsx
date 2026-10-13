@@ -2,22 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Filter, Layers } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { logger } from '@/src/lib/utils/logger';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
-import { useGetBoard, useGetBoardStatusTasks } from '@/src/modules/boards/hooks/useBoards';
-import { useGetTasks } from '@/src/modules/tasks/hooks/useTask';
+import { useGetBoard, type BoardPageFilters } from '@/src/modules/boards/hooks/useBoards';
 import { useGetStatus, useGetLabels } from '@/src/modules/project/hooks/useLabels';
 import {
   useGetProjectMembers,
   useGetProjectsWithSprints,
 } from '@/src/modules/project/hooks/useProject';
 import { taskService } from '@/src/services/tasks';
-import { useQueryClient } from '@tanstack/react-query';
-import { TaskResponse, GetTasksQueryParams } from '@/src/types/task';
+import { useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { TaskResponse } from '@/src/types/task';
 import { taskTypeOptions } from '@/src/app/components/common/enum';
-import { createPortal } from 'react-dom';
 import {
   DndContext,
   DragEndEvent,
@@ -31,566 +29,39 @@ import {
   pointerWithin,
   closestCenter,
   defaultDropAnimationSideEffects,
-  useDroppable,
 } from '@dnd-kit/core';
 import type { DropAnimation } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { colors } from '@/src/styles/colors';
-import { KanbanTask } from '@/src/types/board';
-import { KanbanCardPreview } from '../components/kanbannCardsPreviews';
+import { KanbanTask, BoardQueryParams, BoardStatusColumn } from '@/src/types/board';
 import { FilterPanel, FilterState } from '@/src/app/components/common/filter-panel';
 import { useOutsideClick } from '@/src/hooks/useOutsideClick';
 import { WpButton } from '@/src/app/components/common/button';
-import BoardSkeleton from '../components/boardSkeleton';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { KanbanCardContent } from '../components/kanbannCardContent';
 import { TaskDetailDrawer } from '@/src/app/components/common/task-detail';
 import { UserStoryDetailDrawer } from '@/src/app/components/common/user-story-detail';
 import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
-import { CustomStatus } from '@/src/types/colors';
-import { ScrollIndicator } from '../components/scrollIndicator';
 import AddTaskModal from '@/src/modules/project/components/addTaskModel';
 import { useDeleteUserStory } from '@/src/modules/tasks/hooks/useUserStory';
 import toast from 'react-hot-toast';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import Image from 'next/image';
-
-// Task card component for the swimlane
-const TaskCard = ({
-  task,
-  onTaskClick,
-}: {
-  task: KanbanTask;
-  onTaskClick?: (task: KanbanTask) => void;
-  onRefetch?: () => void;
-}) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: task.id,
-    data: { type: 'card', task },
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: transition ?? 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
-    willChange: 'transform',
-  };
-
-  if (isDragging) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={{
-          ...style,
-          borderColor: colors.dragPlaceholderBorder,
-          backgroundColor: colors.dragPlaceholderBg,
-        }}
-        className="rounded-xl border-2 border-dashed h-[120px] w-full"
-      />
-    );
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onTaskClick?.(task)}
-      className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer select-none touch-none w-full"
-    >
-      <KanbanCardContent task={task} />
-    </div>
-  );
-};
-
-// Droppable column cell for each status in a user story row
-const StatusCell = ({
-  storyId,
-  statusId,
-  tasks: initialTasks,
-  isOver,
-  onTaskClick,
-  onRefetch,
-  hasMore,
-  projectId,
-  mapTask,
-  allTasksRef,
-  optimisticUpdates,
-}: {
-  storyId: string;
-  statusId: string;
-  tasks: KanbanTask[];
-  isOver: boolean;
-  onTaskClick?: (task: KanbanTask) => void;
-  onRefetch: () => void;
-  hasMore: boolean;
-  projectId: string;
-  mapTask: (
-    task: import('@/src/types/task').TaskResponse,
-    storyId: string,
-    statusId: string
-  ) => KanbanTask;
-  allTasksRef: React.MutableRefObject<Map<string, KanbanTask>>;
-  optimisticUpdates: Map<string, OptimisticUpdate>;
-}) => {
-  const { setNodeRef } = useDroppable({
-    id: `${storyId}-${statusId}`,
-    data: { type: 'cell', storyId, statusId },
-  });
-
-  const isRealStory = storyId !== 'direct-sprint-tasks' && storyId !== 'no-story';
-  const canLoadMore = hasMore && isRealStory;
-
-  const [scrollActivated, setScrollActivated] = useState(false);
-
-  const {
-    tasks: extraRawTasks,
-    isFetchingNextTasks,
-    isLoadingTasks,
-    fetchNextTasks,
-    hasNextTasks,
-  } = useGetBoardStatusTasks(projectId, storyId, statusId, scrollActivated && canLoadMore);
-
-  // Merge extra tasks (pages 2+) with the initial page-1 tasks, deduplicating by key and applying optimistic updates
-  const tasks = useMemo(() => {
-    let allTasks = initialTasks;
-    
-    if (canLoadMore && extraRawTasks.length > 0) {
-      const seen = new Set(initialTasks.map((t) => t.id));
-      const unique = extraRawTasks
-        .filter((t) => {
-          const key = t.key ?? t.id ?? '';
-          return key !== '' && !seen.has(key);
-        })
-        .map((t) => mapTask(t, storyId, statusId));
-      allTasks = [...initialTasks, ...unique];
-    }
-
-    const filteredTasks = allTasks.filter((task) => {
-      const optimistic = optimisticUpdates.get(task.id);
-      if (!optimistic) return true; 
-      
-      const movedAway = optimistic.statusId !== statusId || 
-                        (optimistic.storyId !== undefined && optimistic.storyId !== storyId);
-      return !movedAway;
-    });
-
-    return filteredTasks;
-  }, [initialTasks, extraRawTasks, canLoadMore, mapTask, storyId, statusId, optimisticUpdates]);
-
-  const allDisplayedTasks = useMemo(() => {
-    const movedInTasks: KanbanTask[] = [];
-    
-    optimisticUpdates.forEach((update, taskId) => {
-      const belongsHere = update.statusId === statusId && 
-                         (update.storyId === undefined || update.storyId === storyId);
-      
-      if (belongsHere) {
-        const alreadyHere = tasks.some((t) => t.id === taskId);
-        if (!alreadyHere && update.task) {
-          movedInTasks.push({
-            ...update.task,
-            columnId: statusId,
-            parent: update.storyId ?? update.task.parent,
-          });
-        }
-      }
-    });
-
-    return [...tasks, ...movedInTasks];
-  }, [tasks, optimisticUpdates, statusId, storyId]);
-
-  useEffect(() => {
-    const tasksRegistry = allTasksRef.current;
-    allDisplayedTasks.forEach((task) => {
-      if (task.id) {
-        tasksRegistry.set(task.id, task);
-      }
-    });
-    // Cleanup: remove tasks that are no longer in this cell
-    return () => {
-      allDisplayedTasks.forEach((task) => {
-        if (task.id) {
-          tasksRegistry.delete(task.id);
-        }
-      });
-    };
-  }, [allDisplayedTasks, allTasksRef]);
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!scrollActivated || !canLoadMore) return;
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextTasks && !isFetchingNextTasks) {
-          fetchNextTasks();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [scrollActivated, canLoadMore, hasNextTasks, isFetchingNextTasks, fetchNextTasks]);
-
-  const needsScroll = allDisplayedTasks.length >= 3 || canLoadMore;
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (!canLoadMore || scrollActivated) return;
-    const el = e.currentTarget;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-    if (nearBottom) {
-      setScrollActivated(true);
-    }
-  };
-
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (!needsScroll) return;
-    const el = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    const isAtTop = scrollTop === 0;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-    if ((e.deltaY > 0 && !isAtBottom) || (e.deltaY < 0 && !isAtTop)) {
-      e.stopPropagation();
-    }
-  };
-
-  const taskIds = allDisplayedTasks.map((task) => task.id).filter((id): id is string => !!id);
-
-  return (
-    <div
-      ref={setNodeRef}
-      onScroll={handleScroll}
-      onWheel={handleWheel}
-      style={{
-        ...(isOver ? { backgroundColor: colors.dropBg, outlineColor: colors.dropRing } : {}),
-        ...(needsScroll ? { maxHeight: '300px', overflowY: 'scroll' } : {}),
-      }}
-      className={`min-h-[100px] p-2 rounded-lg transition-colors duration-200 ${
-        isOver ? 'outline outline-2 outline-offset-[-2px]' : ''
-      }`}
-    >
-      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-2">
-          {allDisplayedTasks.map((task) => (
-            <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} onRefetch={onRefetch} />
-          ))}
-          {/* Sentinel — sits at the bottom; IntersectionObserver fires fetchNextTasks */}
-          {canLoadMore && !isFetchingNextTasks && <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />}
-          {/* Spinner while loading next page */}
-          {(isFetchingNextTasks || isLoadingTasks) && canLoadMore && (
-            <div className="flex justify-center py-3">
-              <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-blue-500 animate-spin" />
-            </div>
-          )}
-        </div>
-      </SortableContext>
-    </div>
-  );
-};
-
-// User story row component with accordion
-const UserStoryRow = ({
-  story,
-  statuses,
-  overCell,
-  onUserStoryClick,
-  onTaskClick,
-  onRefetch,
-  collapsedStatuses,
-  hasMoreByStatus,
-  projectId,
-  mapTask,
-  allTasksRef,
-  optimisticUpdates,
-}: {
-  story: UserStoryResponse & { tasksByStatus: Map<string, KanbanTask[]> };
-  statuses: CustomStatus[];
-  overCell: { storyId: string; statusId: string } | null;
-  onUserStoryClick: (story: UserStoryResponse) => void;
-  onTaskClick?: (task: KanbanTask) => void;
-  onRefetch: () => void;
-  collapsedStatuses: Set<string>;
-  hasMoreByStatus: Map<string, boolean>;
-  projectId: string;
-  mapTask: (
-    task: import('@/src/types/task').TaskResponse,
-    storyId: string,
-    statusId: string
-  ) => KanbanTask;
-  allTasksRef: React.MutableRefObject<Map<string, KanbanTask>>;
-  optimisticUpdates: Map<string, OptimisticUpdate>;
-}) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [showStoryPopup, setShowStoryPopup] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-
-  const isSpecialStory = story.id === 'direct-sprint-tasks' || story.id === 'no-story';
-
-  return (
-    <div
-      className={`border-b border-gray-200 ${isSpecialStory ? 'bg-indigo-50/20 dark:bg-indigo-950/10' : ''}`}
-    >
-      <div className="flex items-stretch">
-        {/* Sticky User Story Column on the left */}
-        <div
-          className={`sticky left-0 z-10 border-r w-[200px] sm:w-[250px] flex-shrink-0 p-3 flex flex-col justify-start transition-colors ${
-            isSpecialStory
-              ? 'bg-indigo-50 border-indigo-200/80 dark:bg-slate-900/90 dark:border-indigo-900/50'
-              : 'bg-gray-50 border-gray-200 dark:bg-gray-800/90 dark:border-gray-700'
-          }`}
-        >
-          <div className="flex items-start gap-2">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 rounded transition-all duration-200 mt-0.5"
-              aria-label={isExpanded ? 'Collapse story tasks' : 'Expand story tasks'}
-            >
-              <svg
-                className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out ${
-                  isExpanded ? 'rotate-90' : ''
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-            <div
-              onClick={() => {
-                if (!isSpecialStory) {
-                  onUserStoryClick(story);
-                }
-              }}
-              onMouseEnter={(e) => {
-                if (isSpecialStory) return;
-                setShowStoryPopup(true);
-                setPopupPosition({
-                  x: e.clientX,
-                  y: e.clientY,
-                });
-              }}
-              onMouseMove={(e) => {
-                if (isSpecialStory) return;
-                setPopupPosition({
-                  x: e.clientX,
-                  y: e.clientY,
-                });
-              }}
-              onMouseLeave={() => setShowStoryPopup(false)}
-              className={`relative flex items-start gap-2 flex-1 min-w-0 ${
-                !isSpecialStory ? 'cursor-pointer group' : 'cursor-default'
-              }`}
-            >
-              {isSpecialStory ? (
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-200 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs">
-                      <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      Storyless Tasks
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-gray-500 dark:text-slate-100 mt-1 pl-0.5">
-                    {story.total_tasks ?? 0} {story.total_tasks === 1 ? 'task' : 'tasks'} (no story)
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
-                    style={{
-                      backgroundColor:
-                        story.priority === 'high'
-                          ? '#dc2626'
-                          : story.priority === 'medium'
-                            ? '#f59e0b'
-                            : '#10b981',
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`text-sm font-semibold text-gray-800 truncate dark:text-slate-100 ${
-                        !isSpecialStory ? 'group-hover:text-blue-600 transition-colors' : ''
-                      } ${story.is_closed ? 'line-through' : ''}`}
-                    >
-                      {story.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-slate-200 mt-0.5">
-                      {story.total_tasks ?? 0} tasks · {story.story_points ?? 0} pts
-                    </p>
-                  </div>
-                </>
-              )}
-              {showStoryPopup &&
-                typeof document !== 'undefined' &&
-                createPortal(
-                  <div
-                    className="fixed z-[99999] w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl dark:bg-gray-100"
-                    style={{
-                      left: popupPosition.x + 12,
-                      top: popupPosition.y + 12,
-                    }}
-                  >
-                    {/* Name */}
-                    {/* Name */}
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <span className="text-xs text-gray-500 dark:text-slate-100 shrink-0">
-                        Name
-                      </span>
-
-                      <span className="text-sm font-medium text-gray-800 dark:text-slate-100 text-right break-words min-w-0 flex-1">
-                        {story.title}
-                      </span>
-                    </div>
-                    <div className="space-y-3">
-                      {/* Status */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-slate-100">Status</span>
-                        <span className="text-sm font-medium text-gray-800 capitalize dark:text-slate-100">
-                          {story.status?.replace('_', ' ') || '-'}
-                        </span>
-                      </div>
-
-                      {/* Assignee */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-slate-100 ">Assignee</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-slate-100">
-                          {story.assignee_name || story.assignee?.name || 'Unassigned'}
-                        </span>
-                      </div>
-
-                      {/* Due Date */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-slate-100">Due Date</span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-slate-100">
-                          {story.due_date ? new Date(story.due_date).toLocaleDateString() : '-'}
-                        </span>
-                      </div>
-
-                      {/* Reporter */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-slate-100">Reporter</span>
-                        <span className="max-w-[160px] truncate text-sm font-medium text-gray-800 dark:text-slate-100">
-                          {story.reporter_name || story.reporter?.name || '-'}
-                        </span>
-                      </div>
-
-                      {/* Priority */}
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-xs text-gray-500 dark:text-slate-100">Priority</span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-slate-100 capitalize">
-                          {story.priority || '-'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>,
-                  document.body
-                )}
-            </div>
-          </div>
-
-          {/* Empty status columns for header row */}
-          {statuses.map((status) => {
-            const isCollapsed = collapsedStatuses.has(status.id);
-            return (
-              <div
-                key={status.id}
-                className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-                  isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                }`}
-              />
-            );
-          })}
-        </div>
-
-        {statuses.map((status) => {
-          const tasks = story.tasksByStatus.get(status.id) || [];
-          const isOver = overCell?.storyId === story.id && overCell?.statusId === status.id;
-          const isCollapsed = collapsedStatuses.has(status.id);
-
-          return (
-            <div
-              key={status.id}
-              className={`flex-shrink-0 border-r border-gray-200 transition-all duration-300 ${
-                isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-              }`}
-            >
-              {/* Expanded Tasks with smooth CSS Grid animation */}
-              <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  isExpanded && !isCollapsed
-                    ? 'grid-rows-[1fr] opacity-100'
-                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
-              >
-                <div className="overflow-hidden min-h-0">
-                  <StatusCell
-                    storyId={story.id}
-                    statusId={status.id}
-                    tasks={tasks}
-                    isOver={isOver}
-                    onTaskClick={onTaskClick}
-                    onRefetch={onRefetch}
-                    hasMore={hasMoreByStatus.get(status.id) ?? false}
-                    projectId={projectId}
-                    mapTask={mapTask}
-                    allTasksRef={allTasksRef}
-                    optimisticUpdates={optimisticUpdates}
-                  />
-                </div>
-              </div>
-
-              {/* Collapsed summary with smooth transition */}
-              <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                  !isExpanded || isCollapsed
-                    ? 'grid-rows-[1fr] opacity-100'
-                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
-                }`}
-              >
-                <div className="overflow-hidden min-h-0">
-                  <div className="h-[52px] p-2 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-500">
-                      {tasks.length > 0 ? (
-                        isCollapsed ? (
-                          tasks.length
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-type OptimisticUpdate = {
-  statusId: string;
-  storyId?: string;
-  task?: KanbanTask;
-};
+import {
+  UserStoryRow,
+  BoardSkeleton,
+  KanbanCardPreview,
+  ScrollIndicator,
+  isStorylessId,
+  patchPageData,
+  columnsOf,
+  STORYLESS_ID,
+  type OptimisticUpdate,
+  BoardInfiniteData,
+  ColumnPatch,
+  getStorylessColumns,
+} from '../components';
+import { CustomStatus } from '@/src/types/colors';
+import { AssigneeAvatars } from '../components/assigneeAvatar';
+import { StatusColumnHeader } from '../components/statusColumnHeader';
 
 export const KanbanBoardTemplate = () => {
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
@@ -734,15 +205,26 @@ export const KanbanBoardTemplate = () => {
 
   // Board API query params — user stories with their statuses+tasks
   const boardQueryParams = useMemo(() => {
-    const p: import('@/src/types/board').BoardQueryParams = { page_size: 50, tasks_per_status: 3 };
+    const p: BoardQueryParams = { page_size: 50, tasks_per_status: 3 };
     if (selectedSprint) p.sprint_id = selectedSprint;
     if (filters.priorities.length > 0)
       p.priority = filters.priorities.map((v) => v.toLowerCase()).join(',');
-    if (assigneeIdFilter.length > 0) p.assignee_id = assigneeIdFilter.join(',');
+    if (assigneeIdFilter.length > 0) p.task_assignee_id = assigneeIdFilter.join(',');
     if (filters.types.length > 0) p.type = filters.types.map((v) => v.toLowerCase()).join(',');
     if (filters.statuses.length > 0) p.task_status_id = filters.statuses.join(',');
     return p;
   }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
+
+  const pageFilters = useMemo<BoardPageFilters>(
+    () => ({
+      sprint_id: boardQueryParams.sprint_id,
+      priority: boardQueryParams.priority,
+      task_assignee_id: boardQueryParams.task_assignee_id,
+      type: boardQueryParams.type,
+      task_status_id: boardQueryParams.task_status_id,
+    }),
+    [boardQueryParams]
+  );
 
   const { boardStories, isLoadingBoard, refetchBoard } = useGetBoard(
     selectedProject,
@@ -750,27 +232,31 @@ export const KanbanBoardTemplate = () => {
     !!selectedProject && canViewBoard
   );
 
-  const directSprintQueryParams = useMemo((): GetTasksQueryParams => {
-    const p: GetTasksQueryParams = { storyless_task: true, page_size: 100 };
+  const storylessQueryParams = useMemo(() => {
+    const p: BoardQueryParams = {
+      page_size: 50,
+      tasks_per_status: 3,
+      storyless_tasks: true,
+    };
     if (selectedSprint) p.sprint_id = selectedSprint;
     if (filters.priorities.length > 0)
       p.priority = filters.priorities.map((v) => v.toLowerCase()).join(',');
-    if (assigneeIdFilter.length > 0) p.assignee_id = assigneeIdFilter.join(',');
+    if (assigneeIdFilter.length > 0) p.task_assignee_id = assigneeIdFilter.join(',');
     if (filters.types.length > 0) p.type = filters.types.map((v) => v.toLowerCase()).join(',');
-    if (filters.statuses.length > 0) p.status_id = filters.statuses.join(',');
+    if (filters.statuses.length > 0) p.task_status_id = filters.statuses.join(',');
     return p;
   }, [selectedSprint, filters.priorities, filters.types, filters.statuses, assigneeIdFilter]);
 
   const {
-    tasksList: directSprintTasksList,
-    isLoadingTasks: isLoadingDirectSprintTasks,
-    refetchTasks: refetchDirectSprintTasks,
-  } = useGetTasks(selectedProject, directSprintQueryParams, !!selectedProject && canViewBoard);
+    boardStories: storylessStories,
+    isLoadingBoard: isLoadingStorylessTasks,
+    refetchBoard: refetchStorylessTasks,
+  } = useGetBoard(selectedProject, storylessQueryParams, !!selectedProject && canViewBoard);
 
   const handleRefetch = useCallback(() => {
     refetchBoard();
-    refetchDirectSprintTasks();
-  }, [refetchBoard, refetchDirectSprintTasks]);
+    refetchStorylessTasks();
+  }, [refetchBoard, refetchStorylessTasks]);
 
   // Fetch status columns
   const { data: statuses = [], isLoading: isLoadingStatus } = useGetStatus(selectedProject);
@@ -786,7 +272,7 @@ export const KanbanBoardTemplate = () => {
   const boardLoading =
     !!selectedProject &&
     canViewBoard &&
-    (isLoadingBoard || isLoadingDirectSprintTasks || isLoadingStatus);
+    (isLoadingBoard || isLoadingStorylessTasks || isLoadingStatus);
 
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
@@ -902,8 +388,7 @@ export const KanbanBoardTemplate = () => {
       parentStoryTitle?: string
     ): KanbanTask => {
       const taskKey = task.key ?? task.id ?? '';
-      const isRealStory =
-        parentStoryId && parentStoryId !== 'direct-sprint-tasks' && parentStoryId !== 'no-story';
+      const isRealStory = !!parentStoryId && !isStorylessId(parentStoryId);
       return {
         id: taskKey,
         taskId: task.id ?? '',
@@ -949,8 +434,8 @@ export const KanbanBoardTemplate = () => {
       const tasksByStatus = story.statuses.reduce<Map<string, KanbanTask[]>>((acc, statusCol) => {
         const tasks = allStoryTasks
           .filter((task) => {
-            const taskKey = task.key ?? task.id ?? '';
-            const optimistic = optimisticUpdates.get(taskKey);
+            const key = task.key ?? task.id ?? '';
+            const optimistic = optimisticUpdates.get(key);
             if (optimistic) {
               return optimistic.statusId === statusCol.status_id && optimistic.storyId === story.id;
             }
@@ -961,8 +446,8 @@ export const KanbanBoardTemplate = () => {
           })
           .filter((task) => !hasActiveFilter || taskMatchesFilters(task))
           .map((task) => {
-            const taskKey = task.key ?? task.id ?? '';
-            const optimistic = optimisticUpdates.get(taskKey);
+            const key = task.key ?? task.id ?? '';
+            const optimistic = optimisticUpdates.get(key);
             const effectiveStatusId = optimistic?.statusId ?? statusCol.status_id;
             const effectiveStoryId = optimistic?.storyId ?? story.id;
             return mapToKanbanTask(
@@ -973,25 +458,20 @@ export const KanbanBoardTemplate = () => {
               story.title
             );
           });
-        const movedInFromOtherStory = Array.from(optimisticUpdates.entries())
-          .filter(([, upd]) => upd.storyId === story.id && upd.statusId === statusCol.status_id)
-          .flatMap(([taskKey]) => {
-            const rawTask = (() => {
-              for (const s of boardStories) {
-                const found = s.statuses
-                  .flatMap((c) => c.tasks)
-                  .find((t) => (t.key ?? t.id) === taskKey);
-                if (found) return found;
-              }
-              return undefined;
-            })();
-            if (!rawTask) return [];
-            const alreadyIn = taskLookup.has(taskKey);
-            if (alreadyIn) return [];
-            return [
-              mapToKanbanTask(rawTask, story.id, statusCol.status_id, story.key, story.title),
-            ];
-          })
+
+        const movedInFromOtherStory: KanbanTask[] = Array.from(optimisticUpdates.entries())
+          .filter(
+            ([key, upd]) =>
+              !!upd.task &&
+              upd.storyId === story.id &&
+              upd.statusId === statusCol.status_id &&
+              !taskLookup.has(key)
+          )
+          .map(([, upd]) => ({
+            ...(upd.task as KanbanTask),
+            columnId: statusCol.status_id,
+            parent: story.id,
+          }))
           .filter((t) => !tasks.some((kt) => kt.id === t.id));
 
         const allTasks = [...tasks, ...movedInFromOtherStory];
@@ -999,44 +479,51 @@ export const KanbanBoardTemplate = () => {
         return acc;
       }, new Map());
 
-      const total_tasks = Array.from(tasksByStatus.values()).reduce(
-        (sum, arr) => sum + arr.length,
-        0
-      );
-
-      return { ...story, tasksByStatus, hasMoreByStatus, total_tasks };
+      return { ...story, tasksByStatus, hasMoreByStatus, total_tasks: story.total_tasks ?? 0 };
     });
 
-    const directSprintTasks = (directSprintTasksList ?? []).filter(
-      (task) => !hasActiveFilter || taskMatchesFilters(task)
+    const storylessStatusColumns = getStorylessColumns(storylessStories);
+
+    const storylessTasks = storylessStatusColumns
+      .flatMap((statusCol) => statusCol.tasks ?? [])
+      .filter((task) => !hasActiveFilter || taskMatchesFilters(task));
+
+    const storylessTasksByStatus = storylessTasks.reduce<Map<string, KanbanTask[]>>((acc, task) => {
+      const key = task.key ?? task.id ?? '';
+      const optimistic = optimisticUpdates.get(key);
+      const effectiveStoryId = optimistic?.storyId ?? STORYLESS_ID;
+      if (effectiveStoryId !== STORYLESS_ID) return acc;
+      const resolvedStatus = resolveStatusId(task);
+      const effectiveStatusId = optimistic?.statusId ?? resolvedStatus;
+      const kt = mapToKanbanTask(task, STORYLESS_ID, effectiveStatusId);
+      const bucket = acc.get(effectiveStatusId) ?? [];
+      if (bucket.some((t) => t.id === kt.id)) return acc;
+      acc.set(effectiveStatusId, [...bucket, kt]);
+      return acc;
+    }, new Map());
+
+    optimisticUpdates.forEach((upd, key) => {
+      if (upd.storyId !== STORYLESS_ID || !upd.task) return;
+      const bucket = storylessTasksByStatus.get(upd.statusId) ?? [];
+      if (bucket.some((t) => t.id === key)) return;
+      storylessTasksByStatus.set(upd.statusId, [
+        ...bucket,
+        { ...upd.task, columnId: upd.statusId, parent: STORYLESS_ID },
+      ]);
+    });
+
+    const storylessHasMoreByStatus = new Map<string, boolean>(
+      storylessStatusColumns.map((col) => [col.status_id, col.meta?.has_next ?? false])
     );
 
-    // Group storyless tasks by their effective status, respecting optimistic moves
-    const storylessTasksByStatus = directSprintTasks.reduce<Map<string, KanbanTask[]>>(
-      (acc, task) => {
-        const taskKey = task.key ?? task.id ?? '';
-        const optimistic = optimisticUpdates.get(taskKey);
-        const effectiveStoryId = optimistic?.storyId ?? 'direct-sprint-tasks';
-        // If optimistically moved to a real story, skip from storyless row
-        if (effectiveStoryId !== 'direct-sprint-tasks') return acc;
-        const resolvedStatus = resolveStatusId(task);
-        const effectiveStatusId = optimistic?.statusId ?? resolvedStatus;
-        const kt = mapToKanbanTask(task, 'direct-sprint-tasks', effectiveStatusId);
-        const bucket = acc.get(effectiveStatusId) ?? [];
-        acc.set(effectiveStatusId, [...bucket, kt]);
-        return acc;
-      },
-      new Map()
-    );
-
-    const directSprintTotal = Array.from(storylessTasksByStatus.values()).reduce(
-      (sum, arr) => sum + arr.length,
+    const directSprintTotal = storylessStatusColumns.reduce(
+      (sum, col) => sum + (col.task_count ?? 0),
       0
     );
 
     if (directSprintTotal > 0 || (!!selectedSprint && !hasActiveFilter)) {
       mappedStories.push({
-        id: 'direct-sprint-tasks',
+        id: STORYLESS_ID,
         title: 'Storyless Tasks',
         description: selectedSprint
           ? 'Tasks assigned to this sprint without a user story'
@@ -1045,15 +532,15 @@ export const KanbanBoardTemplate = () => {
         status: 'in_progress',
         statuses: [],
         tasksByStatus: storylessTasksByStatus,
-        hasMoreByStatus: new Map<string, boolean>(),
+        hasMoreByStatus: storylessHasMoreByStatus,
         total_tasks: directSprintTotal,
       } as unknown as (typeof mappedStories)[0]);
     }
 
-    return mappedStories.filter((story) => story.total_tasks > 0 || !hasActiveFilter);
+    return mappedStories;
   }, [
     boardStories,
-    directSprintTasksList,
+    storylessStories,
     selectedSprint,
     hasActiveFilter,
     taskMatchesFilters,
@@ -1176,8 +663,7 @@ export const KanbanBoardTemplate = () => {
       window.history.pushState(null, '', `/${orgSlug}/${currentSlug}/boards`);
       router.replace(`/${orgSlug}/${currentSlug}/boards`, { scroll: false });
     }
-    handleRefetch();
-  }, [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, taskKey, router, handleRefetch]);
+  }, [projectSlug, storeProject?.slug, storeProject?.id, orgSlug, taskKey, router]);
 
   const hasTasks = processedStories.some((story) => (story.total_tasks ?? 0) > 0);
 
@@ -1381,7 +867,7 @@ export const KanbanBoardTemplate = () => {
           }
           if (sourceStory) break;
         }
-       
+
         if (!sourceStory && taskFromRef.parent && taskFromRef.columnId) {
           sourceStatusId = taskFromRef.columnId;
           // Find the story by ID
@@ -1404,13 +890,18 @@ export const KanbanBoardTemplate = () => {
         }
       }
 
-      if (!task || !sourceStory || !sourceStatusId) return;
+      if (!task || !sourceStory || !sourceStatusId || !task.taskId) return;
 
-      const sourceStoryId = sourceStory.id ?? '';
+      const movedTask: KanbanTask = task;
+      const taskId: string = task.taskId;
+      const projectId = task.projectId ?? selectedProject;
+      const srcStoryId = sourceStory.id ?? '';
+      const srcStatusId: string = sourceStatusId;
+      const tgtStoryId: string = targetStoryId;
+      const tgtStatusId: string = targetStatusId;
 
-      // Check if anything changed
-      const statusChanged = sourceStatusId !== targetStatusId;
-      const storyChanged = sourceStoryId !== targetStoryId;
+      const statusChanged = srcStatusId !== tgtStatusId;
+      const storyChanged = srcStoryId !== tgtStoryId;
 
       if (!statusChanged && !storyChanged) return;
       // Build the update payload
@@ -1419,338 +910,235 @@ export const KanbanBoardTemplate = () => {
         user_story_id?: string | null;
         sprint_id?: string | null;
       } = {
-        status_id: targetStatusId,
+        status_id: tgtStatusId,
       };
 
       // If the user story / section changed, include it in the payload
       if (storyChanged) {
-        if (targetStoryId === 'direct-sprint-tasks' || targetStoryId === 'no-story') {
+        if (isStorylessId(tgtStoryId)) {
           updatePayload.user_story_id = null;
           if (selectedSprint) {
             updatePayload.sprint_id = selectedSprint;
           }
         } else {
-          updatePayload.user_story_id = targetStoryId;
+          updatePayload.user_story_id = tgtStoryId;
         }
       }
 
       // Optimistically update the UI — save task snapshot for moved-in cells
       setOptimisticUpdates((prev) => {
         const next = new Map(prev);
-        next.set(task.id, {
-          statusId: targetStatusId,
-          storyId: storyChanged ? targetStoryId : sourceStoryId,
-          task: task, // Save the task snapshot
+        next.set(movedTask.id, {
+          statusId: tgtStatusId,
+          storyId: storyChanged ? tgtStoryId : srcStoryId,
+          task: movedTask,
         });
         return next;
       });
 
-      // Call the API
-      if (task.taskId) {
-        taskService
-          .updateTask(task.projectId ?? '', task.taskId, updatePayload)
-          .then(async () => {
-            const projectId = task.projectId ?? '';
+      const clearOptimistic = () =>
+        setOptimisticUpdates((prev) => {
+          const next = new Map(prev);
+          next.delete(movedTask.id);
+          return next;
+        });
 
-            // Reconcile the board cache — move the task across status columns / stories
-            queryClient.setQueriesData<{
-              pages: Array<{
-                data: import('@/src/types/board').BoardStory[];
-                [key: string]: unknown;
-              }>;
-              [key: string]: unknown;
-            }>({ queryKey: ['board', projectId] }, (oldData) => {
-              if (!oldData?.pages) return oldData;
+      const isSameTask = (t: TaskResponse) =>
+        t.id === taskId || t.id === movedTask.id || t.key === movedTask.id;
 
-              // Find the raw TaskResponse we need to relocate
-              let rawTask: import('@/src/types/task').TaskResponse | undefined;
-              for (const page of oldData.pages) {
-                for (const s of page.data) {
-                  for (const col of s.statuses) {
-                    const found = col.tasks.find((t) => t.id === task.taskId);
-                    if (found) {
-                      rawTask = found;
-                      break;
-                    }
-                  }
-                  if (rawTask) break;
-                }
-                if (rawTask) break;
+      const reconcileCaches = () => {
+        let rawTask: TaskResponse | undefined;
+        const cachedBoards = queryClient.getQueriesData<BoardInfiniteData>({
+          queryKey: ['board', projectId],
+        });
+        outer: for (const [, data] of cachedBoards) {
+          for (const page of data?.pages ?? []) {
+            for (const { col } of columnsOf(page.data)) {
+              const found = col.tasks?.find(isSameTask);
+              if (found) {
+                rawTask = found;
+                break outer;
               }
+            }
+          }
+        }
 
+        let pagedSourceHasTask = false;
+        const cachedSourcePages = queryClient.getQueriesData<BoardInfiniteData>({
+          queryKey: ['board-status-tasks', projectId, srcStoryId, srcStatusId],
+        });
+        for (const [, data] of cachedSourcePages) {
+          for (const page of data?.pages ?? []) {
+            for (const { col } of columnsOf(page.data)) {
+              if (col.status_id === srcStatusId && col.tasks?.some(isSameTask)) {
+                pagedSourceHasTask = true;
+              }
+            }
+          }
+        }
+
+        const baseTask: TaskResponse = rawTask ?? {
+          id: taskId,
+          project_id: projectId,
+          key: movedTask.id,
+          title: movedTask.title,
+          type: 'task',
+          status: '',
+          priority: movedTask.priority?.toLowerCase() as 'low' | 'medium' | 'high' | undefined,
+          assignee_id: undefined,
+          assignee_name:
+            typeof movedTask.assignee === 'string' ? movedTask.assignee : movedTask.assignee?.name,
+          assignee: movedTask.assigneeColor
+            ? {
+                color: movedTask.assigneeColor,
+                name:
+                  typeof movedTask.assignee === 'string'
+                    ? movedTask.assignee
+                    : (movedTask.assignee?.name ?? ''),
+              }
+            : undefined,
+          estimated_hours: 0,
+          reporter_id: undefined,
+          reporter_name: undefined,
+          story_points: movedTask.storyPoints ?? 0,
+          due_date: movedTask.dueDate ? `${movedTask.dueDate}T00:00:00Z` : '',
+          user_story_id: movedTask.user_story_id,
+          sprint_id: undefined,
+          created_at: '',
+          updated_at: '',
+        };
+
+        const withNewPlace = (t: TaskResponse, col: BoardStatusColumn): TaskResponse => ({
+          ...t,
+          status_id: tgtStatusId,
+          status: col.status_name ?? t.status,
+          status_color: col.color ?? t.status_color,
+          user_story_id: storyChanged
+            ? (updatePayload.user_story_id ?? undefined)
+            : t.user_story_id,
+          sprint_id: updatePayload.sprint_id ?? t.sprint_id,
+        });
+
+        const buildPatch = (insertIfMissing: boolean, countAbsentSource: boolean): ColumnPatch => {
+          let inserted = false;
+          return (col, sId) => {
+            if (sId === srcStoryId && col.status_id === srcStatusId) {
+              const present = col.tasks.some(isSameTask);
+              if (!present && !countAbsentSource) return col;
               return {
-                ...oldData,
-                pages: oldData.pages.map((page) => ({
-                  ...page,
-                  data: page.data.map((boardStory) => {
-                    const isSource = boardStory.id === sourceStoryId;
-                    const isTarget = boardStory.id === targetStoryId;
-                    if (!isSource && !isTarget) return boardStory;
-
-                    const updatedStatuses = boardStory.statuses.map((col) => {
-                      // Remove from old column in source story
-                      if (isSource && col.status_id === sourceStatusId) {
-                        return {
-                          ...col,
-                          tasks: col.tasks.filter((t) => t.id !== task.taskId),
-                          task_count: Math.max(col.task_count - 1, 0),
-                        };
-                      }
-                      // Add to new column in target story
-                      if (isTarget && col.status_id === targetStatusId) {
-                        if (col.tasks.some((t) => t.id === task.taskId)) return col;
-                        
-                        // Use rawTask if available, otherwise reconstruct from the KanbanTask
-                        const baseTask: import('@/src/types/task').TaskResponse = rawTask ?? {
-                          id: task.taskId ?? '',
-                          project_id: task.projectId ?? projectId,
-                          key: task.id,
-                          title: task.title,
-                          type: 'task',
-                          status: '',
-                          priority: task.priority?.toLowerCase() as 'low' | 'medium' | 'high' | undefined,
-                          assignee_id: undefined,
-                          assignee_name:typeof task.assignee === 'string'? task.assignee : task.assignee?.name,
-                          assignee: task.assigneeColor ? { color: task.assigneeColor,
-                                name:
-                                  typeof task.assignee === 'string'
-                                    ? task.assignee
-                                    : task.assignee?.name ?? '',
-                              }
-                            : undefined,
-                          estimated_hours: 0,
-                          reporter_id: undefined,
-                          reporter_name: undefined,
-                          story_points: task.storyPoints ?? 0,
-                          due_date: task.dueDate ? `${task.dueDate}T00:00:00Z` : '',
-                          user_story_id: task.user_story_id,
-                          sprint_id: undefined,
-                          created_at: '',
-                          updated_at: '',
-                        };
-                        
-                        const updatedRaw: import('@/src/types/task').TaskResponse = {
-                          ...baseTask,
-                          status_id: targetStatusId,
-                          status: col.status_name ?? '',
-                          status_color: col.color ?? '',
-                          user_story_id: storyChanged
-                            ? (updatePayload.user_story_id ?? undefined)
-                            : task.user_story_id,
-                          sprint_id: updatePayload.sprint_id ?? task.sprint_id,
-                        };
-                        return {
-                          ...col,
-                          tasks: [...col.tasks, updatedRaw],
-                          task_count: col.task_count + 1,
-                        };
-                      }
-                      return col;
-                    });
-
-                    return { ...boardStory, statuses: updatedStatuses };
-                  }),
-                })),
+                ...col,
+                tasks: present ? col.tasks.filter((t) => !isSameTask(t)) : col.tasks,
+                task_count: Math.max((col.task_count || 0) - 1, 0),
               };
-            });
-
-            // Also reconcile the tasks cache (used by storyless row)
-            queryClient.setQueriesData<{
-              data: import('@/src/types/task').TaskResponse[];
-              [key: string]: unknown;
-            }>({ queryKey: ['tasks', projectId] }, (oldData) => {
-              if (!oldData?.data) return oldData;
-              return {
-                ...oldData,
-                data: oldData.data.map((item) =>
-                  item.id === task.taskId
-                    ? {
-                        ...item,
-                        status_id: targetStatusId,
-                        user_story_id: storyChanged
-                          ? (updatePayload.user_story_id ?? undefined)
-                          : item.user_story_id,
-                        sprint_id: updatePayload.sprint_id ?? item.sprint_id,
-                      }
-                    : item
-                ),
-              };
-            });
-
-            // Source cell paginated cache
-            queryClient.setQueriesData<{
-              pages: Array<{
-                data: import('@/src/types/board').BoardStory | import('@/src/types/board').BoardStory[];
-                [key: string]: unknown;
-              }>;
-              [key: string]: unknown;
-            }>(
-              { 
-                predicate: (query) => {
-                  const key = query.queryKey;
-                  return (
-                    Array.isArray(key) &&
-                    key[0] === 'board-status-tasks' &&
-                    key[1] === projectId &&
-                    key[2] === sourceStoryId &&
-                    key[3] === sourceStatusId
-                  );
-                }
-              },
-              (oldData) => {
-                if (!oldData?.pages) return oldData;
-                
+            }
+            if (sId === tgtStoryId && col.status_id === tgtStatusId) {
+              if (col.tasks.some(isSameTask)) {
                 return {
-                  ...oldData,
-                  pages: oldData.pages.map((page) => {
-                    const story = Array.isArray(page.data) ? page.data[0] : page.data;
-                    if (!story) return page;
-                    
-                    return {
-                      ...page,
-                      data: Array.isArray(page.data) ? [{
-                        ...story,
-                        statuses: story.statuses?.map((col) =>
-                          col.status_id === sourceStatusId
-                            ? {
-                                ...col,
-                                tasks: col.tasks.filter((t) => t.id !== task.taskId),
-                                task_count: Math.max((col.task_count || 0) - 1, 0),
-                              }
-                            : col
-                        ),
-                      }] : {
-                        ...story,
-                        statuses: story.statuses?.map((col) =>
-                          col.status_id === sourceStatusId
-                            ? {
-                                ...col,
-                                tasks: col.tasks.filter((t) => t.id !== task.taskId),
-                                task_count: Math.max((col.task_count || 0) - 1, 0),
-                              }
-                            : col
-                        ),
-                      },
-                    };
-                  }),
+                  ...col,
+                  tasks: col.tasks.map((t) => (isSameTask(t) ? withNewPlace(t, col) : t)),
                 };
               }
-            );
+              if (!insertIfMissing || inserted) return col;
+              inserted = true;
+              return {
+                ...col,
+                tasks: [...col.tasks, withNewPlace(baseTask, col)],
+                task_count: (col.task_count || 0) + 1,
+              };
+            }
+            return col;
+          };
+        };
 
-            // Target cell paginated cache (if task exists in paginated data, update it)
-            queryClient.setQueriesData<{
-              pages: Array<{
-                data: import('@/src/types/board').BoardStory | import('@/src/types/board').BoardStory[];
-                [key: string]: unknown;
-              }>;
-              [key: string]: unknown;
-            }>(
-              { 
-                predicate: (query) => {
-                  const key = query.queryKey;
-                  return (
-                    Array.isArray(key) &&
-                    key[0] === 'board-status-tasks' &&
-                    key[1] === projectId &&
-                    key[2] === targetStoryId &&
-                    key[3] === targetStatusId
-                  );
-                }
-              },
-              (oldData) => {
-                if (!oldData?.pages) return oldData;
-                
-                // Only update if task already exists in this paginated cache
-                let taskFound = false;
-                oldData.pages.forEach((page) => {
-                  const story = Array.isArray(page.data) ? page.data[0] : page.data;
-                  if (story?.statuses) {
-                    story.statuses.forEach((col) => {
-                      if (col.tasks.some((t) => t.id === task.taskId)) {
-                        taskFound = true;
-                      }
-                    });
+        queryClient.setQueriesData<BoardInfiniteData>({ queryKey: ['board', projectId] }, (old) => {
+          if (!old?.pages) return old;
+          const patch = buildPatch(true, pagedSourceHasTask);
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: patchPageData(page.data, patch),
+            })),
+          };
+        });
+
+        queryClient.setQueriesData<BoardInfiniteData>(
+          {
+            predicate: (query) => {
+              const key = query.queryKey;
+              return (
+                Array.isArray(key) &&
+                key[0] === 'board-status-tasks' &&
+                key[1] === projectId &&
+                ((key[2] === srcStoryId && key[3] === srcStatusId) ||
+                  (key[2] === tgtStoryId && key[3] === tgtStatusId))
+              );
+            },
+          },
+          (old) => {
+            if (!old?.pages) return old;
+            const patch = buildPatch(true, false);
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: patchPageData(page.data, patch),
+              })),
+            };
+          }
+        );
+
+        queryClient.setQueriesData<{
+          data: TaskResponse[];
+          [key: string]: unknown;
+        }>({ queryKey: ['tasks', projectId] }, (oldData) => {
+          if (!oldData?.data) return oldData;
+          return {
+            ...oldData,
+            data: oldData.data.map((item) =>
+              isSameTask(item)
+                ? {
+                    ...item,
+                    status_id: tgtStatusId,
+                    user_story_id: storyChanged
+                      ? (updatePayload.user_story_id ?? undefined)
+                      : item.user_story_id,
+                    sprint_id: updatePayload.sprint_id ?? item.sprint_id,
                   }
-                });
-                
-                if (!taskFound) return oldData; 
-                
-                return {
-                  ...oldData,
-                  pages: oldData.pages.map((page) => {
-                    const story = Array.isArray(page.data) ? page.data[0] : page.data;
-                    if (!story) return page;
-                    
-                    return {
-                      ...page,
-                      data: Array.isArray(page.data) ? [{
-                        ...story,
-                        statuses: story.statuses?.map((col) =>
-                          col.status_id === targetStatusId
-                            ? {
-                                ...col,
-                                tasks: col.tasks.map((t) => 
-                                  t.id === task.taskId 
-                                    ? {
-                                        ...t,
-                                        status_id: targetStatusId,
-                                        user_story_id: storyChanged
-                                          ? (updatePayload.user_story_id ?? undefined)
-                                          : t.user_story_id,
-                                        sprint_id: updatePayload.sprint_id ?? t.sprint_id,
-                                      }
-                                    : t
-                                ),
-                              }
-                            : col
-                        ),
-                      }] : {
-                        ...story,
-                        statuses: story.statuses?.map((col) =>
-                          col.status_id === targetStatusId
-                            ? {
-                                ...col,
-                                tasks: col.tasks.map((t) => 
-                                  t.id === task.taskId 
-                                    ? {
-                                        ...t,
-                                        status_id: targetStatusId,
-                                        user_story_id: storyChanged
-                                          ? (updatePayload.user_story_id ?? undefined)
-                                          : t.user_story_id,
-                                        sprint_id: updatePayload.sprint_id ?? t.sprint_id,
-                                      }
-                                    : t
-                                ),
-                              }
-                            : col
-                        ),
-                      },
-                    };
-                  }),
-                };
-              }
-            );
+                : item
+            ),
+          };
+        });
+      };
 
-            // Clear the optimistic entry — cache is now the source of truth
-            setOptimisticUpdates((prev) => {
-              const next = new Map(prev);
-              next.delete(task.id);
-              return next;
-            });
-          })
-          .catch((err: Error) => {
-            logger.log('Failed to update task', err);
-            // Revert the optimistic update on error
-            setOptimisticUpdates((prev) => {
-              const next = new Map(prev);
-              next.delete(task.id);
-              return next;
-            });
-          });
-      }
+      taskService
+        .updateTask(projectId, taskId, updatePayload)
+        .then(async () => {
+          const snapshots: Array<[QueryKey, unknown]> = [
+            ...queryClient.getQueriesData({ queryKey: ['board', projectId] }),
+            ...queryClient.getQueriesData({ queryKey: ['board-status-tasks', projectId] }),
+            ...queryClient.getQueriesData({ queryKey: ['tasks', projectId] }),
+          ];
+
+          try {
+            reconcileCaches();
+          } catch (cacheErr) {
+            logger.log('Cache reconcile failed', cacheErr);
+            snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+            queryClient.invalidateQueries({ queryKey: ['board', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['board-status-tasks', projectId] });
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          clearOptimistic();
+        })
+        .catch((err: Error) => {
+          logger.log('Failed to update task', err);
+          clearOptimistic();
+          toast.error('Failed to move task');
+        });
     },
-    [processedStories, selectedSprint, canEditTask, allTasksRef, queryClient]
+    [processedStories, selectedProject, selectedSprint, canEditTask, queryClient]
   );
 
   if (isProjectNotFound) {
@@ -1814,32 +1202,12 @@ export const KanbanBoardTemplate = () => {
             <span className="hidden xs:inline">Team</span>
           </WpButton> */}
 
-          <div className="flex -space-x-2">
-            {displayMembers && displayMembers.length > 0 ? (
-              displayMembers.slice(0, 5).map((member) => {
-                const memberName = member.full_name || member.user?.full_name || 'Unknown';
-                const userId = member.user_id || member.user?.id || member.id;
-                const initials = getInitials(memberName);
-                const isSelected = assigneeIdFilter.includes(userId);
-
-                return (
-                  <button
-                    key={member.id || member.user_id || member.user?.id}
-                    onClick={() => toggleAssigneeFilter(userId, memberName)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
-                      isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
-                    }`}
-                    style={{ backgroundColor: member.color }}
-                    title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
-                  >
-                    {initials}
-                  </button>
-                );
-              })
-            ) : (
-              <span className="text-xs text-gray-400 dark:text-gray-500">No team members</span>
-            )}
-          </div>
+          <AssigneeAvatars
+            displayMembers={displayMembers ?? []}
+            assigneeIdFilter={assigneeIdFilter}
+            toggleAssigneeFilter={toggleAssigneeFilter}
+            getInitials={getInitials}
+          />
         </div>
       </div>
 
@@ -1911,87 +1279,13 @@ export const KanbanBoardTemplate = () => {
                   const taskCount = taskCountsByStatus.get(status.id) || 0;
 
                   return (
-                    <div
+                    <StatusColumnHeader
                       key={status.id}
-                      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
-                        isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
-                      }`}
-                    >
-                      {!isCollapsed ? (
-                        <div className="p-3 flex items-center gap-2 dark:bg-gray-100 ">
-                          <button
-                            onClick={() => toggleStatusCollapse(status.id)}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 rounded transition-all duration-200"
-                            title="Collapse column"
-                          >
-                            <svg
-                              className="w-4 h-4 text-gray-600 dark:text-slate-300 transition-transform duration-300 ease-in-out rotate-90"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </button>
-                          <span
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: status.color }}
-                          />
-                          <span className="text-sm font-semibold text-gray-700 dark:text-slate-100 truncate">
-                            {status.name}
-                          </span>
-                          <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 font-medium">
-                            {taskCount}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="h-full flex flex-col items-center justify-start py-3 px-2">
-                          <button
-                            onClick={() => toggleStatusCollapse(status.id)}
-                            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 rounded transition-all duration-200 mb-2"
-                            title="Expand column"
-                          >
-                            <svg
-                              className="w-4 h-4 text-gray-600 dark:text-slate-300 transition-transform duration-300 ease-in-out"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </button>
-                          <div
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0 mb-2"
-                            style={{ backgroundColor: status.color }}
-                          />
-                          <div className="flex-1 flex items-center justify-center overflow-hidden">
-                            <span
-                              className="text-xs font-semibold text-gray-700 dark:text-slate-200 whitespace-nowrap"
-                              style={{
-                                writingMode: 'vertical-rl',
-                                textOrientation: 'mixed',
-                                transform: 'rotate(180deg)',
-                              }}
-                            >
-                              {status.name}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-2">
-                            {taskCount}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                      status={status}
+                      taskCount={taskCount}
+                      isCollapsed={isCollapsed}
+                      toggleStatusCollapse={toggleStatusCollapse}
+                    />
                   );
                 })}
               </div>
@@ -2012,6 +1306,7 @@ export const KanbanBoardTemplate = () => {
                   mapTask={mapToKanbanTask}
                   allTasksRef={allTasksRef}
                   optimisticUpdates={optimisticUpdates}
+                  pageFilters={pageFilters}
                 />
               ))}
             </div>
@@ -2074,7 +1369,7 @@ export const KanbanBoardTemplate = () => {
               queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
               handleCloseDrawer();
             } catch {
-              // Error is already handled by the mutation
+              return;
             }
           }}
         />

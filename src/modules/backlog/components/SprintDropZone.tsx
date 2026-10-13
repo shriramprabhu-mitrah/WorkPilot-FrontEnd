@@ -142,7 +142,7 @@ export const SprintDropZone = ({
   }, [handleTasksIntersect, isOpen, isDirectTasksOpen, hasNextTasks]);
 
   const isLoading = isLoadingStories || isLoadingTasks;
-  const storiesCount = totalStories ?? sprintStories.length;
+  const storiesCount = sprint.total_stories ?? totalStories ?? sprintStories.length;
   const tasksCount = totalOrphanTasks ?? directSprintTasks.length;
   const isOver = isOverSprint || isOverDirectTasks;
 
@@ -221,7 +221,7 @@ export const SprintDropZone = ({
         {(sprint.status === 'planned' || sprint.status === 'active') && canEditSprint && (
           <WpButton
             size="sm"
-            variant="secondary"
+            variant="primary"
             disabled={isCompletingSprint || isStartingSprint}
             onClick={(e) => {
               e.stopPropagation();
