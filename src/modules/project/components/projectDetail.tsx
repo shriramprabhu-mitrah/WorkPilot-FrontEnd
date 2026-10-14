@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo} from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
@@ -126,12 +126,12 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       label: user.name || user.email,
       value: user.id,
     }));
-  
+
     const fetchedIds = new Set(fetched.map((o) => o.value));
     const selectedMissing = selectedMembers
       .filter((id) => !fetchedIds.has(id))
       .map((id) => ({ label: selectedLabels[id] ?? id, value: id }));
-  
+
     return [...selectedMissing, ...fetched];
   }, [users, selectedMembers, selectedLabels]);
 
@@ -200,7 +200,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         const { creator, ...rest } = res.data;
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
-    } catch { }
+    } catch {}
   };
 
   const getInitials = (name: string) => {
@@ -248,7 +248,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
   const handleMemberChange = (selected: string[]) => {
     setSelectedMembers(selected);
-  
+
     setSelectedLabels((prev) => {
       const next: Record<string, string> = {};
       selected.forEach((id) => {
@@ -257,7 +257,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       });
       return next;
     });
-  
+
     setMemberRoles((prev) => {
       const updated = { ...prev };
       const defaultRole = roleOptions[0]?.value || '';
@@ -407,7 +407,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         <div className="border-t border-gray-100 dark:border-slate-800" />
 
         <div className="grid grid-cols-2 divide-x divide-y divide-gray-100 dark:divide-slate-800 sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
-
           <div className="p-5">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
               Created
@@ -441,9 +440,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </p>
             <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
               {selectedApiProject?.members?.length || project?.members?.length || 0}
-              <span className="ml-1 font-normal text-gray-500 dark:text-slate-400">
-                members
-              </span>
+              <span className="ml-1 font-normal text-gray-500 dark:text-slate-400">members</span>
             </p>
           </div>
 
@@ -459,8 +456,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   Updating...
                 </span>
               </div>
-            ) : selectedApiProject?.members &&
-              selectedApiProject.members.length > 0 ? (
+            ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {selectedApiProject.members.slice(0, 5).map((member, index) => (
@@ -496,9 +492,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                 </button>
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-slate-400">
-                No members
-              </p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">No members</p>
             )}
           </div>
         </div>
@@ -588,10 +582,11 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             overflow-hidden rounded-xl border bg-white
             shadow-sm transition-all duration-200
             dark:bg-slate-900
-            ${isExpanded
-                    ? 'border-blue-200 shadow-md dark:border-blue-900/60'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md dark:border-slate-700 dark:hover:border-slate-600'
-                  }
+            ${
+              isExpanded
+                ? 'border-blue-200 shadow-md dark:border-blue-900/60'
+                : 'border-gray-200 hover:border-gray-300 hover:shadow-md dark:border-slate-700 dark:hover:border-slate-600'
+            }
           `}
               >
                 {/* Sprint header */}
@@ -613,12 +608,13 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         <span
                           className={`
                       shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold
-                      ${sprint.status === 'Active'
-                              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                              : sprint.status === 'Completed'
-                                ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
-                                : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                            }
+                      ${
+                        sprint.status === 'Active'
+                          ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                          : sprint.status === 'Completed'
+                            ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
+                            : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                      }
                     `}
                         >
                           {sprint.status}
@@ -677,8 +673,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                     >
                       <ChevronDown
                         size={18}
-                        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
-                          }`}
+                        className={`transition-transform duration-200 ${
+                          isExpanded ? 'rotate-180' : ''
+                        }`}
                       />
                     </button>
                   </div>
@@ -799,16 +796,16 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
-            <WpMultiSelect
-                  label="Members"
-                  options={memberOptions}
-                  value={selectedMembers}
-                  onChange={handleMemberChange}
-                  onSearchChange={setMemberSearch}
-                  isSearching={isUsersFetching}
-                  serverSideSearch
-                  placeholder={isUsersLoading ? 'Loading members...' : 'Search or select members'}
-                  hint="Type to search, or pick from the dropdown"
+              <WpMultiSelect
+                label="Members"
+                options={memberOptions}
+                value={selectedMembers}
+                onChange={handleMemberChange}
+                onSearchChange={setMemberSearch}
+                isSearching={isUsersFetching}
+                serverSideSearch
+                placeholder={isUsersLoading ? 'Loading members...' : 'Search or select members'}
+                hint="Type to search, or pick from the dropdown"
               />
               <div className="mt-5 flex-1">
                 {selectedMembers.length > 0 ? (

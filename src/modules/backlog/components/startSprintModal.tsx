@@ -33,6 +33,7 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
   const endDateInputRef = useRef<HTMLInputElement>(null);
   const [startDate, setStartDate] = useState(getToday());
   const [startTime, setStartTime] = useState(getCurrentTime());
+  const [endTime, setEndTime] = useState(getCurrentTime());
   const [duration, setDuration] = useState('2');
   const [customEndDate, setCustomEndDate] = useState('');
   const [isStartingLocal, setIsStartingLocal] = useState(false);
@@ -61,13 +62,36 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
   };
 
   const displayEndDate = formatDisplayDate(endDate);
+  const formatDateToUTC = (date: string, time: string) => {
+    if (!date || !time) return '';
+
+    // Convert 12-hour time to 24-hour format
+    const [timeValue, modifier] = time.split(' ');
+    let hours = timeValue.split(':')[0];
+    const minutes = timeValue.split(':')[1];
+    
+    if (modifier === 'PM' && hours !== '12') {
+      hours = String(Number(hours) + 12);
+    }
+    if (modifier === 'AM' && hours === '12') {
+      hours = '00';
+    }
+
+    // Create date object and convert to UTC
+    const dateTime = new Date(`${date}T${hours.padStart(2, '0')}:${minutes}:00`);
+    return dateTime.toISOString();
+  };
+
   const handleStart = async () => {
     setIsStartingLocal(true);
 
     try {
+      const formattedStartDate = formatDateToUTC(startDate, startTime);
+      const formattedEndDate = formatDateToUTC(endDate, endTime);
+
       await onStart({
-        start_date: startDate,
-        end_date: endDate,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
       });
     } finally {
       setIsStartingLocal(false);
@@ -78,6 +102,24 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
     if (!startTime) return '';
 
     const [time, modifier] = startTime.split(' ');
+    let hours = time.split(':')[0];
+    const minutes = time.split(':')[1];
+
+    if (modifier === 'PM' && hours !== '12') {
+      hours = String(Number(hours) + 12);
+    }
+
+    if (modifier === 'AM' && hours === '12') {
+      hours = '00';
+    }
+
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  };
+
+  const getEndTimeInputValue = () => {
+    if (!endTime) return '';
+
+    const [time, modifier] = endTime.split(' ');
     let hours = time.split(':')[0];
     const minutes = time.split(':')[1];
 
@@ -106,6 +148,22 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
     const modifier = hour >= 12 ? 'PM' : 'AM';
 
     setStartTime(`${formattedHour}:${minutes} ${modifier}`);
+  };
+
+  const handleEndTimeChange = (value: string) => {
+    if (!value) {
+      setEndTime('');
+      return;
+    }
+
+    const [hours, minutes] = value.split(':');
+    const hour = Number(hours);
+
+    const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+
+    const modifier = hour >= 12 ? 'PM' : 'AM';
+
+    setEndTime(`${formattedHour}:${minutes} ${modifier}`);
   };
 
   return (
@@ -164,12 +222,13 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                 Start date <span className="text-red-500"></span>
               </label>
 
-              <div className="flex h-9 items-center rounded-md border border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-800">
+              <div className="flex h-9 items-center rounded-md border border-gray-300 bg-gray-100 dark:border-slate-700 dark:bg-slate-900">
                 <button
                   type="button"
                   onClick={() => startDateInputRef.current?.showPicker()}
-                  className="ml-2.5 shrink-0 text-gray-500 dark:text-slate-400"
+                  className="ml-2.5 shrink-0 text-gray-400 dark:text-slate-500"
                   aria-label="Select start date"
+                  disabled
                 >
                   <Calendar size={16} />
                 </button>
@@ -180,14 +239,18 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                   value={startDate}
                   min={getToday()}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-700 outline-none dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:hidden"
+                  disabled
+                  readOnly
+                  className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-400 outline-none dark:text-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
                 />
 
                 <input
                   type="time"
                   value={getTimeInputValue()}
                   onChange={(e) => handleTimeChange(e.target.value)}
-                  className="mr-2 h-full w-[95px] border-0 bg-transparent text-sm text-gray-700 outline-none dark:text-slate-100"
+                  disabled
+                  readOnly
+                  className="mr-2 h-full w-[95px] border-0 bg-transparent text-sm text-gray-400 outline-none dark:text-slate-500"
                 />
 
                 <button
@@ -195,9 +258,11 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                   onClick={() => {
                     setStartDate('');
                     setStartTime('');
+                    setEndTime('');
                     setCustomEndDate('');
                   }}
                   className="mr-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
+                  disabled
                 >
                   <X size={15} />
                 </button>
@@ -242,8 +307,8 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
 
                     <input
                       type="time"
-                      value={getTimeInputValue()}
-                      onChange={(e) => handleTimeChange(e.target.value)}
+                      value={getEndTimeInputValue()}
+                      onChange={(e) => handleEndTimeChange(e.target.value)}
                       className="mr-2 h-full w-[95px] border-0 bg-transparent text-sm text-gray-700 outline-none dark:text-slate-100"
                     />
                   </>
@@ -258,7 +323,7 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                     />
 
                     <span className="mr-3 text-sm text-gray-400 dark:text-slate-500">
-                      {startTime}
+                      {endTime}
                     </span>
                   </>
                 )}

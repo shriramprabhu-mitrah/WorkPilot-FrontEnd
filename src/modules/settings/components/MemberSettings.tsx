@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { UserPlus, Search } from 'lucide-react';
+
 import { MemberCard } from '@/src/modules/teams/components/membercard';
 import { WpButton } from '@/src/app/components/common/button';
 import InviteTeamModal from '@/src/modules/teams/components/invitePopup';
 import {
   useGetTeamMembers,
-  useGetUserById,
   useRemoveUser,
   useGetProject,
 } from '@/src/modules/teams/hooks/useTeams';
@@ -30,17 +30,21 @@ export const MemberSettings = () => {
   const [status, setStatus] = useState('');
   const [nameSearch, setNameSearch] = useState('');
   const debouncedNameSearch = useDebounce(nameSearch, 500);
+
   const { mutate: removeUser } = useRemoveUser();
   const { isOrgAdmin } = usePermissions();
+
   const { teamMembers, isTeamMembersLoading, isTeamMembersFetching, isTeamMembersPlaceholderData } =
     useGetTeamMembers(page, pageSize, status || undefined, debouncedNameSearch || undefined);
+
+  const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
+
+  const memberDetails = userProjects?.data;
+  const projects = memberDetails?.project ?? [];
 
   const isPaginationLoading = isTeamMembersFetching && isTeamMembersPlaceholderData;
 
   const visibleMembers = teamMembers?.data ?? [];
-  const { user, isUserLoading } = useGetUserById(selectedUserId);
-  const { project: userProjects, isProjectLoading } = useGetProject(selectedUserId);
-  const projects = userProjects?.data?.project ?? [];
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -143,7 +147,7 @@ export const MemberSettings = () => {
             {['Member', 'Progress', 'Tasks', 'Done', 'Open', ''].map((h, i) => (
               <div
                 key={i}
-                className={`text-xs h-7  font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-100 ${
+                className={`text-xs h-7 font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-100 ${
                   i >= 2 && i <= 4 ? 'text-center' : ''
                 }`}
               >
@@ -152,7 +156,6 @@ export const MemberSettings = () => {
             ))}
           </div>
 
-          {/* Members List */}
           <div
             className="
               w-full
@@ -283,7 +286,7 @@ export const MemberSettings = () => {
 
             {/* Content */}
             <div className="px-6 py-5">
-              {isUserLoading ? (
+              {isProjectLoading ? (
                 <div className="space-y-4">
                   <div className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
                   <div className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-700" />
@@ -298,14 +301,12 @@ export const MemberSettings = () => {
                       <div
                         className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
                         style={{
-                          backgroundColor:
-                            visibleMembers.find((member) => member.id === selectedUserId)?.color ||
-                            '#6366f1',
+                          backgroundColor: memberDetails?.color || '#6366f1',
                         }}
                       >
-                        {user?.data?.name
+                        {memberDetails?.full_name
                           ?.split(' ')
-                          .map((word) => word[0])
+                          .map((word: string) => word[0])
                           .join('')
                           .toUpperCase()
                           .slice(0, 2) || 'U'}
@@ -313,17 +314,15 @@ export const MemberSettings = () => {
 
                       <div className="min-w-0">
                         <h3 className="truncate text-base font-semibold text-gray-900 dark:text-slate-100">
-                          {user?.data?.name || '—'}
+                          {memberDetails?.full_name || '—'}
                         </h3>
-
                         <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-slate-200">
-                          {user?.data?.email || '—'}
+                          {memberDetails?.email || '—'}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Projects */}
                   <div>
                     <div className="mb-3 flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100">
@@ -344,30 +343,39 @@ export const MemberSettings = () => {
                       </div>
                     ) : projects.length > 0 ? (
                       <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700">
-                        {projects.map((project, index) => (
-                          <div
-                            key={project.project_id}
-                            className={`flex items-center justify-between gap-4 px-4 py-3.5 ${
-                              index !== projects.length - 1
-                                ? 'border-b border-gray-200 dark:border-slate-700'
-                                : ''
-                            } hover:bg-gray-50 dark:hover:bg-slate-700/40`}
-                          >
-                            <div className="flex min-w-0 items-center gap-3">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                {project.project_name?.charAt(0)?.toUpperCase() || 'P'}
+                        {projects.map(
+                          (
+                            project: {
+                              project_id: string;
+                              project_name: string;
+                              role: string;
+                            },
+                            index: number
+                          ) => (
+                            <div
+                              key={project.project_id}
+                              className={`flex items-center justify-between gap-4 px-4 py-3.5 ${
+                                index !== projects.length - 1
+                                  ? 'border-b border-gray-200 dark:border-slate-700'
+                                  : ''
+                              } hover:bg-gray-50 dark:hover:bg-slate-700/40`}
+                            >
+                              <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                  {project.project_name?.charAt(0)?.toUpperCase() || 'P'}
+                                </div>
+
+                                <p className="truncate text-sm font-medium text-gray-800 dark:text-slate-200">
+                                  {project.project_name}
+                                </p>
                               </div>
 
-                              <p className="truncate text-sm font-medium text-gray-800 dark:text-slate-200">
-                                {project.project_name}
-                              </p>
+                              <span className="shrink-0 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+                                {project.role}
+                              </span>
                             </div>
-
-                            <span className="shrink-0 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600 dark:bg-slate-700 dark:text-slate-300">
-                              {project.role}
-                            </span>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     ) : (
                       <div className="rounded-xl border border-dashed border-gray-300 px-5 py-8 text-center dark:border-slate-700">

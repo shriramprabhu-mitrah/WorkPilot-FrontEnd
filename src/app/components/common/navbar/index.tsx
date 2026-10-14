@@ -181,7 +181,7 @@ export const Navbar = ({ onMenuClick }: NavbarProps) => {
               className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] leading-none font-bold text-white shrink-0"
                 style={{ backgroundColor: user.color || '' }}
               >
                 {getInitials(user.name)}

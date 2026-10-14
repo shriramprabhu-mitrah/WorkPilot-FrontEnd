@@ -445,7 +445,7 @@ export const ChildTasksPanel = ({
                         {task.assignee_id ? (
                           <AssigneeAvatar
                             initials={getInitials(task.assignee_name ?? '')}
-                            color={task.reporter?.color || ''}
+                            color={task.assignee?.color || ''}
                             size="sm"
                           />
                         ) : (

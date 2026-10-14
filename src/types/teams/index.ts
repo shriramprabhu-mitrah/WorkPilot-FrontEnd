@@ -80,4 +80,7 @@ export interface UserProject {
 export interface GetUserProjectsResponse {
   user_id: string;
   project: UserProject[];
+  full_name?: string;
+  color?: string;
+  email?: string;
 }

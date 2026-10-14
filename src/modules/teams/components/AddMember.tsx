@@ -123,6 +123,16 @@ const MembersSettings = () => {
   } | null>(null);
   const [editRoleId, setEditRoleId] = useState('');
 
+  useEffect(() => {
+    const isAnyModalOpen = showEditModal || showDeleteModal || showAddMemberModal;
+    if (!isAnyModalOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [showEditModal, showDeleteModal, showAddMemberModal]);
+
   const handleOpenEdit = (member: {
     userId: string;
     name: string;
@@ -196,7 +206,7 @@ const MembersSettings = () => {
 
   const handleMemberChange = (selected: string[]) => {
     setSelectedMembers(selected);
-  
+
     setSelectedLabels((prev) => {
       const next: Record<string, string> = {};
       selected.forEach((id) => {
@@ -205,7 +215,7 @@ const MembersSettings = () => {
       });
       return next;
     });
-  
+
     setMemberRoles((prev) => {
       const updated = { ...prev };
       selected.forEach((id) => {
@@ -331,7 +341,7 @@ const MembersSettings = () => {
         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           {/* Desktop header */}
           <div className="hidden lg:grid grid-cols-[minmax(220px,1.5fr)_minmax(220px,1fr)_120px_88px] items-center gap-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-5 py-3">
-            {['MEMBER', 'ROLE', 'STATUS', ''].map((h, i) => (
+            {['MEMBER', 'ROLE', ''].map((h, i) => (
               <div
                 key={i}
                 className={`text-[11px] font-bold tracking-wide text-slate-500 dark:text-slate-100`}
@@ -408,18 +418,6 @@ const MembersSettings = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Status */}
-                  <div className="flex items-center gap-3 lg:block">
-                    <span className="min-w-[60px] text-xs font-medium text-slate-400 dark:text-slate-500 lg:hidden">
-                      Status
-                    </span>
-
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      Active
-                    </span>
                   </div>
 
                   {/* Actions: Edit + Delete */}
@@ -502,9 +500,10 @@ const MembersSettings = () => {
 
       {/* Edit member popup */}
       {showEditModal && editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
-            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/40 px-4 py-4 backdrop-blur-sm">
+          <div className="flex max-h-[90vh] w-full max-w-md flex-col rounded-xl bg-white dark:bg-slate-800 shadow-xl">
+            {/* Header */}
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <div className="min-w-0 flex-1">
                 <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
                   Edit Member
@@ -525,7 +524,7 @@ const MembersSettings = () => {
               </WpButton>
             </div>
 
-            <div className="space-y-4 p-4 sm:p-5">
+            <div className="flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5">
               {/* Name (disabled) */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -554,20 +553,6 @@ const MembersSettings = () => {
                 />
               </div>
 
-              {/* Status (disabled) */}
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
-                  Status
-                </label>
-                <input
-                  type="text"
-                  value="Active"
-                  disabled
-                  readOnly
-                  className="h-10 w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 text-sm text-gray-500 outline-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-400"
-                />
-              </div>
-
               {/* Role (editable) */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -582,7 +567,8 @@ const MembersSettings = () => {
               </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+            {/* Footer */}
+            <div className="flex shrink-0 flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <WpButton
                 variant="secondary"
                 onClick={handleCloseEdit}
@@ -608,7 +594,7 @@ const MembersSettings = () => {
 
       {/* Delete confirm modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/40 px-4 py-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-800 shadow-xl">
             <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <h2 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100">
@@ -651,10 +637,10 @@ const MembersSettings = () => {
 
       {/* Add member modal */}
       {showAddMemberModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-black/40 backdrop-blur-sm p-4">
           <div className="flex h-auto max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
             {/* Header */}
-            <div className="flex items-start sm:items-center justify-between border-b border-gray-100 dark:border-slate-700 p-4 sm:p-5">
+            <div className="flex shrink-0 items-start sm:items-center justify-between border-b border-gray-100 dark:border-slate-700 p-4 sm:p-5">
               <div className="flex-1 min-w-0">
                 <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-slate-100">
                   Add Members
@@ -677,7 +663,7 @@ const MembersSettings = () => {
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
               {isRolesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-sm text-gray-500 dark:text-slate-400">Loading roles...</div>
@@ -753,7 +739,7 @@ const MembersSettings = () => {
             </div>
 
             {/* Footer */}
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 dark:border-slate-700 p-4 sm:p-5">
+            <div className="flex shrink-0 flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 dark:border-slate-700 p-4 sm:p-5">
               <WpButton
                 type="button"
                 variant="secondary"

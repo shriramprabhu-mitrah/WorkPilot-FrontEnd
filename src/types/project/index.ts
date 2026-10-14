@@ -97,6 +97,7 @@ export interface SprintDetail {
   status: string;
   start_date: string;
   end_date: string;
+  total_stories?: number;
 }
 
 // Sprint API Types

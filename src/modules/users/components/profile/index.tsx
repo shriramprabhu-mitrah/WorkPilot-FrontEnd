@@ -135,8 +135,7 @@ export default function Profile() {
     return <div className="text-red-500 p-8">{error}</div>;
   }
 
-  const displayName = user?.name || 'User';
-
+  const displayName = user?.name?.trim() || user?.username || '';
   const createdAt = formatMonthYear(user?.created_at || '-');
   const roleDetails = rolesData.find((role) => role.role === user?.role);
 

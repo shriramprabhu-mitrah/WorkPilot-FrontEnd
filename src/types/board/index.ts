@@ -75,7 +75,6 @@ export interface KanbanColumn {
   tasks: KanbanTask[];
 }
 
-
 export interface PageMeta {
   page: number;
   page_size: number;
@@ -101,7 +100,7 @@ export interface BoardResponse {
   success: boolean;
   status_code: number;
   message: string;
-  data: BoardStory[];
+  data: BoardStory[] | BoardStatusColumn[]; // Can return stories or status columns directly
   meta: PageMeta;
 }
 
@@ -112,8 +111,9 @@ export interface BoardQueryParams {
   sprint_id?: string;
   user_story_id?: string;
   priority?: string;
-  assignee_id?: string;
+  task_assignee_id?: string;
   type?: string;
   status_id?: string;
   task_status_id?: string;
+  storyless_tasks?: boolean;
 }
