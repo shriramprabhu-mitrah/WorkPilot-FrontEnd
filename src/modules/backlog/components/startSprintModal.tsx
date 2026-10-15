@@ -244,28 +244,7 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
                   className="h-full flex-1 border-0 bg-transparent px-2 text-sm text-gray-400 outline-none dark:text-slate-500 [&::-webkit-calendar-picker-indicator]:hidden"
                 />
 
-                <input
-                  type="time"
-                  value={getTimeInputValue()}
-                  onChange={(e) => handleTimeChange(e.target.value)}
-                  disabled
-                  readOnly
-                  className="mr-2 h-full w-[95px] border-0 bg-transparent text-sm text-gray-400 outline-none dark:text-slate-500"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStartDate('');
-                    setStartTime('');
-                    setEndTime('');
-                    setCustomEndDate('');
-                  }}
-                  className="mr-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
-                  disabled
-                >
-                  <X size={15} />
-                </button>
+                <span className="mr-3 text-sm text-gray-400 dark:text-slate-500">{startTime}</span>
               </div>
 
               <p className="mt-1 text-xs text-gray-500 dark:text-slate-100">

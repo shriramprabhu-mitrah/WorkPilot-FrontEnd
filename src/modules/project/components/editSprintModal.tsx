@@ -8,26 +8,23 @@ import { WpButton } from '@/src/app/components/common/button';
 import { WpInput } from '@/src/app/components/common/input';
 import { useUpdateSprint } from '../hooks/useSprint';
 import { SprintDetail } from '@/src/types/project';
-import { useEffect } from 'react';
 
 const today = new Date().toISOString().split('T')[0];
 
-const editSprintSchema = z
-  .object({
-    name: z.string().min(1, 'Sprint name is required'),
-    goal: z.string().optional(),
-    start_date: z
-      .string()
-      .min(1, 'Start date is required')
-      .refine((d) => d >= today, {
-        message: 'Start date cannot be in the past',
-      }),
-    end_date: z.string().min(1, 'Due date is required'),
-  })
-  .refine((d) => d.end_date >= d.start_date, {
-    message: 'Due date must be after start date',
-    path: ['end_date'],
-  });
+const formatDateTimeLocal = (value?: string | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};
+
+const editSprintSchema = z.object({
+  name: z.string().trim().min(1, 'Sprint name is required'),
+  goal: z.string().optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().min(1, 'Due date and time are required'),
+});
 
 type EditSprintForm = z.infer<typeof editSprintSchema>;
 
@@ -45,32 +42,28 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
     register,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<EditSprintForm>({
     resolver: zodResolver(editSprintSchema),
     defaultValues: {
       name: sprint.name,
       goal: sprint.goal ?? '',
-      start_date: sprint.start_date ? sprint.start_date.split('T')[0] : '',
-      end_date: sprint.end_date ? sprint.end_date.split('T')[0] : '',
+      start_date: formatDateTimeLocal(sprint.start_date),
+      end_date: formatDateTimeLocal(sprint.end_date),
     },
   });
 
   const startDate = watch('start_date');
 
-  const endDate = watch('end_date');
-
-  useEffect(() => {
-    if (startDate && endDate && endDate < startDate) {
-      setValue('end_date', '');
-    }
-  }, [startDate, endDate, setValue]);
   const onSubmit = async (data: EditSprintForm) => {
     try {
       await updateSprintAsync({
         sprintId: sprint.id,
-        payload: data,
+        payload: {
+          name: data.name,
+          goal: data.goal ?? '',
+          end_date: new Date(data.end_date).toISOString(),
+        },
       });
 
       onClose();
@@ -112,18 +105,17 @@ const EditSprintModal = ({ projectId, sprint, onClose, onSuccess }: EditSprintMo
             <div className="grid grid-cols-2 gap-3">
               <WpInput
                 id="edit-start-date"
-                type="date"
+                type="datetime-local"
                 label="Start date"
-                min={today}
-                error={errors.start_date?.message}
+                disabled
                 {...register('start_date')}
               />
 
               <WpInput
                 id="edit-end-date"
-                type="date"
+                type="datetime-local"
                 label="Due date"
-                min={startDate || today}
+                min={startDate || `${today}T00:00`}
                 error={errors.end_date?.message}
                 {...register('end_date')}
               />

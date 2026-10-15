@@ -93,13 +93,21 @@ class TeamService {
     });
   }
 
-  async getProject(userId: string): Promise<ApiResponse<GetUserProjectsResponse>> {
-    return apiService.get<GetUserProjectsResponse>(
-      ApiEndpoints.Team.getProject.url.replace('{id}', userId),
-      {
-        showErrorToast: true,
-      }
-    );
+  async getProject(
+    userId: string,
+    searchQuery?: string
+  ): Promise<ApiResponse<GetUserProjectsResponse>> {
+    const params = new URLSearchParams();
+    if (searchQuery) {
+      params.set('search_query', searchQuery);
+    }
+
+    const baseUrl = ApiEndpoints.Team.getProject.url.replace('{id}', userId);
+    const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+
+    return apiService.get<GetUserProjectsResponse>(url, {
+      showErrorToast: true,
+    });
   }
 }
 export const teamService = new TeamService();

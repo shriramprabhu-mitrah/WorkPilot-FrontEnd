@@ -26,6 +26,7 @@ import {
   useGetProjectsWithSprints,
   useGetUserProjectRole,
 } from '@/src/modules/project/hooks/useProject';
+import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
 import { projectService } from '@/src/services/project';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/src/hooks/useDebounce';
@@ -142,15 +143,21 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   // Fetch user's role for the effective project (auto-dispatches to Redux)
   useGetUserProjectRole(effectiveProject?.id);
 
-  // Search within manage project modal
+  // Pagination (projects + sprints inside the modal)
   const PROJECTS_PER_PAGE = 5;
+  const SPRINTS_PER_PAGE = 5;
   const [projectPage, setProjectPage] = useState(1);
+  const [sprintPage, setSprintPage] = useState(1);
 
-  const { data: modalProjectsData } = useQuery({
+  // Projects only (no sprints) - paginated
+  const {
+    data: modalProjectsData,
+    isLoading: isLoadingModalProjects,
+    isFetching: isFetchingModalProjects,
+  } = useQuery({
     queryKey: ['sidebar-modal-projects', debouncedProjectSearch, projectPage],
     queryFn: () =>
       projectService.getProject({
-        include_sprints: true,
         name: debouncedProjectSearch || undefined,
         page: projectPage,
         page_size: PROJECTS_PER_PAGE,
@@ -161,15 +168,21 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   const displayedProjects = modalProjectsData?.data ?? [];
   const totalProjectPages = modalProjectsData?.meta?.total_pages ?? 1;
-  // Derive sprints from projectsWithSprints or displayedProjects based on tempProject
-  const tempSprints = useMemo(() => {
-    if (!tempProject?.id) return [];
-    if (tempProject.sprints && tempProject.sprints.length > 0) return tempProject.sprints;
-    const found =
-      projectsWithSprints.find((p) => p.id === tempProject.id) ||
-      displayedProjects.find((p) => p.id === tempProject.id);
-    return found?.sprints ?? [];
-  }, [tempProject, projectsWithSprints, displayedProjects]);
+
+  // Sprints are fetched only after a project is selected in the modal
+  const {
+    sprints: modalSprints,
+    sprintsMeta,
+    isLoadingSprints,
+    isFetchingSprints,
+  } = useGetSprints(
+    tempProject?.id ?? '',
+    { page: sprintPage, page_size: SPRINTS_PER_PAGE },
+    showManageProject && !!tempProject?.id
+  );
+
+  const tempSprints = modalSprints ?? [];
+  const totalSprintPages = sprintsMeta?.total_pages ?? 1;
 
   // Reset sprint when project changes
   useEffect(() => {
@@ -178,6 +191,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
     prevTempProjectId.current = tempProject.id;
     if (projectChanged) {
       setTempSprint(null);
+      setSprintPage(1);
     }
   }, [tempProject?.id]);
 
@@ -193,6 +207,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const openManageProject = () => {
     setProjectSearchTerm('');
     setProjectPage(1);
+    setSprintPage(1);
     setTempProject(effectiveProject);
     setTempSprint(selectedSprint);
     setShowManageProject(true);
@@ -498,7 +513,7 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                 )}
               </div>
 
-              {isLoadingProjectsWithSprints ? (
+              {isLoadingProjectsWithSprints || isFetchingModalProjects ? (
                 <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
                   Loading projects...
                 </div>
@@ -604,91 +619,114 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
                   </button>
                 )}
               </div>
-              {isLoadingProjectsWithSprints ? (
+
+              {tempProject && (isLoadingSprints || isFetchingSprints) ? (
                 <div className="text-xs text-gray-400 dark:text-gray-500 py-2">
                   Loading sprints...
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {/* All Sprints option */}
-                  <button
-                    onClick={() => setTempSprint(null)}
-                    className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                      tempSprint === null
-                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
-                        : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
-                    }`}
-                  >
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                <>
+                  <div className="space-y-1">
+                    {/* All Sprints option */}
+                    <button
+                      onClick={() => setTempSprint(null)}
+                      className={`w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                         tempSprint === null
-                          ? 'border-blue-600'
-                          : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      {tempSprint === null && <div className="w-2 h-2 rounded-full bg-blue-600" />}
-                    </div>
-                    <span className="font-medium text-gray-800 dark:text-slate-100">
-                      All Sprints
-                    </span>
-                  </button>
-
-                  {tempSprints?.map((s) => (
-                    <div
-                      key={s.id}
-                      onClick={() => setTempSprint(s)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
-                        tempSprint?.id === s.id
                           ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
                           : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            tempSprint?.id === s.id
-                              ? 'border-blue-600'
-                              : 'border-gray-300 dark:border-gray-600'
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          tempSprint === null
+                            ? 'border-blue-600'
+                            : 'border-gray-300 dark:border-gray-600'
+                        }`}
+                      >
+                        {tempSprint === null && (
+                          <div className="w-2 h-2 rounded-full bg-blue-600" />
+                        )}
+                      </div>
+                      <span className="font-medium text-gray-800 dark:text-slate-100">
+                        All Sprints
+                      </span>
+                    </button>
+
+                    {tempSprints.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => setTempSprint(s)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${
+                          tempSprint?.id === s.id
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
+                            : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              tempSprint?.id === s.id
+                                ? 'border-blue-600'
+                                : 'border-gray-300 dark:border-gray-600'
+                            }`}
+                          >
+                            {tempSprint?.id === s.id && (
+                              <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            )}
+                          </div>
+                          <span className="font-medium text-gray-800 dark:text-slate-100">
+                            {s.name}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowManageProject(false);
+                            dispatch(setSelectedSprint(s));
+                            router.push(
+                              `/${orgSlug}/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
+                            );
+                          }}
+                          className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-slate-100"
+                          title="View sprint"
+                        >
+                          <Eye size={15} />
+                        </button>
+                      </div>
+                    ))}
+
+                    {tempSprints.length === 0 && tempProject && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
+                        No sprints found
+                      </p>
+                    )}
+                    {!tempProject && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
+                        Select a project first
+                      </p>
+                    )}
+                  </div>
+
+                  {tempProject && totalSprintPages > 1 && (
+                    <div className="flex items-center justify-center gap-1 mt-3 flex-wrap">
+                      {Array.from({ length: totalSprintPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => setSprintPage(pageNum)}
+                          className={`w-6 h-6 flex items-center justify-center rounded-md text-[11px] font-medium transition-colors ${
+                            sprintPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-500 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                           }`}
                         >
-                          {tempSprint?.id === s.id && (
-                            <div className="w-2 h-2 rounded-full bg-blue-600" />
-                          )}
-                        </div>
-                        <span className="font-medium text-gray-800 dark:text-slate-100">
-                          {s.name}
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowManageProject(false);
-                          dispatch(setSelectedSprint(s));
-                          router.push(
-                            `/${orgSlug}/projects/sprints/tasks?sprintId=${s.id}&projectId=${tempProject?.id}`
-                          );
-                        }}
-                        className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-slate-100"
-                        title="View sprint"
-                      >
-                        <Eye size={15} />
-                      </button>
+                          {pageNum}
+                        </button>
+                      ))}
                     </div>
-                  ))}
-
-                  {!isLoadingProjectsWithSprints && tempSprints?.length === 0 && tempProject && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
-                      No sprints found
-                    </p>
                   )}
-                  {!tempProject && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500 px-3 py-2">
-                      Select a project first
-                    </p>
-                  )}
-                </div>
+                </>
               )}
             </div>
 

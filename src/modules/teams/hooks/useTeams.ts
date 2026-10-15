@@ -152,14 +152,14 @@ export const useGetUserById = (id: string) => {
   };
 };
 
-export const useGetProject = (userId: string) => {
+export const useGetProject = (userId: string, searchQuery?: string) => {
   const {
     data: project,
     isLoading: isProjectLoading,
     refetch: refetchProject,
   } = useQuery<ApiResponse<GetUserProjectsResponse>>({
-    queryKey: [QUERY_KEYS.PROJECT, userId],
-    queryFn: () => teamService.getProject(userId),
+    queryKey: [QUERY_KEYS.PROJECT, userId, searchQuery],
+    queryFn: () => teamService.getProject(userId, searchQuery),
     enabled: !!userId,
   });
 
