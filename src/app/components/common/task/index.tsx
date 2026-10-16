@@ -114,7 +114,7 @@ export const AssigneeAvatar = ({ initials, color, size = 'sm', assigneeName }: A
   const dim = size === 'md' ? 'w-7 h-7 text-xs' : 'w-6 h-6 text-[11px]';
   return (
     <div
-      className={`${dim} rounded-full flex items-center justify-center text-white font-bold shrink-0`}
+      className={`${dim} rounded-full flex items-center justify-center text-center text-white font-bold leading-none shrink-0`}
       style={{ backgroundColor: color }}
       title={initials === '?' ? 'Unassigned' : assigneeName}
     >

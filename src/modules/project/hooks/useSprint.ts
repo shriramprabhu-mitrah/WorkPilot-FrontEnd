@@ -23,6 +23,7 @@ export const useGetSprints = (
 
   return {
     sprints: query.data?.data,
+    sprintsMeta: query.data?.meta,
     isLoadingSprints: query.isLoading,
     isFetchingSprints: query.isFetching,
     isError: query.isError,

@@ -758,13 +758,26 @@ export const KanbanBoardTemplate = () => {
 
   // Count tasks per status across all stories
   const taskCountsByStatus = useMemo(() => {
-    return processedStories.reduce<Map<string, number>>((counts, story) => {
-      return Array.from(story.tasksByStatus.entries()).reduce((acc, [statusId, tasks]) => {
-        acc.set(statusId, (acc.get(statusId) ?? 0) + tasks.length);
-        return acc;
-      }, counts);
-    }, new Map());
-  }, [processedStories]);
+    const counts = new Map<string, number>();
+    boardStories.forEach((story) => {
+      story.statuses.forEach((statusCol) => {
+        counts.set(
+          statusCol.status_id,
+          (counts.get(statusCol.status_id) ?? 0) +
+            (statusCol.task_count ?? statusCol.meta?.total ?? 0)
+        );
+      });
+    });
+    const storylessStatusColumns = getStorylessColumns(storylessStories);
+    storylessStatusColumns.forEach((statusCol) => {
+      counts.set(
+        statusCol.status_id,
+        (counts.get(statusCol.status_id) ?? 0) + (statusCol.task_count ?? 0)
+      );
+    });
+
+    return counts;
+  }, [boardStories, storylessStories]);
 
   const onDragStart = ({ active }: DragStartEvent) => {
     // First try to find in the global tasks ref (includes lazy-loaded tasks)
@@ -1334,7 +1347,6 @@ export const KanbanBoardTemplate = () => {
           onUpdate={() => {
             queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });
             queryClient.invalidateQueries({ queryKey: ['tasks', selectedProject] });
-            handleRefetch();
           }}
           onDelete={() => {
             queryClient.invalidateQueries({ queryKey: ['board', selectedProject] });

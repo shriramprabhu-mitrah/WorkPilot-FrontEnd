@@ -62,6 +62,14 @@ import { useAppSelector } from '@/src/store';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { TaskLabel } from '@/src/types/task';
 import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
+import {
+  AssigneeField,
+  AssigneePatch,
+  ReporterField,
+  ReporterPatch,
+  SprintField,
+  UserStoryField,
+} from './components/taskDetailFields';
 
 const UserStoryDetailDrawer = dynamic(
   () => import('../user-story-detail').then((mod) => mod.UserStoryDetailDrawer),
@@ -640,13 +648,6 @@ export const TaskDetailDrawer = ({
           queryKey: ['task', resolvedProjectId, resolvedTaskId],
         });
 
-        // If task has a key, invalidate that too
-        if (task.key) {
-          await queryClient.invalidateQueries({
-            queryKey: ['task', resolvedProjectId, task.key],
-          });
-        }
-
         // If task is assigned to a sprint, invalidate sprint-related queries
         const taskSprintId =
           fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
@@ -689,6 +690,21 @@ export const TaskDetailDrawer = ({
       fetchedTask,
     ]
   );
+
+  const handleAssigneeUpdate = async (patch: AssigneePatch) => {
+    try {
+      await handleUpdate({
+        assigneeId: patch.assigneeId,
+        assigneeName: patch.assigneeName ?? '',
+        assignee: patch.assigneeInitials ?? '',
+        assigneeColor: patch.assigneeColor ?? '',
+      });
+    } catch {
+      toast.error('Failed to update assignee');
+    }
+  };
+
+  const handleReporterUpdate = (patch: ReporterPatch) => handleUpdate(patch);
 
   const currentSprintId =
     fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id || '';
@@ -1623,316 +1639,30 @@ export const TaskDetailDrawer = ({
                   <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
                     Details
                   </p>
+                  <AssigneeField
+                    projectId={resolvedProjectId}
+                    assigneeId={taskData.assigneeId}
+                    assigneeName={taskData.assigneeName}
+                    assigneeInitials={taskData.assignee ?? ''}
+                    assigneeColor={taskData.assigneeColor}
+                    canEditTask={canEditTask}
+                    currentUserName={
+                      currentUser?.name || currentUser?.username || currentUser?.email
+                    }
+                    isAssigning={isAssigning}
+                    handleUpdate={handleAssigneeUpdate}
+                    handleAssignToMe={handleAssignToMe}
+                  />
 
-                  <DetailRow label="Assignee">
-                    <div className="relative" ref={assigneeMenuRef}>
-                      <button
-                        disabled={!canEditTask}
-                        onClick={() => setShowAssigneeMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask
-                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
-                            : 'cursor-default'
-                        }`}
-                      >
-                        {taskData.assigneeId ? (
-                          <AssigneeAvatar
-                            initials={taskData.assignee}
-                            color={taskData.assigneeColor || ''}
-                            size="sm"
-                          />
-                        ) : (
-                          <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                            <User size={12} className="text-gray-400" />
-                          </span>
-                        )}
-                        <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                          {taskData.assigneeName || 'Unassigned'}
-                        </span>
-                        {canEditTask && (
-                          <ChevronDown
-                            size={12}
-                            className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                          />
-                        )}
-                      </button>
-                      {showAssigneeMenu && canEditTask && (
-                        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                          {/* Search */}
-                          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-                            <WpInput
-                              ref={assigneeSearchRef}
-                              value={assigneeSearch}
-                              onChange={(e) => setAssigneeSearch(e.target.value)}
-                              placeholder="Search assignee..."
-                            />
-                          </div>
-                          {(isLoadingMembers || isFetchingMembers) && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                              Searching...
-                            </div>
-                          )}
-                          {!isLoadingMembers &&
-                            !isFetchingMembers &&
-                            members?.map((m) => {
-                              const name = m.full_name ?? m.user?.name ?? '';
-                              const displayName =
-                                name ||
-                                m.user?.email?.split('@')[0] ||
-                                m.user?.email ||
-                                'Unknown User';
-                              const initials = getInitials(
-                                name || m.user?.email?.split('@')[0] || 'U'
-                              );
-                              const color = m.color || '';
-                              
-                              const isSelected = m.user_id === taskData.assigneeId;
-
-                              return (
-                                <WpButton
-                                  key={m.user_id}
-                                  type="button"
-                                  variant="ghost"
-                                  onClick={async () => {
-                                    setTaskData((prev) => ({
-                                      ...prev,
-                                      assigneeId: m.user_id,
-                                      assigneeName: displayName,
-                                      assignee: initials,
-                                      assigneeColor: color,
-                                    }));
-                                    setShowAssigneeMenu(false);
-                                    setAssigneeSearch('');
-
-                                    onUpdate?.({
-                                      assigneeInitials: initials,
-                                      assigneeColor: color,
-                                    });
-
-                                    if (!task.projectId || !task.taskId) return;
-
-                                    try {
-                                      await taskService.updateTask(task.projectId, task.taskId, {
-                                        assignee_id: m.user_id,
-                                      });
-                                    } catch (error) {
-                                      logger.log('Failed to update assignee', error);
-                                      // Rollback on error
-                                      setTaskData((prev) => ({
-                                        ...prev,
-                                        assigneeId: taskData.assigneeId,
-                                        assigneeName: taskData.assigneeName,
-                                        assignee: taskData.assignee,
-                                        assigneeColor: taskData.assigneeColor,
-                                      }));
-                                    }
-                                  }}
-                                  className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
-                                >
-                                  <AssigneeAvatar initials={initials} color={color} size="sm" />
-                                  <span className="truncate">{displayName}</span>
-                                  {isSelected && (
-                                    <Check
-                                      size={12}
-                                      className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
-                                    />
-                                  )}
-                                </WpButton>
-                              );
-                            })}
-                          {!isLoadingMembers &&
-                            !isFetchingMembers &&
-                            assigneeSearch &&
-                            (!members || members.length === 0) && (
-                              <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
-                                No members found
-                              </div>
-                            )}
-
-                          {/* Unassigned option */}
-                          {!isLoadingMembers && !isFetchingMembers && !assigneeSearch && (
-                            <WpButton
-                              type="button"
-                              variant="ghost"
-                              onClick={async () => {
-                                setShowAssigneeMenu(false);
-                                setAssigneeSearch('');
-
-                                if (!task.projectId || !task.taskId) return;
-
-                                try {
-                                  await taskService.updateTask(task.projectId, task.taskId, {
-                                    assignee_id: null,
-                                  });
-
-                                  setTaskData((prev) => ({
-                                    ...prev,
-                                    assignee: '',
-                                    assigneeId: '',
-                                    assigneeName: '',
-                                  }));
-
-                                  onUpdate?.({
-                                    assigneeInitials: '',
-                                    assigneeColor: '',
-                                  });
-                                } catch (error) {
-                                  logger.log('Failed to unassign', error);
-                                }
-                              }}
-                              className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm text-gray-500 hover:bg-gray-50"
-                            >
-                              <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                                <User size={11} className="text-gray-400" />
-                              </span>
-                              Unassigned
-                            </WpButton>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {taskData.assigneeName !==
-                      (currentUser?.name || currentUser?.username || currentUser?.email) && (
-                      <WpButton
-                        variant="ghost"
-                        onClick={handleAssignToMe}
-                        disabled={isAssigning}
-                        className="!bg-transparent !border-0 !shadow-none !px-2 !py-1 text-sm text-gray-800 hover:!bg-transparent !ml-5"
-                      >
-                        {isAssigning ? 'Assigning...' : 'Assign to me'}
-                      </WpButton>
-                    )}
-                  </DetailRow>
-
-                  <DetailRow label="Reporter">
-                    <div className="relative" ref={reporterMenuRef}>
-                      <button
-                        disabled={!canEditTask}
-                        onClick={() => setShowReporterMenu((v) => !v)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          canEditTask
-                            ? 'hover:bg-gray-100 dark:hover:bg-slate-700'
-                            : 'cursor-default'
-                        }`}
-                      >
-                        {taskData.reporterId ? (
-                          <AssigneeAvatar
-                            initials={
-                              taskData.reporterInitials || getInitials(taskData.reporterName)
-                            }
-                            color={taskData.reporterColor || colors.avatarIndigo}
-                            size="sm"
-                          />
-                        ) : (
-                          <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center shrink-0">
-                            <User size={12} className="text-gray-400 dark:text-slate-400" />
-                          </span>
-                        )}
-                        <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                          {taskData.reporterName || 'None'}
-                        </span>
-                        {canEditTask && (
-                          <ChevronDown
-                            size={12}
-                            className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                          />
-                        )}
-                      </button>
-
-                      {showReporterMenu && canEditTask && (
-                        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                          {/* Search */}
-                          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-                            <input
-                              autoFocus
-                              type="text"
-                              value={reporterSearch}
-                              onChange={(e) => setReporterSearch(e.target.value)}
-                              placeholder="Search reporter..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
-                          </div>
-
-                          {/* Loading */}
-                          {(isLoadingReporterMembers || isFetchingReporterMembers) && (
-                            <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
-                              Searching...
-                            </div>
-                          )}
-
-                          {/* Member list */}
-                          {!isLoadingReporterMembers &&
-                            !isFetchingReporterMembers &&
-                            reporterMembers?.map((m) => {
-                              const name = m.full_name ?? m.user?.name ?? '';
-                              const displayName =
-                                name ||
-                                m.user?.email?.split('@')[0] ||
-                                m.user?.email ||
-                                'Unknown User';
-                              const initials = getInitials(
-                                name || m.user?.email?.split('@')[0] || 'U'
-                              );
-                              const color = m.color || ''
-                              const isSelected = m.user_id === taskData.reporterId;
-                              return (
-                                <WpButton
-                                  key={m.user_id}
-                                  type="button"
-                                  variant="ghost"
-                                  onClick={async () => {
-                                    setTaskData((prev) => ({
-                                      ...prev,
-                                      reporterId: m.user_id,
-                                      reporterName: displayName,
-                                      reporterInitials: initials,
-                                      reporterColor: color,
-                                    }));
-                                    setShowReporterMenu(false);
-                                    setReporterSearch('');
-                                    if (!task.projectId || !task.taskId) return;
-                                    try {
-                                      await taskService.updateTask(task.projectId, task.taskId, {
-                                        reporter_id: m.user_id,
-                                      });
-                                    } catch (error) {
-                                      logger.log('Failed to update reporter', error);
-                                      setTaskData((prev) => ({
-                                        ...prev,
-                                        reporterId: taskData.reporterId,
-                                        reporterName: taskData.reporterName,
-                                        reporterInitials: taskData.reporterInitials,
-                                        reporterColor: taskData.reporterColor,
-                                      }));
-                                    }
-                                  }}
-                                  className="!w-full !justify-start !px-3 !py-2 !rounded-none text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-slate-100"
-                                >
-                                  <AssigneeAvatar initials={initials} color={color} size="sm" />
-                                  <span className="truncate">{displayName}</span>
-                                  {isSelected && (
-                                    <Check
-                                      size={12}
-                                      className="ml-auto text-blue-600 dark:text-blue-400 shrink-0"
-                                    />
-                                  )}
-                                </WpButton>
-                              );
-                            })}
-
-                          {/* No results */}
-                          {!isLoadingReporterMembers &&
-                            !isFetchingReporterMembers &&
-                            reporterSearch &&
-                            (!reporterMembers || reporterMembers.length === 0) && (
-                              <div className="px-3 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
-                                No members found
-                              </div>
-                            )}
-                        </div>
-                      )}
-                    </div>
-                  </DetailRow>
+                  <ReporterField
+                    projectId={resolvedProjectId}
+                    reporterId={taskData.reporterId}
+                    reporterName={taskData.reporterName}
+                    reporterInitials={taskData.reporterInitials}
+                    reporterColor={taskData.reporterColor}
+                    canEditTask={canEditTask}
+                    handleUpdate={handleReporterUpdate}
+                  />
 
                   <DetailRow label="Type">
                     <div className="relative">
@@ -1993,257 +1723,22 @@ export const TaskDetailDrawer = ({
                     />
                   </DetailRow>
 
-                  <DetailRow label="Sprint">
-                    <div className="relative" ref={sprintMenuRef}>
-                      <button
-                        type="button"
-                        disabled={isUpdatingSprint || !canEditTask}
-                        onClick={() => {
-                          if (isUpdatingSprint || !canEditTask) return;
-                          setShowSprintMenu((v) => !v);
-                        }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg w-full text-left ${
-                          !canEditTask
-                            ? 'cursor-default'
-                            : isUpdatingSprint
-                              ? 'opacity-60 cursor-not-allowed'
-                              : 'hover:bg-gray-100 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                          {taskData.sprint || 'No sprint'}
-                        </span>
-                        {canEditTask && (
-                          <ChevronDown size={12} className="ml-auto text-gray-400 shrink-0" />
-                        )}
-                      </button>
+                  <SprintField
+                    projectId={taskData.project_id}
+                    sprintId={taskData.sprint_id}
+                    sprintName={taskData.sprint}
+                    canEditTask={canEditTask}
+                    handleUpdate={handleUpdate}
+                  />
 
-                      {showSprintMenu && !isUpdatingSprint && canEditTask && (
-                        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
-                          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-                            <WpInput
-                              value={sprintSearch}
-                              onChange={(e) => setSprintSearch(e.target.value)}
-                              placeholder="Search sprint..."
-                            />
-                          </div>
-
-                          {/* No sprint */}
-                          <button
-                            type="button"
-                            disabled={isUpdatingSprint}
-                            onClick={async () => {
-                              if (isUpdatingSprint) return;
-                              if (!taskData.sprint_id) {
-                                setShowSprintMenu(false);
-                                setSprintSearch('');
-                                return;
-                              }
-                              try {
-                                setIsUpdatingSprint(true);
-                                setShowSprintMenu(false);
-                                setSprintSearch('');
-                                await handleUpdate({ sprint_id: '', sprint: '' });
-                                toast.success('Sprint removed');
-                              } catch {
-                                toast.error('Failed to update sprint');
-                              } finally {
-                                setIsUpdatingSprint(false);
-                              }
-                            }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left border-b border-gray-100 dark:border-slate-700 ${
-                              !taskData.sprint_id
-                                ? 'text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-900/20'
-                                : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                            }`}
-                          >
-                            <Archive size={13} className="text-gray-400 shrink-0" />
-                            <span className="truncate">No sprint (Backlog)</span>
-                            {!taskData.sprint_id && (
-                              <Check size={13} className="ml-auto text-blue-600 shrink-0" />
-                            )}
-                          </button>
-
-                          {(isLoadingSprints || isFetchingSprints) && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                              Searching...
-                            </div>
-                          )}
-
-                          {!isLoadingSprints &&
-                            !isFetchingSprints &&
-                            sprints?.map((sprint) => {
-                              const isSelected = sprint.id === taskData.sprint_id;
-                              return (
-                                <button
-                                  key={sprint.id}
-                                  type="button"
-                                  disabled={isUpdatingSprint}
-                                  onClick={async () => {
-                                    if (isUpdatingSprint) return;
-                                    if (isSelected) {
-                                      setShowSprintMenu(false);
-                                      setSprintSearch('');
-                                      return;
-                                    }
-                                    try {
-                                      setIsUpdatingSprint(true);
-                                      setShowSprintMenu(false);
-                                      setSprintSearch('');
-                                      // handleUpdate does the optimistic update + rollback on error
-                                      await handleUpdate({
-                                        sprint_id: sprint.id,
-                                        sprint: sprint.name,
-                                      });
-                                      toast.success('Sprint updated');
-                                    } catch {
-                                      toast.error('Failed to update sprint');
-                                    } finally {
-                                      setIsUpdatingSprint(false);
-                                    }
-                                  }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 text-left ${
-                                    isUpdatingSprint
-                                      ? 'opacity-50 cursor-not-allowed'
-                                      : 'hover:bg-gray-50 dark:hover:bg-slate-700'
-                                  }`}
-                                >
-                                  <span className="truncate">{sprint.name}</span>
-                                  {isSelected && (
-                                    <Check size={13} className="ml-auto text-blue-600 shrink-0" />
-                                  )}
-                                </button>
-                              );
-                            })}
-
-                          {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                              No sprints found
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </DetailRow>
-
-                  <DetailRow label="User Story">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        disabled={isUpdatingUserStory || !canEditTask}
-                        onClick={() => {
-                          if (isUpdatingUserStory || !canEditTask) return;
-
-                          setShowUserStoryMenu((v) => !v);
-                        }}
-                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left ${
-                          isUpdatingUserStory || !canEditTask
-                            ? 'opacity-60 cursor-not-allowed'
-                            : 'hover:bg-gray-100'
-                        }`}
-                      >
-                        <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
-                          {taskData.user_story_title || 'No user story'}
-                        </span>
-
-                        {canEditTask && (
-                          <ChevronDown
-                            size={12}
-                            className="ml-auto text-gray-400 dark:text-slate-500 shrink-0"
-                          />
-                        )}
-                      </button>
-
-                      {showUserStoryMenu && !isUpdatingUserStory && canEditTask && (
-                        <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-[100] overflow-hidden">
-                          {/* Search */}
-                          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-                            <WpInput
-                              value={userStorySearch}
-                              onChange={(e) => setUserStorySearch(e.target.value)}
-                              placeholder="Search user story..."
-                              autoFocus
-                            />
-                          </div>
-
-                          {/* Loading */}
-                          {(isLoadingUserStories || isFetchingUserStories) && (
-                            <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                              Searching...
-                            </div>
-                          )}
-
-                          {/* User Stories */}
-                          {!isLoadingUserStories &&
-                            !isFetchingUserStories &&
-                            userStories?.map((story) => {
-                              const isSelected = story.id === taskData.user_story_id;
-
-                              return (
-                                <button
-                                  key={story.id}
-                                  type="button"
-                                  disabled={isUpdatingUserStory}
-                                  onClick={async () => {
-                                    if (isUpdatingUserStory) return;
-                                    if (isSelected) {
-                                      setShowUserStoryMenu(false);
-                                      setUserStorySearch('');
-                                      return;
-                                    }
-
-                                    const previousTitle =
-                                      taskData.user_story_title || 'No user story';
-
-                                    try {
-                                      setIsUpdatingUserStory(true);
-                                      setTaskData((prev) => ({
-                                        ...prev,
-                                        user_story_id: story.id,
-                                        user_story_title: story.title,
-                                      }));
-                                      setShowUserStoryMenu(false);
-                                      setUserStorySearch('');
-                                      await handleUpdate({
-                                        user_story_id: story.id,
-                                      });
-                                    } catch (error) {
-                                      logger.log('Failed to update user story', error);
-                                      setTaskData((prev) => ({
-                                        ...prev,
-                                        user_story_title: previousTitle,
-                                      }));
-                                    } finally {
-                                      setIsUpdatingUserStory(false);
-                                    }
-                                  }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
-                                    isUpdatingUserStory
-                                      ? 'opacity-50 cursor-not-allowed'
-                                      : 'hover:bg-gray-50'
-                                  }`}
-                                >
-                                  <span className="truncate">{story.title}</span>
-
-                                  {isSelected && (
-                                    <Check size={13} className="ml-auto text-blue-600 shrink-0" />
-                                  )}
-                                </button>
-                              );
-                            })}
-
-                          {/* No Results */}
-                          {!isLoadingUserStories &&
-                            !isFetchingUserStories &&
-                            userStories?.length === 0 && (
-                              <div className="px-3 py-3 text-sm text-gray-500 text-center">
-                                No user stories found
-                              </div>
-                            )}
-                        </div>
-                      )}
-                    </div>
-                  </DetailRow>
+                  <UserStoryField
+                    projectId={taskData.project_id}
+                    userStoryId={taskData.user_story_id}
+                    userStoryTitle={taskData.user_story_title}
+                    canEditTask={canEditTask}
+                    canViewUserStories={canViewUserStories}
+                    handleUpdate={handleUpdate}
+                  />
 
                   <DetailRow label="Labels">
                     <EditableLabels
@@ -2264,17 +1759,8 @@ export const TaskDetailDrawer = ({
                   </DetailRow>
                   <DetailRow label="Due date">
                     {isDueDateExpired ? (
-                        <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600 dark:bg-gray-100">
-                          <AlertTriangle size={14} />
-                          <EditableDate
-                            value={taskData.dueDate}
-                            onChange={(dueDate) => handleUpdate({ dueDate })}
-                            placeholder="Set due date"
-                            includeTime={false}
-                            disabled={!canEditTask}
-                          />
-                        </div>
-                      ) : (
+                      <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600 dark:bg-gray-100">
+                        <AlertTriangle size={14} />
                         <EditableDate
                           value={taskData.dueDate}
                           onChange={(dueDate) => handleUpdate({ dueDate })}
@@ -2282,7 +1768,16 @@ export const TaskDetailDrawer = ({
                           includeTime={false}
                           disabled={!canEditTask}
                         />
-                      )}
+                      </div>
+                    ) : (
+                      <EditableDate
+                        value={taskData.dueDate}
+                        onChange={(dueDate) => handleUpdate({ dueDate })}
+                        placeholder="Set due date"
+                        includeTime={false}
+                        disabled={!canEditTask}
+                      />
+                    )}
                   </DetailRow>
                   {/* future purpose 
               <DetailRow label="Start date">
