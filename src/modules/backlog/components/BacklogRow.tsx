@@ -61,20 +61,17 @@ export const BacklogRow = ({
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      className={`group flex items-center gap-2 px-3 py-2.5 sm:px-4 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
-        onClick ? 'cursor-pointer' : ''
-      } ${
-        isDragging
+      className={`group flex items-center gap-2 px-3 py-2.5 sm:px-4 border-b border-gray-100 dark:border-slate-700 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${onClick ? 'cursor-pointer' : ''
+        } ${isDragging
           ? 'bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-400 ring-opacity-50 z-50'
           : ''
-      }`}
+        }`}
     >
       <span
-        className={`shrink-0 p-0.5 rounded transition-colors ${
-          isDragging
+        className={`shrink-0 p-0.5 rounded transition-colors ${isDragging
             ? 'text-blue-500 bg-blue-100 dark:bg-blue-900/40'
             : 'text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400'
-        }`}
+          }`}
       >
         <GripVertical size={14} />
       </span>

@@ -6,7 +6,6 @@ import {
   MoreVertical,
   Plus,
   X,
-  User,
   Paperclip,
   Download,
   Trash2,
@@ -25,7 +24,6 @@ import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import type { KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
-import { AssigneeAvatar } from '../task';
 import { ActivitySection } from './components/activity-section';
 import { DetailRow } from './components/detail-row';
 import {
@@ -40,8 +38,6 @@ import { taskService } from '@/src/services/tasks';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
-import { WpButton } from '../button';
-import { WpInput } from '../input';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
 import WpRichTextEditor from '../htmlEditor';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';

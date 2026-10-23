@@ -6,10 +6,11 @@ export interface GetUserStoriesQueryParams {
   sort_by?: 'title' | 'created_at' | 'updated_at' | 'priority' | 'status';
   sort_order?: 'ASC' | 'DESC';
   status?: 'todo' | 'in_progress' | 'in_review' | 'testing' | 'completed' | 'blocked';
+  status_id?: string;
   assignee_id?: string;
   reporter_id?: string;
   sprint_id?: string;
-  priority?: 'low' | 'medium' | 'high' | 'critical';
+  priority?: string;
   search?: string;
   is_unassigned_story?: boolean;
 }

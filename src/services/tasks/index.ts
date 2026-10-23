@@ -34,6 +34,9 @@ class TaskService {
     if (params?.priority) {
       searchParams.append('priority', params.priority);
     }
+    if (params?.sort_order) {
+      searchParams.append('sort_order', params.sort_order)
+    }
     if (params?.assignee_id) {
       searchParams.append('assignee_id', params.assignee_id);
     }

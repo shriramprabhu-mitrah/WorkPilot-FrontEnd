@@ -21,6 +21,7 @@ export const useGetUserStories = (
   });
   return {
     userStories: query.data?.data ?? [],
+    userStoriesMeta: query.data?.meta,
     isLoadingUserStories: query.isLoading,
     isFetchingUserStories: query.isFetching,
     isErrorUserStories: query.isError,

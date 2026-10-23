@@ -26,7 +26,7 @@ export const useGetTasks = (projectId: string, params?: GetTasksQueryParams, ena
   });
   return {
     tasksList: query.data?.data,
-    // pagination: query.data?.pagination,
+    tasksMeta: query.data?.meta,
     isLoadingTasks: query.isPending,
     isFetchingTasks: query.isFetching,
     isError: query.isError,
@@ -571,4 +571,24 @@ export const useAssignTaskToMe = () => {
       });
     },
   });
+};
+
+export const useGetCustomStatuses = (projectId: string, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['custom-statuses', projectId],
+    queryFn: async () => {
+      const { customStatusService } = await import('@/src/services/colors');
+      return customStatusService.getCustomStatuses(projectId);
+    },
+    enabled: enabled && !!projectId,
+  });
+
+  return {
+    customStatuses: query.data ?? [],
+    isLoadingCustomStatuses: query.isLoading,
+    isFetchingCustomStatuses: query.isFetching,
+    isErrorCustomStatuses: query.isError,
+    customStatusesError: query.error,
+    refetchCustomStatuses: query.refetch,
+  };
 };

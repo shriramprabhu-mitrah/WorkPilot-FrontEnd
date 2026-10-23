@@ -37,6 +37,9 @@ class UserStoryService {
     if (params?.status) {
       searchParams.append('status', params.status);
     }
+    if (params?.status_id) {
+      searchParams.append('status_id', params.status_id);
+    }
     if (params?.assignee_id) {
       searchParams.append('assignee_id', params.assignee_id);
     }
