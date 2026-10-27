@@ -49,17 +49,17 @@ export const useGlobalSearch = (debounceMs = 300) => {
   const members = searchData.members ?? [];
   const sprints = searchData.sprints ?? [];
 
-  const counts = useMemo(
-    () => ({
-      tasks: tasks.length,
-      user_stories: userStories.length,
-      projects: projects.length,
-      members: members.length,
-      sprints: sprints.length,
-      all: tasks.length + userStories.length + projects.length + members.length + sprints.length,
-    }),
-    [tasks, userStories, projects, members, sprints]
-  );
+  const counts = useMemo(() => {
+    const meta = responseData?.meta;
+    return {
+      all: meta?.total ?? 0,
+      tasks: meta?.total_tasks ?? 0,
+      user_stories: meta?.total_user_stories ?? 0,
+      projects: meta?.total_projects ?? 0,
+      members: meta?.total_members ?? 0,
+      sprints: meta?.total_sprints ?? 0,
+    };
+  }, [responseData?.meta]);
 
   const clearSearch = useCallback(() => {
     setQuery('');

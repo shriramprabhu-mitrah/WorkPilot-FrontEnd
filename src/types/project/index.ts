@@ -98,6 +98,7 @@ export interface SprintDetail {
   start_date: string;
   end_date: string;
   total_stories?: number;
+  total_storyless_tasks?:number;
 }
 
 // Sprint API Types

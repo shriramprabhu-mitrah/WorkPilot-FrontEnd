@@ -130,6 +130,7 @@ export interface GetTasksQueryParams {
   fields?: string;
   unassigned_task?: boolean;
   storyless_task?: boolean;
+  sort_order?: 'ASC' | 'DESC';
   user_story_id?: string | null;
 }
 

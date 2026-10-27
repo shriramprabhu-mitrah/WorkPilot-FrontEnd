@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronRight, Inbox, Loader2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronRight, Inbox, Loader2 } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { SprintDetail } from '@/src/types/project';
 import { UserStoryResponse } from '@/src/types/userstories';
@@ -143,7 +143,10 @@ export const SprintDropZone = ({
 
   const isLoading = isLoadingStories || isLoadingTasks;
   const storiesCount = sprint.total_stories ?? totalStories ?? sprintStories.length;
-  const tasksCount = totalOrphanTasks ?? directSprintTasks.length;
+  const tasksCount =
+    isOpen && !isLoadingTasks
+      ? (totalOrphanTasks ?? directSprintTasks.length)
+      : (sprint.total_storyless_tasks ?? totalOrphanTasks ?? directSprintTasks.length);
   const isOver = isOverSprint || isOverDirectTasks;
 
   const dropMessage =
@@ -157,67 +160,75 @@ export const SprintDropZone = ({
     <div
       ref={setSprintDropRef}
       data-sprint-drop-id={sprint.id}
-      className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
-        isOver
+      className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${isOver
           ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.02]'
           : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-      }`}
+        }`}
     >
       <div
-        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 cursor-pointer transition-all select-none border-b ${
-          isOver
-            ? 'bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-            : 'hover:bg-gray-50 dark:hover:bg-slate-700/50 border-gray-100 dark:border-slate-700'
-        }`}
+        className={`group flex items-center gap-3 px-4 py-3 cursor-pointer select-none rounded-xl transition-all duration-200 border ${isOver
+            ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 shadow-sm'
+            : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700/60 hover:border-gray-200 dark:hover:border-slate-600 hover:shadow-xs'
+          }`}
         onClick={() => setIsOpen((v) => !v)}
       >
         <span
-          className={`transition-colors shrink-0 ${isOver ? 'text-blue-500' : 'text-gray-400 dark:text-slate-500'}`}
+          className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}
         >
-          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          <ChevronDown
+            size={16}
+            className={
+              isOver ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-400'
+            }
+          />
         </span>
-        <span
-          onClick={(e) => {
-            e.stopPropagation();
-            push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${projectId}`);
-          }}
-          className={`font-semibold text-sm truncate cursor-pointer transition-colors ${
-            isOver
-              ? 'text-blue-700 dark:text-blue-400'
-              : 'text-gray-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400'
-          }`}
-        >
-          {sprint.name}
-        </span>
-        <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 transition-all ${
-            isOver
-              ? 'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 scale-110'
-              : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-100'
-          }`}
-        >
-          {storiesCount} {storiesCount === 1 ? 'story' : 'stories'}
-          {tasksCount > 0 && ` · ${tasksCount} ${tasksCount === 1 ? 'task' : 'tasks'}`}
-        </span>
-        {sprint.start_date && sprint.end_date && (
+
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span
-            className={`hidden sm:inline text-xs shrink-0 transition-colors ${isOver ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-slate-100'}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${projectId}`);
+            }}
+            className={`font-semibold text-sm truncate transition-colors ${isOver
+                ? 'text-blue-700 dark:text-blue-300'
+                : 'text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+              }`}
           >
-            {new Date(sprint.start_date).toLocaleDateString()} -{' '}
+            {sprint.name}
+          </span>
+
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${sprint.status === 'active'
+                ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50'
+                : sprint.status === 'completed'
+                  ? 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'
+                  : 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800/50'
+              }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${sprint.status === 'active' ? 'bg-emerald-500 animate-pulse' : sprint.status === 'completed' ? 'bg-gray-400' : 'bg-sky-500'}`}
+            />
+            {sprint.status}
+          </span>
+        </div>
+
+        <div className="hidden md:flex items-center gap-1.5 shrink-0">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800/50">
+            {storiesCount} {storiesCount === 1 ? 'story' : 'stories'}
+          </span>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 border border-purple-100 dark:border-purple-800/50">
+            {tasksCount} {tasksCount === 1 ? 'task' : 'tasks'}
+          </span>
+        </div>
+
+        {sprint.start_date && sprint.end_date && (
+          <span className="hidden lg:inline-flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 shrink-0 font-medium">
+            <Calendar size={13} className="text-gray-400 dark:text-slate-500" />
+            {new Date(sprint.start_date).toLocaleDateString()} –{' '}
             {new Date(sprint.end_date).toLocaleDateString()}
           </span>
         )}
-        <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
-            sprint.status === 'active'
-              ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-              : sprint.status === 'completed'
-                ? 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300'
-                : 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-          }`}
-        >
-          {sprint.status}
-        </span>
+
         {(sprint.status === 'planned' || sprint.status === 'active') && canEditSprint && (
           <WpButton
             size="sm"
@@ -225,14 +236,9 @@ export const SprintDropZone = ({
             disabled={isCompletingSprint || isStartingSprint}
             onClick={(e) => {
               e.stopPropagation();
-
-              if (sprint.status === 'active') {
-                onCompleteSprint?.(sprint);
-              } else if (sprint.status === 'planned') {
-                onStartSprint?.(sprint);
-              }
+              sprint.status === 'active' ? onCompleteSprint?.(sprint) : onStartSprint?.(sprint);
             }}
-            className="ml-auto whitespace-nowrap"
+            className="ml-auto shrink-0 shadow-xs"
             isLoading={sprint.status === 'planned' && isStartingSprint}
             loadingText="Starting..."
           >
@@ -312,19 +318,17 @@ export const SprintDropZone = ({
               <div
                 ref={setDirectTasksDropRef}
                 data-sprint-direct-id={sprint.id}
-                className={`border-t transition-colors ${
-                  isOverDirectTasks
+                className={`border-t transition-colors ${isOverDirectTasks
                     ? 'border-blue-400 bg-blue-50/50 dark:bg-blue-900/30 ring-1 ring-blue-300'
                     : 'border-gray-100 dark:border-slate-700/60'
-                }`}
+                  }`}
               >
                 <div
                   onClick={() => setIsDirectTasksOpen((v) => !v)}
-                  className={`px-3 sm:px-4 py-2 flex items-center justify-between cursor-pointer transition-colors select-none ${
-                    isOverDirectTasks
+                  className={`px-3 sm:px-4 py-2 flex items-center justify-between cursor-pointer transition-colors select-none ${isOverDirectTasks
                       ? 'bg-blue-100/60 dark:bg-blue-900/40'
                       : 'bg-gray-50/80 dark:bg-slate-700/40 hover:bg-gray-100/80 dark:hover:bg-slate-700/60'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400 dark:text-slate-500 shrink-0">
