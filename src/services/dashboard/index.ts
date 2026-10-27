@@ -5,6 +5,10 @@ import {
   DashboardData,
   DashboardActivitiesResponse,
   UpcomingDeadline,
+  TeamWorkloadMember,
+  SprintBurndownResponse,
+  WeeklyProgressResponse,
+  WeeklyProgressParams,
 } from '@/src/types/dashboard';
 
 class DashboardService {
@@ -56,6 +60,54 @@ class DashboardService {
       : endpoint.url;
     return apiService.get<UpcomingDeadline[]>(url);
   }
+
+  async getTeamWorkload(
+    projectId: string
+  ): Promise<ApiResponse<TeamWorkloadMember[]>> {
+    const endpoint = ApiEndpoints.Dashboard.getTeamWorkload.withParams(projectId);
+    return apiService.get<TeamWorkloadMember[]>(endpoint.url);
+  }
+
+  async getSprintBurndown(
+    projectId: string,
+    sprintId?: string
+  ): Promise<ApiResponse<SprintBurndownResponse>> {
+    const url = ApiEndpoints.Dashboard.getSprintBurndown.withParams({
+      projectId,
+    });
+    const finalUrl = sprintId
+      ? `${url}?sprint_id=${encodeURIComponent(sprintId)}`
+      : url;
+    return apiService.get<SprintBurndownResponse>(finalUrl);
+  }
+
+
+async getWeeklyProgress(
+  projectId: string,
+  params: WeeklyProgressParams = {},
+): Promise<ApiResponse<WeeklyProgressResponse>> {
+  const endpoint =
+    ApiEndpoints.Dashboard.getWeeklyProgress.withParams(projectId);
+
+  const queryParams: Record<string, string> = {};
+
+  if (params.start_date) queryParams.start_date = params.start_date;
+  if (params.end_date) queryParams.end_date = params.end_date;
+  if (params.sprint_id) queryParams.sprint_id = params.sprint_id;
+  if (params.assignee_id) queryParams.assignee_id = params.assignee_id;
+
+  if (params.page !== undefined) {
+    queryParams.page = String(params.page);
+  }
+
+  const url =
+    Object.keys(queryParams).length > 0
+      ? endpoint.withQuery(queryParams)
+      : endpoint.url;
+
+  return apiService.get<WeeklyProgressResponse>(url);
+}
+
 }
 
 export const dashboardService = new DashboardService();

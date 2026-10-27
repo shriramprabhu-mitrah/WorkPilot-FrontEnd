@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface StatusColumnHeaderProps {
   status: {
     id: string;
@@ -9,7 +11,7 @@ interface StatusColumnHeaderProps {
   toggleStatusCollapse: (statusId: string) => void;
 }
 
-export function StatusColumnHeader({
+export const StatusColumnHeader = React.memo(function StatusColumnHeader({
   status,
   taskCount,
   isCollapsed,
@@ -93,4 +95,4 @@ export function StatusColumnHeader({
       )}
     </div>
   );
-}
+});
