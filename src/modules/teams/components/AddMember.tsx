@@ -21,6 +21,7 @@ import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { useGetRoles } from '../../settings/hooks/useSettings';
 import { Search } from 'lucide-react';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { getInitials } from '@/src/app/components/common/format';
 
 const MembersSettings = () => {
   const router = useRouter();
@@ -354,13 +355,7 @@ const MembersSettings = () => {
           {visibleMembers.length > 0 ? (
             visibleMembers.map((member, index) => {
               const memberName = member.full_name || member.username || 'User';
-
-              const initials = memberName
-                .split(' ')
-                .map((w) => w[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2);
+   
 
               const isOrgAdminRole = member.role?.toLowerCase() === 'org_admin';
 
@@ -385,7 +380,7 @@ const MembersSettings = () => {
                         backgroundColor: member.color || '#64748b',
                       }}
                     >
-                      {initials || 'U'}
+                      {getInitials(member.full_name ) || 'U'}
                     </div>
 
                     <div className="min-w-0 flex-1">

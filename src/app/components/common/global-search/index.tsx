@@ -1,46 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import {
-  Search,
-  X,
-  Loader2,
-  CheckSquare,
-  BookOpen,
-  FolderKanban,
-  Zap,
-  ArrowRight,
-  CornerDownLeft,
-  Users,
-  Settings,
-} from 'lucide-react';
-import { useGlobalSearch } from '@/src/hooks/useGlobalSearch';
+import { Search, X, Loader2, FolderKanban, Users, Settings } from 'lucide-react';
+import { UnifiedSearchResultItem, useGlobalSearch } from '@/src/hooks/useGlobalSearch';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
 import { useAppDispatch, useAppSelector } from '@/src/store';
 import { setSelectedProject } from '@/src/store/slices/project';
 import {
-  SearchTaskItem,
-  SearchUserStoryItem,
-  SearchProjectItem,
-  SearchMemberItem,
-  SearchSprintItem,
   SearchCategory,
 } from '@/src/types/search';
 import { useGetProjectsWithSprints } from '@/src/modules/project/hooks/useProject';
-import { getInitials } from '../format';
 import { usePermissions } from '@/src/hooks/usePermissions';
+import { GlobalSearchContent } from './globalSearchContent';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type UnifiedSearchResultItem =
-  | { itemType: 'task'; data: SearchTaskItem }
-  | { itemType: 'user_story'; data: SearchUserStoryItem }
-  | { itemType: 'project'; data: SearchProjectItem }
-  | { itemType: 'member'; data: SearchMemberItem }
-  | { itemType: 'sprint'; data: SearchSprintItem };
 
 const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
   if (!query.trim() || !text) return <span>{text}</span>;
@@ -65,61 +41,6 @@ const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
   );
 };
 
-const PriorityBadge = ({ priority }: { priority?: string }) => {
-  if (!priority) return null;
-  const p = priority.toLowerCase();
-  let colorClass =
-    'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
-
-  if (p === 'low') {
-    colorClass =
-      'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800';
-  } else if (p === 'medium') {
-    colorClass =
-      'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800';
-  } else if (p === 'high') {
-    colorClass =
-      'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800';
-  } else if (p === 'urgent' || p === 'critical') {
-    colorClass =
-      'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800';
-  }
-
-  return (
-    <span
-      className={`text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded border ${colorClass}`}
-    >
-      {priority}
-    </span>
-  );
-};
-
-const StatusBadge = ({ status }: { status?: string }) => {
-  if (!status) return null;
-  const s = status.toLowerCase().replace(/_/g, ' ');
-  let colorClass =
-    'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300 border-gray-200 dark:border-slate-700';
-
-  if (s.includes('done') || s.includes('complete')) {
-    colorClass =
-      'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-  } else if (s.includes('progress') || s.includes('active')) {
-    colorClass =
-      'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-  } else if (s.includes('planning') || s.includes('todo') || s.includes('backlog')) {
-    colorClass =
-      'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-  }
-
-  return (
-    <span
-      className={`text-[10px] capitalize font-medium px-1.5 py-0.5 rounded border ${colorClass}`}
-    >
-      {status.replace(/_/g, ' ')}
-    </span>
-  );
-};
-
 export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) => {
   const {
     query,
@@ -127,11 +48,14 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
     debouncedQuery,
     activeCategory,
     setActiveCategory,
-    searchData,
+    flatResults,
     counts,
     isLoading,
     isFetching,
     clearSearch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   } = useGlobalSearch();
 
   const { push } = useOrgNavigation();
@@ -143,6 +67,7 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Auto-focus input on open
   useEffect(() => {
@@ -156,29 +81,6 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
       setSelectedIndex(0);
     }
   }, [isOpen, clearSearch]);
-
-  // Flatten active search results for keyboard navigation
-  const flatResults = useMemo((): UnifiedSearchResultItem[] => {
-    const list: UnifiedSearchResultItem[] = [];
-
-    if (activeCategory === 'all' || activeCategory === 'tasks') {
-      searchData.tasks.forEach((item) => list.push({ itemType: 'task', data: item }));
-    }
-    if (activeCategory === 'all' || activeCategory === 'user_stories') {
-      searchData.user_stories.forEach((item) => list.push({ itemType: 'user_story', data: item }));
-    }
-    if (activeCategory === 'all' || activeCategory === 'projects') {
-      searchData.projects.forEach((item) => list.push({ itemType: 'project', data: item }));
-    }
-    if (activeCategory === 'all' || activeCategory === 'members') {
-      searchData.members.forEach((item) => list.push({ itemType: 'member', data: item }));
-    }
-    if (activeCategory === 'all' || activeCategory === 'sprints') {
-      searchData.sprints.forEach((item) => list.push({ itemType: 'sprint', data: item }));
-    }
-
-    return list;
-  }, [searchData, activeCategory]);
 
   // Reset selected index when query or results change
   useEffect(() => {
@@ -197,6 +99,21 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
       }
     }
   }, [selectedIndex]);
+
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    const root = resultsContainerRef.current;
+    if (!el || !root || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchNextPage();
+      },
+      { root, rootMargin: '0px 0px 80px 0px', threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, flatResults.length]);
 
   // Handle navigation to clicked/selected search item
   const handleSelectResult = useCallback(
@@ -308,24 +225,6 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
           push('/projects');
         },
       },
-      //   {
-      //     title: 'Tasks',
-      //     desc: 'View and manage all organization tasks',
-      //     icon: <CheckSquare size={16} className="text-indigo-600 dark:text-indigo-400" />,
-      //     action: () => {
-      //       onClose();
-      //       push('/tasks');
-      //     },
-      //   },
-      //   {
-      //     title: 'Issues',
-      //     desc: 'Review tracker issues and tickets',
-      //     icon: <ListTodo size={16} className="text-amber-600 dark:text-amber-400" />,
-      //     action: () => {
-      //       onClose();
-      //       push('/issues');
-      //     },
-      //   },
       {
         title: 'Team Members',
         desc: 'Manage organization team and roles',
@@ -364,7 +263,13 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < flatResults.length - 1 ? prev + 1 : 0));
+      if (selectedIndex < flatResults.length - 1) {
+        setSelectedIndex(selectedIndex + 1);
+      } else if (hasNextPage) {
+        fetchNextPage();
+      } else {
+        setSelectedIndex(0);
+      }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : flatResults.length - 1));
@@ -466,327 +371,19 @@ export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) =
             })}
           </div>
         )}
-
-        {/* Content Body */}
-        <div ref={resultsContainerRef} className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1">
-          {/* Initial State (Query is empty) */}
-          {!debouncedQuery && (
-            <div className="py-2 px-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200 mb-2 px-2">
-                Quick Navigation
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {quickLinks.map((link) => (
-                  <button
-                    key={link.title}
-                    onClick={link.action}
-                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-colors text-left group"
-                  >
-                    <div className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shrink-0">
-                      {link.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-800 dark:text-slate-200 flex items-center justify-between">
-                        {link.title}
-                        <ArrowRight
-                          size={13}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-500"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
-                        {link.desc}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Pro Search Tip */}
-              <div className="mt-4 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/80 dark:border-blue-900/30 flex items-center gap-2.5 text-xs text-blue-700 dark:text-blue-300">
-                <span className="font-semibold text-blue-800 dark:text-blue-200">💡 ProTip:</span>
-                <span>
-                  Search by key like{' '}
-                  <code className="font-mono bg-blue-100 dark:bg-blue-900/50 px-1 py-0.5 rounded font-semibold">
-                    TT-1
-                  </code>
-                  , title, project, member, or sprint.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="py-12 flex flex-col items-center justify-center text-center gap-3">
-              <Loader2 size={28} className="animate-spin text-blue-600" />
-              <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">
-                Searching across workspace...
-              </p>
-            </div>
-          )}
-
-          {/* No Results State */}
-          {!isLoading && debouncedQuery && flatResults.length === 0 && (
-            <div className="py-12 px-4 text-center">
-              <div className="inline-flex p-3 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 mb-3">
-                <Search size={24} />
-              </div>
-              <h4 className="text-sm font-semibold text-gray-800 dark:text-slate-200">
-                No results found for &ldquo;{debouncedQuery}&rdquo;
-              </h4>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                Try searching for a different keyword, task key (e.g. TT-1), project name, or switch
-                category filters.
-              </p>
-            </div>
-          )}
-
-          {/* Results List */}
-          {!isLoading && debouncedQuery && flatResults.length > 0 && (
-            <div className="space-y-1">
-              {flatResults.map((item, index) => {
-                const isSelected = index === selectedIndex;
-
-                if (item.itemType === 'task') {
-                  const task = item.data;
-                  return (
-                    <div
-                      key={`task-${task.id}`}
-                      data-search-index={index}
-                      onClick={() => handleSelectResult(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="p-2 rounded-lg bg-blue-100/70 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shrink-0">
-                          <CheckSquare size={16} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {task.key && (
-                              <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-200/60 dark:border-blue-900/40">
-                                {task.key}
-                              </span>
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              <HighlightMatch text={task.title} query={debouncedQuery} />
-                            </span>
-                          </div>
-                          {task.project_name && (
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-1">
-                              <span className="text-gray-400">📁</span>
-                              <span>{task.project_name}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <PriorityBadge priority={task.priority} />
-                        <StatusBadge status={task.status} />
-                        {isSelected && (
-                          <CornerDownLeft size={14} className="text-blue-500 hidden sm:inline" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (item.itemType === 'user_story') {
-                  const story = item.data;
-                  return (
-                    <div
-                      key={`story-${story.id}`}
-                      data-search-index={index}
-                      onClick={() => handleSelectResult(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="p-2 rounded-lg bg-indigo-100/70 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 shrink-0">
-                          <BookOpen size={16} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {story.key && (
-                              <span className="text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-900/40">
-                                {story.key}
-                              </span>
-                            )}
-                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              <HighlightMatch text={story.title} query={debouncedQuery} />
-                            </span>
-                          </div>
-                          {story.project_name && (
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-1">
-                              <span className="text-gray-400">📁</span>
-                              <span>{story.project_name}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <PriorityBadge priority={story.priority} />
-                        <StatusBadge status={story.status} />
-                        {isSelected && (
-                          <CornerDownLeft size={14} className="text-blue-500 hidden sm:inline" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (item.itemType === 'project') {
-                  const project = item.data;
-                  const projectTitle = project.title || project.name || 'Untitled Project';
-                  return (
-                    <div
-                      key={`project-${project.id}`}
-                      data-search-index={index}
-                      onClick={() => handleSelectResult(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="p-2 rounded-lg bg-emerald-100/70 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 shrink-0">
-                          <FolderKanban size={16} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {project.key && (
-                              <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-900/40">
-                                {project.key}
-                              </span>
-                            )}
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                              <HighlightMatch text={projectTitle} query={debouncedQuery} />
-                            </span>
-                          </div>
-                          {project.description && (
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
-                              {project.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <StatusBadge status={project.status} />
-                        {isSelected && (
-                          <CornerDownLeft size={14} className="text-blue-500 hidden sm:inline" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (item.itemType === 'member') {
-                  const member = item.data;
-                  const memberName = member.name || member.full_name || member.email || 'Member';
-                  const initials = getInitials(memberName);
-
-                  return (
-                    <div
-                      key={`member-${member.id}`}
-                      data-search-index={index}
-                      onClick={() => handleSelectResult(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold text-xs flex items-center justify-center shrink-0">
-                          {initials}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                            <HighlightMatch text={memberName} query={debouncedQuery} />
-                          </p>
-                          {member.email && (
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
-                              <HighlightMatch text={member.email} query={debouncedQuery} />
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-2">
-                        {member.role && (
-                          <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">
-                            {member.role}
-                          </span>
-                        )}
-                        {isSelected && (
-                          <CornerDownLeft size={14} className="text-blue-500 hidden sm:inline" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (item.itemType === 'sprint') {
-                  const sprint = item.data;
-                  const sprintTitle = sprint.title || sprint.name || 'Sprint';
-                  return (
-                    <div
-                      key={`sprint-${sprint.id}`}
-                      data-search-index={index}
-                      onClick={() => handleSelectResult(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80'
-                          : 'hover:bg-gray-50 dark:hover:bg-slate-800/60 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="p-2 rounded-lg bg-amber-100/70 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 shrink-0">
-                          <Zap size={16} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                            <HighlightMatch text={sprintTitle} query={debouncedQuery} />
-                          </p>
-                          {sprint.project_name && (
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-1">
-                              <span className="text-gray-400">📁</span>
-                              <span>{sprint.project_name}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <StatusBadge status={sprint.status} />
-                        {isSelected && (
-                          <CornerDownLeft size={14} className="text-blue-500 hidden sm:inline" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return null;
-              })}
-            </div>
-          )}
-        </div>
+        <GlobalSearchContent
+          resultsContainerRef={resultsContainerRef}
+          loadMoreRef={loadMoreRef}
+          debouncedQuery={debouncedQuery}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
+          flatResults={flatResults}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={setSelectedIndex}
+          handleSelectResult={handleSelectResult}
+          quickLinks={quickLinks}
+        />
 
         {/* Footer Shortcut Hints */}
         <div className="px-4 py-2.5 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex items-center justify-between text-xs text-gray-500 dark:text-slate-400 shrink-0">

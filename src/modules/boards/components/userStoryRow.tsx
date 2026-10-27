@@ -7,7 +7,7 @@ import { KanbanTask } from '@/src/types/board';
 import { BoardPageFilters } from '@/src/modules/boards/hooks/useBoards';
 import { StatusCell } from './statusCell';
 import { OptimisticUpdate, MapTaskFn } from './types';
-import { isStorylessId } from './utils';
+import { isStorylessId } from '../utils/storylessUtils';
 
 interface UserStoryRowProps {
   story: UserStoryResponse & { tasksByStatus: Map<string, KanbanTask[]> };
@@ -25,7 +25,7 @@ interface UserStoryRowProps {
   pageFilters: BoardPageFilters;
 }
 
-export const UserStoryRow: React.FC<UserStoryRowProps> = ({
+const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
   story,
   statuses,
   overCell,
@@ -297,3 +297,23 @@ export const UserStoryRow: React.FC<UserStoryRowProps> = ({
     </div>
   );
 };
+
+export const UserStoryRow = React.memo(UserStoryRowComponent, (prev, next) => {
+  const prevIsOverStory = prev.overCell?.storyId === prev.story.id;
+  const nextIsOverStory = next.overCell?.storyId === next.story.id;
+  if (prevIsOverStory !== nextIsOverStory) return false;
+  if (prevIsOverStory && nextIsOverStory && prev.overCell?.statusId !== next.overCell?.statusId) {
+    return false;
+  }
+  if (prev.story !== next.story) return false;
+  if (prev.statuses !== next.statuses) return false;
+  if (prev.collapsedStatuses !== next.collapsedStatuses) return false;
+  if (prev.hasMoreByStatus !== next.hasMoreByStatus) return false;
+  if (prev.optimisticUpdates !== next.optimisticUpdates) return false;
+  if (prev.projectId !== next.projectId) return false;
+  if (prev.pageFilters !== next.pageFilters) return false;
+  if (prev.onUserStoryClick !== next.onUserStoryClick) return false;
+  if (prev.onTaskClick !== next.onTaskClick) return false;
+  if (prev.onRefetch !== next.onRefetch) return false;
+  return true;
+});
