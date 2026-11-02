@@ -1,5 +1,5 @@
 import { BoardStory, BoardStatusColumn } from '@/src/types/board';
-import { BoardPageData } from './types';
+import { BoardPageData } from '../components';
 
 export const STORYLESS_ID = 'direct-sprint-tasks';
 

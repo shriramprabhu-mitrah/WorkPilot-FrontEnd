@@ -9,9 +9,15 @@ import TeamWorkloadCard from '../components/TeamWorkLoadCard';
 import RecentActivityCard from '../components/RecentActivites';
 import TaskStatusCard from '../components/TaskStatusCard';
 import UpcomingDeadlines from '../components/UpcomingDeadlines';
-import { STATS, weekLabels, weeklyPlanned, weeklyCompleted } from '../../reports/data';
+import { STATS } from '../../reports/data';
 import { useGetOrganization } from '../../organization/hooks/useOrganization';
-import { useGetDashboard, useGetRecentActivities } from '../hooks/useDashboard';
+import {
+  useGetDashboard,
+  useGetRecentActivities,
+  useGetSprintBurndown,
+  useGetTeamWorkload,
+  useGetWeeklyProgress,
+} from '../hooks/useDashboard';
 import { useAppSelector, useAppDispatch } from '@/src/store';
 import { setSelectedProject, setSprints } from '@/src/store/slices/project';
 import { ProjectSelectionPopover } from '@/src/app/components/common/project-selection-popover';
@@ -92,26 +98,29 @@ export const DashBoardTemplate = () => {
     selectedSprint?.id
   );
 
+  const { teamWorkload, isLoadingTeamWorkload } = useGetTeamWorkload(effectiveProject?.id ?? '');
+
+  const { sprintBurndown, isLoadingSprintBurndown } = useGetSprintBurndown(
+    effectiveProject?.id ?? '',
+    selectedSprint?.id
+  );
+
+  const {
+    weeklyProgress,
+    isLoadingWeeklyProgress,
+    isError: isWeeklyProgressError,
+  } = useGetWeeklyProgress(effectiveProject?.id ?? '', {
+    sprint_id: selectedSprint?.id,
+  });
+
+  const teamLabels = teamWorkload.map((member) => member.full_name);
+  const teamColors = teamWorkload.map((member) => member.color || colors.gray400);
+  const assignedTasks = teamWorkload.map((member) => member.task_count);
+  const points = teamWorkload.map((member) => member.points);
+
   // Derived data from the single API response
   const overview = dashboard?.overview;
-
   const taskStatus = dashboard?.task_status ?? {};
-
-  const sprintBurndown = dashboard?.sprint_burndown;
-
-  const teamWorkload = Array.isArray(dashboard?.team_workload) ? dashboard.team_workload : [];
-  // Normalize: with sprint_id → single object; without → array
-  const burndownSprints: SprintBurndownBlock[] = Array.isArray(sprintBurndown)
-    ? sprintBurndown
-    : sprintBurndown && typeof sprintBurndown === 'object' && 'sprint_id' in sprintBurndown
-      ? [sprintBurndown as SprintBurndownBlock]
-      : [];
-  const teamLabels = teamWorkload.map((m) => m.full_name);
-
-  const teamColors = teamWorkload.map((m) => m.color || colors.gray400);
-
-  const assignedTasks = teamWorkload.map((m) => m.task_count);
-  const points = teamWorkload.map((m) => m.points);
 
   // Popover dismissal state
   const [loading, setLoading] = useState(true);
@@ -134,6 +143,12 @@ export const DashBoardTemplate = () => {
     const timer = setTimeout(() => setLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  const weeklyData = Array.isArray(weeklyProgress) ? weeklyProgress : [];
+
+  const weeklyLabels = weeklyData.map((item) => item.day);
+  const weeklyPlannedValues = weeklyData.map((item) => item.planned);
+  const weeklyCompletedValues = weeklyData.map((item) => item.completed);
 
   const showCreateProjectPopover =
     !loading &&
@@ -196,16 +211,16 @@ export const DashBoardTemplate = () => {
           </div>
 
           <div className="lg:col-span-3 w-full">
-            <BurndownCard chartHeight={300} burndownSprints={burndownSprints} />
+            <BurndownCard chartHeight={300} burndownSprints={sprintBurndown} />
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full ">
             <SprintProgressCard
               isMobile={false}
               chartHeight={200}
-              labels={weekLabels}
-              planned={weeklyPlanned}
-              completed={weeklyCompleted}
+              labels={weeklyLabels}
+              planned={weeklyPlannedValues}
+              completed={weeklyCompletedValues}
               title="Weekly Progress"
               subtitle="Planned vs completed tasks by weekday"
             />

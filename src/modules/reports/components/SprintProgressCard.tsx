@@ -29,10 +29,21 @@ export default function SprintProgressCard({
   const isDark = theme === 'dark';
 
   const labelColor = isDark ? '#cbd5e1' : colors.gray500;
+  const valueLabelColor = isDark ? '#f1f5f9' : colors.gray900;
   const splitLineColor = isDark ? '#334155' : colors.gray100;
   const tooltipBg = isDark ? '#1e293b' : colors.white;
   const tooltipBorder = isDark ? '#475569' : colors.gray200;
   const tooltipText = isDark ? '#f1f5f9' : colors.gray900;
+
+  const valueLabel = {
+    show: true,
+    position: 'top' as const,
+    distance: 4,
+    color: valueLabelColor,
+    fontSize: isMobile ? 10 : 11,
+    fontWeight: 600,
+    formatter: ({ value }: { value: number }) => (value > 0 ? String(value) : ''),
+  };
 
   const sprintProgressOption: EChartsOption = {
     animation: true,
@@ -40,7 +51,7 @@ export default function SprintProgressCard({
     animationEasing: 'cubicOut',
     animationDurationUpdate: 800,
     animationEasingUpdate: 'cubicOut',
-    grid: { left: 8, right: 8, top: 12, bottom: 48, containLabel: true },
+    grid: { left: 8, right: 8, top: 24, bottom: 48, containLabel: true },
     legend: {
       bottom: 4,
       itemWidth: 12,
@@ -81,6 +92,7 @@ export default function SprintProgressCard({
         barMaxWidth: isMobile ? 18 : 28,
         itemStyle: { color: colors.colLightBlue, borderRadius: [4, 4, 0, 0] },
         data: planned,
+        label: valueLabel,
       },
       {
         name: 'Completed',
@@ -88,6 +100,7 @@ export default function SprintProgressCard({
         barMaxWidth: isMobile ? 18 : 28,
         itemStyle: { color: colors.primary, borderRadius: [4, 4, 0, 0] },
         data: completed,
+        label: valueLabel,
       },
     ],
   };

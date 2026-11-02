@@ -90,3 +90,43 @@ export interface UpcomingDeadline {
   due_date: string;
   deadline_status: string;
 }
+
+export interface TeamWorkloadMember {
+  user_id: string;
+  user_name: string;
+  full_name: string;
+  avatar_url: string;
+  color: string;
+  task_count: number;
+  points: number;
+}
+export interface SprintBurndownDataPoint {
+  day: number;
+  date: string;
+  ideal_hours: number;
+  actual_hours: number;
+}
+export interface SprintBurndownBlock {
+  sprint_id: string;
+  sprint_name: string;
+  data: SprintBurndownDataPoint[];
+}
+export interface SprintBurndownResponse {
+  sprint_burndown: SprintBurndownBlock[];
+}
+
+export interface WeeklyProgressParams {
+  start_date?: string;
+  end_date?: string;
+  sprint_id?: string;
+  assignee_id?: string;
+  page?: number;
+}
+
+export interface WeeklyProgressItem {
+  [key: string]: unknown;
+}
+
+export interface WeeklyProgressResponse {
+  [key: string]: unknown;
+}

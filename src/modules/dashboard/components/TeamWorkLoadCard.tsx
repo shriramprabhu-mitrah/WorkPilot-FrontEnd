@@ -29,6 +29,7 @@ export default function TeamWorkloadCard({
   const [page, setPage] = useState(0);
 
   const labelColor = isDark ? '#cbd5e1' : colors.gray500;
+  const valueLabelColor = isDark ? '#f1f5f9' : colors.gray900;
   const splitLineColor = isDark ? '#334155' : colors.gray100;
   const tooltipBg = isDark ? '#1e293b' : colors.white;
   const tooltipBorder = isDark ? '#475569' : colors.gray200;
@@ -183,10 +184,21 @@ export default function TeamWorkloadCard({
     ])
   );
 
+  const valueLabel = {
+    show: true,
+    position: 'right' as const,
+    distance: 6,
+    color: valueLabelColor,
+    fontSize: 11,
+    fontWeight: 600,
+    formatter: (params: { value: number }) =>
+      params.value === 0 ? '' : params.value,
+  };
+
   const option: EChartsOption = {
     animation: true,
     animationDuration: 1200,
-    grid: { left: 70, right: 20, top: 20, bottom: 40, containLabel: true },
+    grid: { left: 70, right: 30, top: 20, bottom: 40, containLabel: true },
     legend: {
       bottom: 0,
       itemWidth: 12,
@@ -215,7 +227,7 @@ export default function TeamWorkloadCard({
     xAxis: {
       type: 'value',
       min: 0,
-      max: Math.ceil(maxValue / 5) * 5 || 5,
+      max: Math.ceil((maxValue + 1) / 5) * 5,
       interval: 5,
       splitLine: { lineStyle: { color: splitLineColor } },
       axisLabel: { color: labelColor },
@@ -250,6 +262,7 @@ export default function TeamWorkloadCard({
         data: pageAssigned,
         barWidth: 12,
         itemStyle: { color: colors.colLightBlue, borderRadius: [0, 6, 6, 0] },
+        label: valueLabel,
       },
       {
         name: 'Points',
@@ -257,6 +270,7 @@ export default function TeamWorkloadCard({
         data: pagePoints,
         barWidth: 12,
         itemStyle: { color: colors.primary, borderRadius: [0, 6, 6, 0] },
+        label: valueLabel,
       },
     ],
   };

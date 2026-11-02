@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '@/src/services/dashboard';
+import { WeeklyProgressParams } from '@/src/types/dashboard';
 
 export const useGetDashboard = (projectId: string, sprintId?: string, enabled = true) => {
   const query = useQuery({
@@ -61,5 +62,67 @@ export const useGetUpcomingDeadlines = (projectId: string, sprintId?: string, en
     refetchUpcomingDeadlines: query.refetch,
   };
 };
+
+export const useGetTeamWorkload = (projectId: string, enabled = true) => {
+  const query = useQuery({
+    queryKey: ['teamWorkload', projectId],
+    queryFn: () => dashboardService.getTeamWorkload(projectId),
+    enabled: enabled && !!projectId,
+    staleTime: 30 * 1000,
+  });
+  return {
+    teamWorkload: query.data?.data ?? [],
+    isLoadingTeamWorkload: query.isLoading,
+    isFetchingTeamWorkload: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+    refetchTeamWorkload: query.refetch,
+  };
+};
+
+export const useGetSprintBurndown = (
+  projectId: string,
+  sprintId?: string,
+  enabled = true
+) => {
+  const query = useQuery({
+    queryKey: ['sprintBurndown', projectId, sprintId ?? 'all'],
+    queryFn: () => dashboardService.getSprintBurndown(projectId, sprintId),
+    enabled: enabled && !!projectId,
+    staleTime: 30 * 1000,
+  });
+  return {
+    sprintBurndown: query.data?.data?.sprint_burndown ?? [],
+    isLoadingSprintBurndown: query.isLoading,
+    isFetchingSprintBurndown: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+    refetchSprintBurndown: query.refetch,
+  };
+};
+
+export const useGetWeeklyProgress = (
+  projectId: string,
+  params: WeeklyProgressParams = {},
+  enabled = true,
+) => {
+  const query = useQuery({
+    queryKey: ['weeklyProgress', projectId, params],
+    queryFn: () => dashboardService.getWeeklyProgress(projectId, params),
+    enabled: enabled && Boolean(projectId),
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    weeklyProgress: query.data?.data,
+    isLoadingWeeklyProgress: query.isLoading,
+    isFetchingWeeklyProgress: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+    refetchWeeklyProgress: query.refetch,
+  };
+};
+
 // Re-export useGlobalSearch for convenience
 export { useGlobalSearch } from '@/src/hooks/useGlobalSearch';
