@@ -116,4 +116,5 @@ export interface BoardQueryParams {
   status_id?: string;
   task_status_id?: string;
   storyless_tasks?: boolean;
+  label_id?: string
 }

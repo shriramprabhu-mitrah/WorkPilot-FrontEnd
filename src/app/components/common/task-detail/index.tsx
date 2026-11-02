@@ -1,71 +1,41 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ChevronDown,
-  Check,
-  FileText,
-  MoreVertical,
-  Plus,
-  X,
-  Paperclip,
-  Download,
-  Trash2,
-  Pencil,
-  Copy,
-  AlertCircle,
-  Bug,
-  Archive,
-  ChevronRight,
-  Link2,
-  BookOpenText,
-  AlertTriangle,
-} from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
 import type { KanbanTask, Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { ActivitySection } from './components/activity-section';
-import { DetailRow } from './components/detail-row';
-import {
-  EditableDate,
-  EditableLabels,
-  EditableNumber,
-  EditablePriority,
-  EditableText,
-} from './components/editable-fields';
+import { EditableText } from './components/editable-fields';
 import { useResize } from '@/src/hooks/useResize';
-import { taskService } from '@/src/services/tasks';
-import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { useGetProjectMembers } from '@/src/modules/project/hooks/useProject';
 import { useTaskAttachments } from '@/src/modules/tasks/hooks/useTaskAttachment';
-import WpRichTextEditor from '../htmlEditor';
 import { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import StatusModal from './components/StatusModal';
 import { CustomStatus } from '@/src/types/colors';
 import { taskTypeOptions } from '../enum';
 // adjust path to wherever StatusModal.tsx actually lives relative to this file
-import {
-  useAssignTaskToMe,
-  useCloneTask,
-  useDeleteTask,
-  useGetTaskById,
-} from '@/src/modules/tasks/hooks/useTask';
+import { useDeleteTask, useGetTaskById } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetUserStories, useGetUserStoryById } from '@/src/modules/tasks/hooks/useUserStory';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import { useAppSelector } from '@/src/store';
 import { UserStoryResponse } from '@/src/types/userstories';
-import { TaskLabel } from '@/src/types/task';
-import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-import {
-  AssigneeField,
-  AssigneePatch,
-  ReporterField,
-  ReporterPatch,
-  SprintField,
-  UserStoryField,
-} from './components/taskDetailFields';
+import { AssigneePatch, ReporterPatch } from './components/taskDetailFields';
+import { useResizable } from '@/src/hooks/useResizable';
+import { useCopyLink } from '@/src/hooks/useCopyLink';
+import DeleteConfirmModal from '../deleteModal';
+import { getInitials } from '../format';
+import TaskStatusSection from './components/taskStatusSection';
+import TaskDetailActions from './components/taskDetailActions';
+import TaskDetailsSidebar from './components/taskDetailsSidebar';
+import TaskDetailBreadcrumb from './components/taskDetailBreadcrumb';
+import { TaskAttachments } from './components/taskAttachments';
+import { Attachment } from '@/src/types/task';
+import { useUpdateTask } from './hooks/useUpdateTask';
+import { CloneTaskModal } from './components/cloneTaskModal';
+import { useMoveToBacklog } from './hooks/useMoveToBacklog';
+import { TaskDescriptionSection } from './components/taskDescriptionSection';
+import { useTaskAssignment } from './hooks/useTaskAssignment';
 
 const UserStoryDetailDrawer = dynamic(
   () => import('../user-story-detail').then((mod) => mod.UserStoryDetailDrawer),
@@ -80,47 +50,6 @@ export interface TaskDetailDrawerProps {
   onOpenUserStory?: (userStory: UserStoryResponse) => void;
 }
 
-const useResizable = (initial: number, min: number, max: number) => {
-  const [width, setWidth] = useState(initial);
-  const dragging = useRef(false);
-
-  const onMouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault();
-      dragging.current = true;
-      const startX = event.clientX;
-      const startWidth = width;
-
-      const onMove = (moveEvent: MouseEvent) => {
-        if (!dragging.current) return;
-        const delta = startX - moveEvent.clientX;
-        setWidth(Math.min(max, Math.max(min, startWidth + delta)));
-      };
-
-      const onUp = () => {
-        dragging.current = false;
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-      };
-
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-    },
-    [width, min, max]
-  );
-
-  return { width, onMouseDown };
-};
-
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-
 export const TaskDetailDrawer = ({
   task,
   onClose,
@@ -128,7 +57,6 @@ export const TaskDetailDrawer = ({
   onDelete,
   onOpenUserStory,
 }: TaskDetailDrawerProps) => {
-  const queryClient = useQueryClient();
   const params = useParams();
   const orgSlug = (params?.orgSlug as string) || '';
   const projectSlug = (params?.projectSlug as string) || '';
@@ -136,51 +64,11 @@ export const TaskDetailDrawer = ({
   const storeProjectId = useAppSelector((state) => state.project.selectedProject?.id) || '';
   const effectiveProjectId = task.projectId || storeProjectId;
   const effectiveTaskId = task.key || task.id;
-  const [isMovingToBacklog, setIsMovingToBacklog] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-
-  const handleCopyLink = useCallback(async () => {
-    const itemKey = effectiveTaskId || task.key || task.id;
-    if (!itemKey) return;
-
-    let url = '';
-    if (typeof window !== 'undefined') {
-      const currentUrl = window.location.href;
-      if (currentUrl.includes(itemKey)) {
-        url = currentUrl;
-      } else {
-        const origin = window.location.origin;
-        const currentPath = window.location.pathname;
-        if (orgSlug && projectSlug) {
-          const section = currentPath.includes('/boards') ? 'boards' : 'backlog';
-          url = `${origin}/${orgSlug}/${projectSlug}/${section}/${itemKey}`;
-        } else {
-          url = `${origin}${currentPath}`;
-        }
-      }
-
-      try {
-        if (navigator?.clipboard?.writeText) {
-          await navigator.clipboard.writeText(url);
-        } else {
-          const textArea = document.createElement('textarea');
-          textArea.value = url;
-          textArea.style.position = 'fixed';
-          textArea.style.opacity = '0';
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-        }
-        setCopiedLink(true);
-        toast.success('Link copied to clipboard');
-        setTimeout(() => setCopiedLink(false), 2000);
-      } catch {
-        toast.error('Failed to copy link');
-      }
-    }
-  }, [effectiveTaskId, task.key, task.id, orgSlug, projectSlug]);
+  const { handleCopyLink, copiedLink } = useCopyLink({
+    itemKey: effectiveTaskId || task.key || task.id,
+    orgSlug,
+    projectSlug,
+  });
 
   const {
     task: fetchedTask,
@@ -221,7 +109,6 @@ export const TaskDetailDrawer = ({
   const [savedDescription, setSavedDescription] = useState('');
   const [actualHoursInput, setActualHoursInput] = useState('');
   const [actualMinutesInput, setActualMinutesInput] = useState('');
-  const [showTypeMenu, setShowTypeMenu] = useState(false);
 
   const [taskData, setTaskData] = useState({
     title: task.title ?? '',
@@ -239,7 +126,6 @@ export const TaskDetailDrawer = ({
     storyPoints: task.storyPoints,
     estimatedHours: 0,
     actualHours: 0,
-
     sprint: task.sprint ?? '',
     sprint_id: task.sprintId ?? task.sprint_id ?? '',
     parent: task.parent ?? '',
@@ -261,14 +147,11 @@ export const TaskDetailDrawer = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEstimatedHoursInput(String(Math.floor(estimated)));
       setEstimatedMinutesInput(String(Math.round((estimated % 1) * 60)));
-
       setActualHoursInput(String(Math.floor(actual)));
       setActualMinutesInput(String(Math.round((actual % 1) * 60)));
-
       const apiDescription = fetchedTask.description ?? '';
       const assigneeName = fetchedTask.assignee?.name || fetchedTask.assignee_name || '';
       const initials = assigneeName ? getInitials(assigneeName) : '';
-
       const reporterName = fetchedTask.reporter?.name || fetchedTask.reporter_name || '';
       const reporterInitials = reporterName ? getInitials(reporterName) : '';
       const reporterColor = fetchedTask.reporter?.color ?? '';
@@ -310,22 +193,13 @@ export const TaskDetailDrawer = ({
       setSavedDescription(apiDescription);
     }
   }, [fetchedTask, effectiveProjectId, task.subtasks, task.labels, task.parent]);
-  // const [members, setMembers] = useState<ProjectMember[]>([]);
-
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [showReporterMenu, setShowReporterMenu] = useState(false);
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [keepAssignee, setKeepAssignee] = useState(true);
-  const [assigneeSearch, setAssigneeSearch] = useState('');
-  const debouncedAssigneeSearch = useDebounce(assigneeSearch, 500);
-  const [reporterSearch, setReporterSearch] = useState('');
-  const debouncedReporterSearch = useDebounce(reporterSearch, 500);
   const [userStorySearch, setUserStorySearch] = useState('');
-  const [showUserStoryMenu, setShowUserStoryMenu] = useState(false);
   const debouncedUserStorySearch = useDebounce(userStorySearch, 500);
-  const [isUpdatingUserStory, setIsUpdatingUserStory] = useState(false);
   const [isEditingTask, setIsEditingTask] = useState(false);
   const [editTaskTitle, setEditTaskTitle] = useState('');
   const [editTaskDescription, setEditTaskDescription] = useState('');
@@ -334,43 +208,8 @@ export const TaskDetailDrawer = ({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusModalMode, setStatusModalMode] = useState<'add' | 'edit' | 'delete'>('add');
   const [selecteddStatus, setSelecteddStatus] = useState<CustomStatus | null>(null);
-
-  const { mutate: assignTaskToMe, isPending: isAssigning } = useAssignTaskToMe();
-  const { members, isLoadingMembers, isFetchingMembers } = useGetProjectMembers(
-    resolvedProjectId || '',
-    {
-      page: 1,
-      page_size: 10,
-      name: debouncedAssigneeSearch,
-    },
-    showAssigneeMenu
-  );
-
   const [showSprintMenu, setShowSprintMenu] = useState(false);
-  const [sprintSearch, setSprintSearch] = useState('');
-  const debouncedSprintSearch = useDebounce(sprintSearch, 500);
-  const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
-
-  const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
-    taskData.project_id,
-    { page: 1, page_size: 10, search: debouncedSprintSearch },
-    !!taskData.project_id && showSprintMenu
-  );
-
-  const {
-    members: reporterMembers,
-    isLoadingMembers: isLoadingReporterMembers,
-    isFetchingMembers: isFetchingReporterMembers,
-  } = useGetProjectMembers(
-    resolvedProjectId ?? '',
-    {
-      page: 1,
-      page_size: 10,
-      name: debouncedReporterSearch,
-    },
-    showReporterMenu
-  );
 
   const { userStories, isLoadingUserStories, isFetchingUserStories } = useGetUserStories(
     taskData.project_id,
@@ -454,7 +293,6 @@ export const TaskDetailDrawer = ({
   const assigneeMenuRef = useRef<HTMLDivElement>(null);
   const reporterMenuRef = useRef<HTMLDivElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
-  const assigneeSearchRef = useRef<HTMLInputElement>(null);
   const descriptionEditorRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -474,59 +312,13 @@ export const TaskDetailDrawer = ({
   }));
 
   const selectedStatus = statusOptions.find((status) => status.value === taskData.status);
-  const { cloneTaskAsync, isCloningTask } = useCloneTask();
   const { deleteTaskAsync: deleteTask, isDeletingTask } = useDeleteTask(resolvedProjectId);
-  const currentUser = useAppSelector((state) => state.user);
-
-  const handleAssignToMe = () => {
-    if (!task.projectId || !task.taskId || !currentUser) return;
-    const previousAssignee = {
-      assigneeId: taskData.assigneeId,
-      assigneeName: taskData.assigneeName,
-      assignee: taskData.assignee,
-      assigneeColor: taskData.assigneeColor,
-    };
-    const displayName = currentUser.name || currentUser.username || currentUser.email || '';
-    const initials = getInitials(displayName || 'U');
-    const color = currentUser.color || colors.avatarBlue;
-    setTaskData((prev) => ({
-      ...prev,
-      assigneeId: prev.assigneeId,
-      assigneeName: displayName,
-      assignee: initials,
-      assigneeColor: color,
-    }));
-    assignTaskToMe(
-      { projectId: task.projectId, taskId: task.taskId },
-      {
-        onSuccess: () => {
-          // Invalidate tasks list to update unassigned tasks in backlog
-          queryClient.invalidateQueries({
-            queryKey: ['tasks', task.projectId],
-          });
-
-          onUpdate?.({
-            assigneeInitials: initials,
-            assigneeColor: color,
-          });
-        },
-        onError: () => {
-          setTaskData((prev) => ({
-            ...prev,
-            ...previousAssignee,
-          }));
-          toast.error('Failed to assign task');
-        },
-      }
-    );
-  };
-
-  interface Attachment {
-    url?: string;
-    file_url?: string;
-    file_path?: string;
-    path?: string;
-  }
+  const { currentUser, isAssigning, handleAssignToMe } = useTaskAssignment({
+    task,
+    taskData,
+    setTaskData,
+    onUpdate,
+  });
 
   const handleEditorImageUpload = async (file: File): Promise<string> => {
     const formData = new FormData();
@@ -544,148 +336,17 @@ export const TaskDetailDrawer = ({
     return imageUrl;
   };
 
-  const handleUpdate = useCallback(
-    async (patch: Partial<typeof taskData>) => {
-      if (!resolvedProjectId || !resolvedTaskId) {
-        throw new Error('Project ID or Task ID is missing');
-      }
-
-      const previousState = { ...taskData };
-
-      // Optimistic UI update
-      setTaskData((prev) => ({
-        ...prev,
-        ...patch,
-      }));
-
-      try {
-        const payload: Record<string, unknown> = {};
-
-        if (patch.title !== undefined) {
-          payload.title = patch.title;
-        }
-
-        if (patch.description !== undefined) {
-          payload.description = patch.description;
-        }
-
-        if (patch.priority !== undefined) {
-          payload.priority = patch.priority.toLowerCase();
-        }
-
-        if (patch.taskType !== undefined) {
-          payload.type = patch.taskType;
-        }
-        if (patch.status !== undefined) {
-          const STATUS_MAP: Record<string, string> = {
-            todo: 'todo',
-            in_progress: 'in_progress',
-            inreview: 'inreview',
-            testing: 'testing',
-            done: 'completed',
-            blocked: 'blocked',
-          };
-
-          payload.status_id = STATUS_MAP[patch.status] ?? patch.status;
-        }
-
-        if (patch.dueDate !== undefined) {
-          payload.due_date = patch.dueDate ? `${patch.dueDate}T00:00:00Z` : null;
-        }
-        if (patch.startDate !== undefined) {
-          payload.start_date = patch.startDate || null;
-        }
-
-        if (patch.storyPoints !== undefined) {
-          payload.story_points = patch.storyPoints;
-        }
-        if (patch.estimatedHours !== undefined) {
-          payload.estimated_hours = patch.estimatedHours;
-        }
-
-        if (patch.actualHours !== undefined) {
-          payload.actual_hours = patch.actualHours;
-        }
-        if (patch.user_story_id !== undefined) {
-          payload.user_story_id = patch.user_story_id;
-        }
-
-        if (patch.assigneeId !== undefined) {
-          payload.assignee_id = patch.assigneeId || null;
-        }
-
-        if (patch.reporterId !== undefined) {
-          payload.reporter_id = patch.reporterId || null;
-        }
-        if (patch.sprint_id !== undefined) {
-          payload.sprint_id = patch.sprint_id || null;
-        }
-
-        if (patch.labels !== undefined) {
-          payload.label_ids = Array.isArray(patch.labels)
-            ? patch.labels.map((label) => (typeof label === 'string' ? label : label.id))
-            : [];
-        }
-
-        setIsSaving(true);
-
-        await taskService.updateTask(resolvedProjectId, resolvedTaskId, payload);
-
-        // Invalidate and refetch queries
-        await refetchTask();
-
-        // Invalidate the tasks list to update unassigned tasks in backlog
-        await queryClient.invalidateQueries({
-          queryKey: ['tasks', resolvedProjectId],
-        });
-
-        // Invalidate specific task query
-        await queryClient.invalidateQueries({
-          queryKey: ['task', resolvedProjectId, resolvedTaskId],
-        });
-
-        // If task is assigned to a sprint, invalidate sprint-related queries
-        const taskSprintId =
-          fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id;
-        if (taskSprintId) {
-          // Invalidate sprint orphan tasks (tasks without user story in a sprint)
-          await queryClient.invalidateQueries({
-            queryKey: ['sprint-orphan-tasks', resolvedProjectId, taskSprintId],
-          });
-        }
-        if (patch.sprint_id !== undefined) {
-          await queryClient.invalidateQueries({ queryKey: ['sprint-orphan-tasks'] });
-          await queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
-          await queryClient.invalidateQueries({ queryKey: ['sprints'] });
-        }
-        onUpdate?.(patch as Partial<KanbanTask>);
-
-        return true;
-      } catch (error) {
-        logger.log('Failed to update task', error);
-
-        // Rollback UI
-        setTaskData(previousState);
-
-        throw error;
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [
-      resolvedProjectId,
-      resolvedTaskId,
-      taskData,
-      onUpdate,
-      refetchTask,
-      queryClient,
-      task.key,
-      task.sprintId,
-      task.sprint_id,
-      task.user_story_id,
-      fetchedTask,
-    ]
-  );
+  const { handleUpdate } = useUpdateTask({
+    taskData,
+    setTaskData,
+    setIsSaving,
+    resolvedProjectId,
+    resolvedTaskId,
+    fetchedTask,
+    task,
+    refetchTask,
+    onUpdate,
+  });
 
   const handleAssigneeUpdate = async (patch: AssigneePatch) => {
     try {
@@ -702,100 +363,15 @@ export const TaskDetailDrawer = ({
 
   const handleReporterUpdate = (patch: ReporterPatch) => handleUpdate(patch);
 
-  const currentSprintId =
-    fetchedTask?.sprint_id || taskData.sprint_id || task.sprintId || task.sprint_id || '';
-  const currentSprintName = taskData.sprint || fetchedTask?.sprint_name || task.sprint || '';
-  const currentUserStoryId =
-    taskData.user_story_id || fetchedTask?.user_story_id || task.user_story_id || '';
-
-  const isAlreadyInBacklog = !currentSprintId && !currentSprintName && !currentUserStoryId;
-
-  const handleMoveToBacklog = useCallback(async () => {
-    if (isMovingToBacklog || isAlreadyInBacklog || !canEditTask) return;
-
-    const targetProjectId = fetchedTask?.project_id || task.projectId || effectiveProjectId;
-    const targetTaskId = fetchedTask?.id || task.taskId || task.id;
-
-    if (!targetProjectId || !targetTaskId) {
-      toast.error('Project ID or Task ID is missing');
-      return;
-    }
-
-    const previousSprint = taskData.sprint;
-    const previousSprintId = taskData.sprint_id;
-    const previousStoryId = taskData.user_story_id;
-    const previousStoryTitle = taskData.user_story_title;
-
-    try {
-      setIsMovingToBacklog(true);
-
-      setTaskData((prev) => ({
-        ...prev,
-        sprint: '',
-        sprint_id: '',
-        user_story_id: '',
-        user_story_title: '',
-      }));
-
-      await taskService.updateTask(targetProjectId, targetTaskId, {
-        sprint_id: null,
-        user_story_id: null,
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['task', targetProjectId, targetTaskId],
-      });
-      if (task.key) {
-        await queryClient.invalidateQueries({
-          queryKey: ['task', targetProjectId, task.key],
-        });
-      }
-      await queryClient.invalidateQueries({ queryKey: ['task'] });
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      await queryClient.invalidateQueries({ queryKey: ['sprint-orphan-tasks'] });
-      await queryClient.invalidateQueries({ queryKey: ['sprint-user-stories'] });
-      await queryClient.invalidateQueries({ queryKey: ['user-stories'] });
-      await queryClient.invalidateQueries({ queryKey: ['sprints'] });
-
-      onUpdate?.({
-        sprint: '',
-        sprintId: '',
-        user_story_id: undefined,
-        user_story_title: undefined,
-      } as Partial<KanbanTask>);
-
-      toast.success('Task moved to backlog');
-    } catch (error) {
-      logger.log('Failed to move task to backlog', error);
-      toast.error('Failed to move task to backlog');
-      setTaskData((prev) => ({
-        ...prev,
-        sprint: previousSprint,
-        sprint_id: previousSprintId,
-        user_story_id: previousStoryId,
-        user_story_title: previousStoryTitle,
-      }));
-    } finally {
-      setIsMovingToBacklog(false);
-    }
-  }, [
-    isMovingToBacklog,
-    isAlreadyInBacklog,
-    canEditTask,
-    fetchedTask?.project_id,
-    fetchedTask?.id,
-    task.projectId,
-    task.taskId,
-    task.id,
-    task.key,
+  const { isMovingToBacklog, isAlreadyInBacklog, handleMoveToBacklog } = useMoveToBacklog({
+    task,
+    fetchedTask,
+    taskData,
+    setTaskData,
     effectiveProjectId,
-    taskData.sprint,
-    taskData.sprint_id,
-    taskData.user_story_id,
-    taskData.user_story_title,
-    queryClient,
+    canEditTask,
     onUpdate,
-  ]);
+  });
 
   const [uiState, setUiState] = useState({
     showStatusMenu: false,
@@ -810,7 +386,6 @@ export const TaskDetailDrawer = ({
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      // Close description editor when clicking outside
       if (
         descriptionEditorRef.current &&
         !descriptionEditorRef.current.contains(event.target as Node)
@@ -820,23 +395,18 @@ export const TaskDetailDrawer = ({
           editingDesc: false,
         }));
       }
-
       if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
         setUiState((prev) => ({ ...prev, showStatusMenu: false }));
       }
-
       if (assigneeMenuRef.current && !assigneeMenuRef.current.contains(event.target as Node)) {
         setShowAssigneeMenu(false);
       }
-
       if (reporterMenuRef.current && !reporterMenuRef.current.contains(event.target as Node)) {
         setShowReporterMenu(false);
       }
-
       if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
         setShowActionMenu(false);
       }
-
       if (sprintMenuRef.current && !sprintMenuRef.current.contains(event.target as Node)) {
         setShowSprintMenu(false);
       }
@@ -884,22 +454,6 @@ export const TaskDetailDrawer = ({
     }
   };
 
-  const handleClone = async () => {
-    if (!task.projectId || !task.taskId) return;
-
-    try {
-      await cloneTaskAsync({
-        projectId: task.projectId,
-        taskId: task.taskId,
-        payload: { keep_assignee: keepAssignee },
-      });
-      setShowCloneModal(false);
-      onClose();
-    } catch {
-      toast.error('Failed to clone task');
-    }
-  };
-
   const handleDeleteTask = async () => {
     if (!task.projectId || !task.taskId) return;
 
@@ -915,15 +469,6 @@ export const TaskDetailDrawer = ({
   };
   const hasHours = Number(taskData.estimatedHours) > 0 && Number(taskData.actualHours) > 0;
 
-  const isDueDateExpired = useMemo(() => {
-    if (!taskData.dueDate) return false;
-    const dueDate = new Date(taskData.dueDate);
-    const today = new Date();
-    dueDate.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    return dueDate < today;
-  }, [taskData.dueDate]);
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-3"
@@ -935,207 +480,47 @@ export const TaskDetailDrawer = ({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative z-20 flex items-center justify-between px-6 py-3.5 border-b border-gray-300 dark:border-slate-700 shrink-0">
-          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-3 flex-wrap sm:flex-nowrap">
-            {/* Parent User Story Breadcrumb (Jira-style) */}
-            {!isError && parentStoryId && (
-              <div className="flex items-center gap-1.5 min-w-0 max-w-[240px] sm:max-w-[340px] shrink-0">
-                <button
-                  type="button"
-                  onClick={handleParentStoryClick}
-                  className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/50 transition-all cursor-pointer min-w-0 hover:shadow-xs active:scale-95"
-                  title={
-                    parentStoryTitle
-                      ? `Parent User Story: ${parentStoryKey ? parentStoryKey + ' - ' : ''}${parentStoryTitle}`
-                      : 'Open parent user story'
-                  }
-                >
-                  <BookOpenText size={12} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span className="truncate">
-                    {parentStoryKey
-                      ? parentStoryTitle
-                        ? `${parentStoryKey}: ${parentStoryTitle}`
-                        : parentStoryKey
-                      : parentStoryTitle || 'User Story'}
-                  </span>
-                </button>
-
-                <ChevronRight size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
-              </div>
-            )}
-
-            {/* Current Task Identifier */}
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className={`w-6 h-6 rounded-lg ${
-                  isError ? 'bg-red-500' : 'bg-blue-600'
-                } flex items-center justify-center shrink-0`}
-              >
-                <FileText size={13} className="text-white" />
-              </span>
-              <span
-                className={`text-base font-bold truncate ${
-                  isError ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
-                }`}
-              >
-                {effectiveTaskId || task.id}
-              </span>
-              {!isError && (
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-                  title={copiedLink ? 'Copied!' : 'Copy link'}
-                  aria-label="Copy link"
-                >
-                  {copiedLink ? (
-                    <Check size={14} className="text-green-600 dark:text-green-400" />
-                  ) : (
-                    <Link2 size={14} />
-                  )}
-                </button>
-              )}
-              {isError && isNotFound && (
-                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 shrink-0">
-                  Not Found
-                </span>
-              )}
-              {!isError && (taskData.sprint || task.sprint) && (
-                <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-                  <span className="text-gray-300 dark:text-slate-600">/</span>
-                  <span className="text-sm font-medium text-gray-500 dark:text-slate-400 truncate max-w-[140px]">
-                    {taskData.sprint || task.sprint}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {/* Move to Backlog Button */}
-            {!isError && canEditTask && (
-              <button
-                type="button"
-                onClick={handleMoveToBacklog}
-                disabled={isMovingToBacklog || isAlreadyInBacklog}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
-                  isAlreadyInBacklog
-                    ? 'text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 cursor-not-allowed'
-                    : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 shadow-sm cursor-pointer active:scale-95'
-                }`}
-                title={
-                  isAlreadyInBacklog ? 'Task is already in the backlog' : 'Move task to backlog'
-                }
-              >
-                <Archive
-                  size={13}
-                  className={
-                    isAlreadyInBacklog
-                      ? 'text-gray-400 dark:text-slate-500'
-                      : 'text-gray-600 dark:text-slate-300'
-                  }
-                />
-                <span>
-                  {isMovingToBacklog
-                    ? 'Moving...'
-                    : isAlreadyInBacklog
-                      ? 'In Backlog'
-                      : 'Move to Backlog'}
-                </span>
-              </button>
-            )}
-
-            {/* Three-dot menu */}
-            {!isError && (canEditTask || canCreateTask || canDeleteTask) && (
-              <div className="relative" ref={actionMenuRef}>
-                <button
-                  onClick={() => setShowActionMenu(!showActionMenu)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
-                >
-                  <MoreVertical size={17} />
-                </button>
-
-                {showActionMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 py-1">
-                    {/* {canEditTask && !isAlreadyInBacklog && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          handleMoveToBacklog();
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Archive size={14} />
-                        Move to Backlog
-                      </button>
-                    )} */}
-                    {canEditTask && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowActionMenu(false);
-
-                          // Store original values for Cancel
-                          setOriginalTaskTitle(taskData.title || task.title || '');
-                          setOriginalTaskDescription(taskData.description || '');
-
-                          // Initialize edit values
-                          setEditTaskTitle(taskData.title || task.title || '');
-                          setEditTaskDescription(taskData.description || '');
-
-                          // Enable edit mode
-                          setIsEditingTask(true);
-
-                          // Open description editor
-                          setUiState((prev) => ({
-                            ...prev,
-                            editingDesc: true,
-                          }));
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Pencil size={14} />
-                        Update
-                      </button>
-                    )}
-                    {canCreateTask && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setShowCloneModal(true);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Copy size={14} />
-                        Clone
-                      </button>
-                    )}
-                    {canDeleteTask && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-slate-500 transition-colors"
-            >
-              <X size={17} />
-            </button>
-          </div>
+          <TaskDetailBreadcrumb
+            task={task}
+            isError={isError}
+            isNotFound={isNotFound}
+            effectiveTaskId={effectiveTaskId}
+            parentStoryId={parentStoryId}
+            parentStoryKey={parentStoryKey}
+            parentStoryTitle={parentStoryTitle}
+            copiedLink={copiedLink}
+            sprint={taskData.sprint}
+            handleParentStoryClick={handleParentStoryClick}
+            handleCopyLink={handleCopyLink}
+          />
+          <TaskDetailActions
+            task={task}
+            taskData={taskData}
+            isError={isError}
+            canEditTask={canEditTask}
+            canCreateTask={canCreateTask}
+            canDeleteTask={canDeleteTask}
+            isMovingToBacklog={isMovingToBacklog}
+            isAlreadyInBacklog={isAlreadyInBacklog}
+            showActionMenu={showActionMenu}
+            actionMenuRef={actionMenuRef}
+            setShowActionMenu={setShowActionMenu}
+            setOriginalTaskTitle={setOriginalTaskTitle}
+            setOriginalTaskDescription={setOriginalTaskDescription}
+            setEditTaskTitle={setEditTaskTitle}
+            setEditTaskDescription={setEditTaskDescription}
+            setIsEditingTask={setIsEditingTask}
+            setEditingDesc={(value) =>
+              setUiState((prev) => ({
+                ...prev,
+                editingDesc: value,
+              }))
+            }
+            setShowCloneModal={setShowCloneModal}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+            handleMoveToBacklog={handleMoveToBacklog}
+            onClose={onClose}
+          />
         </div>
 
         {isError ? (
@@ -1244,176 +629,30 @@ export const TaskDetailDrawer = ({
               </button>
             </div> */}
 
-                <section className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
-                  <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
-                    Description
-                  </p>
-
-                  {uiState.editingDesc ? (
-                    <div ref={descriptionEditorRef}>
-                      <WpRichTextEditor
-                        value={editTaskDescription}
-                        onChange={(value) => {
-                          setEditTaskDescription(value);
-                          setTaskData((prev) => ({ ...prev, description: value }));
-                        }}
-                        placeholder="Add a description..."
-                        minHeight="120px"
-                        onImageUpload={handleEditorImageUpload}
-                      />
-
-                      {isEditingTask ? (
-                        <div className="flex gap-2 mt-3">
-                          {/* Cancel */}
-                          <button
-                            type="button"
-                            disabled={isSaving}
-                            onClick={() => {
-                              // Restore original values
-                              setEditTaskTitle(originalTaskTitle);
-                              setEditTaskDescription(originalTaskDescription);
-
-                              setTaskData((prev) => ({
-                                ...prev,
-                                title: originalTaskTitle,
-                                description: originalTaskDescription,
-                              }));
-
-                              setUiState((prev) => ({
-                                ...prev,
-                                editingDesc: false,
-                              }));
-
-                              setIsEditingTask(false);
-                            }}
-                            className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-                          >
-                            Cancel
-                          </button>
-
-                          {/* Save */}
-                          <button
-                            type="button"
-                            disabled={isSaving || !editTaskTitle.trim()}
-                            onClick={async () => {
-                              if (isSaving) return;
-
-                              const title = editTaskTitle.trim();
-                              const description = editTaskDescription;
-
-                              try {
-                                await handleUpdate({
-                                  title,
-                                  description,
-                                });
-
-                                // Update local UI after successful API
-                                setTaskData((prev) => ({
-                                  ...prev,
-                                  title,
-                                  description,
-                                }));
-
-                                // Save current values as the new original values
-                                setOriginalTaskTitle(title);
-                                setOriginalTaskDescription(description);
-
-                                // Exit edit mode
-                                setUiState((prev) => ({
-                                  ...prev,
-                                  editingDesc: false,
-                                }));
-
-                                setIsEditingTask(false);
-
-                                toast.success('Task updated successfully');
-                              } catch (error) {
-                                logger.log('Failed to update task', error);
-
-                                toast.error('Failed to update task');
-                              }
-                            }}
-                            className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
-                            style={{ backgroundColor: colors.primary }}
-                          >
-                            {isSaving ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setTaskData((prev) => ({
-                                ...prev,
-                                description: savedDescription,
-                              }));
-
-                              setUiState((prev) => ({
-                                ...prev,
-                                editingDesc: false,
-                              }));
-                            }}
-                            className="px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                          >
-                            Cancel
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={isSaving}
-                            onClick={async () => {
-                              try {
-                                await handleUpdate({
-                                  description: taskData.description,
-                                });
-
-                                setSavedDescription(taskData.description);
-
-                                setUiState((prev) => ({
-                                  ...prev,
-                                  editingDesc: false,
-                                }));
-                              } catch (error) {
-                                logger.log('Failed to update description', error);
-                              }
-                            }}
-                            className="px-4 py-1.5 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
-                            style={{ backgroundColor: colors.primary }}
-                          >
-                            {isSaving ? 'Saving...' : 'Save'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => {
-                        if (!canEditTask) return;
-                        setEditTaskDescription(taskData.description ?? '');
-                        setSavedDescription(taskData.description ?? '');
-                        setUiState((prev) => ({
-                          ...prev,
-                          editingDesc: true,
-                        }));
-                      }}
-                      className={`w-full min-h-[48px] ${canEditTask ? 'cursor-text' : 'cursor-default'}`}
-                    >
-                      {taskData.description ? (
-                        <div
-                          className="pointer-events-none [&_img]:max-w-[200px] [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-lg"
-                          dangerouslySetInnerHTML={{
-                            __html: taskData.description,
-                          }}
-                        />
-                      ) : (
-                        <span className="text-gray-400 dark:text-slate-200">
-                          Add a description…
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </section>
+                <TaskDescriptionSection
+                  description={taskData.description}
+                  canEditTask={canEditTask}
+                  isSaving={isSaving}
+                  isEditingDesc={uiState.editingDesc}
+                  setEditingDesc={(value) =>
+                    setUiState((prev) => ({ ...prev, editingDesc: value }))
+                  }
+                  isEditingTask={isEditingTask}
+                  setIsEditingTask={setIsEditingTask}
+                  editTaskTitle={editTaskTitle}
+                  setEditTaskTitle={setEditTaskTitle}
+                  editTaskDescription={editTaskDescription}
+                  setEditTaskDescription={setEditTaskDescription}
+                  originalTaskTitle={originalTaskTitle}
+                  setOriginalTaskTitle={setOriginalTaskTitle}
+                  originalTaskDescription={originalTaskDescription}
+                  setOriginalTaskDescription={setOriginalTaskDescription}
+                  savedDescription={savedDescription}
+                  setSavedDescription={setSavedDescription}
+                  onLocalChange={(patch) => setTaskData((prev) => ({ ...prev, ...patch }))}
+                  handleUpdate={handleUpdate}
+                  onImageUpload={handleEditorImageUpload}
+                />
 
                 {/* future purpose 
             <SubtasksSection
@@ -1429,94 +668,19 @@ export const TaskDetailDrawer = ({
               </button>
             </section> */}
                 {/* Attachments */}
-                <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-base font-semibold text-gray-800 dark:text-slate-200">
-                      Attachments
-                    </p>
-                    {canEditTask && (
-                      <label className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
-                        <Plus size={14} />
-                        Add
-                        <input type="file" className="hidden" onChange={handleAttachmentUpload} />
-                      </label>
-                    )}
-                  </div>
-
-                  {isLoadingAttachments || isFetchingAttachments ? (
-                    <div className="border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
-                      <p className="text-sm text-gray-400 dark:text-slate-500">
-                        Loading attachments...
-                      </p>
-                    </div>
-                  ) : !attachments?.data?.length ? (
-                    <div className="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl px-4 py-5 text-center bg-white dark:bg-slate-800">
-                      <div className="w-9 h-9 mx-auto mb-2 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
-                        <Paperclip size={16} className="text-gray-400 dark:text-slate-200" />
-                      </div>
-
-                      <p className="text-sm text-gray-500 dark:text-slate-200">No attachments</p>
-
-                      <p className="text-xs text-gray-400 dark:text-slate-200 mt-1">
-                        Add files to this task
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {attachments?.data?.map((attachment) => (
-                        <div
-                          key={attachment.id}
-                          className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5"
-                        >
-                          {/* File icon */}
-                          <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                            <FileText size={17} className="text-gray-500 dark:text-slate-400" />
-                          </div>
-
-                          {/* File details */}
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate"
-                              title={attachment.original_filename}
-                            >
-                              {attachment.original_filename}
-                            </p>
-
-                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
-                              {formatFileSize(attachment.file_size)}
-                            </p>
-                          </div>
-
-                          {/* Download */}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleAttachmentDownload(attachment.id, attachment.original_filename)
-                            }
-                            disabled={downloadAttachment.isPending}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
-                            title="Download"
-                          >
-                            <Download size={15} />
-                          </button>
-
-                          {/* Delete */}
-                          {(canEditTask || canDeleteTask) && (
-                            <button
-                              type="button"
-                              onClick={() => deleteAttachment.mutate(attachment.id)}
-                              disabled={deleteAttachment.isPending}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                              title="Delete"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <TaskAttachments
+                  canEditTask={canEditTask}
+                  canDeleteTask={canDeleteTask}
+                  attachments={attachments}
+                  isLoadingAttachments={isLoadingAttachments}
+                  isFetchingAttachments={isFetchingAttachments}
+                  isDownloadingAttachment={downloadAttachment.isPending}
+                  isDeletingAttachment={deleteAttachment.isPending}
+                  onAttachmentUpload={handleAttachmentUpload}
+                  onAttachmentDownload={handleAttachmentDownload}
+                  onAttachmentDelete={(attachmentId) => deleteAttachment.mutate(attachmentId)}
+                  formatFileSize={formatFileSize}
+                />
                 <ActivitySection
                   items={task.activity ?? []}
                   taskId={resolvedTaskId ?? ''}
@@ -1539,378 +703,47 @@ export const TaskDetailDrawer = ({
                 }`}
                 style={{ width: isMobile ? undefined : rightWidth }}
               >
-                <div className="px-5 py-5 border-b border-gray-300 dark:border-slate-700">
-                  <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
-                    Status
-                  </p>
-                  <div className="relative" ref={statusMenuRef}>
-                    <button
-                      type="button"
-                      disabled={!canEditTask}
-                      onClick={() => {
-                        if (!hasHours) {
-                          toast.error('Enter Estimated Hours and Actual Hours first');
-                          return;
-                        }
-
-                        setUiState((prev) => ({
-                          ...prev,
-                          showStatusMenu: !prev.showStatusMenu,
-                        }));
-                      }}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-between transition-all shadow-sm border ${
-                        !canEditTask ? 'cursor-default' : ''
-                      }`}
-                      style={{
-                        color: selectedStatus?.color,
-                        borderColor: selectedStatus ? `${selectedStatus.color}55` : '#D1D5DB',
-                      }}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{
-                            backgroundColor: selectedStatus?.color ?? '#9CA3AF',
-                          }}
-                        />
-
-                        {selectedStatus?.label ?? taskData.statusName ?? 'Select status'}
-                      </span>
-
-                      {canEditTask && <ChevronDown size={14} />}
-                    </button>
-
-                    {uiState.showStatusMenu && canEditTask && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
-                        {isLoadingStatus ? (
-                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400 text-center">
-                            Loading statuses...
-                          </div>
-                        ) : statusOptions.length === 0 ? (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            No statuses found
-                          </div>
-                        ) : (
-                          statusOptions.map((status) => {
-                            const isSelected = taskData.status === status.value;
-
-                            return (
-                              <button
-                                key={status.value}
-                                type="button"
-                                onClick={() => {
-                                  setUiState((prev) => ({
-                                    ...prev,
-                                    showStatusMenu: false,
-                                  }));
-
-                                  handleUpdate({
-                                    status: status.value,
-                                  });
-                                }}
-                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
-                              >
-                                <span
-                                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                                  style={{
-                                    backgroundColor: status.color,
-                                  }}
-                                />
-
-                                <span className="flex-1 truncate">{status.label}</span>
-
-                                {isSelected && (
-                                  <Check size={14} className="text-blue-600 shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="px-5 py-5 border-b border-gray-200 dark:border-slate-700">
-                  <p className="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">
-                    Details
-                  </p>
-                  <AssigneeField
-                    projectId={resolvedProjectId}
-                    assigneeId={taskData.assigneeId}
-                    assigneeName={taskData.assigneeName}
-                    assigneeInitials={taskData.assignee ?? ''}
-                    assigneeColor={taskData.assigneeColor}
-                    canEditTask={canEditTask}
-                    currentUserName={
-                      currentUser?.name || currentUser?.username || currentUser?.email
-                    }
-                    isAssigning={isAssigning}
-                    handleUpdate={handleAssigneeUpdate}
-                    handleAssignToMe={handleAssignToMe}
-                  />
-
-                  <ReporterField
-                    projectId={resolvedProjectId}
-                    reporterId={taskData.reporterId}
-                    reporterName={taskData.reporterName}
-                    reporterInitials={taskData.reporterInitials}
-                    reporterColor={taskData.reporterColor}
-                    canEditTask={canEditTask}
-                    handleUpdate={handleReporterUpdate}
-                  />
-
-                  <DetailRow label="Type">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        disabled={!canEditTask}
-                        onClick={() => {
-                          setShowTypeMenu((prev) => !prev);
-                        }}
-                        className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg transition-colors w-full text-left"
-                      >
-                        <span className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-slate-300 capitalize">
-                          {taskData.taskType?.toLowerCase() === 'bug' && (
-                            <Bug size={14} className="text-red-500 shrink-0" />
-                          )}
-
-                          {taskTypeOptions.find((option) => option.value === taskData.taskType)
-                            ?.label ||
-                            taskData.taskType ||
-                            '—'}
-                        </span>
-
-                        <ChevronDown size={14} className="text-gray-400" />
-                      </button>
-
-                      {showTypeMenu && (
-                        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
-                          {taskTypeOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={async () => {
-                                setShowTypeMenu(false);
-
-                                await handleUpdate({
-                                  taskType: option.value,
-                                });
-                              }}
-                              className="flex w-full items-center px-3 py-2 text-sm text-left dark:bg-gray-800 hover:bg-gray-50"
-                            >
-                              {option.label}
-
-                              {taskData.taskType === option.value && (
-                                <Check size={14} className="ml-auto text-blue-600" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </DetailRow>
-
-                  <DetailRow label="Priority">
-                    <EditablePriority
-                      value={taskData.priority}
-                      onChange={(priority) => handleUpdate({ priority })}
-                      disabled={!canEditTask}
-                    />
-                  </DetailRow>
-
-                  <SprintField
-                    projectId={taskData.project_id}
-                    sprintId={taskData.sprint_id}
-                    sprintName={taskData.sprint}
-                    canEditTask={canEditTask}
-                    handleUpdate={handleUpdate}
-                  />
-
-                  <UserStoryField
-                    projectId={taskData.project_id}
-                    userStoryId={taskData.user_story_id}
-                    userStoryTitle={taskData.user_story_title}
-                    canEditTask={canEditTask}
-                    canViewUserStories={canViewUserStories}
-                    handleUpdate={handleUpdate}
-                  />
-
-                  <DetailRow label="Labels">
-                    <EditableLabels
-                      projectId={resolvedProjectId}
-                      taskId={resolvedTaskId}
-                      value={
-                        Array.isArray(taskData.labels)
-                          ? taskData.labels.map((label) =>
-                              typeof label === 'string' ? label : label.id
-                            )
-                          : []
-                      }
-                      onChange={(labelIds) =>
-                        handleUpdate({ labels: labelIds as unknown as TaskLabel[] })
-                      }
-                      disabled={!canEditTask}
-                    />
-                  </DetailRow>
-                  <DetailRow label="Due date">
-                    {isDueDateExpired ? (
-                      <div className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-sm text-red-600 dark:bg-gray-100">
-                        <AlertTriangle size={14} />
-                        <EditableDate
-                          value={taskData.dueDate}
-                          onChange={(dueDate) => handleUpdate({ dueDate })}
-                          placeholder="Set due date"
-                          includeTime={false}
-                          disabled={!canEditTask}
-                        />
-                      </div>
-                    ) : (
-                      <EditableDate
-                        value={taskData.dueDate}
-                        onChange={(dueDate) => handleUpdate({ dueDate })}
-                        placeholder="Set due date"
-                        includeTime={false}
-                        disabled={!canEditTask}
-                      />
-                    )}
-                  </DetailRow>
-                  {/* future purpose 
-              <DetailRow label="Start date">
-                <EditableDate
-                  value={taskData.startDate}
-                  onChange={(startDate) => handleUpdate({ startDate })}
-                  placeholder="Set start date"
+                <TaskStatusSection
+                  statusMenuRef={statusMenuRef}
+                  canEditTask={canEditTask}
+                  hasHours={hasHours}
+                  selectedStatus={selectedStatus}
+                  taskStatusName={taskData.statusName}
+                  taskStatus={taskData.status}
+                  showStatusMenu={uiState.showStatusMenu}
+                  isLoadingStatus={isLoadingStatus}
+                  statusOptions={statusOptions}
+                  setShowStatusMenu={(value) =>
+                    setUiState((prev) => ({
+                      ...prev,
+                      showStatusMenu: value,
+                    }))
+                  }
+                  handleUpdate={handleUpdate}
                 />
-              </DetailRow> */}
 
-                  <DetailRow label="Story pts">
-                    <EditableNumber
-                      value={taskData.storyPoints}
-                      onChange={(storyPoints) => handleUpdate({ storyPoints })}
-                      disabled={!canEditTask}
-                    />
-                  </DetailRow>
-                  <DetailRow label="Estimated Hours">
-                    <div className="flex items-center gap-3">
-                      {/* Hours */}
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min={0}
-                          value={estimatedHoursInput}
-                          onChange={(e) => {
-                            const hours = Number(e.target.value) || 0;
-                            setEstimatedHoursInput(e.target.value);
-
-                            const minutes = Number(estimatedMinutesInput) || 0;
-
-                            handleUpdate({
-                              estimatedHours: hours + minutes / 60,
-                            });
-                          }}
-                          className="w-16 px-2.5 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:border-blue-500"
-                          placeholder="0"
-                          disabled={!canEditTask}
-                        />
-                        <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                          hr
-                        </span>
-                      </div>
-
-                      {/* Minutes */}
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min={0}
-                          max={59}
-                          value={estimatedMinutesInput}
-                          onChange={(e) => {
-                            const minutes = Math.min(59, Math.max(0, Number(e.target.value) || 0));
-
-                            setEstimatedMinutesInput(e.target.value);
-
-                            const hours = Number(estimatedHoursInput) || 0;
-
-                            handleUpdate({
-                              estimatedHours: hours + minutes / 60,
-                            });
-                          }}
-                          className="w-16 px-2.5 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:border-blue-500"
-                          placeholder="0"
-                          disabled={!canEditTask}
-                        />
-                        <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                          min
-                        </span>
-                      </div>
-                    </div>
-                  </DetailRow>
-
-                  <DetailRow label="Actual Hours">
-                    <div className="flex items-center gap-3">
-                      {/* Hours */}
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min={0}
-                          value={actualHoursInput}
-                          onChange={(e) => {
-                            const hours = Number(e.target.value) || 0;
-                            setActualHoursInput(e.target.value);
-
-                            const minutes = Number(actualMinutesInput) || 0;
-
-                            handleUpdate({
-                              actualHours: hours + minutes / 60,
-                            });
-                          }}
-                          className="w-16 px-2.5 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:border-blue-500"
-                          placeholder="0"
-                          disabled={!canEditTask}
-                        />
-                        <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                          hr
-                        </span>
-                      </div>
-
-                      {/* Minutes */}
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min={0}
-                          max={59}
-                          value={actualMinutesInput}
-                          onChange={(e) => {
-                            const minutes = Math.min(59, Math.max(0, Number(e.target.value) || 0));
-
-                            setActualMinutesInput(e.target.value);
-
-                            const hours = Number(actualHoursInput) || 0;
-
-                            handleUpdate({
-                              actualHours: hours + minutes / 60,
-                            });
-                          }}
-                          className="w-16 px-2.5 py-1.5 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:border-blue-500"
-                          placeholder="0"
-                          disabled={!canEditTask}
-                        />
-                        <span className="absolute -top-2 left-2 px-1 text-[11px] font-medium text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 pointer-events-none leading-none">
-                          min
-                        </span>
-                      </div>
-                    </div>
-                  </DetailRow>
-                  {/* need discussion */}
-                  {/* <DetailRow label="Parent">
-                <EditableText
-                  value={taskData.parent}
-                  onChange={(parent) => setTaskData((prev) => ({ ...prev, parent }))}
-                  placeholder="None"
+                <TaskDetailsSidebar
+                  taskData={taskData}
+                  resolvedProjectId={resolvedProjectId}
+                  resolvedTaskId={resolvedTaskId}
+                  canEditTask={canEditTask}
+                  canViewUserStories={canViewUserStories}
+                  currentUser={currentUser}
+                  isAssigning={isAssigning}
+                  handleUpdate={handleUpdate}
+                  handleAssigneeUpdate={handleAssigneeUpdate}
+                  handleReporterUpdate={handleReporterUpdate}
+                  handleAssignToMe={handleAssignToMe}
+                  taskTypeOptions={taskTypeOptions}
+                  estimatedHoursInput={estimatedHoursInput}
+                  setEstimatedHoursInput={setEstimatedHoursInput}
+                  estimatedMinutesInput={estimatedMinutesInput}
+                  setEstimatedMinutesInput={setEstimatedMinutesInput}
+                  actualHoursInput={actualHoursInput}
+                  setActualHoursInput={setActualHoursInput}
+                  actualMinutesInput={actualMinutesInput}
+                  setActualMinutesInput={setActualMinutesInput}
                 />
-              </DetailRow> */}
-                </div>
               </div>
             </div>
           </>
@@ -1919,87 +752,23 @@ export const TaskDetailDrawer = ({
 
       {/* Clone Modal */}
       {showCloneModal && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-          onClick={() => setShowCloneModal(false)}
-        >
-          <div
-            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">Clone Task</h3>
-            <p className="text-sm text-gray-600 dark:text-slate-300 mb-4">
-              Create a copy of this task with the same details.
-            </p>
-
-            <label className="flex items-center gap-2 mb-6">
-              <input
-                type="checkbox"
-                checked={keepAssignee}
-                onChange={(e) => setKeepAssignee(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700 dark:text-slate-300">Keep assignee</span>
-            </label>
-
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowCloneModal(false)}
-                disabled={isCloningTask}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleClone}
-                disabled={isCloningTask}
-                className="px-4 py-2 text-sm font-semibold rounded-lg text-white transition-colors disabled:opacity-60"
-                style={{ backgroundColor: colors.primary }}
-              >
-                {isCloningTask ? 'Cloning...' : 'Clone'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CloneTaskModal
+          projectId={task.projectId}
+          taskId={task.taskId}
+          onClose={() => setShowCloneModal(false)}
+          onCloned={onClose}
+        />
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-          onClick={() => setShowDeleteConfirm(false)}
-        >
-          <div
-            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">
-              Delete Task
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
-              Are you sure you want to delete this task? This action cannot be undone.
-            </p>
-
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeletingTask}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteTask}
-                disabled={isDeletingTask}
-                className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60"
-              >
-                {isDeletingTask ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmModal
+          title="Delete Task"
+          message="Are you sure you want to delete this task? This action cannot be undone."
+          isDeleting={isDeletingTask}
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDeleteTask}
+        />
       )}
       {showStatusModal && (
         <StatusModal

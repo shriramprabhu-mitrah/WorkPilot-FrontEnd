@@ -1,5 +1,5 @@
 import { TaskStatus } from '@/src/app/components/common/task';
-import { Priority } from '../board';
+import { Priority, SubTask } from '../board';
 
 export interface TaskLabel {
   id: string;
@@ -175,4 +175,40 @@ export interface CreateCommentPayload {
 
 export interface UpdateCommentPayload {
   content: string;
+}
+export interface TaskData {
+  title: string;
+  subtasks: SubTask[];
+  status: string;
+  statusName: string;
+  project_id: string;
+  description: string;
+  priority: Priority;
+  labels?: TaskLabel[];
+  dueDate: string;
+  startDate: string;
+  user_story_title: string;
+  user_story_id: string;
+  storyPoints: number;
+  estimatedHours: number;
+  actualHours: number;
+  sprint: string;
+  sprint_id: string;
+  parent: string;
+  assignee: string;
+  assigneeColor: string;
+  assigneeId: string;
+  assigneeName: string;
+  reporterId: string;
+  reporterName: string;
+  reporterInitials: string;
+  reporterColor: string;
+  taskType: string;
+}
+
+export interface Attachment {
+  url?: string;
+  file_url?: string;
+  file_path?: string;
+  path?: string;
 }

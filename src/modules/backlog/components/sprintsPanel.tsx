@@ -6,9 +6,10 @@ import { SprintDetail } from '@/src/types/project';
 import { TaskResponse } from '@/src/types/task';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { SPRINT_TABS } from '../utils/backlogUtils';
-import type { SprintsSection } from '../hooks/useBacklogLists';
+import { SPRINTS_PAGE_SIZE, type SprintsSection } from '../hooks/useBacklogLists';
 import SprintSkeleton from './SprintSkeleton';
 import { SprintDropZone } from './SprintDropZone';
+import { BacklogPagination } from '@/src/app/components/common/pagination/backlogPagination';
 
 interface Props {
   projectId: string;
@@ -35,7 +36,19 @@ export const SprintsPanel = ({
   onStartSprint,
   onCompleteSprint,
 }: Props) => {
-  const { items, isLoading, status, setStatus, search, setSearch } = sprints;
+  const {
+    items,
+    isLoading,
+    isFetching,
+    status,
+    setStatus,
+    search,
+    setSearch,
+    page,
+    setPage,
+    total,
+    totalPages,
+  } = sprints;
 
   return (
     <div
@@ -49,7 +62,7 @@ export const SprintsPanel = ({
           </span>
           <h2 className="font-semibold text-lg text-gray-900 dark:text-slate-100">Sprints</h2>
           <span className="text-xs text-gray-400 dark:text-slate-300">
-            {items.length} {items.length === 1 ? 'sprint' : 'sprints'}
+            {total} {total === 1 ? 'sprint' : 'sprints'}
           </span>
         </div>
         {canCreate && projectId && (
@@ -92,7 +105,7 @@ export const SprintsPanel = ({
         />
       </div>
 
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <SprintSkeleton />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8">
@@ -103,19 +116,34 @@ export const SprintsPanel = ({
           </p>
         </div>
       ) : (
-        items.map((sprint) => (
-          <SprintDropZone
-            key={sprint.id}
-            sprint={sprint}
-            projectId={projectId}
-            activeDragType={activeDragType}
-            onStoryClick={onStoryClick}
-            onTaskClick={onTaskClick}
-            onStartSprint={onStartSprint}
-            onCompleteSprint={onCompleteSprint}
-            isCompletingSprint={completingSprintId === sprint.id}
-          />
-        ))
+        <>
+          <div>
+            {items.map((sprint) => (
+              <SprintDropZone
+                key={sprint.id}
+                sprint={sprint}
+                projectId={projectId}
+                activeDragType={activeDragType}
+                onStoryClick={onStoryClick}
+                onTaskClick={onTaskClick}
+                onStartSprint={onStartSprint}
+                onCompleteSprint={onCompleteSprint}
+                isCompletingSprint={completingSprintId === sprint.id}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <BacklogPagination
+              currentPage={page}
+              totalPages={totalPages}
+              pageSize={SPRINTS_PAGE_SIZE}
+              totalItems={total}
+              onPageChange={setPage}
+              className="sticky bottom-0 z-10 mt-3 flex-wrap gap-2"
+            />
+          )}
+        </>
       )}
     </div>
   );

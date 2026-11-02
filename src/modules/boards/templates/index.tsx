@@ -25,7 +25,6 @@ import {
 } from '../components';
 import {
   resolveStatusId as resolveStatusIdUtil,
-  taskMatchesFilters as taskMatchesFiltersUtil,
   mapTaskToKanban,
 } from '../utils/boardTaskUtils';
 import { getStorylessColumns } from '../utils/storylessUtils';
@@ -106,11 +105,6 @@ export const KanbanBoardTemplate = () => {
     [statuses]
   );
 
-  const taskMatchesFilters = useCallback(
-    (task: TaskResponse) => taskMatchesFiltersUtil(task, filters, assigneeIdFilter, statuses),
-    [filters, assigneeIdFilter, statuses]
-  );
-
   const mapToKanbanTask = useCallback(
     (
       task: TaskResponse,
@@ -138,7 +132,6 @@ export const KanbanBoardTemplate = () => {
     hasActiveFilter,
     optimisticUpdates,
     resolveStatusId,
-    taskMatchesFilters,
     mapToKanbanTask,
   });
 

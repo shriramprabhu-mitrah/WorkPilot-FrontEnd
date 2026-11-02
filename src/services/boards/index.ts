@@ -20,6 +20,7 @@ class BoardService {
     }
     if (params?.priority) searchParams.append('priority', params.priority);
     if (params?.task_assignee_id) searchParams.append('task_assignee_id', params.task_assignee_id);
+    if (params?.label_id) searchParams.append('label_id', params.label_id);
     if (params?.type) searchParams.append('type', params.type);
     if (params?.storyless_tasks !== undefined)
       searchParams.append('storyless_tasks', String(params.storyless_tasks));
