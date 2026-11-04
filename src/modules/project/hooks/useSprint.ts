@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sprintService } from '@/src/services/sprint';
 import { SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 import { StartSprintPayload } from '../../sprint/types/sprint';
@@ -13,12 +13,14 @@ export const useGetSprints = (
     sort_order?: 'ASC' | 'DESC';
     fields?: string;
   },
-  enabled = true
+  enabled = true,
+  keepPrevious = false
 ) => {
   const query = useQuery({
     queryKey: ['sprints', projectId, params],
     queryFn: () => sprintService.getSprints(projectId, params),
     enabled: enabled && !!projectId,
+    placeholderData: keepPrevious ? keepPreviousData : undefined,
   });
 
   return {

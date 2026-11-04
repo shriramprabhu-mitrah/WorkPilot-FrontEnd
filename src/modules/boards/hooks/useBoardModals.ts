@@ -79,69 +79,94 @@ export const useBoardModals = ({
     if (!taskKey) {
       closedTaskKeyRef.current = null;
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedTask(null);
-      setSelectedUserStory(null);
+      setSelectedTask((previous) => (previous === null ? previous : null));
+      setSelectedUserStory((previous) => (previous === null ? previous : null));
       return;
     }
-
     if (closedTaskKeyRef.current === taskKey) {
       return;
     }
-
+    const normalizedTaskKey = taskKey.toUpperCase();
     const matchedStory = boardStories?.find(
-      (s) => s.key?.toUpperCase() === taskKey.toUpperCase() || s.id === taskKey
+      (story) => story.key?.toUpperCase() === normalizedTaskKey || story.id === taskKey
     );
+
     const isStory =
-      !!matchedStory ||
-      taskKey.toUpperCase().startsWith('US-') ||
-      taskKey.toUpperCase().startsWith('US');
+      !!matchedStory || normalizedTaskKey.startsWith('US-') || normalizedTaskKey.startsWith('US');
+
     if (isStory) {
       if (matchedStory) {
-        setSelectedUserStory(matchedStory);
+        setSelectedUserStory((previous) => (previous === matchedStory ? previous : matchedStory));
       } else {
-        setSelectedUserStory({
-          id: taskKey,
-          key: taskKey,
-          title: 'Loading...',
-          project_id: selectedProject,
-        } as UserStoryResponse);
+        setSelectedUserStory((previous) => {
+          if (
+            previous?.key === taskKey &&
+            previous?.title === 'Loading...' &&
+            previous?.project_id === selectedProject
+          ) {
+            return previous;
+          }
+
+          return {
+            id: taskKey,
+            key: taskKey,
+            title: 'Loading...',
+            project_id: selectedProject,
+          } as UserStoryResponse;
+        });
       }
-      setSelectedTask(null);
+
+      setSelectedTask((previous) => (previous === null ? previous : null));
     } else {
-      let matchedTask: KanbanTask | undefined = undefined;
+      let matchedTask: KanbanTask | undefined;
+
       for (const story of processedStories) {
         for (const [, taskList] of story.tasksByStatus) {
           const found = taskList.find(
-            (t: KanbanTask) => t.id?.toUpperCase() === taskKey.toUpperCase() || t.taskId === taskKey
+            (task: KanbanTask) =>
+              task.id?.toUpperCase() === normalizedTaskKey || task.taskId === taskKey
           );
+
           if (found) {
             matchedTask = found;
             break;
           }
         }
+
         if (matchedTask) break;
       }
 
       if (matchedTask) {
-        setSelectedTask(matchedTask);
+        setSelectedTask((previous) => (previous === matchedTask ? previous : matchedTask));
       } else {
-        setSelectedTask({
-          id: taskKey,
-          taskId: taskKey,
-          key: taskKey,
-          title: 'Loading...',
-          priority: 'Medium',
-          status: 'todo',
-          columnId: 'todo',
-          projectId: selectedProject,
-          assigneeInitials: '',
-          assigneeColor: '',
-          storyPoints: 0,
-          dueDate: '',
-          labels: [],
+        setSelectedTask((previous) => {
+          if (
+            previous?.key === taskKey &&
+            previous?.title === 'Loading...' &&
+            previous?.projectId === selectedProject
+          ) {
+            return previous;
+          }
+
+          return {
+            id: taskKey,
+            taskId: taskKey,
+            key: taskKey,
+            title: 'Loading...',
+            priority: 'Medium',
+            status: 'todo',
+            columnId: 'todo',
+            projectId: selectedProject,
+            assigneeInitials: '',
+            assigneeColor: '',
+            storyPoints: 0,
+            dueDate: '',
+            labels: [],
+          };
         });
       }
-      setSelectedUserStory(null);
+
+      setSelectedUserStory((previous) => (previous === null ? previous : null));
     }
   }, [taskKey, boardStories, processedStories, selectedProject]);
 

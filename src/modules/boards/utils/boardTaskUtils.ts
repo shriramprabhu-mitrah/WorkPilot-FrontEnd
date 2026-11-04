@@ -1,6 +1,5 @@
 import type { TaskResponse } from '@/src/types/task';
 import type { KanbanTask } from '@/src/types/board';
-import type { FilterState } from '@/src/app/components/common/filter-panel';
 import type { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import { isStorylessId } from './storylessUtils';
 
@@ -32,54 +31,7 @@ export const resolveStatusId = (task: TaskResponse, statuses: BoardStatuses): st
   return task.status_id || task.status || statuses[0]?.id || '';
 };
 
-export const taskMatchesFilters = (
-  task: TaskResponse,
-  filters: FilterState,
-  assigneeIdFilter: string[],
-  statuses: BoardStatuses
-): boolean => {
-  if (filters.priorities.length > 0) {
-    const taskPriority = (task.priority || '').toLowerCase();
-    if (!filters.priorities.some((p) => p.toLowerCase() === taskPriority)) {
-      return false;
-    }
-  }
-  if (assigneeIdFilter.length > 0) {
-    const taskAssigneeId =
-      task.assignee_id || task.assignee?.id || (task.assignee as { user_id?: string })?.user_id;
-    if (!taskAssigneeId || !assigneeIdFilter.includes(taskAssigneeId)) {
-      return false;
-    }
-  }
-  if (filters.labels.length > 0) {
-    const taskLabelIds = (task.labels || []).map((label) =>
-      typeof label === 'string' ? label : label.id
-    );
-    const hasMatchingLabel = filters.labels.some((labelId) => taskLabelIds.includes(labelId));
-    if (!hasMatchingLabel) {
-      return false;
-    }
-  }
-  if (filters.types.length > 0) {
-    const taskType = (task.type || '').toLowerCase();
-    if (!filters.types.some((t) => t.toLowerCase() === taskType)) {
-      return false;
-    }
-  }
-  if (filters.statuses.length > 0) {
-    const resolved = resolveStatusId(task, statuses);
-    if (
-      !filters.statuses.includes(resolved) &&
-      !filters.statuses.includes(task.status_id || '') &&
-      !filters.statuses.includes(task.status || '')
-    ) {
-      return false;
-    }
-  }
-  return true;
-};
-
-// 3) map TaskResponse -> KanbanTask
+// map TaskResponse -> KanbanTask
 export const mapTaskToKanban = (
   task: TaskResponse,
   parentStoryId: string,

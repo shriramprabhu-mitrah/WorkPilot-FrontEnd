@@ -178,7 +178,21 @@ export const DashBoardTemplate = () => {
     return <ProjectNotFound slug={projectSlug} />;
   }
 
-  if (isOrganizationLoading || isLoadingProjectsWithSprints) {
+  const isInitialDashboardLoading =
+    isOrganizationLoading ||
+    isLoadingProjectsWithSprints ||
+    (!!effectiveProject?.id &&
+      (isLoadingDashboard ||
+        isLoadingActivities ||
+        isLoadingTeamWorkload ||
+        isLoadingSprintBurndown ||
+        isLoadingWeeklyProgress));
+
+  if (isProjectNotFound) {
+    return <ProjectNotFound slug={projectSlug} />;
+  }
+
+  if (isInitialDashboardLoading) {
     return <DashboardSkeleton />;
   }
   return (

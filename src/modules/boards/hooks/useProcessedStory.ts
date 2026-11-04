@@ -14,7 +14,6 @@ interface UseProcessedStoriesArgs {
   hasActiveFilter: boolean;
   optimisticUpdates: Map<string, OptimisticUpdate>;
   resolveStatusId: (task: TaskResponse) => string;
-  taskMatchesFilters: (task: TaskResponse) => boolean;
   mapToKanbanTask: (
     task: TaskResponse,
     parentStoryId: string,
@@ -31,7 +30,6 @@ export const useProcessedStories = ({
   hasActiveFilter,
   optimisticUpdates,
   resolveStatusId,
-  taskMatchesFilters,
   mapToKanbanTask,
 }: UseProcessedStoriesArgs) => {
   return useMemo(() => {
@@ -55,7 +53,6 @@ export const useProcessedStories = ({
               resolveStatusId(task) === statusCol.status_id
             );
           })
-          .filter((task) => !hasActiveFilter || taskMatchesFilters(task))
           .map((task) => {
             const key = task.key ?? task.id ?? '';
             const optimistic = optimisticUpdates.get(key);
@@ -94,9 +91,7 @@ export const useProcessedStories = ({
     });
 
     const storylessStatusColumns = getStorylessColumns(storylessStories);
-    const storylessTasks = storylessStatusColumns
-      .flatMap((statusCol) => statusCol.tasks ?? [])
-      .filter((task) => !hasActiveFilter || taskMatchesFilters(task));
+    const storylessTasks = storylessStatusColumns.flatMap((statusCol) => statusCol.tasks ?? []);
 
     const storylessTasksByStatus = storylessTasks.reduce<Map<string, KanbanTask[]>>((acc, task) => {
       const key = task.key ?? task.id ?? '';
@@ -153,7 +148,6 @@ export const useProcessedStories = ({
     storylessStories,
     selectedSprint,
     hasActiveFilter,
-    taskMatchesFilters,
     optimisticUpdates,
     resolveStatusId,
     mapToKanbanTask,

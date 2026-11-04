@@ -1,3 +1,4 @@
+import { Priority } from '../board';
 import { TaskResponse } from '../task';
 
 export interface GetUserStoriesQueryParams {
@@ -224,3 +225,21 @@ export interface UpdateUserStoryStatusPayload {
 export interface ChangeUserStoryStatusPayload {
   status_id: string;
 }
+
+ export type EditableUserStoryFields = {
+  title: string;
+  description: string;
+  priority: Priority;
+  status: string;
+  storyPoints: number;
+  assigneeId: string;
+  assigneeName: string;
+  reporterId: string;
+  reporterName: string;
+  sprintId: string;
+  sprintName: string;
+  assigneeColor?: string;
+  start_date: string;
+  due_date: string;
+  color?: string;
+};
