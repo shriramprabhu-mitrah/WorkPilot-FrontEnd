@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
@@ -211,7 +211,7 @@ export const TaskDetailDrawer = ({
   const [showSprintMenu, setShowSprintMenu] = useState(false);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
 
-  const { userStories, isLoadingUserStories, isFetchingUserStories } = useGetUserStories(
+  const { userStories } = useGetUserStories(
     taskData.project_id,
     {
       page: 1,

@@ -9,16 +9,8 @@ import { AssigneeAvatar } from '../../task';
 import { DetailRow } from '../../task-detail/components/detail-row';
 import { WpButton } from '../../button';
 import { WpInput } from '../../input';
-import { useGetSprints } from '@/src/modules/project/hooks/useSprint';
-
-// Same helpers the parent has (copied unchanged)
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+import { useInfiniteGetSprints } from '@/src/modules/project/hooks/useSprint';
+import { getInitials } from '../../format';
 
 const AVATAR_COLORS = [
   colors.avatarBlue,
@@ -326,7 +318,6 @@ interface SprintFieldProps {
   projectId: string;
   sprintId: string;
   canEditUserStory: boolean;
-  // stays in the parent because handleMoveToBacklog also writes to it
   selectedSprintName: string;
   setSelectedSprintName: (name: string) => void;
   handleUpdate: (patch: { sprintId?: string }) => Promise<void> | void;
@@ -345,18 +336,29 @@ export const SprintField = ({
   const [sprintSearch, setSprintSearch] = useState('');
   const [showSprintMenu, setShowSprintMenu] = useState(false);
   const [isUpdatingSprint, setIsUpdatingSprint] = useState(false);
+
   const debouncedSprintSearch = useDebounce(sprintSearch, 500);
   const sprintMenuRef = useRef<HTMLDivElement>(null);
+  const sprintListRef = useRef<HTMLDivElement>(null);
 
-  const { sprints, isLoadingSprints, isFetchingSprints } = useGetSprints(
-    projectId,
-    {
-      page: 1,
-      page_size: 10,
-      search: debouncedSprintSearch,
-    },
-    true
-  );
+  const { sprints, isLoadingSprints, isFetchingNextSprints, hasNextSprints, fetchNextSprints } =
+    useInfiniteGetSprints(
+      projectId,
+      {
+        page_size: 7,
+        search: debouncedSprintSearch,
+      },
+      !!projectId && showSprintMenu
+    );
+
+  const handleSprintScroll = () => {
+    const element = sprintListRef.current;
+    if (!element || isFetchingNextSprints || !hasNextSprints) return;
+    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight <= 40;
+    if (isNearBottom) {
+      void fetchNextSprints();
+    }
+  };
 
   return (
     <DetailRow label="Sprint">
@@ -431,61 +433,81 @@ export const SprintField = ({
               {!sprintId && <Check size={13} className="ml-auto text-blue-600 shrink-0" />}
             </button>
 
-            {/* Loading */}
-            {(isLoadingSprints || isFetchingSprints) && (
+            {/* Initial Loading */}
+            {isLoadingSprints && (
               <div className="px-3 py-3 text-sm text-gray-500 text-center">Searching...</div>
             )}
 
-            {!isLoadingSprints &&
-              !isFetchingSprints &&
-              sprints?.map((sprint) => {
-                const isSelected = sprint.id === sprintId;
-                return (
-                  <button
-                    key={sprint.id}
-                    type="button"
-                    disabled={isUpdatingSprint}
-                    onClick={async () => {
-                      if (isUpdatingSprint) return;
-                      if (isSelected) {
-                        setShowSprintMenu(false);
-                        setSprintSearch('');
-                        return;
-                      }
-                      const previousSprintName =
-                        selectedSprintName ||
-                        (sprintId
-                          ? sprints?.find((s) => s.id === sprintId)?.name || 'Sprint assigned'
-                          : 'No sprint');
+            {/* Scrollable Sprint List */}
+            {!isLoadingSprints && (
+              <div
+                ref={sprintListRef}
+                onScroll={handleSprintScroll}
+                className="max-h-60 overflow-y-auto"
+              >
+                {sprints.map((sprint) => {
+                  const isSelected = sprint.id === sprintId;
 
-                      try {
-                        setIsUpdatingSprint(true);
-                        setShowSprintMenu(false);
-                        setSprintSearch('');
-                        setSelectedSprintName(sprint.name);
-                        await handleUpdate({
-                          sprintId: sprint.id,
-                        });
-                      } catch {
-                        setSelectedSprintName(previousSprintName);
-                      } finally {
-                        setIsUpdatingSprint(false);
-                      }
-                    }}
-                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${
-                      isUpdatingSprint ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="truncate">{sprint.name}</span>
+                  return (
+                    <button
+                      key={sprint.id}
+                      type="button"
+                      disabled={isUpdatingSprint}
+                      onClick={async () => {
+                        if (isUpdatingSprint) return;
 
-                    {isSelected && <Check size={13} className="ml-auto text-blue-600 shrink-0" />}
-                  </button>
-                );
-              })}
+                        if (isSelected) {
+                          setShowSprintMenu(false);
+                          setSprintSearch('');
+                          return;
+                        }
 
-            {/* No Results */}
-            {!isLoadingSprints && !isFetchingSprints && sprints?.length === 0 && (
-              <div className="px-3 py-3 text-sm text-gray-500 text-center">No sprints found</div>
+                        const previousSprintName =
+                          selectedSprintName ||
+                          (sprintId
+                            ? sprints.find((s) => s.id === sprintId)?.name || 'Sprint assigned'
+                            : 'No sprint');
+
+                        try {
+                          setIsUpdatingSprint(true);
+                          setShowSprintMenu(false);
+                          setSprintSearch('');
+                          setSelectedSprintName(sprint.name);
+
+                          await handleUpdate({
+                            sprintId: sprint.id,
+                          });
+                        } catch {
+                          setSelectedSprintName(previousSprintName);
+                        } finally {
+                          setIsUpdatingSprint(false);
+                        }
+                      }}
+                      className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 text-left ${
+                        isUpdatingSprint ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="truncate">{sprint.name}</span>
+
+                      {isSelected && <Check size={13} className="ml-auto text-blue-600 shrink-0" />}
+                    </button>
+                  );
+                })}
+
+                {/* Loading Next Page */}
+                {isFetchingNextSprints && (
+                  <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                    Loading more sprints...
+                  </div>
+                )}
+
+                {/* No Results */}
+                {!isFetchingNextSprints && sprints.length === 0 && (
+                  <div className="px-3 py-3 text-sm text-gray-500 text-center">
+                    No sprints found
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}

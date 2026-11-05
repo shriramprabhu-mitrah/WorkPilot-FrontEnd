@@ -9,19 +9,11 @@ import type { useGetUserStoryComments } from '@/src/modules/tasks/hooks/useUserS
 import type { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
 import { WpButton } from '../../button';
 import { AssigneeAvatar } from '../../task';
+import { getInitials } from '../../format';
 
 export type ActivityTab = 'all' | 'comments' | 'history' | 'childTickets';
 type StoryComment = ReturnType<typeof useGetUserStoryComments>['comments'][number];
 type StoryActivityItem = ReturnType<typeof useGetProjectActivities>['activities'][number];
-
-// Same helpers the parent has (copied unchanged)
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 
 const AVATAR_COLORS = [
   colors.avatarBlue,

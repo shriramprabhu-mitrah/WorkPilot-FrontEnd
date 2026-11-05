@@ -25,7 +25,6 @@ import { ProjectNotFound } from '@/src/app/components/common/project-not-found';
 import { useGetProjectsWithSprints } from '../../project/hooks/useProject';
 import DashboardSkeleton from '../components/dashboardSkeletons';
 import { colors } from '@/src/styles/colors';
-import type { SprintBurndownBlock } from '@/src/types/dashboard';
 
 const POPOVER_DISMISSED_KEY = 'project-selection-popover-dismissed';
 const CREATE_PROJECT_POPOVER_DISMISSED_KEY = 'create-project-popover-dismissed';
@@ -108,7 +107,6 @@ export const DashBoardTemplate = () => {
   const {
     weeklyProgress,
     isLoadingWeeklyProgress,
-    isError: isWeeklyProgressError,
   } = useGetWeeklyProgress(effectiveProject?.id ?? '', {
     sprint_id: selectedSprint?.id,
   });

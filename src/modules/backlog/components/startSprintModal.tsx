@@ -98,24 +98,6 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
     }
   };
 
-  const getTimeInputValue = () => {
-    if (!startTime) return '';
-
-    const [time, modifier] = startTime.split(' ');
-    let hours = time.split(':')[0];
-    const minutes = time.split(':')[1];
-
-    if (modifier === 'PM' && hours !== '12') {
-      hours = String(Number(hours) + 12);
-    }
-
-    if (modifier === 'AM' && hours === '12') {
-      hours = '00';
-    }
-
-    return `${hours.padStart(2, '0')}:${minutes}`;
-  };
-
   const getEndTimeInputValue = () => {
     if (!endTime) return '';
 
@@ -132,22 +114,6 @@ const StartSprintModal = ({ onClose, onStart, isStarting }: StartSprintModalProp
     }
 
     return `${hours.padStart(2, '0')}:${minutes}`;
-  };
-
-  const handleTimeChange = (value: string) => {
-    if (!value) {
-      setStartTime('');
-      return;
-    }
-
-    const [hours, minutes] = value.split(':');
-    const hour = Number(hours);
-
-    const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-
-    const modifier = hour >= 12 ? 'PM' : 'AM';
-
-    setStartTime(`${formattedHour}:${minutes} ${modifier}`);
   };
 
   const handleEndTimeChange = (value: string) => {

@@ -7,7 +7,7 @@ import BarChart from '@/src/app/components/common/charts/barChart';
 import { EChartsOption } from 'echarts-for-react';
 import { useTheme } from 'next-themes';
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 6;
 
 interface TeamWorkloadCardProps {
   chartHeight: number;
@@ -60,25 +60,27 @@ export default function TeamWorkloadCard({
           Assigned tasks vs points by team member
         </p>
       </div>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => setPage((p) => Math.max(0, p - 1))}
-          disabled={!canPrev}
-          className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronLeft size={14} className="dark:text-slate-100" />
-        </button>
-        <span className="text-xs text-gray-400 dark:text-slate-200 min-w-[40px] text-center">
-          {safePage + 1} / {totalPages}
-        </span>
-        <button
-          onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-          disabled={!canNext}
-          className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronRight size={14} />
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={!canPrev}
+            className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={14} className="dark:text-slate-100" />
+          </button>
+          <span className="text-xs text-gray-400 dark:text-slate-200 min-w-[40px] text-center">
+            {safePage + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={!canNext}
+            className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -159,7 +161,7 @@ export default function TeamWorkloadCard({
     return (
       <div className="w-full min-w-0 overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col">
         {header}
-        <BarChart option={emptyOption} height={chartHeight} />
+        <BarChart option={emptyOption} height={chartHeight + 30} />
       </div>
     );
   }
@@ -278,7 +280,7 @@ export default function TeamWorkloadCard({
   return (
     <div className="w-full min-w-0 overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col">
       {header}
-      <BarChart option={option} height={chartHeight} />
+      <BarChart option={option} height={chartHeight + 30} />
     </div>
   );
 }

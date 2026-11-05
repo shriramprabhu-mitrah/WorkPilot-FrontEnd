@@ -28,7 +28,6 @@ interface UseBoardModalsProps {
 
 export const useBoardModals = ({
   selectedProject,
-  selectedSprint,
   orgSlug,
   projectSlug,
   storeProject,

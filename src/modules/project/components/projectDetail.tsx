@@ -31,6 +31,7 @@ import CompleteSprintModal from '../../backlog/components/CompleteSprint';
 import { sprintService } from '@/src/services/sprint';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { getInitials } from '@/src/app/components/common/format';
 interface ProjectDetailProps {
   project: Project & { id?: string };
 }
@@ -201,13 +202,6 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         dispatch(setSelectedProject({ ...rest, owner: creator ?? rest.owner ?? 'Unassigned' }));
       }
     } catch {}
-  };
-
-  const getInitials = (name: string) => {
-    if (!name) return '?';
-    const words = name.trim().split(' ');
-    if (words.length >= 2) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
   };
 
   const updateMember = async (member: ProjectDetailMember) => {

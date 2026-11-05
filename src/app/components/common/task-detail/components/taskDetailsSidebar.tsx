@@ -9,11 +9,10 @@ import { TaskData, TaskLabel } from '@/src/types/task';
 import {
   AssigneeField,
   ReporterField,
-  SprintField,
-  UserStoryField,
   AssigneePatch,
   ReporterPatch,
 } from './taskDetailFields';
+import { SprintField, UserStoryField } from './sprintUserStoryField';
 interface TaskDetailsSidebarProps {
   taskData: TaskData;
   resolvedProjectId: string;

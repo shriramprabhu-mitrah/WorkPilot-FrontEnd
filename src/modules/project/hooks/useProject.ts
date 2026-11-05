@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { projectService } from '@/src/services/project';
 import {
   CreateProjectPayload,
@@ -189,6 +189,47 @@ export const useGetProjectMembers = (
     members: query.data?.data ?? [],
     isLoadingMembers: query.isLoading,
     isFetchingMembers: query.isFetching,
+    isError: query.isError,
+    error: query.error,
+    refetchMembers: query.refetch,
+  };
+};
+
+export const useInfiniteGetProjectMembers = (
+  projectId: string,
+  params?: Omit<GetProjectMembersParams, 'page'>,
+  enabled = true
+) => {
+  const pageSize = params?.page_size ?? 10;
+  const query = useInfiniteQuery({
+    queryKey: ['projectMembers', 'infinite', projectId, pageSize, params?.name ?? ''],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      projectService.getProjectMembers(projectId, {
+        ...params,
+        page: pageParam,
+        page_size: pageSize,
+      }),
+    getNextPageParam: (lastPage, allPages) => {
+      if ((lastPage.data?.length ?? 0) < pageSize) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
+    enabled: enabled && Boolean(projectId),
+    staleTime: 30 * 1000,
+  });
+  const members = useMemo(
+    () => query.data?.pages.flatMap((page) => page.data ?? []) ?? [],
+    [query.data]
+  );
+  return {
+    members,
+    isLoadingMembers: query.isLoading,
+    isFetchingMembers: query.isFetching && !query.isFetchingNextPage,
+    isFetchingNextMembers: query.isFetchingNextPage,
+    hasNextMembers: query.hasNextPage,
+    fetchNextMembers: query.fetchNextPage,
     isError: query.isError,
     error: query.error,
     refetchMembers: query.refetch,

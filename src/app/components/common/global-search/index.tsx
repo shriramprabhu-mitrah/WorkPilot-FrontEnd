@@ -18,29 +18,6 @@ interface GlobalSearchModalProps {
   onClose: () => void;
 }
 
-const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
-  if (!query.trim() || !text) return <span>{text}</span>;
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${escaped})`, 'gi');
-  const parts = text.split(regex);
-  return (
-    <span>
-      {parts.map((part, index) =>
-        regex.test(part) ? (
-          <mark
-            key={index}
-            className="bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-200 font-semibold px-0.5 rounded"
-          >
-            {part}
-          </mark>
-        ) : (
-          <span key={index}>{part}</span>
-        )
-      )}
-    </span>
-  );
-};
-
 export const GlobalSearchModal = ({ isOpen, onClose }: GlobalSearchModalProps) => {
   const {
     query,

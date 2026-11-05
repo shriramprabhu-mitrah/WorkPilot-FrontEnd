@@ -37,8 +37,6 @@ export default function UnassignedTasksHeader({
   selectedProject,
   unassignedTasksOpen,
   setUnassignedTasksOpen,
-  isLoadingTasks,
-  filteredUnassignedTasks,
   tasksSearch,
   handleTasksSearchChange,
   tasksFilters,

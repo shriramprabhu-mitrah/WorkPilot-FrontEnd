@@ -15,7 +15,7 @@ import {
 } from '@/src/modules/tasks/hooks/useTask';
 import toast from 'react-hot-toast';
 import { useGetProjectActivities } from '@/src/modules/project/hooks/useProject';
-
+import { getInitials } from '../../format';
 import { usePermissions } from '@/src/hooks/usePermissions';
 import {
   useDownloadAttachment,
@@ -30,14 +30,6 @@ interface ActivitySectionProps {
   taskId?: string;
   projectId?: string;
 }
-
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || '?';
 
 const formatTime = (iso: string) => {
   const d = new Date(iso);

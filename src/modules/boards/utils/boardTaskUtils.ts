@@ -2,16 +2,11 @@ import type { TaskResponse } from '@/src/types/task';
 import type { KanbanTask } from '@/src/types/board';
 import type { useGetStatus } from '@/src/modules/project/hooks/useLabels';
 import { isStorylessId } from './storylessUtils';
+import { getInitials } from '@/src/app/components/common/format';
 
 export type BoardStatuses = NonNullable<ReturnType<typeof useGetStatus>['data']>;
 
-export const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+export { getInitials };
 
 export const resolveStatusId = (task: TaskResponse, statuses: BoardStatuses): string => {
   if (task.status_id && statuses.some((s) => s.id === task.status_id)) {

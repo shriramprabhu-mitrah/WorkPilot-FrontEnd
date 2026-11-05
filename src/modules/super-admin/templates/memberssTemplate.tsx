@@ -8,6 +8,7 @@ import { AdminMembersParams } from '@/src/types/superadmin';
 import MembersSkeleton from '../components/membersSkeleton';
 import Skeleton from '@/src/app/components/common/skeleton';
 import Image from 'next/image';
+import { getInitials } from '@/src/app/components/common/format';
 
 const avatarColors = [
   '#3b82f6', // blue
@@ -62,16 +63,6 @@ export const MembersTemplate = () => {
   } = useGetMembers(queryParams);
 
   const isPaginationLoading = isFetchingMembers && isPlaceholderData && Number(meta?.page) !== page;
-
-  const getInitials = (name: string) =>
-    name
-      ? name
-          .split(' ')
-          .map((w) => w[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-      : '';
 
   const getAvatarColor = (id: string) => {
     let hash = 0;

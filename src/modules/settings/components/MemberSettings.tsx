@@ -18,6 +18,7 @@ import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { Pagination } from '@/src/app/components/common/pagination/pagination';
 import Skeleton from '@/src/app/components/common/skeleton';
 import { useDebounce } from '@/src/hooks/useDebounce';
+import { getInitials } from '../../boards/utils/boardTaskUtils';
 
 export const MemberSettings = () => {
   const [page, setPage] = useState(1);
@@ -321,12 +322,7 @@ export const MemberSettings = () => {
                         backgroundColor: selectedMemberDetails?.color || '#6366f1',
                       }}
                     >
-                      {selectedMemberDetails?.name
-                        ?.split(' ')
-                        .map((word) => word[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2) || 'U'}
+                      {getInitials(selectedMemberDetails?.name)}
                     </div>
 
                     <div className="min-w-0">

@@ -21,7 +21,7 @@ import { logger } from '@/src/lib/utils/logger';
 import toast from 'react-hot-toast';
 import { Chip } from '../chip';
 import { PRIORITY_CONFIG } from '../task-detail/components/badges';
-
+import { getInitials } from '../format';
 import { usePermissions } from '@/src/hooks/usePermissions';
 
 interface ChildTasksPanelProps {
@@ -33,14 +33,6 @@ interface ChildTasksPanelProps {
   onOpenTask?: (task: KanbanTask) => void;
   onUpdate?: () => void;
 }
-
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0] ?? '')
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 
 const mapToDrawerTask = (
   task: TaskResponse,
@@ -183,6 +175,7 @@ export const ChildTasksPanel = ({
 
   const {
     childTasks: fetchedPages,
+    totalChildTasks,
     isLoadingChildTasks,
     hasNextPage,
     fetchNextPage,
@@ -300,15 +293,6 @@ export const ChildTasksPanel = ({
     }
   }, []);
 
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const isScrollable = el.scrollHeight > el.clientHeight;
-    if (!isScrollable && hasNextPageRef.current && !isFetchingNextPageRef.current) {
-      fetchNextPageRef.current();
-    }
-  }, [localTasks]);
-
   if (isLoadingChildTasks) {
     return (
       <div className="mb-6 pb-6 border-b border-gray-200 dark:border-slate-700">
@@ -327,7 +311,7 @@ export const ChildTasksPanel = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-          Tasks ({localTasks.length})
+          Tasks ({totalChildTasks})
         </p>
         {onCreateTask && canCreateTask && (
           <button

@@ -152,7 +152,6 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   // Projects only (no sprints) - paginated
   const {
     data: modalProjectsData,
-    isLoading: isLoadingModalProjects,
     isFetching: isFetchingModalProjects,
   } = useQuery({
     queryKey: ['sidebar-modal-projects', debouncedProjectSearch, projectPage],
