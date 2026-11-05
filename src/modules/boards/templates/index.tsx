@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+import {  DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import { KanbanTask } from '@/src/types/board';
 import { TaskResponse } from '@/src/types/task';
 import { usePermissions } from '@/src/hooks/usePermissions';

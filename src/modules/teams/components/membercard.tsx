@@ -4,6 +4,7 @@ import { Member } from '@/src/types/teams';
 import { Trash2 } from 'lucide-react';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
 import { ROLE_TYPE } from '@/src/app/components/common/enum';
+import { getInitials } from '../../boards/utils/boardTaskUtils';
 
 interface MemberCardProps {
   member: Member;
@@ -37,7 +38,7 @@ export const MemberCard = ({
             className="flex h-10 w-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white"
             style={{ backgroundColor: member.avatarColor }}
           >
-            {member.initials}
+            {getInitials(member.name)}
           </div>
 
           {/* Name + Status + Role */}

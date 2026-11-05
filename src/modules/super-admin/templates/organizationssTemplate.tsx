@@ -7,6 +7,7 @@ import { AdminOrganization } from '@/src/types/superadmin';
 import { AdminOrganizationsParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import OrganizationsSkeleton from '../components/organizationSkeleton';
+import { getInitials } from '@/src/app/components/common/format';
 
 type FilterType = 'All' | 'Active' | 'Inactive';
 
@@ -123,16 +124,6 @@ export const OrganizationsTemplate = () => {
 
   const isPaginationLoading =
     isFetchingOrganizations && isPlaceholderData && Number(meta?.page) !== page;
-
-  const getInitials = (name: string) =>
-    name
-      ? name
-          .split(' ')
-          .map((w) => w[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-      : '';
 
   // const handleViewOrg = (orgSlug: string) => {
   //   router.push(`/super-admin/organizations/${orgSlug}`);

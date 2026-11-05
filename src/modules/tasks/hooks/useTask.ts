@@ -85,7 +85,7 @@ export const useGetSprintOrphanTasks = (projectId: string, sprintId: string, ena
   };
 };
 
-const PAGE_SIZE_CHILD = 4;
+const PAGE_SIZE_CHILD = 5;
 
 export const useGetChildTasks = (projectId: string, userStoryId: string, enabled = true) => {
   const query = useInfiniteQuery({
@@ -99,14 +99,17 @@ export const useGetChildTasks = (projectId: string, userStoryId: string, enabled
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
+      const meta = (lastPage as { meta?: { has_next?: boolean } })?.meta;
+
+      if (meta?.has_next !== undefined) {
+        return meta.has_next ? allPages.length + 1 : undefined;
+      }
+
       const items = (lastPage as { data?: unknown[] })?.data ?? [];
 
-      // If the server returned fewer items than we asked for, we've
-      // reached the end — don't fetch further.
-      if (items.length < PAGE_SIZE_CHILD) {
-        return undefined;
-      }
-      return allPages.length + 1;
+      return items.length < PAGE_SIZE_CHILD
+        ? undefined
+        : allPages.length + 1;
     },
     enabled: enabled && !!projectId && !!userStoryId,
   });
@@ -116,13 +119,17 @@ export const useGetChildTasks = (projectId: string, userStoryId: string, enabled
     [query.data]
   );
 
-  // Try to read a real total from common response shapes; fall back to
-  // "how many we've loaded so far" if the API doesn't expose one.
   const total = useMemo(() => {
     const firstPage = query.data?.pages[0] as
-      { count?: number; pagination?: { total?: number; total_count?: number } } | undefined;
+      | {
+          meta?: { total_items?: number };
+          count?: number;
+          pagination?: { total?: number; total_count?: number };
+        }
+      | undefined;
 
     return (
+      firstPage?.meta?.total_items ??
       firstPage?.count ??
       firstPage?.pagination?.total ??
       firstPage?.pagination?.total_count ??

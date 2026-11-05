@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdminOrganizationMember } from '@/src/types/superadmin';
 import Image from 'next/image';
+import { getInitials } from '@/src/app/components/common/format';
 
 interface MemberCardProps {
   member: AdminOrganizationMember;
@@ -18,15 +19,6 @@ const avatarColors = [
 ];
 
 export const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((w) => w[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   const getAvatarColor = (id: string) => {
     const index = parseInt(id, 10) % avatarColors.length;
     return avatarColors[index];

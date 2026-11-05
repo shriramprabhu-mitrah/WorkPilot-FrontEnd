@@ -152,21 +152,37 @@ export const TaskDescriptionSection = ({
         </div>
       ) : (
         <div
-          onClick={() => {
+          onMouseDown={(event) => {
             if (!canEditTask) return;
+            if (event.button !== 0) return;
+            const target = event.target as HTMLElement;
+            const link = target.closest('a');
+            if (link?.href) {
+              event.preventDefault();
+              window.open(link.href, '_blank', 'noopener,noreferrer');
+              return;
+            }
+            
             setEditTaskDescription(description ?? '');
             setSavedDescription(description ?? '');
             setEditingDesc(true);
           }}
-          className={`w-full min-h-[48px] ${canEditTask ? 'cursor-text' : 'cursor-default'}`}
+          className={`text-sm text-gray-600 dark:text-slate-300 leading-relaxed rounded-lg px-3 py-2.5 -mx-3 transition-colors min-h-[48px] ${
+            canEditTask
+              ? 'cursor-text hover:bg-gray-50 dark:hover:bg-slate-800'
+              : 'cursor-default'
+          }`}
         >
           {description ? (
             <div
-              className="pointer-events-none [&_img]:max-w-[200px] [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-lg"
-              dangerouslySetInnerHTML={{ __html: description }}
+              className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-700 hover:[&_a]:dark:text-blue-300 [&_img]:max-w-[200px] [&_img]:max-h-[200px] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-lg"
+              style={{ pointerEvents: 'auto' }}
+              dangerouslySetInnerHTML={{
+                __html: description,
+              }}
             />
           ) : (
-            <span className="text-gray-400 dark:text-slate-200">Add a description…</span>
+            <span className="text-gray-400 dark:text-slate-500">Add a description…</span>
           )}
         </div>
       )}

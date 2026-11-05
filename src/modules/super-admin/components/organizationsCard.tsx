@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AdminOrganization } from '@/src/types/superadmin';
+import { getInitials } from '@/src/app/components/common/format';
 
 interface OrganizationCardProps {
   organization: AdminOrganization;
@@ -7,15 +8,6 @@ interface OrganizationCardProps {
 
 export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization }) => {
   const [imgError, setImgError] = useState(false);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((w) => w[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const hasLogo = Boolean(organization.logo_url) && !imgError;
 

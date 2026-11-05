@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { PriorityBadge, StatusBadge, AssigneeAvatar } from '@/src/app/components/common/task';
 import { colors } from '@/src/styles/colors';
 import { TaskLabel, TaskResponse } from '@/src/types/task';
+import { getInitials } from '@/src/app/components/common/format';
 
 export const BacklogRow = ({
   task,
@@ -40,18 +41,6 @@ export const BacklogRow = ({
     if (!isDragging) {
       onClick?.();
     }
-  };
-
-  const getInitials = (name?: string) => {
-    if (!name) return '?';
-    return name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   return (

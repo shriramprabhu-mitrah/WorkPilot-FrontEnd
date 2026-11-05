@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useUserInsights } from '../../hooks/useUser';
 import StatCard from '@/src/app/components/common/statcard/statcard';
 import { Briefcase, CheckCircle2, Ban, X, Check } from 'lucide-react';
-import { formatMonthYear } from '@/src/app/components/common/format';
+import { formatMonthYear, getInitials } from '@/src/app/components/common/format';
 import { WpInput } from '@/src/app/components/common/input';
 import { WpButton } from '@/src/app/components/common/button';
 import { ROLE_LABELS } from '@/src/app/components/common/enum/index';
@@ -119,13 +119,6 @@ export default function Profile() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return parts[0].substring(0, 2).toUpperCase();
-  };
 
   if (isLoading) {
     return <ProfileSkeleton />;

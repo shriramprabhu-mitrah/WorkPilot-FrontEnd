@@ -5,6 +5,7 @@ import { X, Search } from 'lucide-react';
 import { Priority } from '@/src/types/board';
 import { colors } from '@/src/styles/colors';
 import { WpButton } from '@/src/app/components/common/button';
+import { getInitials } from '../format';
 
 export interface FilterState {
   priorities: Priority[];
@@ -104,15 +105,6 @@ export const FilterPanel = ({
         onChange({ ...filters, labels: [] });
         break;
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   // Shared search input used in every category

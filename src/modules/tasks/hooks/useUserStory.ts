@@ -30,6 +30,39 @@ export const useGetUserStories = (
   };
 };
 
+export const useInfiniteGetUserStories = (
+  projectId: string,
+  params?: GetUserStoriesQueryParams,
+  enabled = true
+) => {
+  const pageSize = 7;
+  const query = useInfiniteQuery({
+    queryKey: ['user-stories-infinite', projectId, params],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      userStoryService.getUserStories(projectId, {
+        ...params,
+        page: pageParam,
+        page_size: pageSize,
+      }),
+    getNextPageParam: (lastPage, allPages) => {
+      if ((lastPage.data?.length ?? 0) < pageSize) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
+    enabled: enabled && !!projectId,
+  });
+  return {
+    userStories: query.data?.pages.flatMap((page) => page.data ?? []) ?? [],
+    isLoadingUserStories: query.isLoading,
+    isFetchingNextUserStories: query.isFetchingNextPage,
+    hasNextUserStories: query.hasNextPage,
+    isErrorUserStories: query.isError,
+    fetchNextUserStories: query.fetchNextPage,
+  };
+};
+
 const SPRINT_PAGE_SIZE = 5;
 
 export const useGetSprintUserStories = (projectId: string, sprintId: string, enabled = true) => {

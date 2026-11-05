@@ -8,6 +8,7 @@ import {
   useGetOrganizationUsers,
 } from '@/src/modules/organization/hooks/useOrganization';
 import { useGetAllProjects } from '../hooks/useSuperAdmin';
+import { getInitials } from '@/src/app/components/common/format';
 
 interface OrganizationDetailTemplateProps {
   orgSlug: string;
@@ -48,16 +49,6 @@ export const OrganizationDetailTemplate: React.FC<OrganizationDetailTemplateProp
       </div>
     );
   }
-
-  const getInitials = (name: string) =>
-    name
-      ? name
-          .split(' ')
-          .map((w) => w[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-      : '';
 
   const getStatusStyle = (status: string) => {
     switch (status) {

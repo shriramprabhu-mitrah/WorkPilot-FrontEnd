@@ -1,4 +1,10 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { sprintService } from '@/src/services/sprint';
 import { SprintPayload, UpdateSprintPayload } from '@/src/types/project';
 import { StartSprintPayload } from '../../sprint/types/sprint';
@@ -31,6 +37,48 @@ export const useGetSprints = (
     isError: query.isError,
     error: query.error,
     refetchSprints: query.refetch,
+  };
+};
+
+export const useInfiniteGetSprints = (
+  projectId: string,
+  params?: {
+    page_size?: number;
+    search?: string;
+    status?: string;
+    sort_by?: string;
+    sort_order?: 'ASC' | 'DESC';
+    fields?: string;
+  },
+  enabled = true
+) => {
+  const query = useInfiniteQuery({
+    queryKey: ['sprints', 'infinite', projectId, params],
+    queryFn: ({ pageParam }) =>
+      sprintService.getSprints(projectId, {
+        ...params,
+        page: pageParam,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const currentPage = lastPage.meta?.page ?? allPages.length;
+      const totalPages = lastPage.meta?.total_pages;
+      if (totalPages !== undefined) {
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      }
+      return (lastPage.data?.length ?? 0) >= (params?.page_size ?? 7) ? currentPage + 1 : undefined;
+    },
+    enabled: enabled && !!projectId,
+  });
+  return {
+    sprints: query.data?.pages.flatMap((page) => page.data ?? []) ?? [],
+    isLoadingSprints: query.isLoading,
+    isFetchingSprints: query.isFetching,
+    isFetchingNextSprints: query.isFetchingNextPage,
+    hasNextSprints: query.hasNextPage,
+    fetchNextSprints: query.fetchNextPage,
+    isError: query.isError,
+    error: query.error,
   };
 };
 

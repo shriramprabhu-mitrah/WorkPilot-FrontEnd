@@ -1,5 +1,5 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type Query } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import type { KanbanTask } from '@/src/types/board';
 import { taskService } from '@/src/services/tasks';
@@ -24,14 +24,20 @@ interface UseMoveToBacklogArgs<T extends BacklogTaskData> {
   onUpdate?: (updated: Partial<KanbanTask>) => void;
 }
 
-const LIST_QUERY_KEYS = [
-  ['task'],
-  ['tasks'],
-  ['sprint-orphan-tasks'],
-  ['sprint-user-stories'],
-  ['user-stories'],
-  ['sprints'],
-];
+// Root keys of the list queries that can be affected by moving a task to backlog
+const LIST_QUERY_ROOTS = new Set<unknown>([
+  'tasks',
+  'sprint-orphan-tasks',
+  'sprint-user-stories',
+]);
+
+const isAffectedListQuery = (query: Query, previousSprintId: string) => {
+  if (!LIST_QUERY_ROOTS.has(query.queryKey[0])) return false;
+  const keyString = JSON.stringify(query.queryKey);
+  const isPreviousSprintList = !!previousSprintId && keyString.includes(previousSprintId);
+  const isUnassignedList = /unassigned/i.test(keyString);
+  return isPreviousSprintList || isUnassignedList;
+};
 
 export const useMoveToBacklog = <T extends BacklogTaskData>({
   task,
@@ -70,6 +76,7 @@ export const useMoveToBacklog = <T extends BacklogTaskData>({
       user_story_id: taskData.user_story_id,
       user_story_title: taskData.user_story_title,
     };
+    const previousSprintId = currentSprintId;
 
     try {
       setIsMovingToBacklog(true);
@@ -87,17 +94,19 @@ export const useMoveToBacklog = <T extends BacklogTaskData>({
         user_story_id: null,
       });
 
-      await queryClient.invalidateQueries({
-        queryKey: ['task', targetProjectId, targetTaskId],
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['task', targetProjectId, targetTaskId],
+        }),
+        task.key
+          ? queryClient.invalidateQueries({
+              queryKey: ['task', targetProjectId, task.key],
+            })
+          : Promise.resolve(),
+      ]);
+      void queryClient.invalidateQueries({
+        predicate: (query) => isAffectedListQuery(query, previousSprintId),
       });
-      if (task.key) {
-        await queryClient.invalidateQueries({
-          queryKey: ['task', targetProjectId, task.key],
-        });
-      }
-      for (const queryKey of LIST_QUERY_KEYS) {
-        await queryClient.invalidateQueries({ queryKey });
-      }
 
       onUpdate?.({
         sprint: '',
@@ -118,6 +127,7 @@ export const useMoveToBacklog = <T extends BacklogTaskData>({
     isMovingToBacklog,
     isAlreadyInBacklog,
     canEditTask,
+    currentSprintId,
     fetchedTask?.project_id,
     fetchedTask?.id,
     task.projectId,

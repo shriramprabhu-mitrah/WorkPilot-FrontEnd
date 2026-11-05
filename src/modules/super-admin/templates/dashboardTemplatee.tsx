@@ -8,6 +8,7 @@ import { OrganizationCard } from '../components/organizationsCard';
 import { ProjectCard } from '../components/projecttCard';
 import { MemberCard } from '../components/membersCard';
 import SuperAdminDasSkeleton from '@/src/modules/super-admin/components/dashboardSkeletons';
+import { getInitials } from '@/src/app/components/common/format';
 
 // Mock metrics for dashboard
 const dashboardMetrics = {
@@ -169,17 +170,6 @@ export const DashboardTemplate = () => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {organizations.map((org) => {
-                const getInitials = (name: string) => {
-                  return name
-                    ? name
-                        .split(' ')
-                        .map((w) => w[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)
-                    : '';
-                };
-
                 const statusColor = org.is_active
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-gray-500 dark:text-slate-400';
