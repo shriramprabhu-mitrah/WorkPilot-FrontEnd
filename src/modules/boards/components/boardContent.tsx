@@ -29,6 +29,7 @@ import { OptimisticUpdate, MapTaskFn } from './types';
 export interface ProcessedBoardStory extends UserStoryResponse {
   tasksByStatus: Map<string, KanbanTask[]>;
   hasMoreByStatus?: Map<string, boolean>;
+  taskCountByStatus?: Map<string, number>;
 }
 
 interface BoardContentProps {
@@ -51,6 +52,7 @@ interface BoardContentProps {
   optimisticUpdates: Map<string, OptimisticUpdate>;
   pageFilters: BoardPageFilters;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  handleOpenCreateTaskForStory?: (storyId: string) => void;
 }
 
 const dropAnimation: DropAnimation = {
@@ -81,6 +83,7 @@ export const BoardContent = React.memo(function BoardContent({
   optimisticUpdates,
   pageFilters,
   scrollContainerRef,
+  handleOpenCreateTaskForStory,
 }: BoardContentProps) {
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
   const touchSensor = useSensor(TouchSensor, {
@@ -142,11 +145,13 @@ export const BoardContent = React.memo(function BoardContent({
               onRefetch={handleRefetch}
               collapsedStatuses={collapsedStatuses}
               hasMoreByStatus={story.hasMoreByStatus ?? new Map()}
+              taskCountByStatus={story.taskCountByStatus ?? new Map()}
               projectId={selectedProject}
               mapTask={mapToKanbanTask}
               allTasksRef={allTasksRef}
               optimisticUpdates={optimisticUpdates}
               pageFilters={pageFilters}
+              onAddTask={handleOpenCreateTaskForStory}
             />
           ))}
         </div>

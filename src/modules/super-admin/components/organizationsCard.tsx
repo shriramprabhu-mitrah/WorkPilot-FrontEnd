@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { AdminOrganization } from '@/src/types/superadmin';
 import { getInitials } from '@/src/app/components/common/format';
+import Image from 'next/image';
 
 interface OrganizationCardProps {
   organization: AdminOrganization;
@@ -14,12 +16,14 @@ export const OrganizationCard: React.FC<OrganizationCardProps> = ({ organization
   return (
     <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-lg transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
-          {hasLogo ? (
-            <img
+        <div className="relative w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
+          {hasLogo && organization.logo_url ? (
+            <Image
               src={organization.logo_url}
               alt={organization.name}
-              className="w-full h-full object-cover"
+              fill
+              sizes="40px"
+              className="object-cover"
               onError={() => setImgError(true)}
             />
           ) : (

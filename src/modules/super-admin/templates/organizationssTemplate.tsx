@@ -8,6 +8,7 @@ import { AdminOrganizationsParams } from '@/src/services/superadmin';
 import { Pagination } from '../../../app/components/common/pagination/pagination';
 import OrganizationsSkeleton from '../components/organizationSkeleton';
 import { getInitials } from '@/src/app/components/common/format';
+import Image from 'next/image';
 
 type FilterType = 'All' | 'Active' | 'Inactive';
 
@@ -284,18 +285,20 @@ export const OrganizationsTemplate = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm shrink-0 overflow-hidden">
                               {org.logo_url && !imageErrorIds.has(org.id) ? (
-                                <img
-                                  src={org.logo_url}
-                                  alt={org.name}
-                                  className="w-full h-full object-cover"
-                                  onError={() =>
-                                    setImageErrorIds((prev) => {
-                                      const next = new Set(prev);
-                                      next.add(org.id);
-                                      return next;
-                                    })
-                                  }
-                                />
+                               <Image
+                                src={org.logo_url}
+                                alt={org.name}
+                                fill
+                                className="object-cover"
+                                sizes="100vw"
+                                onError={() =>
+                                  setImageErrorIds((prev) => {
+                                    const next = new Set(prev);
+                                    next.add(org.id);
+                                    return next;
+                                  })
+                               }
+                             />
                               ) : (
                                 getInitials(org.name)
                               )}

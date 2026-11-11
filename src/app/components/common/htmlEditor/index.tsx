@@ -1,6 +1,7 @@
 'use client';
 
 import type { EditorState, LexicalEditor } from 'lexical';
+import { useState } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -17,6 +18,7 @@ import { HtmlPastePlugin } from './plugins/HtmlPastePlugin';
 import { ImagesPlugin } from './plugins/ImagesPlugin';
 import { LinkClickPlugin } from './plugins/LinkClickPlugin';
 import { InitialValuePlugin } from './plugins/InitialValuePlugin';
+import { DragDropPastePlugin } from './plugins/DragDropPastePlugin';
 import type { WpRichTextEditorProps } from './types';
 
 export type { WpRichTextEditorProps, InsertImagePayload } from './types';
@@ -31,6 +33,8 @@ export default function WpRichTextEditor({
   className = '',
   onImageUpload,
 }: WpRichTextEditorProps) {
+  const [isPasteDropUploading, setIsPasteDropUploading] = useState(false);
+
   const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
     editorState.read(() => {
       const html = $generateHtmlFromNodes(editor);
@@ -61,7 +65,11 @@ export default function WpRichTextEditor({
       `}
     >
       <LexicalComposer initialConfig={initialConfig}>
-        <EditorToolbar onImageUpload={onImageUpload} />
+        <EditorToolbar
+            onImageUpload={onImageUpload}
+            isUploadingImage={isPasteDropUploading}
+            onUploadingChange={setIsPasteDropUploading}
+          />
         <div className="relative z-10">
           <RichTextPlugin
             contentEditable={
@@ -99,6 +107,10 @@ export default function WpRichTextEditor({
           <LinkPlugin />
           <ImagesPlugin />
           <LinkClickPlugin />
+          <DragDropPastePlugin
+              onImageUpload={onImageUpload}
+              onUploadingChange={setIsPasteDropUploading}
+            />
 
           <InitialValuePlugin value={value} />
           <OnChangePlugin onChange={handleChange} />

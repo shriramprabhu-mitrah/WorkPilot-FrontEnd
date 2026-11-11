@@ -19,19 +19,28 @@ export const StatusColumnHeader = React.memo(function StatusColumnHeader({
 }: StatusColumnHeaderProps) {
   return (
     <div
-      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 dark:bg-gray-100 dark:text-slate-100 ${
+      className={`flex-shrink-0 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
         isCollapsed ? 'w-[60px]' : 'w-[240px] sm:w-[260px]'
       }`}
     >
       {!isCollapsed ? (
-        <div className="p-3 flex items-center gap-2 dark:bg-gray-100">
+        // Entire header row is the pill
+        <div
+          className="m-2 flex items-center gap-2 px-3 py-2 rounded-xl border shadow-sm"
+          style={{
+            color: status.color,
+            borderColor: `${status.color}55`,
+            backgroundColor: `${status.color}10`,
+          }}
+        >
           <button
             onClick={() => toggleStatusCollapse(status.id)}
-            className="flex-shrink-0 w-5 h-5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 rounded transition-all duration-200"
+            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded hover:opacity-70 active:scale-95 transition-all duration-200"
             title="Collapse column"
           >
             <svg
-              className="w-4 h-4 text-gray-600 dark:text-slate-300 transition-transform duration-300 ease-in-out rotate-90"
+              className="w-4 h-4 transition-transform duration-300 ease-in-out rotate-90"
+              style={{ color: status.color }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -45,11 +54,14 @@ export const StatusColumnHeader = React.memo(function StatusColumnHeader({
             style={{ backgroundColor: status.color }}
           />
 
-          <span className="text-sm font-semibold text-gray-700 dark:text-slate-100 truncate">
+          <span className="text-sm font-bold truncate flex-1">
             {status.name}
           </span>
 
-          <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 font-medium">
+          <span
+            className="text-xs font-medium flex-shrink-0"
+            style={{ color: `${status.color}99` }}
+          >
             {taskCount}
           </span>
         </div>

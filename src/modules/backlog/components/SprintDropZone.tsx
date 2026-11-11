@@ -84,21 +84,16 @@ export const SprintDropZone = ({
   } = useGetSprintOrphanTasks(projectId, sprint.id, !!projectId && canViewTasks && isOpen);
 
   // IntersectionObserver refs for infinite scroll
-  const storiesSentinelRef = useRef<HTMLDivElement>(null);
-  const tasksSentinelRef = useRef<HTMLDivElement>(null);
   const storiesScrollRef = useRef<HTMLDivElement>(null);
   const tasksScrollRef = useRef<HTMLDivElement>(null);
   // const [completeSprint, setCompleteSprint] = useState<SprintDetail | null>(null);
 
-  // Infinite scroll for user stories
-  const handleStoriesIntersect = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (
-        entries[0]?.isIntersecting &&
-        hasNextStories &&
-        !isFetchingNextStories &&
-        !isLoadingStories
-      ) {
+  // Infinite scroll for user stories (scroll handler)
+  const handleStoriesScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const el = e.currentTarget;
+      const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+      if (nearBottom && hasNextStories && !isFetchingNextStories && !isLoadingStories) {
         fetchNextStories();
       }
     },
@@ -106,40 +101,40 @@ export const SprintDropZone = ({
   );
 
   useEffect(() => {
-    const sentinel = storiesSentinelRef.current;
-    const scrollContainer = storiesScrollRef.current;
-    if (!sentinel || !scrollContainer || !isOpen || !hasNextStories) return;
+    const el = storiesScrollRef.current;
+    if (!el || !isOpen || !hasNextStories || isFetchingNextStories) return;
+    if (el.scrollHeight <= el.clientHeight) {
+      fetchNextStories();
+    }
+  }, [sprintStories.length, isOpen, hasNextStories, isFetchingNextStories, fetchNextStories]);
 
-    const observer = new IntersectionObserver(handleStoriesIntersect, {
-      root: scrollContainer,
-      rootMargin: '100px',
-    });
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleStoriesIntersect, isOpen, hasNextStories]);
-
-  // Infinite scroll for orphan tasks
-  const handleTasksIntersect = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (entries[0]?.isIntersecting && hasNextTasks && !isFetchingNextTasks && !isLoadingTasks) {
+  // Infinite scroll for orphan tasks (scroll handler)
+  const handleTasksScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const el = e.currentTarget;
+      const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+      if (nearBottom && hasNextTasks && !isFetchingNextTasks && !isLoadingTasks) {
         fetchNextTasks();
       }
     },
     [hasNextTasks, isFetchingNextTasks, isLoadingTasks, fetchNextTasks]
   );
 
+  // If the list is too short to scroll, auto-load the next page
   useEffect(() => {
-    const sentinel = tasksSentinelRef.current;
-    const scrollContainer = tasksScrollRef.current;
-    if (!sentinel || !scrollContainer || !isOpen || !isDirectTasksOpen || !hasNextTasks) return;
-
-    const observer = new IntersectionObserver(handleTasksIntersect, {
-      root: scrollContainer,
-      rootMargin: '100px',
-    });
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleTasksIntersect, isOpen, isDirectTasksOpen, hasNextTasks]);
+    const el = tasksScrollRef.current;
+    if (!el || !isOpen || !isDirectTasksOpen || !hasNextTasks || isFetchingNextTasks) return;
+    if (el.scrollHeight <= el.clientHeight) {
+      fetchNextTasks();
+    }
+  }, [
+    directSprintTasks.length,
+    isOpen,
+    isDirectTasksOpen,
+    hasNextTasks,
+    isFetchingNextTasks,
+    fetchNextTasks,
+  ]);
 
   const isLoading = isLoadingStories || isLoadingTasks;
   const storiesCount = sprint.total_stories ?? totalStories ?? sprintStories.length;
@@ -160,16 +155,18 @@ export const SprintDropZone = ({
     <div
       ref={setSprintDropRef}
       data-sprint-drop-id={sprint.id}
-      className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${isOver
+      className={`rounded-xl border overflow-hidden mb-3 transition-all duration-200 ${
+        isOver
           ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/30 shadow-xl ring-2 ring-blue-300 ring-opacity-50 scale-[1.02]'
           : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'
-        }`}
+      }`}
     >
       <div
-        className={`group flex items-center gap-3 px-4 py-3 cursor-pointer select-none rounded-xl transition-all duration-200 border ${isOver
+        className={`group flex items-center gap-3 px-4 py-3 cursor-pointer select-none rounded-xl transition-all duration-200 border ${
+          isOver
             ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 shadow-sm'
             : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700/60 hover:border-gray-200 dark:hover:border-slate-600 hover:shadow-xs'
-          }`}
+        }`}
         onClick={() => setIsOpen((v) => !v)}
       >
         <span
@@ -189,21 +186,23 @@ export const SprintDropZone = ({
               e.stopPropagation();
               push(`/projects/sprints/tasks?sprintId=${sprint.id}&projectId=${projectId}`);
             }}
-            className={`font-semibold text-sm truncate transition-colors ${isOver
+            className={`font-semibold text-sm truncate transition-colors ${
+              isOver
                 ? 'text-blue-700 dark:text-blue-300'
                 : 'text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
-              }`}
+            }`}
           >
             {sprint.name}
           </span>
 
           <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${sprint.status === 'active'
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${
+              sprint.status === 'active'
                 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50'
                 : sprint.status === 'completed'
                   ? 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'
                   : 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800/50'
-              }`}
+            }`}
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${sprint.status === 'active' ? 'bg-emerald-500 animate-pulse' : sprint.status === 'completed' ? 'bg-gray-400' : 'bg-sky-500'}`}
@@ -236,7 +235,11 @@ export const SprintDropZone = ({
             disabled={isCompletingSprint || isStartingSprint}
             onClick={(e) => {
               e.stopPropagation();
-              sprint.status === 'active' ? onCompleteSprint?.(sprint) : onStartSprint?.(sprint);
+              if (sprint.status === 'active') {
+                onCompleteSprint?.(sprint);
+              } else {
+                onStartSprint?.(sprint);
+              }
             }}
             className="ml-auto shrink-0 shadow-xs"
             isLoading={sprint.status === 'planned' && isStartingSprint}
@@ -289,6 +292,7 @@ export const SprintDropZone = ({
               ) : (
                 <div
                   ref={storiesScrollRef}
+                  onScroll={handleStoriesScroll}
                   className="max-h-[220px] overflow-y-auto [scrollbar-width:thin]"
                 >
                   {sprintStories.map((story) => (
@@ -300,15 +304,10 @@ export const SprintDropZone = ({
                     />
                   ))}
 
-                  {/* Infinite scroll sentinel for user stories */}
-                  {hasNextStories && (
-                    <div ref={storiesSentinelRef} className="flex items-center justify-center py-2">
-                      {isFetchingNextStories && (
-                        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-slate-500">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          <span>Loading more stories...</span>
-                        </div>
-                      )}
+                  {isFetchingNextStories && (
+                    <div className="flex items-center justify-center gap-2 py-2 text-xs text-gray-400 dark:text-slate-500">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Loading more stories...</span>
                     </div>
                   )}
                 </div>
@@ -318,17 +317,19 @@ export const SprintDropZone = ({
               <div
                 ref={setDirectTasksDropRef}
                 data-sprint-direct-id={sprint.id}
-                className={`border-t transition-colors ${isOverDirectTasks
+                className={`border-t transition-colors ${
+                  isOverDirectTasks
                     ? 'border-blue-400 bg-blue-50/50 dark:bg-blue-900/30 ring-1 ring-blue-300'
                     : 'border-gray-100 dark:border-slate-700/60'
-                  }`}
+                }`}
               >
                 <div
                   onClick={() => setIsDirectTasksOpen((v) => !v)}
-                  className={`px-3 sm:px-4 py-2 flex items-center justify-between cursor-pointer transition-colors select-none ${isOverDirectTasks
+                  className={`px-3 sm:px-4 py-2 flex items-center justify-between cursor-pointer transition-colors select-none ${
+                    isOverDirectTasks
                       ? 'bg-blue-100/60 dark:bg-blue-900/40'
                       : 'bg-gray-50/80 dark:bg-slate-700/40 hover:bg-gray-100/80 dark:hover:bg-slate-700/60'
-                    }`}
+                  }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400 dark:text-slate-500 shrink-0">
@@ -374,6 +375,7 @@ export const SprintDropZone = ({
                     ) : (
                       <div
                         ref={tasksScrollRef}
+                        onScroll={handleTasksScroll}
                         className="max-h-[220px] overflow-y-auto [scrollbar-width:thin]"
                       >
                         {directSprintTasks.map((task) => (
@@ -384,18 +386,10 @@ export const SprintDropZone = ({
                           />
                         ))}
 
-                        {/* Infinite scroll sentinel for orphan tasks */}
-                        {hasNextTasks && (
-                          <div
-                            ref={tasksSentinelRef}
-                            className="flex items-center justify-center py-2"
-                          >
-                            {isFetchingNextTasks && (
-                              <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-slate-500">
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                                <span>Loading more tasks...</span>
-                              </div>
-                            )}
+                        {isFetchingNextTasks && (
+                          <div className="flex items-center justify-center gap-2 py-2 text-xs text-gray-400 dark:text-slate-500">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Loading more tasks...</span>
                           </div>
                         )}
                       </div>

@@ -2,7 +2,7 @@ interface AssigneeMember {
   id?: string;
   user_id?: string;
   full_name?: string;
-  color?: string;
+  color?: string | null;
   user?: {
     id?: string;
     full_name?: string;
@@ -22,35 +22,48 @@ export function AssigneeAvatars({
   toggleAssigneeFilter,
   getInitials,
 }: AssigneeAvatarsProps) {
+  const visibleMembers = displayMembers.slice(0, 5);
+  const remainingCount = displayMembers.length - 5;
+
   return (
-    <div className="flex -space-x-2">
-      {displayMembers.length > 0 ? (
-        displayMembers.slice(0, 5).map((member) => {
+    <div className="flex items-center">
+      <div className="flex -space-x-2">
+        {visibleMembers.map((member, index) => {
           const memberName = member.full_name || member.user?.full_name || 'Unknown';
-
           const userId = member.user_id || member.user?.id || member.id || '';
-
-          const initials = getInitials(memberName);
           const isSelected = assigneeIdFilter.includes(userId);
 
           return (
             <button
-              key={member.id || member.user_id || member.user?.id}
+              key={userId || index}
               type="button"
               onClick={() => toggleAssigneeFilter(userId, memberName)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110 cursor-pointer ${
-                isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white'
+              className={`relative flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold text-white transition-all hover:scale-110 sm:h-8 sm:w-8 ${
+                isSelected
+                  ? 'border-blue-500 ring-2 ring-blue-300'
+                  : 'border-white dark:border-slate-900'
               }`}
-              style={{ backgroundColor: member.color }}
+              style={{
+                zIndex: visibleMembers.length - index,
+                backgroundColor: member.color || '#64748b',
+              }}
               title={`${memberName}${isSelected ? ' (filtering)' : ''}`}
             >
-              {initials}
+              {getInitials(memberName)}
             </button>
           );
-        })
-      ) : (
-        <span className="text-xs text-gray-400 dark:text-gray-500">No team members</span>
-      )}
+        })}
+
+        {remainingCount > 0 && (
+          <div
+            className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 dark:border-slate-900 dark:bg-slate-700 dark:text-slate-200 sm:h-8 sm:w-8"
+            style={{ zIndex: 0 }}
+            title={`${remainingCount} more members`}
+          >
+            +{remainingCount}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

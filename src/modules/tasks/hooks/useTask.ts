@@ -49,21 +49,17 @@ export const useGetSprintOrphanTasks = (projectId: string, sprintId: string, ena
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
-      const items = lastPage?.data ?? [];
-      // If no items returned or less than page size, no more pages exist
-      if (items.length === 0 || items.length < SPRINT_PAGE_SIZE) {
-        return undefined;
-      }
       const meta = lastPage?.meta;
-      if (meta) {
-        const hasNext = meta.has_next ?? meta.has_next_page ?? meta.hasNextPage;
-        if (hasNext === false) return undefined;
-        const totalPages = meta.total_pages ?? meta.totalPages;
-        const currentPage = meta.page ?? allPages.length;
-        if (totalPages && Number(currentPage) >= Number(totalPages)) return undefined;
-        return Number(currentPage) + 1;
+      const items = lastPage?.data ?? [];
+      if (meta?.has_next !== undefined) {
+        return meta.has_next ? allPages.length + 1 : undefined;
       }
-      return allPages.length + 1;
+      const total = meta?.total_items ?? meta?.totalItems;
+      if (total !== undefined) {
+        const loaded = allPages.reduce((sum, p) => sum + (p.data?.length ?? 0), 0);
+        return loaded < Number(total) ? allPages.length + 1 : undefined;
+      }
+      return items.length < SPRINT_PAGE_SIZE ? undefined : allPages.length + 1;
     },
     enabled: enabled && !!projectId && !!sprintId,
   });

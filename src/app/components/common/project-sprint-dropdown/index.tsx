@@ -93,7 +93,6 @@ export const ProjectSprintDropdowns = ({
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSprints([]);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSprint('');
     }
   }, [selectedProject]);
