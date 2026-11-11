@@ -321,6 +321,7 @@ export const KanbanBoardTemplate = () => {
           optimisticUpdates={optimisticUpdates}
           pageFilters={pageFilters}
           scrollContainerRef={scrollContainerRef}
+          handleOpenCreateTaskForStory={handleOpenCreateTaskForStory}
         />
       )}
 

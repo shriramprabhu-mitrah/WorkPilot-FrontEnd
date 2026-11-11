@@ -40,6 +40,13 @@ export const useProcessedStories = ({
       const hasMoreByStatus = new Map<string, boolean>(
         story.statuses.map((col) => [col.status_id, col.meta?.has_next ?? false])
       );
+      // Real total task count per status cell from the API (not just the loaded page)
+      const taskCountByStatus = new Map<string, number>(
+        story.statuses.map((col) => [
+          col.status_id,
+          col.task_count ?? col.meta?.total ?? 0,
+        ])
+      );
       const tasksByStatus = story.statuses.reduce<Map<string, KanbanTask[]>>((acc, statusCol) => {
         const tasks = allStoryTasks
           .filter((task) => {
@@ -87,7 +94,7 @@ export const useProcessedStories = ({
         return acc;
       }, new Map());
 
-      return { ...story, tasksByStatus, hasMoreByStatus, total_tasks: story.total_tasks ?? 0 };
+      return { ...story, tasksByStatus, hasMoreByStatus, taskCountByStatus, total_tasks: story.total_tasks ?? 0 };
     });
 
     const storylessStatusColumns = getStorylessColumns(storylessStories);
@@ -120,6 +127,12 @@ export const useProcessedStories = ({
     const storylessHasMoreByStatus = new Map<string, boolean>(
       storylessStatusColumns.map((col) => [col.status_id, col.meta?.has_next ?? false])
     );
+    const storylessTaskCountByStatus = new Map<string, number>(
+      storylessStatusColumns.map((col) => [
+        col.status_id,
+        col.task_count ?? col.meta?.total ?? 0,
+      ])
+    );
 
     const directSprintTotal = storylessStatusColumns.reduce(
       (sum, col) => sum + (col.task_count ?? 0),
@@ -138,6 +151,7 @@ export const useProcessedStories = ({
         statuses: [],
         tasksByStatus: storylessTasksByStatus,
         hasMoreByStatus: storylessHasMoreByStatus,
+        taskCountByStatus: storylessTaskCountByStatus,
         total_tasks: directSprintTotal,
       } as unknown as (typeof mappedStories)[0]);
     }

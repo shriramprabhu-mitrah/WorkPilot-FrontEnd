@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Layers } from 'lucide-react';
+import { Layers, Plus } from 'lucide-react';
 import { UserStoryResponse } from '@/src/types/userstories';
 import { CustomStatus } from '@/src/types/colors';
 import { KanbanTask } from '@/src/types/board';
@@ -18,11 +18,13 @@ interface UserStoryRowProps {
   onRefetch: () => void;
   collapsedStatuses: Set<string>;
   hasMoreByStatus: Map<string, boolean>;
+  taskCountByStatus: Map<string, number>;
   projectId: string;
   mapTask: MapTaskFn;
   allTasksRef: React.MutableRefObject<Map<string, KanbanTask>>;
   optimisticUpdates: Map<string, OptimisticUpdate>;
   pageFilters: BoardPageFilters;
+  onAddTask?: (storyId: string) => void;
 }
 
 const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
@@ -34,11 +36,13 @@ const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
   onRefetch,
   collapsedStatuses,
   hasMoreByStatus,
+  taskCountByStatus,
   projectId,
   mapTask,
   allTasksRef,
   optimisticUpdates,
   pageFilters,
+  onAddTask,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showStoryPopup, setShowStoryPopup] = useState(false);
@@ -210,6 +214,22 @@ const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
                   document.body
                 )}
             </div>
+
+            {/* Add Task button: in the flex flow, after the title block (no overlap) */}
+            {!isSpecialStory && onAddTask && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddTask(story.id);
+                }}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm hover:shadow-md active:scale-95"
+                aria-label="Add task to story"
+                title="Add task"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           {/* Empty status columns for header row */}
@@ -230,6 +250,7 @@ const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
           const tasks = story.tasksByStatus.get(status.id) || [];
           const isOver = overCell?.storyId === story.id && overCell?.statusId === status.id;
           const isCollapsed = collapsedStatuses.has(status.id);
+          const totalCount = taskCountByStatus.get(status.id) ?? tasks.length;
 
           return (
             <div
@@ -275,12 +296,12 @@ const UserStoryRowComponent: React.FC<UserStoryRowProps> = ({
                 <div className="overflow-hidden min-h-0">
                   <div className="h-[52px] p-2 flex items-center justify-center">
                     <span className="text-xs font-medium text-gray-500">
-                      {tasks.length > 0 ? (
+                      {totalCount > 0 ? (
                         isCollapsed ? (
-                          tasks.length
+                          totalCount
                         ) : (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+                            {totalCount} {totalCount === 1 ? 'task' : 'tasks'}
                           </span>
                         )
                       ) : (
@@ -309,11 +330,13 @@ export const UserStoryRow = React.memo(UserStoryRowComponent, (prev, next) => {
   if (prev.statuses !== next.statuses) return false;
   if (prev.collapsedStatuses !== next.collapsedStatuses) return false;
   if (prev.hasMoreByStatus !== next.hasMoreByStatus) return false;
+  if (prev.taskCountByStatus !== next.taskCountByStatus) return false;
   if (prev.optimisticUpdates !== next.optimisticUpdates) return false;
   if (prev.projectId !== next.projectId) return false;
   if (prev.pageFilters !== next.pageFilters) return false;
   if (prev.onUserStoryClick !== next.onUserStoryClick) return false;
   if (prev.onTaskClick !== next.onTaskClick) return false;
   if (prev.onRefetch !== next.onRefetch) return false;
+  if (prev.onAddTask !== next.onAddTask) return false;
   return true;
 });

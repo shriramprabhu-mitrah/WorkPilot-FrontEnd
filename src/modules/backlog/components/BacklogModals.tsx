@@ -59,7 +59,7 @@ export const BacklogModals = ({
     m.setShowAddTask(false);
     m.setTaskUserStoryId('');
     setMemberSearch('');
-  }, [m.setShowAddTask, m.setTaskUserStoryId]);
+  }, [m]);
 
   const sprintStories = m.completeTarget
     ? userStories.filter((s) => s.sprint_id === m.completeTarget?.id)
@@ -112,8 +112,7 @@ export const BacklogModals = ({
             try {
               await m.startSprintAsync({ sprintId: m.startTarget!.id, payload });
               m.setStartTarget(null);
-            } catch {
-            }
+            } catch {}
           }}
         />
       )}

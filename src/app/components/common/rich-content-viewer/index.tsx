@@ -15,10 +15,8 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
   content,
   className = '',
   canEdit = false,
-  canDelete = false,
   canDownload = false,
   onEditImage,
-  onDeleteImage,
   onDownloadImage,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,181 +68,74 @@ export const RichContentViewer: React.FC<RichContentViewerProps> = ({
     });
   };
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Make all links open in new tab
-    const links = containerRef.current.querySelectorAll<HTMLAnchorElement>('a');
-    links.forEach((link) => {
+    const root = containerRef.current;
+    if (!root) return;
+  
+    root.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
     });
-
-    const images = containerRef.current.querySelectorAll<HTMLImageElement>('img');
-
-    images.forEach((img) => {
-      if (img.parentElement?.classList.contains('img-overlay-wrapper')) {
-        return;
-      }
-
+  
+    const btn = 'p-1 text-white hover:text-blue-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
+    const svg = (p: string) =>
+      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  
+    root.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+      if (img.parentElement?.classList.contains('img-overlay-wrapper')) return;
+  
       const wrapper = document.createElement('div');
-
       wrapper.className = 'img-overlay-wrapper relative inline-block group/img my-2 max-w-full';
-
-      // Wrap image
       img.parentNode?.insertBefore(wrapper, img);
       wrapper.appendChild(img);
-
-      const attachmentId = extractAttachmentId(img);
       img.style.cursor = 'pointer';
-
-      img.onclick = (e) => {
-        e.stopPropagation();
-        openImagePreview(img);
-      };
-      // Create overlay only when existing image actions are available
-      if (canEdit || canDelete || canDownload) {
-        const overlay = document.createElement('div');
-
-        overlay.className =
-          'absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-opacity bg-black/60 backdrop-blur-xs p-1 rounded-md shadow-md z-10';
-
-        // Preview button
-        const previewBtn = document.createElement('button');
-
-        previewBtn.type = 'button';
-        previewBtn.title = 'Preview Image';
-
-        previewBtn.className =
-          'p-1 text-white hover:text-blue-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
-
-        previewBtn.innerHTML = `
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
-    <circle cx="12" cy="12" r="3"/>
-  </svg>
-`;
-
-        previewBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openImagePreview(img);
-        };
-
-        overlay.appendChild(previewBtn);
-
-        // Download button - EXISTING BEHAVIOR
-        if (canDownload && attachmentId) {
-          const downloadBtn = document.createElement('button');
-
-          downloadBtn.type = 'button';
-          downloadBtn.title = 'Download Image';
-
-          downloadBtn.className =
-            'p-1 text-white hover:text-green-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
-
-          downloadBtn.innerHTML = `
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-        `;
-
-          downloadBtn.onclick = (e) => {
-            e.stopPropagation();
-            onDownloadImage?.(attachmentId);
-          };
-
-          overlay.appendChild(downloadBtn);
-        }
-
-        // Edit button - EXISTING BEHAVIOR
-        if (canEdit && attachmentId) {
-          const editBtn = document.createElement('button');
-
-          editBtn.type = 'button';
-          editBtn.title = 'Edit / Replace Image';
-
-          editBtn.className =
-            'p-1 text-white hover:text-blue-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
-
-          editBtn.innerHTML = `
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-          </svg>
-        `;
-
-          editBtn.onclick = (e) => {
-            e.stopPropagation();
-            onEditImage?.(img.src, attachmentId);
-          };
-
-          overlay.appendChild(editBtn);
-        }
-
-        // Delete button
-        // if (canDelete && attachmentId) {
-        //   const deleteBtn = document.createElement('button');
-        //   deleteBtn.type = 'button';
-        //   deleteBtn.title = 'Delete Image';
-        //   deleteBtn.className =
-        //     'p-1 text-white hover:text-red-400 hover:bg-white/10 rounded transition-colors cursor-pointer';
-        //   deleteBtn.innerHTML = `
-        //     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        //       <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        //     </svg>
-        //   `;
-        //   deleteBtn.onclick = (e) => {
-        //     e.stopPropagation();
-        //     onDeleteImage?.(attachmentId);
-        //   };
-        //   overlay.appendChild(deleteBtn);
-        // }
-        wrapper.appendChild(overlay);
-      }
+  
+      const overlay = document.createElement('div');
+      overlay.className =
+        'absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-opacity bg-black/60 p-1 rounded-md shadow-md z-10';
+      overlay.innerHTML =
+        `<button type="button" data-action="preview" title="Preview Image" class="${btn}">${svg('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>')}</button>` +
+        (canDownload
+          ? `<button type="button" data-action="download" title="Download Image" class="${btn}">${svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}</button>`
+          : '') +
+        (canEdit
+          ? `<button type="button" data-action="edit" title="Edit / Replace Image" class="${btn}">${svg('<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>')}</button>`
+          : '');
+      wrapper.appendChild(overlay);
     });
-  }, [
-    content,
-    canEdit,
-    canDelete,
-    canDownload,
-    onEditImage,
-    onDeleteImage,
-    onDownloadImage,
-    selectedPreviewImage,
-  ]);
+  });
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+  
+    const href = target.closest('a')?.getAttribute('href');
+    if (href) {
+      e.preventDefault();
+      window.open(href, '_blank', 'noopener,noreferrer');
+      return;
+    }
+  
+    const img = target.closest('.img-overlay-wrapper')?.querySelector('img');
+    if (!img) return;
+    e.preventDefault();
+  
+    const action = target.closest<HTMLElement>('[data-action]')?.dataset.action ?? 'preview';
+    const attachmentId = extractAttachmentId(img);
+  
+    if (action === 'download') {
+      if (attachmentId) onDownloadImage?.(attachmentId);
+    } else if (action === 'edit') {
+      if (attachmentId) onEditImage?.(img.src, attachmentId);
+    } else {
+      openImagePreview(img);
+    }
+  };
 
   return (
     <>
       <div
         ref={containerRef}
+        onMouseDown={handleMouseDown}
         className={`rich-content-viewer [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:cursor-pointer hover:[&_a]:text-blue-700 hover:[&_a]:dark:text-blue-300 ${className}`}
         dangerouslySetInnerHTML={{ __html: content }}
       />

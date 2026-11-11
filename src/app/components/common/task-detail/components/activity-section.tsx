@@ -377,11 +377,11 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
                     isReply
                       ? 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700'
                       : 'bg-gray-50 dark:bg-slate-800'
-                  } rounded-lg px-3 py-2`}
+                  } rounded-lg px-3 py-2 relative group`}
                 >
                   <RichContentViewer
                     content={c.content}
-                    className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700`}
+                    className={`${isReply ? 'text-xs' : 'text-sm'} text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_li]:my-0.5`}
                     canDownload={true}
                     onDownloadImage={(attachmentId) => handleDownloadImage(attachmentId, c.id)}
                   />
@@ -589,49 +589,11 @@ export const ActivitySection = ({ taskId, projectId }: ActivitySectionProps) => 
 
                   let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                   let changeText: React.ReactNode = null;
-                  let activityIcon: React.ReactNode = null;
-                  let badgeColor =
+                  const badgeColor =
                     'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
 
                   // Determine activity type and icon
-                  const resourceType = activity.resource_type;
                   const action = activity.action.toLowerCase();
-
-                  if (action === 'created') {
-                    activityIcon = (
-                      <CornerDownRight size={12} className="text-green-600 dark:text-green-400" />
-                    );
-                    badgeColor =
-                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-                  } else if (action === 'updated' || action === 'changed') {
-                    activityIcon = (
-                      <Pencil size={12} className="text-blue-600 dark:text-blue-400" />
-                    );
-                    badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
-                  } else if (action === 'deleted') {
-                    activityIcon = <Trash2 size={12} className="text-red-600 dark:text-red-400" />;
-                    badgeColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
-                  } else if (resourceType === 'comment') {
-                    activityIcon = (
-                      <CornerDownRight size={12} className="text-purple-600 dark:text-purple-400" />
-                    );
-                    badgeColor =
-                      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
-                  } else if (
-                    resourceType === 'user_story_attachment' ||
-                    resourceType === 'task_attachment'
-                  ) {
-                    activityIcon = (
-                      <CornerDownRight size={12} className="text-amber-600 dark:text-amber-400" />
-                    );
-                    badgeColor =
-                      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
-                  } else {
-                    activityIcon = (
-                      <CornerDownRight size={12} className="text-gray-600 dark:text-gray-400" />
-                    );
-                  }
-
                   if (activity.details) {
                     const changeMatch = activity.details.match(
                       /:\s*(.+) changed from (.+) to (.+)$/

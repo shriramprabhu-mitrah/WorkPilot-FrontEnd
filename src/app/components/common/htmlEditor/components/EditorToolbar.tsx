@@ -14,7 +14,6 @@ import {
   Redo2,
   Smile,
   ImageIcon,
-  ChevronDown,
 } from 'lucide-react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
@@ -37,9 +36,11 @@ import { INSERT_IMAGE_COMMAND } from '../nodes/ImageNode';
 
 interface EditorToolbarProps {
   onImageUpload?: (file: File) => Promise<string>;
+  isUploadingImage?: boolean;
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
-export function EditorToolbar({ onImageUpload }: EditorToolbarProps) {
+export function EditorToolbar({ onImageUpload, isUploadingImage: externalIsUploading, onUploadingChange }: EditorToolbarProps) {
   const [editor] = useLexicalComposerContext();
   const { resolvedTheme } = useTheme();
   const emojiTheme = resolvedTheme === 'dark' ? Theme.DARK : Theme.LIGHT;
@@ -53,8 +54,16 @@ export function EditorToolbar({ onImageUpload }: EditorToolbarProps) {
   const [isUnderline, setIsUnderline] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showCodeToolbar, setShowCodeToolbar] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingImage, setIsUploadingImageInternal] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+
+  // Merge internal (file-pick) and external (paste/drop) uploading states
+  const isAnyImageUploading = isUploadingImage || (externalIsUploading ?? false);
+
+  const setIsUploadingImage = (val: boolean) => {
+    setIsUploadingImageInternal(val);
+    onUploadingChange?.(val);
+  };
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -205,10 +214,6 @@ export function EditorToolbar({ onImageUpload }: EditorToolbarProps) {
       ref={toolbarRef}
       className="relative z-20 flex min-h-12 items-center gap-1 overflow-visible border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2"
     >
-      <ToolbarButton title="Text style" onClick={() => {}}>
-        <span className="text-sm font-medium">T</span>
-        <ChevronDown size={12} className="ml-0.5" />
-      </ToolbarButton>
 
       <ToolbarButton title="Bold" active={isBold} onClick={() => formatText('bold')}>
         <Bold size={16} />
@@ -272,13 +277,13 @@ export function EditorToolbar({ onImageUpload }: EditorToolbarProps) {
         />
         <ToolbarButton
           title="Image"
-          disabled={isUploadingImage}
+          disabled={isAnyImageUploading}
           onClick={() => {
             setImageError(null);
             imageInputRef.current?.click();
           }}
         >
-          {isUploadingImage ? (
+          {isAnyImageUploading ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
           ) : (
             <ImageIcon size={16} />

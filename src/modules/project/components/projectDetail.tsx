@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, X, Pencil, Trash2, Check } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import { Project, Sprint } from '../types/project';
 import AddSprintModal from './addSprint';
 import EditProjectModal from './editProjectModal';
 import { WpButton } from '@/src/app/components/common/button';
-import { WpMultiSelect } from '@/src/app/components/common/multi-select';
 import { useGetOrganizationUsers } from '@/src/modules/organization/hooks/useOrganization';
 import { useGetSprintUserStories } from '../../tasks/hooks/useUserStory';
-import Image from 'next/image';
 import {
   useAddProjectMembers,
   useDeleteProject,
@@ -24,14 +22,16 @@ import { useAppSelector, useAppDispatch } from '@/src/store';
 import { AddProjectMembersPayload, ProjectDetailMember, SprintDetail } from '@/src/types/project';
 import { setSelectedProject } from '@/src/store/slices/project';
 import { useOrgNavigation } from '@/src/hooks/useOrgNavigation';
-import { WpDropdown } from '@/src/app/components/common/dropdown';
 import { projectService } from '@/src/services/project';
 import StartSprintModal from '../../backlog/components/startSprintModal';
 import CompleteSprintModal from '../../backlog/components/CompleteSprint';
 import { sprintService } from '@/src/services/sprint';
 import { logger } from '@/src/lib/utils/logger';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { getInitials } from '@/src/app/components/common/format';
+import SprintList from './sprintList';
+import ProjectInfoCard from './projectInfoCard';
+import AddMemberModal from './addMemberModal';
+import ViewMembersModal from './viewMembersModal';
 interface ProjectDetailProps {
   project: Project & { id?: string };
 }
@@ -320,6 +320,15 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   const inProgressUserStories = sprintUserStories.filter(
     (story) => story.status === 'in_progress'
   ).length;
+
+  const handleStartEditMember = (member: ProjectDetailMember) => {
+    setEditingMemberId(member.user_id);
+    const matchingRole = rolesResponse?.data?.find(
+      (r) => r.id === member.role || r.name.toLowerCase() === member.role?.toLowerCase()
+    );
+    setSelectedRole(matchingRole?.id || member.role || '');
+  };
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -335,162 +344,20 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       </div>
 
       {/* Project info card */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        {isUpdatingProject && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm dark:bg-slate-900/70">
-            <div className="flex flex-col items-center gap-2">
-              <div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" />
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
-                Updating project...
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white shadow-sm">
-              {project?.initials}
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-xl font-bold text-gray-900 dark:text-slate-100">
-                  {project?.name}
-                </h1>
-
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  {project?.status}
-                </span>
-              </div>
-
-              <p className="mt-1 line-clamp-2 max-w-2xl text-sm text-gray-500 dark:text-slate-400">
-                {project?.description || 'No project description available'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            {canEditProject && (
-              <WpButton
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowEditModal(true)}
-                className="!h-9 !w-9 !p-0"
-                aria-label="Edit project"
-              >
-                <Pencil size={16} />
-              </WpButton>
-            )}
-
-            {canDeleteProject && (
-              <WpButton
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="!h-9 !w-9 !p-0 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                aria-label="Delete project"
-              >
-                <Trash2 size={16} />
-              </WpButton>
-            )}
-          </div>
-        </div>
-
-        <div className="border-t border-gray-100 dark:border-slate-800" />
-
-        <div className="grid grid-cols-2 divide-x divide-y divide-gray-100 dark:divide-slate-800 sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
-          <div className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-              Created
-            </p>
-            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
-              {project?.date || '—'}
-            </p>
-          </div>
-
-          <div className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-              Total Sprints
-            </p>
-            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
-              {sprints?.length ?? 0}
-            </p>
-          </div>
-
-          <div className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-              Project Owner
-            </p>
-            <p className="mt-2 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
-              {selectedApiProject?.owner || project?.owner || 'Not assigned'}
-            </p>
-          </div>
-
-          <div className="p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-              Team Size
-            </p>
-            <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
-              {selectedApiProject?.members?.length || project?.members?.length || 0}
-              <span className="ml-1 font-normal text-gray-500 dark:text-slate-400">members</span>
-            </p>
-          </div>
-
-          <div className="col-span-2 p-5 sm:col-span-1">
-            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-              Team Members
-            </p>
-
-            {isRefreshingMembers ? (
-              <div className="flex h-8 items-center gap-2">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-r-transparent" />
-                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                  Updating...
-                </span>
-              </div>
-            ) : selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {selectedApiProject.members.slice(0, 5).map((member, index) => (
-                    <div
-                      key={member.user_id}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-sm dark:border-slate-900"
-                      style={{
-                        zIndex: 5 - index,
-                        backgroundColor: member.color || '#64748b',
-                      }}
-                      title={member.full_name || member.username}
-                    >
-                      {getInitials(member.full_name || member.username)}
-                    </div>
-                  ))}
-
-                  {selectedApiProject.members.length > 5 && (
-                    <div
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-[10px] font-bold text-gray-600 shadow-sm dark:border-slate-900 dark:bg-slate-700 dark:text-slate-200"
-                      title={`${selectedApiProject.members.length - 5} more members`}
-                    >
-                      +{selectedApiProject.members.length - 5}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowViewMembersModal(true)}
-                  className="text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  View
-                </button>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-slate-400">No members</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <ProjectInfoCard
+        project={project}
+        sprintsCount={sprints?.length ?? 0}
+        ownerName={selectedApiProject?.owner || project?.owner || 'Not assigned'}
+        teamSize={selectedApiProject?.members?.length || project?.members?.length || 0}
+        members={selectedApiProject?.members}
+        isUpdatingProject={isUpdatingProject}
+        isRefreshingMembers={isRefreshingMembers}
+        canEditProject={canEditProject}
+        canDeleteProject={canDeleteProject}
+        onEdit={() => setShowEditModal(true)}
+        onDelete={() => setShowDeleteConfirm(true)}
+        onViewMembers={() => setShowViewMembersModal(true)}
+      />
 
       {/* Sprints section header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -516,209 +383,27 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         </div>
       </div>
 
-      {/* Sprint list */}
-      <div className="mt-5 space-y-3">
-        {isLoadingSprints || isRefreshingSprints ? (
-          <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-            <div className="text-center">
-              <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" />
-
-              <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
-                {isRefreshingSprints ? 'Loading updated sprints...' : 'Loading sprint details...'}
-              </p>
-            </div>
-          </div>
-        ) : sprints.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white px-6 py-16 dark:border-slate-700 dark:bg-slate-900">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="mb-2 rounded-2xl bg-blue-50 p-2 dark:bg-blue-900/20">
-                <Image
-                  src="/images/agile method-amico.svg"
-                  alt="No Sprints"
-                  width={240}
-                  height={240}
-                  className="h-60 w-60"
-                />
-              </div>
-
-              <h2 className="mt-5 text-2xl font-bold text-gray-900 dark:text-slate-200">
-                No Sprints Found
-              </h2>
-
-              <p className="mt-2 max-w-md text-sm text-gray-500 dark:text-slate-400">
-                No sprints have been created for this project yet.
-              </p>
-
-              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
-                Create your first sprint to start planning and tracking work.
-              </p>
-
-              {canCreateSprint && (
-                <WpButton
-                  variant="primary"
-                  size="md"
-                  onClick={() => setShowAddSprintModal(true)}
-                  className="mt-7"
-                >
-                  + Add Sprint
-                </WpButton>
-              )}
-            </div>
-          </div>
-        ) : (
-          sprints.map((sprint) => {
-            const isExpanded = expandedSprint === sprint.id;
-
-            return (
-              <div
-                key={sprint.id}
-                className={`
-            overflow-hidden rounded-xl border bg-white
-            shadow-sm transition-all duration-200
-            dark:bg-slate-900
-            ${
-              isExpanded
-                ? 'border-blue-200 shadow-md dark:border-blue-900/60'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md dark:border-slate-700 dark:hover:border-slate-600'
-            }
-          `}
-              >
-                {/* Sprint header */}
-                <div className="flex w-full items-center justify-between gap-4 p-5">
-                  <button
-                    type="button"
-                    onClick={() => handleSprintClick(sprint)}
-                    className="group flex min-w-0 flex-1 items-start text-left"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3
-                          title={sprint.name}
-                          className="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-slate-200 dark:group-hover:text-blue-400"
-                        >
-                          {sprint.name}
-                        </h3>
-
-                        <span
-                          className={`
-                      shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold
-                      ${
-                        sprint.status === 'Active'
-                          ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                          : sprint.status === 'Completed'
-                            ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300'
-                            : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                      }
-                    `}
-                        >
-                          {sprint.status}
-                        </span>
-                      </div>
-
-                      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-slate-100">
-                        <span>{sprint.startDate || 'No start date'}</span>
-                        <span className="text-gray-300 dark:text-slate-100">→</span>
-                        <span>{sprint.endDate || 'No end date'}</span>
-                      </div>
-                    </div>
-                  </button>
-
-                  <div className="flex shrink-0 items-center gap-2">
-                    {sprint.status === 'Planned' && canEditSprint && (
-                      <WpButton
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedSprint(sprint);
-                          setShowStartSprintModal(true);
-                        }}
-                      >
-                        Start Sprint
-                      </WpButton>
-                    )}
-
-                    {sprint.status === 'Active' && canEditSprint && (
-                      <WpButton
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedSprint(sprint);
-                          setShowCompleteSprintModal(true);
-                        }}
-                      >
-                        Complete Sprint
-                      </WpButton>
-                    )}
-
-                    <button
-                      type="button"
-                      aria-label={isExpanded ? 'Collapse sprint' : 'Expand sprint'}
-                      onClick={() => setExpandedSprint(isExpanded ? null : sprint.id)}
-                      className="
-                  rounded-lg p-2
-                  text-gray-400 transition-all
-                  hover:bg-gray-100 hover:text-gray-700
-                  dark:text-slate-400
-                  dark:hover:bg-slate-800
-                  dark:hover:text-slate-200
-                "
-                    >
-                      <ChevronDown
-                        size={18}
-                        className={`transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Expanded sprint details */}
-                {isExpanded && (
-                  <div className="border-t border-gray-100 bg-gray-50/70 p-5 dark:border-slate-700 dark:bg-slate-800/40">
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {/* Start Date */}
-                      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-                          Start Date
-                        </p>
-
-                        <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-200">
-                          {sprint.startDate || '-'}
-                        </p>
-                      </div>
-
-                      {/* End Date */}
-                      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-                          End Date
-                        </p>
-
-                        <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-200">
-                          {sprint.endDate || '-'}
-                        </p>
-                      </div>
-
-                      {/* Tasks */}
-                      <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-200">
-                          Tasks
-                        </p>
-
-                        <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-200">
-                          {sprint.tasks}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
+      <SprintList
+        sprints={sprints}
+        isLoading={isLoadingSprints || isRefreshingSprints}
+        isRefreshingSprints={isRefreshingSprints}
+        expandedSprint={expandedSprint}
+        canCreateSprint={canCreateSprint}
+        canEditSprint={canEditSprint}
+        onAddSprint={() => setShowAddSprintModal(true)}
+        onSprintClick={handleSprintClick}
+        onToggleExpand={(sprintId) =>
+          setExpandedSprint(expandedSprint === sprintId ? null : sprintId)
+        }
+        onStartSprint={(sprint) => {
+          setSelectedSprint(sprint);
+          setShowStartSprintModal(true);
+        }}
+        onCompleteSprint={(sprint) => {
+          setSelectedSprint(sprint);
+          setShowCompleteSprintModal(true);
+        }}
+      />
 
       {showAddSprintModal && (
         <AddSprintModal
@@ -767,117 +452,27 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
       )}
       {/* Add Member modal */}
       {showAddMemberModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="flex h-[600px] w-full max-w-lg flex-col rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                  Add Members
-                </h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
-                  Select members to add to this project.
-                </p>
-              </div>
-              <WpButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAddMemberModal(false)}
-                className="!p-2 text-gray-400 dark:text-slate-500"
-              >
-                <X size={17} />
-              </WpButton>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5">
-              <WpMultiSelect
-                label="Members"
-                options={memberOptions}
-                value={selectedMembers}
-                onChange={handleMemberChange}
-                onSearchChange={setMemberSearch}
-                isSearching={isUsersFetching}
-                serverSideSearch
-                placeholder={isUsersLoading ? 'Loading members...' : 'Search or select members'}
-                hint="Type to search, or pick from the dropdown"
-              />
-              <div className="mt-5 flex-1">
-                {selectedMembers.length > 0 ? (
-                  <>
-                    <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">
-                      Member Roles
-                    </p>
-                    <div className="space-y-3 pr-2">
-                      {selectedMembers.map((memberId) => {
-                        const member = memberOptions.find((m) => m.value === memberId);
-                        return (
-                          <div
-                            key={memberId}
-                            className="flex items-center rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-3"
-                          >
-                            <div className="w-40 text-sm font-medium text-gray-700 dark:text-slate-200">
-                              {member?.label}
-                            </div>
-                            <div className="flex-1 -mb-5">
-                              <WpDropdown
-                                options={roleOptions}
-                                value={memberRoles[memberId] || roleOptions[0]?.value}
-                                onChange={(value) =>
-                                  setMemberRoles((prev) => ({
-                                    ...prev,
-                                    [memberId]: value,
-                                  }))
-                                }
-                                disabled={isRolesLoading}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex h-full min-h-[260px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800">
-                    <div className="text-center">
-                      <p className="text-base font-medium text-gray-700 dark:text-slate-200">
-                        No members selected
-                      </p>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-                        {/* Select members above to assign project roles. */}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
-              <WpButton
-                type="button"
-                variant="secondary"
-                size="md"
-                onClick={() => {
-                  setShowAddMemberModal(false);
-                  setSelectedMembers([]);
-                }}
-                disabled={isAddingMembers}
-              >
-                Cancel
-              </WpButton>
-              <WpButton
-                type="button"
-                variant="primary"
-                size="md"
-                disabled={!selectedMembers.length || isAddingMembers}
-                onClick={handleAddMember}
-              >
-                {isAddingMembers
-                  ? 'Adding...'
-                  : `Add ${selectedMembers.length > 0 ? `${selectedMembers.length} ` : ''}Member${selectedMembers.length !== 1 ? 's' : ''}`}
-              </WpButton>
-            </div>
-          </div>
-        </div>
+        <AddMemberModal
+          memberOptions={memberOptions}
+          selectedMembers={selectedMembers}
+          memberRoles={memberRoles}
+          roleOptions={roleOptions}
+          isRolesLoading={isRolesLoading}
+          isUsersLoading={isUsersLoading}
+          isUsersFetching={isUsersFetching}
+          isAddingMembers={isAddingMembers}
+          onMemberChange={handleMemberChange}
+          onSearchChange={setMemberSearch}
+          onRoleChange={(memberId, roleId) =>
+            setMemberRoles((prev) => ({ ...prev, [memberId]: roleId }))
+          }
+          onClose={() => setShowAddMemberModal(false)}
+          onCancel={() => {
+            setShowAddMemberModal(false);
+            setSelectedMembers([]);
+          }}
+          onSubmit={handleAddMember}
+        />
       )}
 
       {/* Delete project modal */}
@@ -930,192 +525,26 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
 
       {/* View members modal */}
       {showViewMembersModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-5">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                  Team Members
-                </h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-slate-100">
-                  {selectedApiProject?.members?.length || 0} members in this project
-                </p>
-              </div>
-              <WpButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowViewMembersModal(false)}
-                className="!p-2 text-gray-400 dark:text-slate-500"
-              >
-                <X size={17} />
-              </WpButton>
-            </div>
-            <div className="max-h-[60vh] overflow-y-auto overflow-x-visible p-5">
-              <div className="space-y-2">
-                {selectedApiProject?.members && selectedApiProject.members.length > 0 ? (
-                  selectedApiProject.members.map((member) => {
-                    // Check if this member is an org admin
-                    const memberIsOrgAdmin =
-                      member.role?.toLowerCase() === 'org_admin' ||
-                      member.role?.toLowerCase() === 'org admin' ||
-                      member.role?.toLowerCase() === 'organization admin' ||
-                      member.role?.toLowerCase().replace(/[\s_-]+/g, '') === 'orgadmin';
-
-                    // Org admins should not have edit/delete buttons for themselves
-                    const canEdit = !memberIsOrgAdmin && canManageProjects();
-                    const canDelete = !memberIsOrgAdmin && canManageProjects();
-
-                    return (
-                      <div
-                        key={member.user_id}
-                        className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-3 transition-all hover:border-gray-300 dark:hover:border-slate-600"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white`}
-                            style={{
-                              backgroundColor: member.color,
-                            }}
-                          >
-                            {getInitials(member.full_name || member.username)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
-                              {member.full_name || member.username}
-                            </p>
-                            {editingMemberId === member.user_id ? (
-                              <div className="mt-1 w-50 relative">
-                                <WpDropdown
-                                  options={roleOptions}
-                                  value={selectedRole}
-                                  onChange={(value) => setSelectedRole(value)}
-                                  placeholder={isRolesLoading ? 'Loading roles...' : 'Select Role'}
-                                  disabled={isRolesLoading}
-                                />
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-500 dark:text-slate-200 capitalize flex items-center gap-2">
-                                {updatingMemberId === member.user_id ? (
-                                  <>
-                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-                                    Updating...
-                                  </>
-                                ) : (
-                                  rolesResponse?.data?.find(
-                                    (r) =>
-                                      r.id === member.role ||
-                                      r.name.toLowerCase() === member.role?.toLowerCase()
-                                  )?.name || member.role?.replace('_', ' ')
-                                )}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {editingMemberId === member.user_id ? (
-                            <>
-                              <WpButton
-                                variant="ghost"
-                                size="sm"
-                                className="!p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-                                onClick={() => updateMember(member)}
-                                disabled={isUpdatingProjectRole}
-                              >
-                                <Check size={16} />
-                              </WpButton>
-                              <WpButton
-                                variant="ghost"
-                                size="sm"
-                                className="!p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700"
-                                onClick={() => {
-                                  setEditingMemberId(null);
-                                  setSelectedRole('');
-                                }}
-                                disabled={isUpdatingProjectRole}
-                              >
-                                <X size={16} />
-                              </WpButton>
-                              {canDelete && (
-                                <WpButton
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    setMemberToRemove({
-                                      userId: member.user_id,
-                                      name: member.full_name || member.username,
-                                    })
-                                  }
-                                  className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                  aria-label="Remove member"
-                                >
-                                  <Trash2 size={16} />
-                                </WpButton>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {canEdit && (
-                                <WpButton
-                                  variant="ghost"
-                                  size="sm"
-                                  className="!p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                  onClick={() => {
-                                    setEditingMemberId(member.user_id);
-                                    const matchingRole = rolesResponse?.data?.find(
-                                      (r) =>
-                                        r.id === member.role ||
-                                        r.name.toLowerCase() === member.role?.toLowerCase()
-                                    );
-                                    setSelectedRole(matchingRole?.id || member.role || '');
-                                  }}
-                                >
-                                  <Pencil size={16} />
-                                </WpButton>
-                              )}
-                              {canDelete && (
-                                <WpButton
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    setMemberToRemove({
-                                      userId: member.user_id,
-                                      name: member.full_name || member.username,
-                                    })
-                                  }
-                                  className="!p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                  aria-label="Remove member"
-                                >
-                                  <Trash2 size={16} />
-                                </WpButton>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-sm text-gray-500 dark:text-slate-400">
-                      No members in this project yet.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-slate-700 p-5">
-              <WpButton
-                type="button"
-                variant="secondary"
-                size="md"
-                onClick={() => setShowViewMembersModal(false)}
-              >
-                Close
-              </WpButton>
-            </div>
-          </div>
-        </div>
+        <ViewMembersModal
+          members={selectedApiProject?.members}
+          roles={rolesResponse?.data}
+          roleOptions={roleOptions}
+          isRolesLoading={isRolesLoading}
+          canManage={canManageProjects()}
+          editingMemberId={editingMemberId}
+          selectedRole={selectedRole}
+          updatingMemberId={updatingMemberId}
+          isUpdatingProjectRole={isUpdatingProjectRole}
+          onClose={() => setShowViewMembersModal(false)}
+          onStartEdit={handleStartEditMember}
+          onCancelEdit={() => {
+            setEditingMemberId(null);
+            setSelectedRole('');
+          }}
+          onSelectRole={setSelectedRole}
+          onSaveRole={updateMember}
+          onRequestRemove={setMemberToRemove}
+        />
       )}
 
       {/* Remove member confirm modal */}

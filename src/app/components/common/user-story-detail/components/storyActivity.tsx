@@ -1,6 +1,6 @@
 'use client';
 
-import { CornerDownRight, FileText, Pencil, Plus, Trash2, User } from 'lucide-react';
+import { CornerDownRight, FileText, Pencil, Trash2 } from 'lucide-react';
 import { colors } from '@/src/styles/colors';
 import WpRichTextEditor from '../../htmlEditor';
 import { RichContentViewer } from '../../rich-content-viewer';
@@ -308,7 +308,7 @@ export const StoryActivity = ({
                           <div className="bg-gray-50 dark:bg-slate-800 rounded-lg px-3 py-2 relative group">
                             <RichContentViewer
                               content={commentItem.content}
-                              className="text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
+                              className="text-sm text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_li]:my-0.5"
                               canDownload={true}
                               canDelete={canDeleteComments}
                               onDownloadImage={handleDownloadCommentAttachment}
@@ -416,7 +416,7 @@ export const StoryActivity = ({
                                           <div className="bg-white dark:bg-slate-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-slate-700 relative group">
                                             <RichContentViewer
                                               content={reply.content}
-                                              className="text-xs text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert"
+                                              className="text-xs text-gray-700 dark:text-slate-300 prose prose-sm max-w-none dark:prose-invert [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_li]:my-0.5"
                                               canDownload={true}
                                               canDelete={canDeleteComments}
                                               onDownloadImage={handleDownloadCommentAttachment}
@@ -542,41 +542,10 @@ export const StoryActivity = ({
 
                 let titleAction = `${activity.action} the ${activity.resource_type.replace('_', ' ')}`;
                 let changeText: React.ReactNode = null;
-                let activityIcon: React.ReactNode = null;
-                let badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                const badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
 
                 // Determine activity type and icon
-                const resourceType = activity.resource_type;
                 const action = activity.action.toLowerCase();
-
-                if (action === 'created') {
-                  activityIcon = <Plus size={12} className="text-green-600 dark:text-green-400" />;
-                  badgeColor =
-                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-                } else if (action === 'updated' || action === 'changed') {
-                  activityIcon = <Pencil size={12} className="text-blue-600 dark:text-blue-400" />;
-                  badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
-                } else if (action === 'deleted') {
-                  activityIcon = <Trash2 size={12} className="text-red-600 dark:text-red-400" />;
-                  badgeColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
-                } else if (resourceType === 'comment') {
-                  activityIcon = (
-                    <FileText size={12} className="text-purple-600 dark:text-purple-400" />
-                  );
-                  badgeColor =
-                    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
-                } else if (
-                  resourceType === 'user_story_attachment' ||
-                  resourceType === 'task_attachment'
-                ) {
-                  activityIcon = (
-                    <FileText size={12} className="text-amber-600 dark:text-amber-400" />
-                  );
-                  badgeColor =
-                    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
-                } else {
-                  activityIcon = <User size={12} className="text-gray-600 dark:text-gray-400" />;
-                }
 
                 if (activity.details) {
                   const changeMatch = activity.details.match(/:\s*(.+) changed from (.+) to (.+)$/);
@@ -650,12 +619,6 @@ export const StoryActivity = ({
                         style={{ backgroundColor: userColor }}
                       >
                         {userInitials}
-                      </div>
-                      {/* Action Badge */}
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm ring-2 ring-white dark:ring-slate-900">
-                        <div className="w-4 h-4 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center">
-                          {activityIcon}
-                        </div>
                       </div>
                     </div>
 
